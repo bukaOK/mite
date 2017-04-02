@@ -1,0 +1,37 @@
+﻿@model object
+    
+@{
+    string dataType = Html.ViewData.ModelMetadata.DataTypeName;
+    if (string.IsNullOrEmpty(dataType))
+    {
+        dataType = "text";
+    }
+}
+@if (ViewData["InputIcon"] != null)
+{
+    var iconClass = "icon " + ViewData["InputIcon"];
+    <div class="field">
+        <div class="ui left icon input">
+            <label style="display: none">@Html.DisplayName("")</label>
+            <i class="@iconClass"></i>
+            @Html.TextBox("", Model, new { placeholder = Html.DisplayName(""), type = dataType})
+        </div>
+    </div>
+}
+else
+{
+    <div class="field">
+        <label style="display: none">@Html.DisplayName("")</label>
+        @Html.TextBox("", Model, new {type = dataType, placeholder = Html.DisplayName("")})
+    </div>
+}
+
+
+@*
+        Если передавать данные из EditorTemplate в View =>
+
+    @Html.EditorFor(modelItem => item.YourProperty,
+      new { htmlAttributes = new { @class = "verificationStatusSelect", style = "Width:50px" } })
+
+        @Html.TextBoxFor(m => m, ViewData["htmlAttributes"])
+*@

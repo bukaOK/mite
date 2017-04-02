@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "name": "asp.net",
+  "private": true,
+  "devDependencies": {},
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "jsrender": "^0.9.83",
+    "quill": "^1.1.9",
+    "uikit": "^3.0.0-beta.12"
+  }
+}

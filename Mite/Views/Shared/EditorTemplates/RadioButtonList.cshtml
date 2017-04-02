@@ -1,0 +1,36 @@
+﻿@using System.Reflection
+@using Mite.Attributes.DataAnnotations
+
+@model byte
+
+@{
+    var customAttribute =
+        (ViewData.ModelMetadata)
+        .ContainerType
+        .GetProperty(ViewData.ModelMetadata.PropertyName)
+        .GetCustomAttribute<UIDataAttribute>(inherit: false);
+
+    var list = customAttribute.SelectListItems;
+    foreach (var selectListItem in list)
+    {
+        if (Model.ToString() == selectListItem.Value)
+        {
+            selectListItem.Selected = true;
+        }
+    }
+}
+
+
+<label>@Html.DisplayName("")</label>
+<div class="grouped fields">
+    @foreach (var item in list)
+    {
+        <div class="field">
+            <div class="ui radio checkbox">
+                @Html.RadioButton("", item.Value, item.Selected)
+                @Html.Label("", item.Text)
+            </div>
+        </div>
+    }
+</div>
+        

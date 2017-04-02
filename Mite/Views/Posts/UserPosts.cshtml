@@ -1,0 +1,60 @@
+﻿@using Mite.Enums
+@using Mite.Helpers
+@model IEnumerable<Mite.Models.ProfilePostModel>
+
+@{
+    var pageUserName = Request.Url.Segments.Length <= 3
+        ? User.Identity.Name
+        : Request.Url.Segments[3];
+    var currentUserName = User.Identity.Name;
+}
+@foreach (var post in Model)
+{
+    <div class="column">
+        <div class="ui segment post-item">
+            @if (post.IsImage)
+            {
+                <img src="@post.Content" class="ui image" />
+            }
+            else
+            {
+                <div class="content">
+                    @Html.Raw(post.Content)
+                </div>
+            }
+            <div class="ui divider"></div>
+            <div class="extra content">
+                @ViewHelper.GetPastTense(post.PublicTime)
+                <div class="right floated" style="float: right">
+                    <i class="yellow star icon"></i>@post.Rating
+                    <i class="blue unhide icon"></i>12
+                </div>
+            </div>
+            <div class="ui dimmer">
+                @if (currentUserName == pageUserName)
+                {
+                    <div class="meta">
+                        <a class="circular ui blue icon button" href="@Url.Action("EditPost", "Posts", new { id = post.Id })" data-inverted
+                           data-tooltip="Редактировать" data-position="right center">
+                            <i class="icon edit"></i>
+                        </a>
+                    </div>
+                }
+                <div class="right floated meta"></div>
+                <div class="content">
+                    <div class="center">
+                        <h2 class="ui inverted header">
+                            @post.Header
+                            <span class="sub header">А тут описаниеце с:</span>
+                        </h2>
+                        @Html.ActionLink("Просмотр", "ShowPost", "Posts", new { id = post.Id }, new { @class = "ui primary button" })
+                        @if (currentUserName == pageUserName)
+                        {
+                            <button data-post-id="@post.Id" onclick="setDelState(this)" class="ui red post-del button">Удалить</button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,25 @@
+﻿@using System.Reflection
+@using Mite.Attributes.DataAnnotations
+@model int?
+    
+@{
+    var customAttribute =
+        (ViewData.ModelMetadata)
+            .ContainerType
+            .GetProperty(ViewData.ModelMetadata.PropertyName)
+            .GetCustomAttribute<UIDataAttribute>(false);
+    var displayName = Html.ViewData.ModelMetadata.DisplayName;
+
+    var list = customAttribute.SelectListItems;
+    
+    list.Insert(0, new SelectListItem
+    {
+        Text = displayName,
+        Value = ""
+    });
+}
+
+<div class="field">
+    @Html.DropDownList("", list, new { @class = "ui dropdown" })
+</div>
+

@@ -1,0 +1,92 @@
+﻿@model Mite.Models.ChangePassModel
+
+<script src="~/Scripts/password-strength.js"></script>
+<h3 class="ui header" style="margin-top: 0;">Изменить пароль</h3>
+@using (Html.BeginForm("", "", FormMethod.Post, new { @class = "ui form", id = "changePassForm" }))
+{
+    @Html.EditorFor(x => x.OldPass)
+    @Html.EditorFor(x => x.NewPass)
+    @Html.EditorFor(x => x.ConfirmPass)
+    @Html.AntiForgeryToken()
+    <button type="button" class="ui primary button" id="changePassBtn">Изменить</button>
+    <div class="ui hidden message" id="changePassMsg">
+
+    </div>
+}
+<script>
+    function changePass() {
+        $('#changePassForm').form('validate form');
+        if ($('#changePassForm').form('is valid')) {
+            $.ajax({
+                url: '/usersettings/changepassword',
+                type: 'post',
+                data: $('#changePassForm').serialize(),
+                success: function (resp) {
+                    console.log(resp);
+                    var $msg = $('#changePassMsg');
+                    if (resp.status == 2) {
+                        $msg.html(resp.message);
+                        $msg.addClass('red');
+                    } else {
+                        $msg.html('Пароль успешно изменен');
+                        $msg.addClass('green');
+                    }
+                },
+                error: function (jqXhr) {
+                    $msg.addClass('red');
+                    $msg.html('Ошибка во время изменения');
+                },
+                complete: function () {
+                    $('#changePassMsg').removeClass('hidden');
+                    $('#changePassBtn').removeClass('loading').removeClass('disabled');
+                }
+            });
+        }
+    }
+    $(function () {
+        initPassStrength('#NewPass');
+        $('#changePassForm').form({
+            inline: true,
+            fields: {
+                OldPass: {
+                    rules: [
+                        {
+                            type: 'empty',
+                            prompt: $("#OldPass").data("valRequired")
+                        }
+                    ]
+                },
+                NewPass: {
+                    rules: [
+                        {
+                            type: "empty",
+                            prompt: $("#NewPass").data("valRequired")
+                        },
+                        {
+                            type: "length[6]",
+                            prompt: "Минимальная длина пароля - 6 символов"
+                        }
+                    ]
+                },
+                ConfirmPass: {
+                    depends: "Password",
+                    rules: [
+                        {
+                            type: "empty",
+                            prompt: $("#ConfirmPass").data("valRequired")
+                        },
+                        {
+                            type: "match[Password]",
+                            prompt: $("#ConfirmPass").data("valEqualto")
+
+                        }
+                    ]
+                }
+            }
+        });
+        $('#changePassBtn').click(function (ev) {
+            $(ev).addClass('loading').addClass('disabled');
+            changePass();
+        })
+    });
+</script>

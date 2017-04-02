@@ -1,0 +1,232 @@
+﻿/*Общее*/
+.ui.search.selection.dropdown{
+    border: 2px solid #e8e8e8;
+}
+.ui.search.selection.dropdown.active, .ui.search.selection.dropdown:focus{
+    border-color: #b540c6;
+}
+.ui.selection.dropdown .menu{
+    border: 2px solid #e8e8e8;
+    left: -1px;
+    width: calc(100% +  4px );
+}
+.ui.selection.dropdown.active .menu, .ui.selection.dropdown.active:hover .menu{
+    border-color: #b540c6;
+}
+.ui.fixed.menu{
+    z-index: 2000;
+}
+.text-right{
+    text-align: right;
+}
+/*Тело*/
+article{
+    margin-bottom: 80px;
+}
+/*Подвал*/
+footer{
+    background-color: #6D6788;
+    padding-bottom: 10px;
+    padding-top : 1rem;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+/*Вход и регистрация*/
+form.login>.segment, form.register>.segment{
+    box-shadow: 0px 0px 20px rgba(34, 36, 38, 0.15) !important;
+}
+/*"Затемнители" постов*/
+.ui.dimmer .meta{
+    vertical-align: top;
+    padding-top: 10px;
+    padding-left: 10px;
+    color: white;
+    font-size: 15px;
+    width: 50px;
+}
+.ui.dimmer .right.meta{
+    padding-right: 10px;
+    padding-left: 0;
+}
+/*Меню*/
+.header.main.item {
+    padding: 0 10px;
+}
+/*Настраиваем сайдбар*/
+.ui.sidebar{
+    overflow: visible !important;
+}
+.side-avatar{
+    margin: 10px auto 0;
+}
+.ui.sidebar .item .ui.label {
+    border-radius: 400px;
+}
+div.center.aligned{
+    margin-left: auto;
+    margin-right: auto;
+}
+.acc-header>.ui.header{
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+.ui.sidebar.menu>.item{
+    border-left: 3px solid white;
+}
+.ui.sidebar.menu>.item:hover {
+    border-left: 3px solid rgba(0, 0, 0, 0.03);
+}
+.ui.sidebar.menu>.item.active{
+    border-left: 3px solid #b540c6;
+}
+.main.menu{
+    margin: 10px auto !important;
+}
+.button.fixed.attached.menu-btn{
+    top: 80px;
+    position: fixed;
+}
+.button.fixed.attached.menu-btn>.icon.settings{
+    margin-right: -10px;
+}
+article.ui.container{
+    margin-top: 60px;
+}
+.list.layout.icon{
+    margin-top: 1px !important;
+}
+.ui.accordion.item>.title{
+    padding: 0;
+}
+.ui.action.input input[type="file"] {
+    display: none;
+}
+.logoff.button{
+    margin-top: 10px;
+    margin-left: 10px;
+    max-width: 236px;
+}
+.pusher{
+    background-color: #f4f4f4 !important;
+}
+/*Уведомления*/
+#notify-popup {
+    max-height: 500px;
+    overflow-y: scroll;
+}
+/*Настройки пользователя*/
+input[type="file"] {
+    display: none !important;
+}
+.dashed.segment{
+    border: 2px dashed rgba(0,0,0,0.2);
+    box-shadow: none;
+    padding: 20px;
+    cursor: default;
+}
+/*Страница пользователя*/
+/*.post-item>.dimmer>.content>.center{
+    display: block;
+    margin-top: 25px;
+}*/
+.ui.tab.basic.segment{
+    margin: -1rem !important;
+}
+.tab[data-tab="posts"] > .tabs.menu > .item{
+    padding: 20px;
+}
+.tab[data-tab="posts"] > .tabs.menu{
+    display: flex;
+    justify-content: center;
+}
+.follower-item{
+    background-color: white;
+    border-radius: 80px;
+    padding: 5px;
+    box-shadow: 0px 0px 20px rgba(34, 36, 38, 0.15);
+}
+.secondary.labeled.menu .item {
+    color: #6D6788 !important;
+}
+.secondary.labeled.menu .item.active, .secondary.labeled.menu .item:hover{
+    background-color: #6D6788 !important;
+    color: white !important;
+}
+.ui.profile.segment {
+    margin-top: 130px;
+}
+.ui.profile.segment .centered.circular.image{
+    margin-top: -90px;
+    border: 5px solid white;
+    box-shadow: 0 -10px 20px 0 rgba(0,0,0,0.1);
+    background-color: white;
+}
+.post-item .content:not(.extra){
+    min-height: 150px;
+}
+.post-item .extra.content{
+    font-weight: bold;
+    color: rgba(0,0,0,0.4);
+}
+.ui.profile.segment .menu .item.active{
+    color: rgb(181,64,198);
+}
+.ui.profile.image .ui.image{
+    border-radius: 5px;
+}
+.profile-post {
+    z-index: 1000;
+}
+.profile-post .image, .profile-post .dimmer, .profile-post{
+    border-radius: 5px;
+}
+/*Редактор*/
+.poem p {
+    text-align: center;
+}
+[data-editable] {
+    padding: 0 10px;
+    overflow: hidden;
+    clear: both;
+}
+[data-editable] .align-left {
+    clear: initial;
+    float: left;
+    margin-right: 0.5em;
+}
+
+[data-editable] .align-right {
+    clear: initial;
+    float: right;
+    margin-left: 0.5em;
+}
+
+[data-editable] .text-center {
+    text-align: center;
+}
+[data-editable] .text-right {
+    text-align: right;
+}
+[data-editable] .text-left {
+    text-align: left;
+}
+.ct-ignition__button--edit {
+    background-color: #b540c6 !important;
+}
+.edit.post.segment {
+    margin-left: auto;
+    max-width: 1100px;
+}
+/*Страница поста*/
+#post-content img{
+    cursor: zoom-in;
+    cursor: -webkit-zoom-in;
+    cursor: -moz-zoom-in;
+}
+.responsive.modal{
+    display: inline-block !important;
+    width: auto;
+    max-width: 95%;
+    max-height: 95%;
+}

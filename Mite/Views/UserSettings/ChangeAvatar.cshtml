@@ -1,0 +1,118 @@
+﻿@model string
+
+@*ToDo: Обработать случай, когда аватарка не выбрана и пользователь нажал сохранить*@
+<div class="ui two column center aligned grid change-avatar">
+    <div class="column">
+        <input type="file" id="ava-download">
+        <label for="ava-download" class="ui labeled icon large primary button">
+            Загрузить
+            <i class="cloud download icon"></i>
+        </label>
+        <div class="ui section divider horizontal">Или</div>
+        <div class="ui dashed segment" id="drop-zone">
+            <h3 class="ui disabled grey">Перетащите сюда</h3>
+        </div>
+        <span id="loading-span" style="display: none">Загрузка...</span>
+        <button type="button" class="ui fluid green button" id="save-btn">Сохранить</button>
+        <div class="ui hidden message" style="text-align: center" id="change-ava-msg"></div>
+    </div>
+    <div class="column">
+        <div class="avatar edit" id="someId" style="display: none"></div>
+    </div>
+</div>
+@Scripts.Render("~/bundles/croppie")
+<script>
+    $(document).ready(function(){
+        $("avaSet").addClass("active");
+        var uploadCrop = $('.avatar.edit');
+        uploadCrop.croppie({
+            viewport: {
+                width: 150,
+                height: 150,
+                type: 'circle'
+            },
+            boundary: {
+                width: 400,
+                height: 400
+            }
+        });
+        $('#save-btn')
+            .click(function(event) {
+                uploadCrop.croppie('result',
+                    {
+                        circle: true
+                    })
+                    .then(function (res) {
+                        if (res.match(/data:,/) != null) {
+                            $('#change-ava-msg').addClass('red').removeClass('hidden').html('Изображение не выбрано');
+                            console.log('nope');
+                        }else {
+                            $.ajax({
+                                url: '/UserSettings/ChangeAvatar',
+                                type: 'post',
+                                dataType: 'json',
+                                data: {
+                                    base64Str: res
+                                },
+                                beforeSend: function () {
+                                    $(event).addClass('loading disabled');
+                                },
+                                success: function () {
+                                    $('#change-ava-msg').addClass('green').removeClass('red');
+                                },
+                                error: function () {
+                                    $('#change-ava-msg').addClass('red').removeClass('green');
+                                },
+                                complete: function (jqXhr) {
+                                    $('#change-ava-msg').removeClass('hidden').html(jqXhr.responseJSON.message);
+                                    $(event).removeClass('loading disabled');
+                                }
+                            });
+                        }
+                    });
+
+            });
+        function readFile(file, evt){
+            var reader = new FileReader();
+            reader.onprogress = function(){
+                $("#loading-span").css("display: inline");
+                $(evt).addClass('loading');
+            };
+            reader.onloadend = function(){
+                $("#loading-span").css('display: none');
+                $(evt).removeClass('loading');
+            };
+            reader.onload = function(){
+                uploadCrop.show();
+                $("#save-btn").show();
+                uploadCrop.croppie('bind', reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+        //Когда перемещаем файл мышкой и курсор над областью
+        function dragOverHandler(evt){
+            evt.stopPropagation();
+            evt.preventDefault();
+            evt.dataTransfer.dropEffect = "copy";
+        }
+        //Когда переместили файл
+        function dropHandler(evt){
+            evt.stopPropagation();
+            evt.preventDefault();
+            var file = evt.dataTransfer.files[0];
+            readFile(file, evt);
+        }
+        function inputDownloadHandler(evt){
+            var file = evt.target.files[0];
+            readFile(file, evt);
+        }
+
+        //Настраиваем загрузку файлов
+        var dropZone = document.getElementById("drop-zone");
+        dropZone.ondragover = dragOverHandler;
+        dropZone.ondrop = dropHandler;
+
+        var inputDownload = document.getElementById("ava-download");
+        inputDownload.onchange = inputDownloadHandler;
+    });
+</script>

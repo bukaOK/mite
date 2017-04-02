@@ -1,0 +1,27 @@
+﻿@{
+    ViewBag.Title = "Админ панель";
+}
+@section styles{
+    <style>
+        body, .pusher{
+            background-color: white !important;
+        }
+    </style>
+}
+
+<nav class="ui stackable pointing secondary tabs menu" style="border: none">
+    <a class="active item" data-tab="ModerRegister">Добавление модератора</a>
+</nav>
+<div class="ui active tab" data-tab="ModerRegister">
+    @Html.Action("ModerRegister")
+</div>
+<script>
+    $(function () {
+        $('#adminPanelItem').addClass('active');
+        $('.ui.tabs .item').tab({
+            history: true,
+            historyType: 'hash'
+        });
+    });
+</script>
+

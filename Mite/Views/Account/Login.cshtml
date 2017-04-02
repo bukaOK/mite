@@ -1,0 +1,59 @@
+﻿@using Mite.Extensions
+@model Mite.Models.LoginModel
+
+@{
+    ViewBag.Title = "Вход";
+}
+<script>
+    $(document).ready(function () {
+        $(".ui.form").form({
+            on: "submit",
+            fields: {
+                UserName: {
+                    rules: [
+                        {
+                            type: "empty",
+                            prompt: $("#UserName").data("valRequired")
+                        }
+                    ]
+                },
+                Password: {
+                    rules: [
+                        {
+                            type: "empty",
+                            prompt: $("#Password").data("valRequired")
+                        }
+                    ]
+                }
+            }
+        });
+    });
+</script>
+<div class="ui middle aligned center aligned grid">
+        @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "ui six wide column login form" }))
+        {
+            <h2 class="ui violet header">
+                <i class="sign in icon"></i>
+                <span class="content">Вход</span>
+            </h2>
+            <div class="ui left aligned top attached raised segment">
+                @Html.EditorFor(x => x.UserName, new { InputIcon = "hashtag" })
+                @Html.EditorFor(x => x.Password, new { InputIcon = "lock"})
+                @Html.EditorFor(x => x.Remember)
+                @Html.AntiForgeryToken()
+                <button type="submit" class="ui animated primary button">
+                    <span class="visible content">Войти</span>
+                    <span class="hidden content"><i class="sign in icon"></i></span>
+                </button>
+            </div>
+            @Html.ValidationSum();
+        }
+    
+</div>
+<script>
+    $(document).ready(function () {
+        $(".checkbox").checkbox();
+    })
+</script>
+
+

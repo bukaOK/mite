@@ -1,0 +1,347 @@
+﻿@using Mite.Helpers
+@using Mite.Enums
+@using Microsoft.AspNet.Identity
+@using Mite.Extensions
+@model Mite.Models.PostModel
+
+@{ 
+    ViewBag.Title = Model.Header;
+    var userId = User.Identity.GetUserId();
+}
+<div class="ui segment grid">
+    <div class="two column row">
+        <div class="column">
+            <h2 class="ui header">@Model.Header</h2>
+        </div>
+        <div class="right aligned column">
+            <h3 class="ui header" id="post-time"></h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="centered column" id="post-content">
+            @if (Model.IsImage)
+            {
+                <img src="@Model.Content" class="ui centered image" />
+            }
+            else
+            {
+                @Html.Raw(Model.Content)
+            }
+        </div>
+    </div>
+    <div class="ui divider"></div>
+    <div class="two column row">
+        <div class="centered column">
+            <div class="ui items">
+                <div class="item">
+                    <div class="ui tiny image">
+                        <img src="@Model.User.AvatarSrc" alt="@Model.User.UserName" />
+                    </div>
+                    <div class="content">
+                        <a href="@Url.Action("Index", "UserProfile", new { name = Model.User.UserName })" class="header">&copy;@Model.User.UserName</a>
+                        <div class="meta">
+                            <span>Оценить</span>
+                            @Html.HiddenFor(x => x.CurrentRating.Id)
+                            @Html.HiddenFor(x => x.CurrentRating.PostId)
+                            <div class="ui star rating" data-rating="@Model.CurrentRating.Value" data-max-rating="5"></div>
+                            <span id="post-rating" data-rating="@Model.Rating">(@Model.Rating)</span>
+                        </div>
+                        <div class="description">
+                            @foreach (var tag in Model.Tags)
+                            {
+                                <div class="ui label">@tag</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="column">
+            <h4>@Model.Description</h4>
+        </div>
+    </div>
+    <div class="ui divider"></div>
+    <div class="row">
+        <div class="twelve wide centered column">
+            <div class="ui large comments">
+                <h4 class="ui header" id="comments-count">
+                    @Model.CommentsCount @ViewHelper.GetWordCase(Model.CommentsCount, "комментарий", "комментария", "комментариев")
+                </h4>
+                <form class="ui form" id="comments-form">
+                    <div class="field">
+                        <textarea name="CommentContent" id="CommentContent" rows="3" data-reply-comment></textarea>
+                    </div>
+                    <button type="button" class="ui primary small right labeled icon button" onclick="sendComment('@Model.Id')">
+                        Комментировать<i class="icon write"></i>
+                    </button>
+                    <a href="" id="reply-user"></a>
+                    <i id="remove-reply" class="remove red icon" style="display: none; cursor: pointer" onclick="removeReply()"></i>
+                </form>
+                <div class="ui comments" id="comments-wrapper">
+                    <div class="ui active inline centered medium text active loader">Загрузка...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<template id="commentTmpl">
+    <div class="comment" id="com{{:Id}}">
+        <a class="avatar">
+            <img src="{{:User.AvatarSrc}}" />
+        </a>
+        <div class="content">
+            <a href="/User/Profile/{{:User.UserName}}" class="author">{{:User.UserName}}</a>
+            <div class="metadata">
+                {{if ParentComment != null}}
+                <i class="violet share icon"></i>{{:ParentComment.User.UserName}} | 
+                {{/if}}
+                <span class="date">{{:PublicDateStr}}</span>
+            </div>
+            <div class="text">{{:Content}}</div>
+            <div class="actions">
+                <a data-reply-user="" onclick="addReply('{{:User.UserName}}', '{{:Id}}')">Ответить</a>
+                {{if User.Id == '@User.Identity.GetUserId()'}}
+                <a data-comment-id="{{:Id}}" onclick="deleteComment(this)">Удалить</a>
+                {{/if}}
+                {{if CurrentRating == null || CurrentRating.Value == 0}}
+                <a data-is-rate="false" data-variation="tiny" data-content="Нравится!" onclick="rateComment(this, '{{:Id}}', '{{:User.Id}}')"><i class="thumbs outline up violet icon"></i><span class="rating">{{:Rating}}</span></a>
+                {{else}}
+                <a data-is-rate="true" data-variation="tiny" data-content="Нравится!" onclick="rateComment(this, '{{:Id}}', '{{:User.Id}}')"><i class="thumbs up violet icon"></i><span class="rating">{{:Rating}}</span></a>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+</template>
+<div class="ui modal" id="post-image-modal" style="display: none">
+    <i class="close icon"></i>
+    <div class="image content">
+        <img src="@Model.Content" class="ui centered image" />
+    </div>
+</div>
+<script>
+    var commentsCount = @Model.CommentsCount;
+
+    function loadPostTime(){
+        var elem = document.getElementById('post-time');
+        var options = {
+            year: 'numeric',
+            day: 'numeric',
+            month: 'long',
+            hour: 'numeric',
+            minute: 'numeric'
+        };
+        var date = new Date('@Model.LastEdit.ToString("o")');
+
+        elem.innerHTML = date.toLocaleString("ru", options); 
+    }
+    function loadCommentsCount(){
+        var elem = document.getElementById('comments-count');
+        elem.innerHTML = commentsCount + " " +
+            ViewHelper.getWordCase(commentsCount, 'комментарий', 'комментария', 'комментариев');
+    }
+    var lastRateValue;
+    function initComments(postId, sort) {
+        return $.ajax({
+            type: 'get',
+            url: '/api/comments/',
+            data: {
+                sort: sort,
+                postId: postId
+            },
+            success: function (data) {
+                console.log(data);
+                data.forEach(function(item){
+                    item.PublicDateStr = ViewHelper.getPastTense(new Date(item.PublicTime).getTime());
+                });
+                var tmpl = $.templates('#commentTmpl');
+                var html = tmpl.render(data);
+                $('#comments-wrapper').html(html);
+            },
+            error: function (jqXhr) {
+                console.log(jqXhr);
+            }
+        });
+    }
+    function sendComment(postId) {
+        $('#comments-form').form('form validation');
+        if(!$('#comments-form').form('is valid')) {
+            return;
+        }
+        var model = {
+            Content: $('#CommentContent').val(),
+            PostId: postId
+        };
+        var replyCommentId = $('#CommentContent').data('replyComment');
+        if(replyCommentId != null && replyCommentId != '') {
+            model.ParentComment = {
+                Id: replyCommentId
+            };
+        }
+        $.ajax({
+            type: 'post',
+            url: '/api/comments/',
+            data: model,
+            success: function (data) {
+                console.log(data);
+                sendNotification('@NotificationTypes.PostComment');
+
+                commentsCount++;
+                loadCommentsCount();
+                var tmpl = $.templates('#commentTmpl');
+                var html = tmpl.render(data);
+                $('#comments-wrapper').prepend(html);
+
+                $('#com' + data.Id + ' .thumbs.up.icon').parent().popup();
+            },
+            error: function (jqXhr) {
+                console.log(jqXhr);
+            }
+        });
+    }
+    function deleteComment(ev){
+        var commentId = $(ev).data('commentId');
+        var comment = $(ev).parents('.comment');
+
+        $.ajax({
+            url: '/api/comments/' + commentId,
+            type: 'delete',
+            success: function(data){
+                console.log(data);
+                commentsCount--;
+                loadCommentsCount();
+                $('#com' + commentId).remove();
+            },
+            error: function(jqXhr){
+                console.log(jqXhr);
+            }
+        });
+    }
+    function rateComment(ev, commentId, userId){
+        var isRate = $(ev).data('isRate');
+        var commentRating = $(ev).find('.rating')[0];
+        var rateValue = isRate ? 0 : 1;
+
+        $.ajax({
+            type: 'put',
+            url: '/api/rating',
+            data: {
+                CommentId: commentId,
+                UserId: userId,
+                Value: rateValue
+            },
+            success: function(resp){
+                var commentRateIcon = $(ev).find('.thumbs');
+                if(isRate){
+                    commentRateIcon.addClass('outline');
+                    commentRating.innerHTML--;
+                } else{
+                    commentRateIcon.removeClass('outline');
+                    commentRating.innerHTML++;
+                }
+                $(ev).data('isRate', !isRate);
+                sendNotification('@NotificationTypes.CommentRating')
+            },
+            error: function(jqXhr){
+                console.log(jqXhr);
+            }
+        });
+    }
+    function addReply(userName, replyCommentId){
+        $('#reply-user').html('<i class="reply icon"></i>' + userName);
+        $('#reply-user').attr('href', '/User/Profile/' + userName);
+        $('#remove-reply').css('display', 'inline');
+        $('#CommentContent').data('replyComment', replyCommentId);
+    }
+    function removeReply(){
+        $('#reply-user').html('');
+        $('#remove-reply').css('display', 'none');
+        $('#CommentContent').removeData('replyComment');
+    }
+    function sendNotification(notificType){
+        $.ajax({
+            url: '/api/notification',
+            type: 'post',
+            data: {
+                NotificationType: notificType,
+                User: {
+                    Id: '@Model.User.Id'
+                }
+            },
+            success: function(data){
+                console.log(data);
+            },
+            error: function(jqXhr){
+                console.log(jqXhr);
+            }
+        });
+        window.hubReady.done(function(){
+            $.connection.notifyHub.server.newNotification('@Model.User.Id', notificType);
+        });
+    }
+    function initRating(){
+        $('.ui.rating').rating({
+            onRate: function (rateValue) {
+                $.ajax({
+                    type: "post",
+                    data: {
+                        Id: $("#CurrentRating_Id").val(),
+                        Value: rateValue,
+                        PostId: $("#CurrentRating_PostId").val()
+                    },
+                    url: "/api/rating",
+                    success: function (data) {
+                        var currentPostRating = +$("#post-rating").data('rating');
+                        var newRating = rateValue - lastRateValue;
+
+                        var newPostRating = currentPostRating + newRating;
+                        $("#post-rating").text("(" + newPostRating + ")").data('rating', currentPostRating + newRating);
+
+                        lastRateValue = rateValue;
+                        sendNotification('@NotificationTypes.PostRating', '');
+                        console.log(data);
+                    },
+                    error: function (jqXhr) {
+                        console.log(jqXhr);
+                    }
+                });
+            }
+        });
+    }
+    function initFormValidation(){
+        $('#comments-form').form({
+            fields: {
+                CommentContent: {
+                    rules: [
+                        {
+                            type: 'empty',
+                            prompt: 'Вы ничего не написали'
+                        }
+                    ]
+                }
+            },
+            inline: true
+        });
+    }
+    $(document).ready(function () {
+        loadPostTime();
+        $('.ui.dropdown').dropdown();
+        lastRateValue = $(".ui.rating").data("rating");
+        initComments('@Model.Id', @((byte)SortFilter.Old)).then(function(){
+            $('.thumbs.up.icon').parent().popup();
+        });
+        initRating();
+        initFormValidation();
+        @if (Model.IsImage)
+        {
+            <text>
+        $('#post-content').addClass('twelve wide');
+        $('#post-image-modal')
+            .modal({
+                onShow: function(){
+                    $(this).css('display', '').addClass('responsive');
+                }
+            }).modal('attach events', '#post-content');
+            </text>
+        }
+    });
+</script>

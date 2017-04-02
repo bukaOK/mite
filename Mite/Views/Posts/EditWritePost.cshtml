@@ -1,0 +1,182 @@
+﻿@using Mite.Enums;
+@model Mite.Models.WritingPostModel
+
+@{
+    var tagsRow = Model.Tags == null ? string.Empty : string.Join(",", Model.Tags);
+}
+@Scripts.Render("~/bundles/editor")
+<div class="ui edit post segment">
+    <h2 class="ui dividing header">@ViewBag.Title</h2>
+    @using (Html.BeginForm("AddPost", "Posts", FormMethod.Post, new { @class = "ui form" }))
+    {
+        @Html.EditorFor(x => x.Header)
+        <div class="ui grid">
+            <div class="nine wide column">
+                @Html.EditorFor(x => x.Description)
+            </div>
+            <div class="seven wide column">
+                <div class="field">
+                    <div class="ui fluid search multiple selection dropdown" id="select-tags">
+                        @Html.HiddenFor(x => x.Tags, new { Value = tagsRow })
+                        <div class="default text">Теги</div>
+                        <div class="menu">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        if (Model.Header == null)
+        {
+            <h2>@Html.DisplayNameFor(x => x.Header)</h2>
+        }
+        else
+        {
+            <h2>@Model.Header</h2>
+        }
+        <div style="clear: both" data-editable data-name="@Html.NameFor(x => x.Content)">
+            @Html.Raw(Model.Content)
+        </div>
+    }
+</div>
+<div class="ui small modal">
+    <i class="close icon"></i>
+    <div class="header">
+        Вы уверены?
+    </div>
+    <div class="content">
+        После публикации работу невозможно будет редактировать. 
+        При нажатии "Нет" она сохранится в черновиках и будет доступна для изменений.
+    </div>
+    <div class="actions">
+        <button class="ui red cancel button">Нет, просто сохранить</button>
+        <button class="ui green ok button">Да</button>
+    </div>
+</div>
+<script>
+    var postId = '@Model.Id';
+    var defaultId = '@Guid.Empty';
+    ContentTools.DEFAULT_TOOLS = [
+        ['bold', 'italic', 'line-break'],
+        [
+            'heading', 'subheading', 'paragraph',
+            'align-left', 'align-center', 'align-right'
+        ],
+        ['undo', 'redo', 'remove']
+    ];
+
+    ContentTools.StylePalette.add([
+        new ContentTools.Style('Описание', 'description', ['h3'])
+    ]);
+    ContentTools.Tools.Heading.tagName = "h2";
+    ContentTools.Tools.Subheading.tagName = "h3";
+    $.ajax({
+        type: 'get',
+        url: '/bower_components/ContentTools/translations/ru.json',
+        success: function (data) {
+            ContentEdit.addTranslations('ru', data);
+            ContentEdit.LANGUAGE = 'ru';
+        }
+    });
+    $(document).ready(function () {
+        var headerId = '#@Html.IdFor(x => x.Header)';
+        $(headerId).keyup(function (ev) {
+            $('.ui.form').children('h2').html(ev.target.value);
+        });
+        $('form').form({
+            inline: true,
+            fields: {
+                Header: {
+                    rules: [
+                        {
+                            type: 'empty',
+                            prompt: $('#Header').data('valRequired')
+                        }
+                    ]
+                },
+                Content: {
+                    rules: [
+                        {
+                            type: 'empty',
+                            prompt: $('#Content').data('valRequired')
+                        }
+                    ]
+                },
+                Description: {
+                    rules: [
+                        {
+                            type: 'maxLength[' + $('#Description').data('val-maxlength-max') + ']',
+                            prompth: $('#Description').data('val-maxlength')
+                        }
+                    ]
+                }
+            }
+        });
+        $.ajax({
+            url: '/api/tags',
+            type: 'get',
+            success: function(data){
+                var tagsMenu = $('#select-tags');
+                console.log(data);
+                var tagsItems = '';
+                for(var i = 0; i < data.length; i++){
+                    tagsItems += '<div class="item" data-value="' + data[i] + '">' + data[i] + '</div>'
+                }
+                tagsMenu.children('.menu').html(tagsItems);
+                tagsMenu.dropdown({
+                    allowAdditions: true,
+                    keys: {
+                        delimiter: false
+                    },
+                    showOnFocus: false,
+                    match: 'text',
+                    forceSelection: false
+                });
+            },
+            error: function(jqXhr){
+                console.log(jqXhr);
+            }
+        });
+        @{
+            var url = string.IsNullOrEmpty(Model.Header)
+                ? Url.Action("AddPost", "Posts")
+                : Url.Action("UpdatePost", "Posts");
+        }
+        var editor = ContentTools.EditorApp.get();
+
+        editor.init('*[data-editable]', 'data-name');
+        editor.inspector().show = function () { return false; }
+        editor.addEventListener('saved',
+            function(ev) {
+                if(!$('form').form('is valid')){
+                    $('.ct-ignition__button--edit').css('background', '#e74c3c');
+                    return false;
+                }
+                var content = ev.detail().regions.Content
+                this.busy(true);
+                $.ajax({
+                    data: {
+                        Content: content,
+                        Header: $(headerId).val(),
+                        Description: $('#Description').val(),
+                        Id: '@Model.Id',
+                        IsImage: false,
+                        Tags: $('#Tags').val().split(','),
+                        IsPublished: false
+                    },
+                    type: 'post',
+                    url: '@url',
+                    success: function(data){
+                        console.log(data);
+                        $('.ct-ignition__button--edit').css('background', '#27ae60');
+                    },
+                    error: function(jqXhr){
+                        $('.ct-ignition__button--edit').css('background', '#e74c3c');
+                    },
+                    complete: function(jqXhr){
+                        console.log(jqXhr);
+                        editor.busy(false);
+                    }
+                });
+            });
+    });
+</script>

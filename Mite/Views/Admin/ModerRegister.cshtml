@@ -1,0 +1,33 @@
+﻿@using Mite.Core
+
+<div class="ui grid">
+    <form class="ui sixteen wide mobile ten wide tablet eight wide computer left aligned column form">
+        <div class="field">
+            <input type="text" placeholder="Имя пользователя" id="moderName" required/>
+        </div>
+        <button class="ui button" type="button" onclick="addModer()">Добавить</button>
+        <div class="ui hidden message" id="update-state-msg">Пользователь успешно добавлен</div>
+    </form>
+</div>
+<script>
+    function addModer() {
+        var value = $('#moderName').val();
+        if(value == '' || value == null){
+            $('#update-state-msg').addClass('red').removeClass('hidden').html('Введите имя модератора');
+            return;
+        }
+        $.ajax({
+            url: '@Url.Action("AddModer")',
+            type: 'post',
+            data: value,
+            success: function(resp){
+                var validationError = @((byte)JsonResponseStatuses.ValidationError);
+                if(resp.status == validationError){
+                    $('#update-state-msg').addClass('red').removeClass('hidden').html(resp.message);
+                } else{
+                    $('#update-state-msg').addClass('green').removeClass('hidden');
+                }
+            }
+        })
+    }
+</script>

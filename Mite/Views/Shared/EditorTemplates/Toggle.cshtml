@@ -1,0 +1,15 @@
+﻿@model bool?
+
+@{
+    var fieldName = Html.ViewData.TemplateInfo.HtmlFieldPrefix;
+    var displayName = Html.ViewData.ModelMetadata.DisplayName;
+    var isChecked = Html.ViewData.TemplateInfo.FormattedModelValue as bool?;
+}
+
+<div class="field">
+    <div class="ui toggle checkbox">
+        <input type="checkbox" id="@fieldName" value=@Html.Raw(isChecked) name="@fieldName" @Html.Raw(isChecked == true || isChecked != null ? "checked" : "") />
+        <label>@displayName</label>
+    </div>
+</div>
+

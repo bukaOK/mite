@@ -1,0 +1,194 @@
+﻿@using Mite.Extensions
+@model Mite.Models.ImagePostModel
+
+@{ 
+    var tagsRow = Model.Tags == null ? string.Empty : string.Join(",", Model.Tags);
+}
+<div class="ui segment">
+    <h2 class="ui dividing header">@ViewBag.Title</h2>
+    @using (Html.BeginForm("AddPost", "Posts", FormMethod.Post, new { @class = "ui two column center aligned grid form", id = "imgPostForm" }))
+    {
+        <div class="column">
+            <input type="file" id="img-download">
+            <label for="img-download" class="ui labeled icon large primary button">
+                Загрузить
+                <i class="cloud download icon"></i>
+            </label>
+            <div class="ui section divider horizontal">Или</div>
+            <div class="ui dashed segment" id="drop-zone">
+                <h3 class="ui disabled grey">Перетащите сюда</h3>
+            </div>
+            <span id="loading-span" style="display: none">Загрузка...</span>
+        </div>
+        <div class="left aligned column">
+            @Html.EditorFor(x => x.Header)
+            @Html.HiddenFor(x => x.Content)
+            @Html.EditorFor(x => x.Description)
+            <div class="field">
+                <div class="ui fluid search multiple selection dropdown" id="select-tags">
+                    @Html.HiddenFor(x => x.Tags, new { Value = tagsRow })
+                    <div class="default text">Теги</div>
+                    <div class="menu">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ten wide column">
+            <div id="img-wrapper">
+                @if (!string.IsNullOrEmpty(Model.Content))
+                {
+                    <img src="@Model.Content" alt="@Model.Header" style="max-width: 100%" />
+                }
+            </div>
+            <button type="button" class="ui green button" id="save-btn" >Сохранить</button>
+            @Html.ValidationSum()
+            <div class="ui hidden message" style="text-align: center" id="result-msg"></div>
+        </div>
+    }
+</div>
+<script>
+    $(document).ready(function() {
+        $('.ui.checkbox').checkbox();
+        $.ajax({
+            url: '/api/tags',
+            type: 'get',
+            success: function(data){
+                var tagsMenu = $('#select-tags');
+                console.log(data);
+                var tagsItems = '';
+                for(var i = 0; i < data.length; i++){
+                    tagsItems += '<div class="item" data-value="' + data[i] + '">' + data[i] + '</div>'
+                }
+                tagsMenu.children('.menu').html(tagsItems);
+                tagsMenu.dropdown({
+                    allowAdditions: true,
+                    keys: {
+                        delimiter: false
+                    },
+                    showOnFocus: false,
+                    forceSelection: false,
+                    match: 'text',
+                    onShow: function(){
+                        $(this).children('.menu').perfectScrollbar();
+                    }
+                });
+            },
+            error: function(jqXhr){
+                console.log(jqXhr);
+            }
+        });
+        //Отправляем форму
+        $('#save-btn').click(function(ev) {
+            $('#imgPostForm').form('validate form');
+            @{
+                var url = string.IsNullOrEmpty(Model.Header)
+                    ? Url.Action("AddPost", "Posts")
+                    : Url.Action("UpdatePost", "Posts");
+            }
+            if ($('#imgPostForm').form('is valid')) {
+                var $resultMsg = $('#result-msg');
+
+
+                $.ajax({
+                    url: '@url',
+                    data: {
+                        model: {
+                            Header: $('#Header').val(),
+                            Content: $('#Content').val(),
+                            Description: $('#Description').val(),
+                            IsImage: true,
+                            Id: '@Model.Id',
+                            Tags: $('#Tags').val().split(',')
+                        }
+                    },
+                    type: 'post',
+                    dataType: 'json',
+                    beforeSend: function () {
+                        $(ev).addClass('loading disabled');
+                    },
+                    success: function () {
+                        $resultMsg.addClass('green').removeClass('red');
+                    },
+                    error: function () {
+                        $resultMsg.addClass('red').removeClass('green');
+                    },
+                    complete: function (jqXhr) {
+                        $resultMsg.removeClass('hidden').html(jqXhr.responseJSON.message);
+                        $(ev).removeClass('loading disabled');
+                    }
+                });
+            }
+        });
+        $('#imgPostForm').form({
+            fields: {
+                @Html.IdFor(x => x.Header): {
+                    rules: [
+                        {
+                            type: 'empty',
+                            prompt: $('#@Html.IdFor(x => x.Header)').data('valRequired')
+                        }
+                    ]
+                },
+                @Html.IdFor(x => x.Content): {
+                    rules: [
+                        {
+                            type: 'empty',
+                            prompt: $('#@Html.IdFor(x => x.Content)').data('valRequired')
+                        }
+                    ]
+                },
+                Description: {
+                    rules: [
+                        {
+                            type: 'maxLength[' + $('#Description').data('valMaxlengthMax') + ']',
+                            prompt: $('#Description').data('valMaxlength')
+                        }
+                    ]
+                }
+            }
+        });
+        function readFile(file, evt) {
+            var reader = new FileReader();
+            reader.onprogress = function () {
+                $("#loading-span").css("display: inline");
+                $(evt).addClass('loading');
+            };
+            reader.onloadend = function () {
+                $("#loading-span").css('display: none');
+                $(evt).removeClass('loading');
+            };
+            reader.onload = function () {
+                $('#save-btn').show();
+                $('#img-wrapper').html('<img src="' + reader.result + '" style="max-width: 100%"/>');
+                $('#Content').val(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+        //Когда перемещаем файл мышкой и курсор над областью
+        function dragOverHandler(evt) {
+            evt.stopPropagation();
+            evt.preventDefault();
+            evt.dataTransfer.dropEffect = "copy";
+        }
+
+        //Когда переместили файл
+        function dropHandler(evt) {
+            evt.stopPropagation();
+            evt.preventDefault();
+            var file = evt.dataTransfer.files[0];
+            readFile(file, evt);
+        }
+
+        function inputDownloadHandler(evt) {
+            var file = evt.target.files[0];
+            readFile(file, evt);
+        }
+        //Настраиваем загрузку файлов
+        var dropZone = document.getElementById("drop-zone");
+        dropZone.ondragover = dragOverHandler;
+        dropZone.ondrop = dropHandler;
+
+        var inputDownload = document.getElementById("img-download");
+        inputDownload.onchange = inputDownloadHandler;
+    });
+</script>

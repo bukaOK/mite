@@ -1,0 +1,181 @@
+﻿
+@{
+    ViewBag.Title = "Панель модератора";
+}
+@section Styles{
+    <style>
+        body, .pusher {
+            background-color: white !important;
+        }
+    </style>
+}
+<h1>Панель модератора</h1>
+<nav class="ui stackable pointing secondary tabs menu" style="border: none">
+    <a class="active item" data-tab="TagNotConfirmed">Неподтвержденные теги</a>
+    <a class="item" data-tab="TagConfirmed">Подтвержденные теги</a>
+</nav>
+<div class="ui loading basic segment tab" data-tab="TagConfirmed">
+    <button class="ui primary button" onclick="showTagAddModal(this)">Добавить тег</button>
+    <table class="ui celled table confirmed">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Действие</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+<div class="ui loading basic segment tab" data-tab="TagNotConfirmed">
+    <table class="ui celled table not-confirmed">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Действие</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+<script id="tagRowTmpl" type="text/x-jsrender">
+    <tr data-id="{{:Id}}" data-name="{{:Name}}" data-confirmed="{{:IsConfirmed}}">
+        <td>{{:Name}}</td>
+        <td>
+            {{if !IsConfirmed}}
+            <button class="ui tag-confirm primary button" onclick="confirmTag(this)">Подтвердить</button>
+            {{/if}}
+            <button class="ui tag-change button" onclick="showTagChangeModal(this)">Изменить</button>
+            <button class="ui tag-del red button" onclick="delTag(this)">Удалить</button>
+        </td>
+    </tr>
+</script>
+<div class="ui small modal" id="tagModal">
+    <div class="header">Изменение тега</div>
+    <div class="content">
+        <form class="ui form">
+            <div class="field">
+                <input type="text" id="tagNameField" />
+            </div>
+        </form>
+    </div>
+    <div class="actions">
+        <div class="ui approve green button">Изменить</div>
+        <div class="ui cancel red button">Отмена</div>
+    </div>
+</div>
+<script>
+    function showTagChangeModal(ev) {
+        var $tagRow = $(ev).parents('tr');
+        $('#tagNameField').val($tagRow.data('name'));
+        $('#tagModal .approve.button').html('Изменить');
+        $('#tagModal > .header').html('Изменение тега');
+
+        $('#tagModal').modal({
+            onApprove: function ($elem) {
+                $.ajax({
+                    url: '/api/tags',
+                    type: 'put',
+                    data: {
+                        Name: $('#tagNameField').val(),
+                        Id: $tagRow.data('id'),
+                        IsConfirmed: $tagRow.data('confirmed')
+                    },
+                    success: function () {
+                        $tagRow.children('td')[0].innerHTML = $('#tagNameField').val();
+                    },
+                    error: function (jqXhr) {
+                        alert('Ошибка во время изменения');
+                        console.log(jqXhr);
+                    }
+                });
+            }
+        }).modal('show');
+    }
+    function showTagAddModal(ev) {
+        $('#tagModal .approve.button').html('Добавить');
+        $('#tagModal > .header').html('Добавление тега');
+
+        $('#tagModal').modal({
+            onApprove: function ($elem) {
+                $(ev).addClass('loading').addClass('disabled');
+
+                $.ajax({
+                    url: '/api/tags',
+                    type: 'post',
+                    data: {
+                        Name: $('#tagNameField').val()
+                    },
+                    success: function (data) {
+                        $('table.confirmed > tbody').prepend($.templates('#tagRowTmpl').render(data));
+                        $(ev).removeClass('loading').removeClass('disabled');
+                    },
+                    error: function (jqXhr) {
+                        alert('Ошибка во время добавления');
+                        console.log(jqXhr);
+                    }
+                });
+            }
+        }).modal('show');
+    }
+    function confirmTag(ev) {
+        var data = {
+            Id: $(ev).parents('tr').data('id'),
+            Name: $(ev).parents('tr').data('name'),
+            IsConfirmed: true
+        };
+        $.ajax({
+            url: '/api/tags',
+            type: 'put',
+            data: data,
+            success: function (resp) {
+                $(ev).parents('tr').remove();
+
+                var tagRowHtml = $.templates('#tagRowTmpl').render(data);
+                $('table.confirmed tbody').prepend(tagRowHtml);
+            },
+            error: function (jqXhr) {
+                alert('Ошибка сервера');
+                console.log(jqXhr);
+            }
+        });
+    }
+    function delTag(ev) {
+        $.ajax({
+            url: '/api/tags/' + $(ev).parents('tr').data('id'),
+            type: 'delete',
+            success: function () {
+                $(ev).parents('tr').remove();
+            },
+            error: function () {
+                alert('Ошибка во время удаления');
+            }
+        });
+    }
+    function initTags() {
+        $.ajax({
+            url: '@Url.Action("Tags")',
+            type: 'post',
+            success: function (resp) {
+                resp = JSON.parse(resp);
+                console.log(resp);
+                var confirmedHtml = $.templates('#tagRowTmpl').render(resp.data.Confirmed);
+                var notConfirmedHtml = $.templates('#tagRowTmpl').render(resp.data.NotConfirmed);
+
+                $('.tab[data-tab="TagConfirmed"] tbody').html(confirmedHtml);
+                $('.tab[data-tab="TagNotConfirmed"] tbody').html(notConfirmedHtml);
+                $('.tab[data-tab="TagConfirmed"]').removeClass('loading');
+                $('.tab[data-tab="TagNotConfirmed"]').removeClass('loading');
+            }
+        });
+    }
+    $(function () {
+        $('#moderPanelItem').addClass('active');
+        //Грузим таблицы с тегами
+        $('.ui.tabs .item').tab({
+            history: true,
+            historyType: 'hash'
+        });
+        initTags();
+    });
+</script>
+

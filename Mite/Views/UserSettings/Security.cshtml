@@ -1,0 +1,9 @@
+﻿@model Mite.ViewModels.SecureSettingsModel
+
+@{ 
+    var changePassModel = new Mite.Models.ChangePassModel();
+}
+<div class="ui basic segment">
+    <h3>Изменить пароль</h3>
+    @Html.Partial("_ChangePass", changePassModel)
+</div>

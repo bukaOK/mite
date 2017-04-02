@@ -1,0 +1,52 @@
+﻿
+@{
+    ViewBag.Title = "Главная";
+    Layout = null;
+}
+@section styles{
+    <style>
+        .pusher, body {
+            background-color: white !important;
+        }
+    </style>
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    @Styles.Render("~/Content/semantic")
+    @Styles.Render("~/Content/landing")
+</head>
+<body>
+    @Scripts.Render("~/bundles/main")
+    <div class="wrapper">
+        <article class="ui center aligned middle aligned grid">
+            <div class="content-wrap column">
+                <img src="~/Content/images/some-logo.png" class="ui centered logo image" />
+                <div class="ui basic segment">
+                    @Html.ActionLink("Зарегистрироваться", "Register", "Account", null, new { @class = "ui blue button" })
+                    <div class="ui horizontal inverted divider">Или</div>
+                    @Html.ActionLink("Войти", "Login", "Account", null, new { @class = "ui primary button" })
+                </div>
+            </div>
+        </article>
+        <footer>
+            <div class="ui two column grid container">
+                <div class="column">
+                    <div class="ui inverted horizontal link list">
+                        <a class="item">О нас</a>
+                        <a class="item">Помощь</a>
+                        <a class="item">Еще</a>
+                    </div>
+                </div>
+                <div class="right aligned column">
+                    <div class="ui inverted horizontal link list">
+                        <a class="item">Поддержать проект</a>
+                        <a href="/" class="item">&copy; Mite</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

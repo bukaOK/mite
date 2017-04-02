@@ -1,0 +1,232 @@
+﻿@using Mite.Constants
+@using Mite.Extensions
+@using Mite.Enums
+@using Microsoft.AspNet.Identity
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    @Styles.Render("~/Content/semantic", "~/Content/css")
+    @RenderSection("styles", false)
+    <title>@ViewBag.Title</title>
+</head>
+<body class="pushable">
+    @Scripts.Render("~/bundles/main", "~/bundles/site", "~/bundles/jsrender")
+    <script src="~/signalr/hubs"></script>
+    <script>
+        var notifyHub = $.connection.notifyHub
+        notifyHub.client.notifyUser = function (notification) {
+            var $popup = $('#notify-popup');
+
+            if ($popup.hasClass('initialized')) {
+                var data = JSON.parse(notification);
+                data.DateStr = ViewHelper.getPastTense(new Date(data.NotifyDate).getTime());
+                var label = $('#notifications-item > .label');
+                label[0].innerHTML++;
+                var tmpl = $.templates('#eventTmpl');
+                var html = tmpl.render(data);
+                if ($popup.hasClass('empty')) {
+                    $popup.html('<div class="ui feed">' + html + '</div>');
+                    $popup.removeClass('empty');
+                } else {
+                    $('#notify-popup > .feed').prepend(html);
+                }
+                $('#notifications-item').popup('reposition');
+                label.show();
+            }
+        }
+        window.hubReady = $.connection.hub.start();
+    </script>
+    @if (Request.IsAuthenticated)
+    {
+        using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { @class = "hidden", id = "logoff-form" }))
+        {
+            @Html.AntiForgeryToken()
+        }
+        <div class="ui right sidebar vertical borderless menu">
+            <div class="acc-header">
+                <img class="ui tiny circular side-avatar image" src="@User.GetClaimValue(ClaimConstants.AvatarSrc)">
+                <h3 class="ui center aligned header">@User.Identity.Name</h3>
+            </div>
+            @if (User.IsInRole("moder"))
+            {
+                @Html.ActionLink("Панель модератора", "Index", "Moder", null, new { id = "moderPanelItem", @class = "item" })
+            }
+            @if (User.IsInRole("admin"))
+            {
+                @Html.ActionLink("Панель администратора", "Index", "Admin", null, new { id = "adminPanelItem", @class = "item" })
+            }
+            <a href="/user/profile/@User.Identity.Name" class="item" id="userProfileItem">Моя страница</a>
+            <div class="ui add-work accordion item">
+                <div class="title">Добавить работу<i class="dropdown icon"></i></div>
+                <div class="content menu">
+                    <a href="@Url.Action("AddPost", "Posts")?postType=@PostTypes.Image.ToString().ToLower()" class="violet item"><i class="image icon"></i>Изображение</a>
+                    <a href="@Url.Action("AddPost", "Posts")?postType=@PostTypes.Document.ToString().ToLower()" class="violet item"><i class="file text outline icon"></i>Документ</a>
+                </div>
+            </div>
+            <a class="item" href="/user/profile/@User.Identity.Name#/followers">
+                Подписчики
+            </a>
+            <a class="item" id="notifications-item">
+                Уведомления
+                <div class="ui right violet label" style="display: none">
+                    0
+                </div>
+            </a>
+            <div class="ui popup" id="notify-popup" style="width: 400px; min-height: 50px;">
+                <div class="ui active loader" id="notify-loader"></div>
+            </div>
+            @Html.ActionLink("Настройки", "Index", "UserSettings", null, new { @class = "item", id = "userSettingsItem" })
+            <button class="ui red logoff fluid button" onclick="document.getElementById('logoff-form').submit()">
+                <i class="sign out icon"></i>
+                Выйти
+            </button>
+        </div>
+    }
+    <div class="pusher">
+        <header class="ui fixed borderless menu">
+            <div class="ui container">
+                <a href="#" class="header main item">
+                    <img class="logo" src="/Content/images/mite-logo-icon.png" alt="Логотип"/>
+                </a>
+                @Html.ActionLink("Главная", "Index", "Home", null, new { @class = "item" })
+                @if (Request.IsAuthenticated)
+                {
+                    <div class="right menu">
+                        <a class="item menu-btn"><i class="list layout icon"></i>Меню</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="right menu">
+                        <div class="item">
+                            @Html.ActionLink("Вход", "Login", "Account", null, new { @class = "ui button primary", Id = "login-btn" })
+                        </div>
+                        <div class="item">
+                            @Html.ActionLink("Регистрация", "Register", "Account", null, new { @class = "ui blue button", Id = "reg-btn" })
+                        </div>
+                    </div>
+                }
+            </div>
+        </header>
+        <article class="ui container">
+            @RenderBody()
+        </article>
+        <footer>
+            <div class="ui two column grid container">
+                <div class="column">
+                    <div class="ui inverted horizontal link list">
+                        <a class="item">О нас</a>
+                        <a class="item">Помощь</a>
+                        <a class="item">Еще</a>
+                    </div>
+                </div>
+                <div class="right aligned column">
+                    <div class="ui inverted horizontal link list">
+                        <a class="item">Поддержать проект</a>
+                        <a href="/" class="item">&copy; Mite</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <script id="eventTmpl" type="text/x-jsrender">
+        <div class="event">
+            <div class="label">
+                <img src="{{:NotifyUser.AvatarSrc}}">
+            </div>
+            <div class="content">
+                <div class="summary">
+                    {{:Content}}
+                    <div class="date">
+                        {{:DateStr}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+    
+    <script>
+        function loadNotificationsCount() {
+            $.ajax({
+                url: '/api/notification',
+                type: 'delete',
+                success: function (resp) {
+                    if (+resp > 0) {
+                        $('#notifications-item .label').html(resp).show();
+                    }
+                },
+                error: function (jqXhr) {
+                    console.log(jqXhr);
+                }
+            });
+        }
+        function readNotifications() {
+            $.ajax({
+                url: '/api/notification',
+                type: 'put'
+            });
+        }
+        function initNotifications() {
+            var $popup = $('#notify-popup');
+
+            $.ajax({
+                url: '/api/notification/',
+                type: 'get',
+                success: function (resp) {
+                    if (resp.length > 0) {
+                        resp.forEach(function (item) {
+                            item.DateStr = ViewHelper.getPastTense(new Date(item.NotifyDate).getTime());
+                        });
+                        //Рендерим уведомления
+                        var html = '<div class="ui feed">' + $.templates('{{for tmpl="#eventTmpl" /}}').render(resp) + '</div>';
+                        $popup.html(html);
+                        $(item).popup('reposition');
+                        console.log(resp);
+                    } else {
+                        $popup.addClass('empty');
+                        $popup.html('У вас пока нет новых уведомлений.');
+                    }
+                }
+            }).then(function () {
+                $popup.addClass('initialized');
+            });
+
+            $('#notifications-item').popup({
+                position: 'left center',
+                on: 'click',
+                popup: '#notify-popup',
+                inline: true,
+                variation: 'basic',
+                onShow: function (item) {
+                    $(item).addClass('active');
+                    readNotifications();
+                },
+                onHide: function (item) {
+                    $(item).removeClass('active');
+                    this.addClass('empty');
+                    this.html('У вас пока нет новых уведомлений.');
+                    //Обнуляем и скрываем счетчик уведомлений
+                    $(item).children('.label').html(0).hide();
+                }
+            });
+        }
+        $(function () {
+            loadNotificationsCount();
+            $(".ui.sidebar").sidebar({
+                onShow: function () {
+                    $(this).css('z-index', '200');
+                },
+                onHide: function () {
+                    $(this).css('z-index', '1');
+                }
+            });
+            $(".ui.sidebar").sidebar("attach events", ".menu-btn");
+            $(".ui.accordion").accordion();
+            initNotifications();
+            $('#notify-popup').perfectScrollbar();
+        });
+    </script>
+</body>
+</html>

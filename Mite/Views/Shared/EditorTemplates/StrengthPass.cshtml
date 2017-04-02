@@ -1,0 +1,22 @@
+﻿@model string
+
+@if (ViewData["InputIcon"] != null)
+{
+    var iconClass = "icon " + ViewData["InputIcon"];
+    <div class="field">
+        <label style="display: none">@Html.DisplayName("")</label>
+        <div class="ui left icon input">
+            <i class="@iconClass"></i>
+            @Html.Password("", null, new {placeholder = Html.DisplayName("")})
+        </div>
+        <div class="ui pointing label" style="display: none" id="pass-strength"></div>
+    </div>
+}
+else
+{
+    <div class="field">
+        <label style="display: none">@Html.DisplayName("")</label>
+        @Html.Password("", null, new {placeholder = Html.DisplayName("")})
+        <div class="ui pointing label" style="display: none" id="pass-strength"></div>
+    </div>
+}

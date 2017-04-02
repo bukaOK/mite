@@ -1,0 +1,37 @@
+﻿@{
+    ViewBag.Title = "Настройки";
+}
+<div class="ui segment">
+    <h2 class="ui dividing header">
+        Настройки
+    </h2>
+    <nav class="ui stackable pointing secondary tabs menu" style="border: none">
+        <a class="active item" data-tab="profile">Профиль</a>
+        <a class="item" data-tab="changeavatar">Изменить аватар</a>
+        <a class="item" data-tab="security">Безопасность</a>
+    </nav>
+    <div class="ui tab" data-tab="profile">
+        @Html.Action("UserProfile")
+    </div>
+    <div class="ui tab" data-tab="changeavatar">
+        @Html.Action("ChangeAvatar")
+    </div>
+    <div class="ui tab" data-tab="security">
+        <div class="ui basic segment grid">
+            <div class="six wide column">
+                @Html.Partial("_ChangePass", new Mite.Models.ChangePassModel())
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery.address.js"></script>
+<script>
+    $(function () {
+            $('#userSettingsItem').addClass('active');
+            $('.ui.tabs.menu .item')
+                .tab({
+                    history: true,
+                    historyType: 'hash'
+                });
+        });
+</script>

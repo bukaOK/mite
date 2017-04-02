@@ -1,0 +1,163 @@
+﻿@using Mite.Core
+@using Mite.Extensions
+@model Mite.Models.RegisterModel
+
+@{
+    ViewBag.Title = "Регистрация";
+}
+<script src="~/Scripts/password-strength.js"></script>
+<script>
+
+    function isEmailExist(email) {
+        var emailData = "email=" + email;
+        return $.post("/Account/IsEmailExist", emailData);
+    }
+    function isUserNameExist(userName) {
+        var userNameData = "userName=" + userName;
+        return $.post("/Account/IsUserNameExist", userNameData);
+    }
+    function sendForm() {
+        $.ajax({
+            type: "post",
+            data: $("form").serialize(),
+            success: function(data) {
+                console.log(data);
+            }
+        });
+
+    }
+    $.fn.form.settings.rules.isUnique = function (value, existingField) {
+        if (value == "" || value == null)
+            return;
+        $.ajax({
+            async: false,
+            method: "post",
+            url: "/Account/Is" + existingField + "Exist",
+            data: {
+                value: value
+            },
+            success: function(resp) {
+                console.log(resp);
+
+                switch (resp) {
+                case "True":
+                    return false;
+                case "False":
+                    return true;
+                default:
+                    return false;
+                }
+            }
+        });
+    };
+    $(function () {
+            $('.ui.dropdown').dropdown();
+            $(".ui.form").form({
+                on: "submit",
+                fields: {
+                    UserName: {
+                        rules: [
+                            {
+                                type: "empty",
+                                prompt: $("#UserName").data("valRequired")
+                            },
+                            {
+                                type: "regExp",
+                                value: $("#UserName").data("valRegexPattern"),
+                                prompt: $("#UserName").data("valRegex")
+                            }
+                        ]
+                    },
+                    Email: {
+                        rules: [
+                            {
+                                type: "empty",
+                                prompt: $("#Email").data("valRequired")
+                            },
+                            {
+                                type: "email",
+                                prompt: "Введите правильный e-mail"
+                            }
+                        ]
+                    },
+                    Password: {
+                        rules: [
+                            {
+                                type: "empty",
+                                prompt: $("#Password").data("valRequired")
+                            },
+                            {
+                                type: "length[6]",
+                                prompt: "Минимальная длина пароля - 6 символов"
+                            }
+                        ]
+                    },
+                    ConfirmPassword: {
+                        depends: "Password",
+                        rules: [
+                            {
+                                type: "empty",
+                                prompt: $("#ConfirmPassword").data("valRequired")
+                            },
+                            {
+                                type: "match[Password]",
+                                prompt: $("#ConfirmPassword").data("valEqualto")
+
+                            }
+                        ]
+                    }
+                },
+                onSuccess: function (event, data) {
+                    console.log(event);
+                    console.log(data);
+                    $.when(isEmailExist(data.Email), isUserNameExist(data.UserName))
+                        .done(function(email, userName) {
+                            if (!(email[0] === "False" && userName[0] === "False")) {
+                                $(".ui.message.error").show();
+                                $(".ui.message.error").html("<ul class=\"list\"></ul>");
+                                if (email[0] !== "False") {
+                                    console.log(email);
+                                    $(".ui.message.error")
+                                        .children("ul.list")
+                                        .append("<li>Данный Email уже существует</li>");
+                                }
+                                if (userName[0] !== "False") {
+                                    console.log(userName);
+                                    $(".ui.message.error")
+                                        .children("ul.list")
+                                        .append("<li>Данный Ник уже существует</li>");
+                                }
+                                $(".ui.message.error").show();
+                                return false;
+                            } else {
+                                sendForm();
+                            }
+                        });
+                    return false;
+                }
+            });
+            initPassStrength('#Password');
+        });
+</script>
+<div class="ui middle aligned center aligned grid">
+        @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "ui six wide column left aligned register form" }))
+        {
+            <h2 class="ui blue header">
+                <i class="checkmark icon"></i>
+                <span class="content">Регистрация</span>
+            </h2>
+            <div class="ui top attached segment">
+                @Html.EditorFor(x => x.UserName, new { InputIcon = "hashtag"})
+                @Html.EditorFor(x => x.Email, new { InputIcon = "at" })
+                @Html.EditorFor(x => x.Password, new { InputIcon = "lock" })
+                <div class="ui message" style="display: none" id="pass-strength"></div>
+                @Html.EditorFor(x => x.ConfirmPassword, new {InputIcon = "mail forward" })
+                @Html.AntiForgeryToken()
+                <button type="submit" class="ui animated blue button">
+                    <span class="visible content">Зарегистрироваться</span>
+                    <span class="hidden content"><i class="checkmark icon"></i></span>
+                </button>
+            </div>
+            @Html.ValidationSum()
+        }
+</div>
