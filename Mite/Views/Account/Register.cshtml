@@ -7,7 +7,6 @@
 }
 <script src="~/Scripts/password-strength.js"></script>
 <script>
-
     function isEmailExist(email) {
         var emailData = "email=" + email;
         return $.post("/Account/IsEmailExist", emailData);
@@ -140,7 +139,7 @@
         });
 </script>
 <div class="ui middle aligned center aligned grid">
-        @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "ui six wide column left aligned register form" }))
+        @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "ui sixteen wide mobile eight wide tablet six wide computer column left aligned register form" }))
         {
             <h2 class="ui blue header">
                 <i class="checkmark icon"></i>

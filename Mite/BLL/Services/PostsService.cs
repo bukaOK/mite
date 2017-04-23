@@ -26,7 +26,7 @@ namespace Mite.BLL.Services
         /// <param name="postId"></param>
         /// <returns></returns>
         Task<PostModel> GetWithTagsUserAsync(Guid postId);
-        Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userId, SortFilter sort, DateTime userTime, PostTypes type);
+        Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userId, SortFilter sort, PostTypes type);
         /// <summary>
         /// Добавляем к посту один просмотр
         /// </summary>
@@ -142,7 +142,7 @@ namespace Mite.BLL.Services
             return postModel;
         }
 
-        public async Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userId, SortFilter sort, DateTime userTime, PostTypes type)
+        public async Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userId, SortFilter sort, PostTypes type)
         {
             IEnumerable<Post> posts;
             if (type == PostTypes.Drafts)

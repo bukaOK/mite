@@ -33,12 +33,6 @@ namespace Mite.Controllers
         {
             return View();
         }
-        [HttpGet]
-        public ActionResult ChangeAvatar()
-        {
-            return PartialView();
-        }
-
         [HttpPost]
         public async Task<JsonResult> ChangeAvatar(string base64Str)
         {
@@ -114,6 +108,25 @@ namespace Mite.Controllers
             var code = await _userManager.GenerateChangePhoneNumberTokenAsync(User.Identity.GetUserId(), num);
             var msg = "Ваш код подтверждения: " + code;
             await _userManager.SendSmsAsync(User.Identity.GetUserId(), msg);
+        }
+        public async Task<PartialViewResult> ConfirmEmail()
+        {
+            var model = new EmailSettingsModel
+            {
+                Email = await _userManager.GetEmailAsync(User.Identity.GetUserId()),
+                Confirmed = await _userManager.IsEmailConfirmedAsync(User.Identity.GetUserId())
+            };
+            return PartialView(model);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task SendEmailConfirmation()
+        {
+            var userId = User.Identity.GetUserId();
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(userId);
+            var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = userId, code = code }, "http");
+
+            await _userManager.SendEmailAsync(userId, "MiteGroup.Подтверждение почты.", "Для подтверждения вашего аккаунта перейдите по <a href=\"" + callbackUrl + "\">ссылке.</a> MiteGroup.");
         }
     }
 }

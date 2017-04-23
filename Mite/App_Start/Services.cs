@@ -9,17 +9,14 @@ namespace Mite
     {
         public Task SendAsync(IdentityMessage message)
         {
-            var from = "ponchitos16@gmail.com";
-            var pass = "Evd$utTC";
-
-            var client = new SmtpClient("smtp.gmail.com", 587)
+            var from = "dispatch@mitegroup.ru";
+            var to = message.Destination;
+            var client = new SmtpClient("localhost", 25)
             {
                 DeliveryMethod = SmtpDeliveryMethod.Network,
-                EnableSsl = true,
-                Credentials = new NetworkCredential(from, pass),
-                UseDefaultCredentials = false
+                UseDefaultCredentials = true,
             };
-            var mail = new MailMessage(from, message.Destination)
+            var mail = new MailMessage(from, to)
             {
                 Subject = message.Subject,
                 Body = message.Body,

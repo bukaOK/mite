@@ -14,12 +14,15 @@
         @Html.Action("UserProfile")
     </div>
     <div class="ui tab" data-tab="changeavatar">
-        @Html.Action("ChangeAvatar")
+        @Html.Partial("ChangeAvatar")
     </div>
     <div class="ui tab" data-tab="security">
         <div class="ui basic segment grid">
             <div class="six wide column">
                 @Html.Partial("_ChangePass", new Mite.Models.ChangePassModel())
+            </div>
+            <div class="six wide column">
+                @Html.Action("ConfirmEmail", "UserSettings")
             </div>
         </div>
     </div>

@@ -6,7 +6,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="apple-touch-icon" sizes="57x57" href="~/Content/icons/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="~/Content/icons/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="~/Content/icons/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="~/Content/icons/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="~/Content/icons/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="~/Content/icons/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="~/Content/icons/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="~/Content/icons/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="~/Content/icons/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="~/Content/icons/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="~/Content/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="~/Content/icons/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="~/Content/icons/favicon-16x16.png">
+    <meta name="msapplication-TileColor" content="#b540c6">
+    <meta name="msapplication-TileImage" content="~/Content/icons/ms-icon-144x144.png">
+    <meta name="theme-color" content="#b540c6">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     @Styles.Render("~/Content/semantic", "~/Content/css")
     @RenderSection("styles", false)
     <title>@ViewBag.Title</title>
@@ -14,7 +31,9 @@
 <body class="pushable">
     @Scripts.Render("~/bundles/main", "~/bundles/site", "~/bundles/jsrender")
     <script src="~/signalr/hubs"></script>
-    <script>
+    @if (User.Identity.IsAuthenticated)
+    {
+        <script>
         var notifyHub = $.connection.notifyHub
         notifyHub.client.notifyUser = function (notification) {
             var $popup = $('#notify-popup');
@@ -37,13 +56,10 @@
             }
         }
         window.hubReady = $.connection.hub.start();
-    </script>
+        </script>
+    }
     @if (Request.IsAuthenticated)
     {
-        using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { @class = "hidden", id = "logoff-form" }))
-        {
-            @Html.AntiForgeryToken()
-        }
         <div class="ui right sidebar vertical borderless menu">
             <div class="acc-header">
                 <img class="ui tiny circular side-avatar image" src="@User.GetClaimValue(ClaimConstants.AvatarSrc)">
@@ -65,9 +81,6 @@
                     <a href="@Url.Action("AddPost", "Posts")?postType=@PostTypes.Document.ToString().ToLower()" class="violet item"><i class="file text outline icon"></i>Документ</a>
                 </div>
             </div>
-            <a class="item" href="/user/profile/@User.Identity.Name#/followers">
-                Подписчики
-            </a>
             <a class="item" id="notifications-item">
                 Уведомления
                 <div class="ui right violet label" style="display: none">
@@ -78,10 +91,14 @@
                 <div class="ui active loader" id="notify-loader"></div>
             </div>
             @Html.ActionLink("Настройки", "Index", "UserSettings", null, new { @class = "item", id = "userSettingsItem" })
-            <button class="ui red logoff fluid button" onclick="document.getElementById('logoff-form').submit()">
-                <i class="sign out icon"></i>
-                Выйти
-            </button>
+            @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { @class = "hidden", id = "logoff-form" }))
+            {
+                <button type="submit" class="ui red logoff fluid button">
+                    <i class="sign out icon"></i>
+                    Выйти
+                </button>
+                @Html.AntiForgeryToken()
+            }
         </div>
     }
     <div class="pusher">

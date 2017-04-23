@@ -12,6 +12,7 @@ namespace Mite.Models
         [Required]
         [UIHint("TextBox")]
         [DisplayName("Старый пароль")]
+        [DataType(DataType.Password)]
         public string OldPass { get; set; }
         [Required]
         [UIHint("StrengthPass")]

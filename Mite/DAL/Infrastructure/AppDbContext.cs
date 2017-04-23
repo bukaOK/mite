@@ -16,11 +16,7 @@ namespace Mite.DAL.Infrastructure
         public DbSet<Notification> Notifications { get; set; }
 
         public AppDbContext()
-#if DEBUG
             : base("DefaultConnection")
-#else
-            : base("ReleaseConnection")
-#endif
         {
         }
         protected override void OnModelCreating(DbModelBuilder modelBuilder)

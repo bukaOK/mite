@@ -10,6 +10,7 @@ namespace Mite.Models
         [Required]
         [Display(Name = "Заголовок")]
         public string Header { get; set; }
+        [Required]
         public string Content { get; set; }
         public string Description { get; set; }
         public byte PostType { get; set; }

@@ -16,6 +16,7 @@ namespace Mite.Models
         [DataType("text", ErrorMessage = "Неверный E-mail")]
         [DisplayName("E-mail")]
         [UIHint("TextBox")]
+        [EmailAddress]
         public string Email { get; set; }
         [Required]
         [DataType("password")]

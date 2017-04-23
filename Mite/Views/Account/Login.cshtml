@@ -4,8 +4,39 @@
 @{
     ViewBag.Title = "Вход";
 }
+<div class="ui middle aligned center aligned grid">
+        @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "ui six wide column login form" }))
+        {
+            <h2 class="ui violet header">
+                <i class="sign in icon"></i>
+                <span class="content">Вход</span>
+            </h2>
+            <div class="ui left aligned top attached raised segment">
+                @Html.EditorFor(x => x.UserName, new { InputIcon = "hashtag" })
+                @Html.EditorFor(x => x.Password, new { InputIcon = "lock"})
+                @Html.EditorFor(x => x.Remember)
+                @Html.AntiForgeryToken()
+                <button type="submit" class="ui animated primary button">
+                    <span class="visible content">Войти</span>
+                    <span class="hidden content"><i class="sign in icon"></i></span>
+                </button>
+                <a id="forgotPassBtn" style="cursor: pointer">Забыли пароль?</a>
+            </div>
+            @Html.ValidationSum();
+        }
+    
+</div>
+<div class="ui small modal" id="forgotPassModal">
+    <i class="close icon"></i>
+    <div class="header">
+        Восстановление пароля
+    </div>
+    <div class="content">
+        @Html.Partial("ForgotPassword", new Mite.Models.ForgotPassModel())
+    </div>
+</div>
 <script>
-    $(document).ready(function () {
+    $(function () {
         $(".ui.form").form({
             on: "submit",
             fields: {
@@ -27,33 +58,9 @@
                 }
             }
         });
-    });
-</script>
-<div class="ui middle aligned center aligned grid">
-        @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "ui six wide column login form" }))
-        {
-            <h2 class="ui violet header">
-                <i class="sign in icon"></i>
-                <span class="content">Вход</span>
-            </h2>
-            <div class="ui left aligned top attached raised segment">
-                @Html.EditorFor(x => x.UserName, new { InputIcon = "hashtag" })
-                @Html.EditorFor(x => x.Password, new { InputIcon = "lock"})
-                @Html.EditorFor(x => x.Remember)
-                @Html.AntiForgeryToken()
-                <button type="submit" class="ui animated primary button">
-                    <span class="visible content">Войти</span>
-                    <span class="hidden content"><i class="sign in icon"></i></span>
-                </button>
-            </div>
-            @Html.ValidationSum();
-        }
-    
-</div>
-<script>
-    $(document).ready(function () {
         $(".checkbox").checkbox();
-    })
+        $('#forgotPassModal').modal('attach events', '#forgotPassBtn', 'show');
+    });
 </script>
 
 

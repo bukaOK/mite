@@ -62,17 +62,14 @@ namespace Mite.Controllers
             }
             return JsonResponse(JsonResponseStatuses.Success, userModels);
         }
-        public async Task<JsonResult> Posts(string userId, SortFilter sort, DateTime userTime, PostTypes? type)
+        public async Task<JsonResult> Posts(string userId, SortFilter sort, PostTypes? type)
         {
             IEnumerable<ProfilePostModel> posts;
-            if(type == null)
-            {
-                posts = await _postsService.GetByUserAsync(userId, sort, userTime, PostTypes.Published);
-            }
-            else
-            {
-                posts = await _postsService.GetByUserAsync(userId, sort, userTime, (PostTypes)type);
-            }
+            if (userId != User.Identity.GetUserId() && type == PostTypes.Drafts)
+                return null;
+            if (type == null)
+                type = PostTypes.Published;
+            posts = await _postsService.GetByUserAsync(userId, sort, (PostTypes)type);
             return JsonResponse(JsonResponseStatuses.Success, posts);
         }
         public async Task<JsonResult> Followings(string userId, SortFilter sort)

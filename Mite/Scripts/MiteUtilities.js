@@ -9,7 +9,6 @@
         $(itemsSelector + '[data-tab]').click(function (ev) {
             //Если у таба есть потомки, показываем содержимое
             if (!self._haveChildren(this)) {
-                
                 self.loadTab(this);
             } else {
                 //Т.к. мы загружаем потомков, текущий таб также следует сделать активным
@@ -23,21 +22,27 @@
         return self;
     },
     initFirstTab: function(){
-        var tabName = window.location.hash.replace('#/', '').replace('#', '');
-        if (tabName === '') {
-            var activeItems = $('.active' + this.items.selector + '[data-tab]'),
-                currentItem = activeItems[activeItems.length - 1];
-            this.loadTab(currentItem);
-        } else {
-            var currentItem = $(this.items.selector + '[data-tab="' + tabName + '"]')[0];
-
-            console.log(this.tabContent.selector + '[data-tab="' + tabName + '"]');
-            if (this._haveChildren(currentItem)) {
-                //Внутри таба родителя находим активные табы
-                currentItem = $(this.tabContent.selector + ' .active' + this.items.selector)[0];
-            }
-            this.loadTab(currentItem);
+        var tabName = this.getCurrentTabName();
+        var currentItem = $(this.items.selector + '[data-tab="' + tabName + '"]')[0];
+        //console.log(this.tabContent.selector + '[data-tab="' + tabName + '"]');
+        if (this._haveChildren(currentItem)) {
+            //Внутри таба родителя находим активные табы
+            currentItem = $(this.tabContent.selector + ' .active' + this.items.selector)[0];
         }
+        this.loadTab(currentItem);
+    },
+    getCurrentTabName: function () {
+        if (window.location.hash !== '') {
+            var tabName = window.location.hash;
+            tabName = tabName.substr(1, tabName.length - 1);
+            if (tabName[0] == '/') {
+
+            }
+            return tabName;
+        }
+        var $activeTabs = $(this.items.wrapperSelector + '>.active' + this.items.selector);
+        var count = $activeTabs.length;
+        return $activeTabs[$activeTabs.length - 1].dataset['tab'];
     },
     tabContent: {
         selector: '.tab',
@@ -59,17 +64,17 @@
     },
     path: window.location.pathname,
     loadTab: function (item) {
-        var jItem = $(item),
-            dataUrl = jItem.data('url'),
-            dataTab = jItem.data('tab'),
-            ajaxData = jItem.data('ajax'),
+        var $item = $(item),
+            dataUrl = $item.data('url'),
+            dataTab = $item.data('tab'),
+            ajaxData = $item.data('ajax'),
             self = this,
             tabContent = $(this.tabContent.selector + '[data-tab="' + dataTab + '"]'),
             itemUrl = this.path;
 
         //Удаляем активный класс у соседей
-        jItem.siblings(this.items.selector).removeClass('active');
-        jItem.addClass('active');
+        $item.siblings(this.items.selector).removeClass('active');
+        $item.addClass('active');
 
         $(this.tabContent.selector + '[data-tab]').css('display', 'none');
         tabContent.parents(self.tabContent.selector).css('display', this.tabContent.display);
@@ -80,7 +85,7 @@
         } else {
             itemUrl += dataTab[0] === '/' ? dataTab : '/' + dataTab;
         }
-        window.location.hash = dataTab[0] === '/' ? dataTab : '/' + dataTab;
+        window.location.hash = dataTab[0] !== '/' ? dataTab : dataTab.substr(1, dataTab.length - 1);
         
         this.ajaxSettings.url = itemUrl;
         this.ajaxSettings.data = this.ajaxSettings.dynamicData();

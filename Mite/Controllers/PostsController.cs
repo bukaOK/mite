@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using AutoMapper;
 using System.Net;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace Mite.Controllers
 {
@@ -56,7 +57,6 @@ namespace Mite.Controllers
             await _postsService.AddViews(postId);
             return View(post);
         }
-        [HttpGet]
         public ActionResult AddPost(PostTypes postType)
         {
             ViewBag.Title = "Добавление работы";
@@ -71,8 +71,6 @@ namespace Mite.Controllers
             }
             return new HttpNotFoundResult();
         }
-
-        [HttpGet]
         public async Task<ActionResult> EditPost(string id)
         {
             Guid postId;
@@ -200,6 +198,19 @@ namespace Mite.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
             }
+        }
+        public async Task<JsonResult> UserPosts(string userId, SortFilter sort, PostTypes? type)
+        {
+            IEnumerable<ProfilePostModel> posts = new List<ProfilePostModel>();
+            if (type == null || type == PostTypes.Published)
+            {
+                posts = await _postsService.GetByUserAsync(userId, sort, PostTypes.Published);
+            }
+            else if(User.Identity.GetUserId() == userId)
+            {
+                posts = await _postsService.GetByUserAsync(userId, sort, PostTypes.Drafts);
+            }
+            return JsonResponse(JsonResponseStatuses.Success, posts);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿#define DEBUG
+
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -58,7 +60,6 @@ namespace Mite.Controllers
                     ModelState.AddModelError("SignInFail", "Неверная пара логин/пароль");
                     return View(model);
             }
-            
         }
 
         [HttpGet]
@@ -89,18 +90,42 @@ namespace Mite.Controllers
             if (result.Succeeded)
             {
                 //Отправляем e-mail для подтверждения адреса эл. почты
-                //var user = await _userManager.FindByNameAsync(model.UserName);
-                //string code = await _userManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                //var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code });
+                var user = await _userManager.FindByNameAsync(model.UserName);
+                string code = await _userManager.GenerateEmailConfirmationTokenAsync(user.Id);
+                var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code });
 
-                //await _userManager.SendEmailAsync(user.Id, "Подтверждение пароля", "Подтверждаем свой аккаунт. <a href=\"" + callbackUrl + "\">Жмак.</a>");
+                await _userManager.SendEmailAsync(user.Id, "Подтверждение пароля", "Подтверждаем свой аккаунт. <a href=\"" + callbackUrl + "\">Жмак.</a>");
                 return RedirectToAction("Index", "Home");
             }
             AddErrors(result.Errors);
             //Если что то пошло не так, отображаем форму заново(вместе с ошибками)
             return View(model);
         }
-        
+        /// <summary>
+        /// Восстановление пароля
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ForgotPassword(ForgotPassModel model)
+        {
+            if (!ModelState.IsValid)
+                return JsonResponse(JsonResponseStatuses.ValidationError, "Неправильный e-mail");
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if(user == null)
+                return JsonResponse(JsonResponseStatuses.ValidationError, "Пользователя с таким e-mail не существует");
+
+            if (!_userManager.IsEmailConfirmed(user.Id))
+                return JsonResponse(JsonResponseStatuses.ValidationError, "Ваш e-mail не подтвержден");
+
+            var code = await _userManager.GeneratePasswordResetTokenAsync(user.Id);
+            var callbackUrl = Url.Action("ResetPassword", "Account", new { email = user.Email, code = code }, Request.Url.Scheme);
+            var msg = $"Для восстановления пароля перейдите по ссылке -> <a href=\"{callbackUrl}\">жмак</a>";
+            await _userManager.SendEmailAsync(user.Id, "Восстановление пароля", msg);
+            return JsonResponse(JsonResponseStatuses.Success, "На ваш почтовый ящик отправлено сообщение с ссылкой для восстановления");
+        }
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult LogOff()
@@ -125,12 +150,13 @@ namespace Mite.Controllers
             var user = await _userManager.FindByNameAsync(userName);
             return user != null;
         }
-        public async Task<HttpStatusCodeResult> ConfirmEmail(string userId, string code)
+        public async Task<RedirectResult> ConfirmEmail(string userId, string code)
         {
             var result = await _userManager.ConfirmEmailAsync(userId, code);
             if (result.Succeeded)
-                return Ok();
-            return InternalServerError();
+                return Redirect("http://mitegroup.ru/user/settings#/security");
+            else
+                return Redirect("http://mitegroup.ru/user/settings#/security");
         }
         public ActionResult ResetPassword(string code, string userId)
         {

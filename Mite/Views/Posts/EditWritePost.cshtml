@@ -151,7 +151,12 @@
                     $('.ct-ignition__button--edit').css('background', '#e74c3c');
                     return false;
                 }
-                var content = ev.detail().regions.Content
+                var content = ev.detail().regions.Content;
+                if (content == '' || content == null || content == undefined) {
+                    alert('Контент не может быть пустым!');
+                    $('.ct-ignition__button--edit').css('background', '#e74c3c');
+                    return false;
+                }
                 this.busy(true);
                 $.ajax({
                     data: {

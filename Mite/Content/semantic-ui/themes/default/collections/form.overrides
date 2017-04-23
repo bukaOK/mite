@@ -1,6 +1,0 @@
-/*******************************
-         Theme Overrides
-*******************************/
-input[type="text"]:focus{
-    box-shadow: inset 0 0 0 2px #b540c6;
-}
