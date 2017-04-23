@@ -19,6 +19,7 @@
     <table class="ui celled table confirmed">
         <thead>
             <tr>
+                <th>Id</th>
                 <th>Название</th>
                 <th>Действие</th>
             </tr>
@@ -30,6 +31,7 @@
     <table class="ui celled table not-confirmed">
         <thead>
             <tr>
+                <th>Id</th>
                 <th>Название</th>
                 <th>Действие</th>
             </tr>
@@ -39,10 +41,12 @@
 </div>
 <script id="tagRowTmpl" type="text/x-jsrender">
     <tr data-id="{{:Id}}" data-name="{{:Name}}" data-confirmed="{{:IsConfirmed}}">
+        <td>{{:Id}}</td>
         <td>{{:Name}}</td>
         <td>
             {{if !IsConfirmed}}
             <button class="ui tag-confirm primary button" onclick="confirmTag(this)">Подтвердить</button>
+            <button class="ui blue button" onclick="showTagBindModal('{{:Id}}')">Привязать к другому</button>
             {{/if}}
             <button class="ui tag-change button" onclick="showTagChangeModal(this)">Изменить</button>
             <button class="ui tag-del red button" onclick="delTag(this)">Удалить</button>
@@ -61,6 +65,27 @@
     <div class="actions">
         <div class="ui approve green button">Изменить</div>
         <div class="ui cancel red button">Отмена</div>
+    </div>
+</div>
+<div class="ui small modal" id="tagBindModal">
+    <i class="close icon"></i>
+    <div class="header">Привязка тегов</div>
+    <div class="content">
+        <form class="ui form">
+            <div class="two fields">
+                <div class="field">
+                    <label>Id старого тега</label>
+                    <input type="text" id="oldTagBind" />
+                </div>
+                <div class="field">
+                    <label>Id нового тега</label>
+                    <input type="text" id="newTagBind" />
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="actions">
+        <button class="ui primary button" onclick="bindTag($('#oldTagBind').val(), $('#newTagBind').val())">Привязать</button>
     </div>
 </div>
 <script>
@@ -90,6 +115,31 @@
                 });
             }
         }).modal('show');
+    }
+    function showTagBindModal(oldTagId) {
+        $('#oldTagBind').val(oldTagId);
+        $('#tagBindModal').modal('show');
+    }
+    function bindTag(oldId, newId) {
+        if (oldId == '' || newId == '') {
+            alert('Поля не могут быть пустыми');
+            return;
+        }
+        $.ajax({
+            url: '@Url.Action("BindTag", "Moder")',
+            data: {
+                fromId: oldId,
+                toId: newId
+            },
+            type: 'post',
+            success: function () {
+                alert('Привязка успешна');
+                $('tr[data-id="' + oldId + '"]')[0].remove();
+            },
+            error: function (jqXhr) {
+                alert('Ошибка сервера');
+            }
+        })
     }
     function showTagAddModal(ev) {
         $('#tagModal .approve.button').html('Добавить');

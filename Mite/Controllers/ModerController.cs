@@ -4,6 +4,7 @@ using Mite.DAL.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
@@ -31,6 +32,11 @@ namespace Mite.Controllers
                 Confirmed = tags.Where(x => x.IsConfirmed),
                 NotConfirmed = tags.Where(x => !x.IsConfirmed)
             });
+        }
+        [HttpPost]
+        public Task BindTag(Guid fromId, Guid toId)
+        {
+            return _unitOfWork.TagsRepository.ChangeAsync(fromId, toId);
         }
     }
 }

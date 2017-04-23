@@ -13,16 +13,15 @@ namespace Mite.Models
         [UIHint("TextBox")]
         public string UserName { get; set; }
         [Required]
-        [DataType("text", ErrorMessage = "Неверный E-mail")]
+        [EmailAddress]
+        [DataType("text")]
         [DisplayName("E-mail")]
         [UIHint("TextBox")]
-        [EmailAddress]
         public string Email { get; set; }
         [Required]
         [DataType("password")]
         [DisplayName("Пароль")]
         [UIHint("StrengthPass")]
-        [MaxLength(100, ErrorMessage = "Слишком длинный пароль")]
         [MinLength(6, ErrorMessage = "Слишком короткий пароль")]
         public string Password { get; set; }
         [Required]

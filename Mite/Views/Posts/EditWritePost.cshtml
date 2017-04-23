@@ -93,19 +93,11 @@
                         }
                     ]
                 },
-                Content: {
-                    rules: [
-                        {
-                            type: 'empty',
-                            prompt: $('#Content').data('valRequired')
-                        }
-                    ]
-                },
                 Description: {
                     rules: [
                         {
                             type: 'maxLength[' + $('#Description').data('val-maxlength-max') + ']',
-                            prompth: $('#Description').data('val-maxlength')
+                            prompt: $('#Description').data('val-maxlength')
                         }
                     ]
                 }
@@ -154,7 +146,6 @@
                 var content = ev.detail().regions.Content;
                 if (content == '' || content == null || content == undefined) {
                     alert('Контент не может быть пустым!');
-                    $('.ct-ignition__button--edit').css('background', '#e74c3c');
                     return false;
                 }
                 this.busy(true);

@@ -23,7 +23,16 @@ namespace Mite.DAL.Repositories
             
             return Db.QueryAsync<Tag>("select * from dbo.Tags where Name like @name", name);
         }
-
+        /// <summary>
+        /// Меняем один тег на другой(если например имя старого тега неправильно записано)
+        /// </summary>
+        /// <returns></returns>
+        public Task ChangeAsync(Guid oldTagId, Guid newTagId)
+        {
+            var query = "update dbo.TagPosts set Tag_Id = @newTagId where Tag_Id = @oldTagId; "
+                + "delete from dbo.Tags where Id=@oldTagId";
+            return Db.ExecuteAsync(query, new { oldTagId, newTagId });
+        }
         public async override Task AddAsync(Tag entity)
         {
             var sameTags = await Db.QueryAsync<Tag>("select top 1 * from dbo.Tags where Name=@Name", new { Name = entity.Name });
