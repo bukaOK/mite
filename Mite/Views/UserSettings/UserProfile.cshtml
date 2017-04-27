@@ -29,8 +29,8 @@
 
 <script>
     $(document).ready(function () {
-        $('input:text').siblings('label').show();
-        $('textarea').siblings('label').show();
+        $('#profileForm input:text').siblings('label').show();
+        $('#profileForm textarea').siblings('label').show();
     });
     function updateUserProfile(ev) {
         var form = $(ev).parents('form').serialize();

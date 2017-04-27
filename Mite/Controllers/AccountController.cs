@@ -38,6 +38,14 @@ namespace Mite.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Login(LoginModel model, string returnUrl)
         {
+            if(Request.Url.Host == "test.mitegroup.ru")
+            {
+                if(model.UserName != "landenor")
+                {
+                    ModelState.AddModelError("", "Только админу разрешено входить");
+                    return View(model);
+                }
+            }
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -61,8 +69,6 @@ namespace Mite.Controllers
                     return View(model);
             }
         }
-
-        [HttpGet]
         public ActionResult Register()
         {
             return View();
@@ -126,8 +132,6 @@ namespace Mite.Controllers
             await _userManager.SendEmailAsync(user.Id, "Восстановление пароля", msg);
             return JsonResponse(JsonResponseStatuses.Success, "На ваш почтовый ящик отправлено сообщение с ссылкой для восстановления");
         }
-        [HttpPost]
-        [ValidateAntiForgeryToken]
         public ActionResult LogOff()
         {
             _authManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
@@ -158,20 +162,21 @@ namespace Mite.Controllers
             else
                 return Redirect("http://mitegroup.ru/user/settings#/security");
         }
-        public ActionResult ResetPassword(string code, string userId)
+        public ActionResult ResetPassword(string code, string email)
         {
-            return View(new ResetPasswordModel { Code = code, UserId = userId });
+            var user = _userManager.FindByEmail(email);
+            return View(new ResetPasswordModel { Code = code, UserId = user.Id });
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<HttpStatusCodeResult> ResetPassword(ResetPasswordModel model)
+        public async Task<ActionResult> ResetPassword(ResetPasswordModel model)
         {
             if (!ModelState.IsValid)
             {
-                return Forbidden();
+                return View(model);
             }
             await _userManager.ResetPasswordAsync(model.UserId, model.Code, model.NewPass);
-            return Ok();
+            return RedirectToAction("Login", "Account");
         }
         public async Task ForgotPassword(string email)
         {

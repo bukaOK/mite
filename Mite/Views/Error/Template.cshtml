@@ -1,0 +1,38 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title</title>
+    <style>
+        body {
+            background: url("/Content/images/water-back.jpg"), round;
+        }
+
+        html {
+            height: 90%;
+        }
+
+        body, .error {
+            height: 100%;
+        }
+
+        .error {
+            vertical-align: middle;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="error">
+        <a href="/"><img src="@ViewBag.ErrorImg" /></a>
+    </div>
+</body>
+</html> 

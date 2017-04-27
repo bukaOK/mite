@@ -70,6 +70,8 @@ namespace Mite.BLL.Services
             post.IsPublished = false;
 
             await Database.PostsRepository.AddAsync(post);
+            foreach (var tag in post.Tags)
+                tag.Name = tag.Name.ToLower();
             await Database.TagsRepository.AddWithPostAsync(post.Tags, post.Id);
         }
 
@@ -103,6 +105,9 @@ namespace Mite.BLL.Services
                 post.Content = currentPost.Content;
             }
             post.LastEdit = DateTime.UtcNow;
+
+            foreach (var tag in post.Tags)
+                tag.Name = tag.Name.ToLower();
             await Database.TagsRepository.AddWithPostAsync(post.Tags, post.Id);
             await Database.PostsRepository.UpdateAsync(post);
         }

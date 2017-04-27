@@ -15,17 +15,9 @@
 <div class="ui profile center aligned three column grid segment">
     <div class="row">
         <div class="right aligned column">
-            <button class="ui circular facebook icon button">
-                <i class="facebook icon"></i>
-            </button>
-            <button class="ui circular twitter icon button">
-                <i class="twitter icon"></i>
-            </button>
-            <button class="ui circular google plus icon button">
-                <i class="google plus icon"></i>
-            </button>
-            <button class="ui circular vk icon button">
-                <i class="vk icon"></i>
+            <button class="ui green labeled icon button" onclick="$('#donateModal').modal('show')">
+                <i class="heart icon"></i>
+                Поддержать
             </button>
         </div>
         <div class="column">
@@ -169,6 +161,51 @@ else
             <a href="@Url.Action("AddPost", "Posts")?postType=image" class="violet item"><i class="image icon"></i>Изображение</a>
             <a href="@Url.Action("AddPost", "Posts")?postType=doc" class="violet item"><i class="photo icon"></i>Документ</a>
         </div>
+    </div>
+</div>
+<div class="ui small modal" id="donateModal">
+    <i class="close icon"></i>
+    <div class="header">
+        Поддержать @User.Identity.Name
+    </div>
+    <div class="content">
+        <form class="ui form" id="donateForm" action="https://money.yandex.ru/quickpay/confirm.xml" method="post">
+            <div class="field">
+                <textarea placeholder="Ваши пожелания =)" name="comment" rows="3"></textarea>
+            </div>
+            <div class="inline fields">
+                <div class="field">
+                    <input type="number" placeholder="Сумма" name="sum" />
+                </div>
+                <div class="field">
+                    <div class="ui radio checkbox">
+                        <input type="radio" name="paymentType" value="PC" class="hidden" />
+                        <label>Яндекс.Деньги</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui radio checkbox">
+                        <input type="radio" name="paymentType" value="PC" class="hidden" />
+                        <label>Банковская карта</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui radio checkbox">
+                        <input type="radio" name="paymentType" value="MC" class="hidden" />
+                        <label>Мобильный</label>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" name="receiver" value="@Model.YandexWalId" />
+            <input type="hidden" name="quickpay-form" value="donate" />
+            <input type="hidden" name="targets" value="Поддержка пользователя @Model.UserName" />
+            <input type="hidden" name="formcomment" value="Поддержка пользователя @Model.UserName" />
+            <input type="hidden" name="short-dest" value="Поддержка пользователя @Model.UserName" />
+            <input type="hidden" name="successURL" value="@Request.Url" />
+        </form>
+    </div>
+    <div class="actions">
+        <button type="submit" form="donateForm" class="ui primary button">Поддержать</button>
     </div>
 </div>
 <script id="followersTmpl" type="text/x-jsrender">
@@ -471,5 +508,6 @@ else
                 Tabs.loadTab(item);
             }
         });
+        $('.ui.checkbox').checkbox();
     });
 </script>

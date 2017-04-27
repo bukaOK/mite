@@ -13,6 +13,7 @@ using AutoMapper;
 using System.Net;
 using System.Linq;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Mite.Controllers
 {
@@ -33,6 +34,7 @@ namespace Mite.Controllers
             _ratingService = ratingService;
         }
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult> ShowPost(string id)
         {
             Guid postId;
@@ -127,15 +129,8 @@ namespace Mite.Controllers
             {
                 return JsonResponse(JsonResponseStatuses.Error, "Обнаружены опасные данные внутри запроса");
             }
-            try
-            {
-                await _postsService.AddPostAsync(model, postsFolder, User.Identity.GetUserId());
-                return JsonResponse(JsonResponseStatuses.Success, "Пост успешно добавлен");
-            }
-            catch(Exception)
-            {
-                return JsonResponse(JsonResponseStatuses.Error, "Ошибка во время добавления");
-            }
+            await _postsService.AddPostAsync(model, postsFolder, User.Identity.GetUserId());
+            return JsonResponse(JsonResponseStatuses.Success, "Пост успешно добавлен");
         }
         [HttpPost]
         [ValidateInput(false)]
@@ -153,15 +148,8 @@ namespace Mite.Controllers
             var postsFolder = model.IsImage 
                 ? HostingEnvironment.ApplicationVirtualPath + "Public/images/"
                 : HostingEnvironment.ApplicationVirtualPath + "Public/documents/";
-            try
-            {
-                await _postsService.UpdatePostAsync(model, postsFolder);
-                return JsonResponse(JsonResponseStatuses.Success, "Успешно отредактировано");
-            }
-            catch(Exception)
-            {
-                return JsonResponse(JsonResponseStatuses.Error, "Непредвиденная ошибка");
-            }
+            await _postsService.UpdatePostAsync(model, postsFolder);
+            return JsonResponse(JsonResponseStatuses.Success, "Успешно отредактировано");
         }
         [HttpPost]
         public async Task<HttpStatusCodeResult> DeletePost(string id)

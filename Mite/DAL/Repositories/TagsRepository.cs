@@ -27,11 +27,21 @@ namespace Mite.DAL.Repositories
         /// Меняем один тег на другой(если например имя старого тега неправильно записано)
         /// </summary>
         /// <returns></returns>
-        public Task ChangeAsync(Guid oldTagId, Guid newTagId)
+        public async Task BindAsync(Guid oldTagId, Guid newTagId)
         {
-            var query = "update dbo.TagPosts set Tag_Id = @newTagId where Tag_Id = @oldTagId; "
-                + "delete from dbo.Tags where Id=@oldTagId";
-            return Db.ExecuteAsync(query, new { oldTagId, newTagId });
+            //Получаем Id поста старого тега
+            var query = "select top 1 Post_Id from dbo.TagPosts where Tag_Id=@oldTagId";
+            var oldTagPostId = await Db.QueryFirstAsync<Guid>(query, new { oldTagId });
+            //Смотрим, есть ли уже новый тег в данном посте
+            query = "select top 1 Post_Id from dbo.TagPosts where Tag_Id=@newTagId and Post_Id=@oldTagPostId";
+            var newTagResults = await Db.QueryAsync(query, new { newTagId, oldTagPostId });
+            //Если есть, его незачем добавлять
+            if(newTagResults.Count() == 0)
+                query = "update dbo.TagPosts set Tag_Id = @newTagId where Tag_Id = @oldTagId;";
+            else
+                query = "delete from dbo.TagPosts where Tag_Id=@oldTagId;";
+            query += "delete from dbo.Tags where Id=@oldTagId";
+            await Db.ExecuteAsync(query, new { oldTagId, newTagId });
         }
         public async override Task AddAsync(Tag entity)
         {

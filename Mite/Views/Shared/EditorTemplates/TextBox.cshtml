@@ -2,7 +2,7 @@
     
 @{
     string dataType = Html.ViewData.ModelMetadata.DataTypeName;
-    if (string.IsNullOrEmpty(dataType))
+    if (string.IsNullOrEmpty(dataType) || dataType == "EmailAddress")
     {
         dataType = "text";
     }

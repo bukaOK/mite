@@ -36,7 +36,7 @@ namespace Mite.Controllers
         [HttpPost]
         public Task BindTag(Guid fromId, Guid toId)
         {
-            return _unitOfWork.TagsRepository.ChangeAsync(fromId, toId);
+            return _unitOfWork.TagsRepository.BindAsync(fromId, toId);
         }
     }
 }

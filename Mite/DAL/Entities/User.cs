@@ -9,8 +9,6 @@ using Mite.Constants;
 
 namespace Mite.DAL.Entities
 {
-    
-    // You can add profile data for the user by adding more properties to your ApplicationUser class, please visit http://go.microsoft.com/fwlink/?LinkID=317594 to learn more.
     public class User : IdentityUser
     {
         public byte? Age { get; set; }
@@ -33,10 +31,6 @@ namespace Mite.DAL.Entities
         /// Местоположение(город)
         /// </summary>
         public string Placement { get; set; }
-        /// <summary>
-        /// Часовой пояс
-        /// </summary>
-        public short TimeZone { get; set; }
         public List<Post> Posts { get; set; }
         public List<Tag> Tags { get; set; }
         public int Rating { get; set; }
@@ -53,13 +47,15 @@ namespace Mite.DAL.Entities
         /// Комментарии
         /// </summary>
         public List<Comment> Comments { get; set; }
+        /// <summary>
+        /// Номер Яндекс кошелька
+        /// </summary>
+        public string YandexWalId { get; set; }
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(AppUserManager manager)
         {
             if(AvatarSrc == null)
                 AvatarSrc = "/Content/images/doubt-ava.png";
-            // Note the authenticationType must match the one defined in CookieAuthenticationOptions.AuthenticationType
             var userIdentity = await manager.CreateIdentityAsync(this, DefaultAuthenticationTypes.ApplicationCookie);
-            // Add custom user claims here
             userIdentity.AddClaim(new Claim(ClaimConstants.AvatarSrc, AvatarSrc));
             return userIdentity;
         }

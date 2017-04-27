@@ -64,5 +64,13 @@
             return "только что";
         }
         return null;
+    },
+    disableFormSubmitting: function (formSelector) {
+        $(formSelector).keydown(function (ev) {
+            if (ev.keyCode == 13) {
+                event.preventDefault();
+                return false;
+            }
+        });
     }
 }

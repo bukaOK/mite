@@ -12,6 +12,7 @@ using Mite.Core;
 using Mite.DAL.Entities;
 using Mite.Extensions;
 using Mite.Models;
+using System.Collections.Generic;
 
 namespace Mite.Controllers
 {
@@ -127,6 +128,28 @@ namespace Mite.Controllers
             var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = userId, code = code }, "http");
 
             await _userManager.SendEmailAsync(userId, "MiteGroup.Подтверждение почты.", "Для подтверждения вашего аккаунта перейдите по <a href=\"" + callbackUrl + "\">ссылке.</a> MiteGroup.");
+        }
+        public PartialViewResult WalletsSettings()
+        {
+            var user = _userManager.FindById(User.Identity.GetUserId());
+            var model = new WalletsSettingsModel
+            {
+                YandexWalId = user.YandexWalId
+            };
+            return PartialView("Wallets", model);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<JsonResult> UpdateWallets(WalletsSettingsModel model)
+        {
+            var user = await _userManager.FindByIdAsync(User.Identity.GetUserId());
+            var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
+            if (!isPasswordValid)
+                return JsonResponse(JsonResponseStatuses.ValidationError, "Неверный пароль");
+
+            user.YandexWalId = model.YandexWalId;
+            await _userManager.UpdateAsync(user);
+            return JsonResponse(JsonResponseStatuses.Success, "Яндекс кошелек успешно добавлен/обновлен");
         }
     }
 }

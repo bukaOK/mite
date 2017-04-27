@@ -11,10 +11,12 @@ namespace Mite
         {
             var from = "dispatch@mitegroup.ru";
             var to = message.Destination;
-            var client = new SmtpClient("localhost", 25)
+            var client = new SmtpClient("smtp.yandex.ru", 25)
             {
                 DeliveryMethod = SmtpDeliveryMethod.Network,
-                UseDefaultCredentials = true,
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(from, "Evd$utTC"),
+                EnableSsl = true
             };
             var mail = new MailMessage(from, to)
             {

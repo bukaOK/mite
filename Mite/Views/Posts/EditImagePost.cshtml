@@ -88,7 +88,6 @@
             if ($('#imgPostForm').form('is valid')) {
                 var $resultMsg = $('#result-msg');
 
-
                 $.ajax({
                     url: '@url',
                     data: {
@@ -106,15 +105,18 @@
                     beforeSend: function () {
                         $(ev).addClass('loading disabled');
                     },
-                    success: function () {
+                    success: function (resp) {
                         $resultMsg.addClass('green').removeClass('red');
+                        $resultMsg.html(resp.message);
                     },
-                    error: function () {
+                    error: function (jqXhr) {
                         $resultMsg.addClass('red').removeClass('green');
+                        $resultMsg.html('Ошибка во время добавления поста')
+                        console.log(jqXhr);
                     },
                     complete: function (jqXhr) {
-                        $resultMsg.removeClass('hidden').html(jqXhr.responseJSON.message);
                         $(ev).removeClass('loading disabled');
+                        $resultMsg.removeClass('hidden');
                     }
                 });
             }

@@ -91,14 +91,10 @@
                 <div class="ui active loader" id="notify-loader"></div>
             </div>
             @Html.ActionLink("Настройки", "Index", "UserSettings", null, new { @class = "item", id = "userSettingsItem" })
-            @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { @class = "hidden", id = "logoff-form" }))
-            {
-                <button type="submit" class="ui red logoff fluid button">
-                    <i class="sign out icon"></i>
-                    Выйти
-                </button>
-                @Html.AntiForgeryToken()
-            }
+            <a class="ui red logoff fluid button" href="@Url.Action("LogOff", "Account")">
+                <i class="sign out icon"></i>
+                Выйти
+            </a>
         </div>
     }
     <div class="pusher">

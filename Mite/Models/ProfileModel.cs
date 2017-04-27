@@ -20,5 +20,6 @@ namespace Mite.Models
         /// </summary>
         public bool IsFollowing { get; set; }
         public int PostsCount { get; set; }
+        public string YandexWalId { get; set; }
     }
 }

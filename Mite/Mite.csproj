@@ -317,6 +317,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\LogHelper.cs" />
     <Compile Include="Helpers\ViewHelper.cs" />
     <Compile Include="DAL\Infrastructure\AppDbContext.cs" />
     <Compile Include="DAL\Infrastructure\UnitOfWork.cs" />
@@ -329,6 +330,10 @@
     <Compile Include="Migrations\201704011848489_AddNullablePostIdComment.cs" />
     <Compile Include="Migrations\201704011848489_AddNullablePostIdComment.Designer.cs">
       <DependentUpon>201704011848489_AddNullablePostIdComment.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201704241225251_AddYandexWal.cs" />
+    <Compile Include="Migrations\201704241225251_AddYandexWal.Designer.cs">
+      <DependentUpon>201704241225251_AddYandexWal.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ChangePassModel.cs" />
@@ -348,6 +353,7 @@
     <Compile Include="Models\RegisterModel.cs" />
     <Compile Include="Models\ResetPasswordModel.cs" />
     <Compile Include="Models\UserShortModel.cs" />
+    <Compile Include="Models\WalletsSettingsModel.cs" />
     <Compile Include="Models\WritingPostModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
@@ -398,6 +404,7 @@
     <Content Include="Content\images\some-logo.png" />
     <Content Include="Content\images\video.svg" />
     <Content Include="Content\landing.css" />
+    <Content Include="ErrorPages\404.html" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
@@ -414,7 +421,8 @@
     <Content Include="package.json" />
     <Content Include="Content\icons.woff" />
     <Content Include="Content\icons\manifest.json" />
-    <None Include="Properties\PublishProfiles\Profile1.pubxml" />
+    <None Include="Properties\PublishProfiles\MiteProfile.pubxml" />
+    <None Include="Properties\PublishProfiles\MiteTestProfile.pubxml" />
     <None Include="Scripts\jquery-3.1.1.intellisense.js" />
     <Content Include="Scripts\content-tools.js" />
     <Content Include="Scripts\content-tools.min.js" />
@@ -482,10 +490,12 @@
     <Content Include="Views\Admin\Index.cshtml" />
     <Content Include="Views\Admin\ModerRegister.cshtml" />
     <Content Include="Views\Moder\Index.cshtml" />
-    <Content Include="Views\Error\NotFound.cshtml" />
+    <Content Include="Views\Error\Template.cshtml" />
     <Content Include="Views\UserSettings\_ChangePass.cshtml" />
     <Content Include="Views\Account\ForgotPassword.cshtml" />
     <Content Include="Views\UserSettings\ConfirmEmail.cshtml" />
+    <Content Include="Views\Account\ResetPassword.cshtml" />
+    <Content Include="Views\UserSettings\Wallets.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -509,6 +519,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201704011848489_AddNullablePostIdComment.resx">
       <DependentUpon>201704011848489_AddNullablePostIdComment.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201704241225251_AddYandexWal.resx">
+      <DependentUpon>201704241225251_AddYandexWal.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

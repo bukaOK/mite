@@ -32,14 +32,16 @@ namespace Mite
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
                 AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie,
-                LoginPath = new PathString("/Account/Login"),
+                LoginPath = new PathString("/account/login"),
                 Provider = new CookieAuthenticationProvider
                 {
                     OnValidateIdentity = SecurityStampValidator.OnValidateIdentity<AppUserManager, User>(
                         validateInterval: TimeSpan.FromMinutes(30),
                         regenerateIdentity: (manager, user) => user.GenerateUserIdentityAsync(manager))
                 },
-                CookieName = "MiteCookie"
+                CookieName = "MiteCookie",
+                LogoutPath = new PathString("/account/logoff"),
+                
             });
             app.UseExternalSignInCookie(DefaultAuthenticationTypes.ExternalCookie);
 

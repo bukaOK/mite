@@ -9,6 +9,7 @@
         <a class="active item" data-tab="profile">Профиль</a>
         <a class="item" data-tab="changeavatar">Изменить аватар</a>
         <a class="item" data-tab="security">Безопасность</a>
+        <a class="item" data-tab="wallets">Кошельки</a>
     </nav>
     <div class="ui tab" data-tab="profile">
         @Html.Action("UserProfile")
@@ -26,6 +27,9 @@
             </div>
         </div>
     </div>
+    <div class="ui tab" data-tab="wallets">
+        @Html.Action("WalletsSettings", "UserSettings")
+    </div>
 </div>
 <script src="~/Scripts/jquery.address.js"></script>
 <script>
@@ -36,5 +40,6 @@
                     history: true,
                     historyType: 'hash'
                 });
+            ViewHelper.disableFormSubmitting('form');
         });
 </script>
