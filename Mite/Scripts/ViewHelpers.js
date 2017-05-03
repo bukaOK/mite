@@ -29,7 +29,6 @@
        publicTime - время публикации (в миллисекундах)
     */
     getPastTense: function (publicTime) {
-        console.log(publicTime);
         var currentTime = new Date().getTime(),
         //Миллисекунды
             timeDiff = currentTime - publicTime,
@@ -66,11 +65,13 @@
         return null;
     },
     disableFormSubmitting: function (formSelector) {
-        $(formSelector).keydown(function (ev) {
-            if (ev.keyCode == 13) {
-                event.preventDefault();
-                return false;
-            }
+        $(formSelector).on('submit', function () {
+            return false;
         });
+    },
+    activateSidebarItem: function (itemSelector) {
+        var $item = $(itemSelector);
+        $item.siblings().removeClass('active');
+        $item.addClass('active');
     }
 }

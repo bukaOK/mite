@@ -34,7 +34,7 @@
         <div class="centered column">
             <div class="ui items">
                 <div class="item">
-                    <div class="ui tiny image">
+                    <div class="ui tiny circular image" style="margin: 3px">
                         <img src="@Model.User.AvatarSrc" alt="@Model.User.UserName" />
                     </div>
                     <div class="content">
@@ -86,7 +86,7 @@
 </div>
 <template id="commentTmpl">
     <div class="comment" id="com{{:Id}}">
-        <a class="avatar">
+        <a class="ui circular avatar image">
             <img src="{{:User.AvatarSrc}}" />
         </a>
         <div class="content">
@@ -112,12 +112,15 @@
         </div>
     </div>
 </template>
-<div class="ui modal" id="post-image-modal" style="display: none">
-    <i class="close icon"></i>
-    <div class="image content">
-        <img src="@Model.Content" class="ui centered image" />
+@if (Model.IsImage)
+{
+    <div class="ui modal" id="post-image-modal" style="display: none">
+        <i class="close icon"></i>
+        <div class="image content">
+            <img src="@Model.Content" class="ui centered image" />
+        </div>
     </div>
-</div>
+}
 <script>
     var commentsCount = @Model.CommentsCount;
 
@@ -130,9 +133,11 @@
             hour: 'numeric',
             minute: 'numeric'
         };
-        var date = new Date('@Model.LastEdit.ToString("o")');
+        var dateIso = '@Model.LastEdit.ToString("o")';
+        dateIso += dateIso[dateIso.length - 1] == 'Z' ? '' : 'Z';
+        var date = new Date(dateIso);
 
-        elem.innerHTML = date.toLocaleString("ru", options); 
+        elem.innerHTML = date.toLocaleString("ru", options);
     }
     function loadCommentsCount(){
         var elem = document.getElementById('comments-count');
@@ -149,16 +154,17 @@
                 postId: postId
             },
             success: function (data) {
-                console.log(data);
                 data.forEach(function(item){
-                    item.PublicDateStr = ViewHelper.getPastTense(new Date(item.PublicTime).getTime());
+                    var dateIso = item.PublicTime;
+                    dateIso += dateIso[dateIso.length - 1] == 'Z' ? '' : 'Z';
+                    item.PublicDateStr = ViewHelper.getPastTense(new Date(dateIso).getTime());
                 });
                 var tmpl = $.templates('#commentTmpl');
                 var html = tmpl.render(data);
                 $('#comments-wrapper').html(html);
             },
             error: function (jqXhr) {
-                console.log(jqXhr);
+                alert('Ошибка при инициализации комментариев!');
             }
         });
     }
@@ -182,19 +188,23 @@
             url: '/api/comments/',
             data: model,
             success: function (data) {
-                console.log(data);
                 sendNotification('@NotificationTypes.PostComment');
 
                 commentsCount++;
                 loadCommentsCount();
                 var tmpl = $.templates('#commentTmpl');
+
+                var dateIso = data.PublicTime;
+                dateIso += dateIso[dateIso.length - 1] == 'Z' ? '' : 'Z';
+                data.PublicDateStr = ViewHelper.getPastTense(new Date(dateIso).getTime());
+
                 var html = tmpl.render(data);
                 $('#comments-wrapper').prepend(html);
 
                 $('#com' + data.Id + ' .thumbs.up.icon').parent().popup();
             },
             error: function (jqXhr) {
-                console.log(jqXhr);
+                alert('Ошибка во время отправки комментария!');
             }
         });
     }
@@ -206,13 +216,12 @@
             url: '/api/comments/' + commentId,
             type: 'delete',
             success: function(data){
-                console.log(data);
                 commentsCount--;
                 loadCommentsCount();
                 $('#com' + commentId).remove();
             },
             error: function(jqXhr){
-                console.log(jqXhr);
+                alert('Ошибка при удалении комментария!');
             }
         });
     }
@@ -242,7 +251,7 @@
                 sendNotification('@NotificationTypes.CommentRating')
             },
             error: function(jqXhr){
-                console.log(jqXhr);
+                alert('Ошибка сервера при оценке!');
             }
         });
     }
@@ -268,10 +277,9 @@
                 }
             },
             success: function(data){
-                console.log(data);
             },
             error: function(jqXhr){
-                console.log(jqXhr);
+                alert('Ошибка при отправке уведомления.');
             }
         });
         window.hubReady.done(function(){
@@ -298,10 +306,9 @@
 
                         lastRateValue = rateValue;
                         sendNotification('@NotificationTypes.PostRating', '');
-                        console.log(data);
                     },
                     error: function (jqXhr) {
-                        console.log(jqXhr);
+                        alert('Ошибка инициализации рейтинга.');
                     }
                 });
             }

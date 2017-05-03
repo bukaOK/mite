@@ -11,6 +11,7 @@ using System.Net;
 using System.Linq;
 using AutoMapper;
 using Mite.Enums;
+using Mite.Helpers;
 
 namespace Mite.Controllers
 {
@@ -31,17 +32,21 @@ namespace Mite.Controllers
             }
             var follower = new Follower
             {
-                FollowingUserId = followingId
-            };
-            follower.Id = User.Identity.GetUserId();
+                Id = Guid.NewGuid(),
+                FollowingUserId = followingId,
+                UserId = User.Identity.GetUserId()
+        };
+            follower.Id = Guid.NewGuid();
+            follower.UserId = User.Identity.GetUserId();
             follower.FollowTime = DateTime.UtcNow;
             try
             {
                 await _unitOfWork.FollowersRepository.AddAsync(follower);
                 return new HttpResponseMessage(HttpStatusCode.OK);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Logger.WriteError(e);
                 return new HttpResponseMessage(HttpStatusCode.InternalServerError);
             }
         }
@@ -58,8 +63,9 @@ namespace Mite.Controllers
                 await _unitOfWork.FollowersRepository.RemoveAsync(followerId, followingId);
                 return new HttpResponseMessage(HttpStatusCode.OK);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Logger.WriteError(e);
                 return new HttpResponseMessage(HttpStatusCode.InternalServerError);
             }
         }

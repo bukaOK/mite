@@ -69,7 +69,7 @@ namespace Mite.Core
         {
             return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
         }
-        protected HttpStatusCodeResult NotFount()
+        protected HttpStatusCodeResult NotFound()
         {
             return new HttpStatusCodeResult(HttpStatusCode.NotFound);
         }

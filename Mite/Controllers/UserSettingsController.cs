@@ -13,6 +13,8 @@ using Mite.DAL.Entities;
 using Mite.Extensions;
 using Mite.Models;
 using System.Collections.Generic;
+using System;
+using WebGrease;
 
 namespace Mite.Controllers
 {
@@ -77,8 +79,12 @@ namespace Mite.Controllers
                         .ToList();
                 return JsonResponse(JsonResponseStatuses.ValidationError, errorList);
             }
+
             var result = await _userService.UpdateUserAsync(settings, User.Identity.GetUserId());
-            if (!result.Succeeded) return JsonResponse(JsonResponseStatuses.Error, "Ошибка при сохранении");
+            if (!result.Succeeded)
+            {
+                return JsonResponse(JsonResponseStatuses.Error, result.Errors);
+            }
             var updatedUser = await _userManager.FindByIdAsync(User.Identity.GetUserId());
 
             User.AddUpdateClaim(_authManager, ClaimTypes.Name, updatedUser.UserName);

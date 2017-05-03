@@ -16,5 +16,13 @@ namespace Mite.Controllers
             }
             return View();
         }
+        public ActionResult Help()
+        {
+            return View();
+        }
+        public ActionResult Donate()
+        {
+            return View();
+        }
     }
 }

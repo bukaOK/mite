@@ -77,7 +77,8 @@
             ContentEdit.LANGUAGE = 'ru';
         }
     });
-    $(document).ready(function () {
+    $(function () {
+        ViewHelper.activateSidebarItem('#editDocItem');
         var headerId = '#@Html.IdFor(x => x.Header)';
         $(headerId).keyup(function (ev) {
             $('.ui.form').children('h2').html(ev.target.value);
@@ -108,7 +109,6 @@
             type: 'get',
             success: function(data){
                 var tagsMenu = $('#select-tags');
-                console.log(data);
                 var tagsItems = '';
                 for(var i = 0; i < data.length; i++){
                     tagsItems += '<div class="item" data-value="' + data[i] + '">' + data[i] + '</div>'
@@ -125,7 +125,7 @@
                 });
             },
             error: function(jqXhr){
-                console.log(jqXhr);
+                alert('Ошибка инициализации тегов.');
             }
         });
         @{
@@ -162,14 +162,13 @@
                     type: 'post',
                     url: '@url',
                     success: function(data){
-                        console.log(data);
                         $('.ct-ignition__button--edit').css('background', '#27ae60');
                     },
                     error: function(jqXhr){
                         $('.ct-ignition__button--edit').css('background', '#e74c3c');
+                        alert('Ошибка при сохранении');
                     },
                     complete: function(jqXhr){
-                        console.log(jqXhr);
                         editor.busy(false);
                     }
                 });

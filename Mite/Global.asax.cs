@@ -6,6 +6,7 @@ using System;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
+using WebGrease;
 
 namespace Mite
 {
@@ -19,6 +20,11 @@ namespace Mite
             BundleConfig.RegisterBundles(BundleTable.Bundles);
             ConfigureAutoMapper();
             //Mapper.Configuration.AssertConfigurationIsValid();
+        }
+        protected void Application_Error(object sender, EventArgs e)
+        {
+            var exception = Server.GetLastError();
+            Logger.WriteError(exception);
         }
         private void ConfigureAutoMapper()
         {

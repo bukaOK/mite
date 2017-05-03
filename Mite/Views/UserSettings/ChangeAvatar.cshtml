@@ -45,7 +45,6 @@
                     .then(function (res) {
                         if (res.match(/data:,/) != null) {
                             $('#change-ava-msg').addClass('red').removeClass('hidden').html('Изображение не выбрано');
-                            console.log('nope');
                         }else {
                             $.ajax({
                                 url: '/UserSettings/ChangeAvatar',
@@ -55,17 +54,22 @@
                                     base64Str: res
                                 },
                                 beforeSend: function () {
-                                    $(event).addClass('loading disabled');
+                                    $('#save-btn').addClass('loading disabled');
                                 },
-                                success: function () {
+                                success: function (resp) {
+                                    if (resp.message == undefined) {
+                                        resp = JSON.parse(resp);
+                                    }
                                     $('#change-ava-msg').addClass('green').removeClass('red');
+                                    $('#change-ava-msg').html(resp.message);
                                 },
                                 error: function () {
                                     $('#change-ava-msg').addClass('red').removeClass('green');
+                                    $('#change-ava-msg').html('Ошибка сервера');
                                 },
                                 complete: function (jqXhr) {
-                                    $('#change-ava-msg').removeClass('hidden').html(jqXhr.responseJSON.message);
-                                    $(event).removeClass('loading disabled');
+                                    $('#save-btn').removeClass('loading disabled');
+                                    $('#change-ava-msg').removeClass('hidden');
                                 }
                             });
                         }

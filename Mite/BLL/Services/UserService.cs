@@ -9,6 +9,7 @@ using Mite.DAL.Infrastructure;
 using Mite.Helpers;
 using Mite.Models;
 using Microsoft.AspNet.Identity;
+using System.Text.RegularExpressions;
 
 namespace Mite.BLL.Services
 {
@@ -70,7 +71,12 @@ namespace Mite.BLL.Services
         {
             var existingUser = await _userManager.FindByIdAsync(userId);
             var updatedUser = Mapper.Map(settings, existingUser);
-
+            //Проверяем, есть ли пользователь с таким именем
+            var userByName = await _userManager.FindByNameAsync(settings.NickName);
+            if(userByName != null && userByName.Id != existingUser.Id)
+            {
+                return new IdentityResult("Пользователь с таким ником уже существует");
+            }
             var result = await _userManager.UpdateAsync(updatedUser);
 
             return result;
@@ -90,8 +96,9 @@ namespace Mite.BLL.Services
 
             var existingUser = await _userManager.FindByIdAsync(userId);
             var existingAvatarSrc = existingUser.AvatarSrc;
+            var existingAvatarFolders = existingAvatarSrc.Split('/');
             existingUser.AvatarSrc = imagePath;
-            if(existingAvatarSrc != null)
+            if(existingAvatarSrc != null && existingAvatarFolders[1] == "Public")
                 FilesHelper.DeleteFile(existingAvatarSrc);
 
             var result = await _userManager.UpdateAsync(existingUser);
@@ -101,6 +108,8 @@ namespace Mite.BLL.Services
         public async Task<ProfileModel> GetUserProfileAsync(string name, string currentUserId)
         {
             var user = await _userManager.FindByNameAsync(name);
+            if (user == null)
+                return null;
             var userModel = Mapper.Map<ProfileModel>(user);
 
             userModel.PostsCount = await Database.PostsRepository.GetPublishedPostsCount(user.Id);

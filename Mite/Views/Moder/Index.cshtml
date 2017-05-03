@@ -110,7 +110,6 @@
                     },
                     error: function (jqXhr) {
                         alert('Ошибка во время изменения');
-                        console.log(jqXhr);
                     }
                 });
             }
@@ -161,7 +160,6 @@
                     },
                     error: function (jqXhr) {
                         alert('Ошибка во время добавления');
-                        console.log(jqXhr);
                     }
                 });
             }
@@ -185,7 +183,6 @@
             },
             error: function (jqXhr) {
                 alert('Ошибка сервера');
-                console.log(jqXhr);
             }
         });
     }
@@ -207,7 +204,6 @@
             type: 'post',
             success: function (resp) {
                 resp = JSON.parse(resp);
-                console.log(resp);
                 var confirmedHtml = $.templates('#tagRowTmpl').render(resp.data.Confirmed);
                 var notConfirmedHtml = $.templates('#tagRowTmpl').render(resp.data.NotConfirmed);
 

@@ -14,7 +14,7 @@
     </div>
 }
 <script>
-    function changePass() {
+    function changePass(ev) {
         $('#changePassForm').form('validate form');
         if ($('#changePassForm').form('is valid')) {
             $.ajax({
@@ -22,23 +22,22 @@
                 type: 'post',
                 data: $('#changePassForm').serialize(),
                 success: function (resp) {
-                    console.log(resp);
                     var $msg = $('#changePassMsg');
                     if (resp.status == 2) {
                         $msg.html(resp.message);
-                        $msg.addClass('red');
+                        $msg.addClass('red').removeClass('green');
                     } else {
                         $msg.html('Пароль успешно изменен');
-                        $msg.addClass('green');
+                        $msg.addClass('green').removeClass('red');
                     }
                 },
                 error: function (jqXhr) {
-                    $msg.addClass('red');
+                    $msg.addClass('red').removeClass('green');
                     $msg.html('Ошибка во время изменения');
                 },
                 complete: function () {
                     $('#changePassMsg').removeClass('hidden');
-                    $('#changePassBtn').removeClass('loading').removeClass('disabled');
+                    $(ev.target).removeClass('loading disabled');
                 }
             });
         }
@@ -85,8 +84,8 @@
             }
         });
         $('#changePassBtn').click(function (ev) {
-            $(ev).addClass('loading').addClass('disabled');
-            changePass();
+            $(ev.target).addClass('loading').addClass('disabled');
+            changePass(ev);
         });
     });
 </script>

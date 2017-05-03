@@ -16,7 +16,6 @@
                 $(this).addClass('active');
                 var tab = $(self.tabContent.selector + '[data-tab="' + $(this).data('tab') + '"]');
                 self.loadTab(tab.find(self.items.selector + '.active')[0]);
-                console.log(this);
             }
         });
         return self;
@@ -55,9 +54,7 @@
     ajaxSettings: {
         type: 'get',
         beforeSuccess: function (resp) { return resp; },
-        error: function (jqXhr) {
-            console.log(jqXhr);
-        },
+        error: function (jqXhr) {},
         data: {},
         dynamicData: function () { return this.data },
         afterSuccess: function (item, tabContent) { return false; }

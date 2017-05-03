@@ -20,7 +20,6 @@
         </div>
         @Html.EditorFor(x => x.About, new { WithLabel = true })
         <button type="button" class="ui primary button" onclick="updateUserProfile(this)">Сохранить</button>
-
         <div class="ui hidden message" style="text-align: center" id="update-state-msg">
         </div>
         @Html.ValidationSum()
@@ -28,29 +27,50 @@
 </div>
 
 <script>
-    $(document).ready(function () {
+    $(function () {
         $('#profileForm input:text').siblings('label').show();
         $('#profileForm textarea').siblings('label').show();
     });
     function updateUserProfile(ev) {
-        var form = $(ev).parents('form').serialize();
+        var $form = $(ev).parents('form');
+        if (!$form.form('is valid')) {
+            return;
+        }
         $.ajax({
             url: '/User/Settings/UserProfile',
             type: 'post',
             dataType: 'json',
-            data: form,
+            data: $form.serialize(),
             beforeSend: function() {
                 $('#profileForm').addClass('loading');
             },
-            success: function(resp) {
-                $('#update-state-msg').addClass('green').removeClass('red');
+            success: function (resp) {
+                if (resp.status == undefined) {
+                    resp = JSON.parse(resp);
+                }
+                var $updateMsg = $('#update-state-msg');
+                if (resp.status == 1 || resp.status == 2) {
+                    $updateMsg.addClass('red').removeClass('green');
+                    var errorsStr = '';
+                    resp.data.forEach(function (val) {
+                        errorsStr += '<li>' + val + '</li>';
+                    });
+                    $updateMsg.html('<ul>' + errorsStr + '</ul>');
+                    $updateMsg.css('text-align', 'left');
+                } else {
+                    $updateMsg.addClass('green').removeClass('red');
+                    $updateMsg.css('text-align', 'center');
+                    $updateMsg.html(resp.message);
+                }
             },
-            error: function(resp) {
-                $('#update-state-msg').addClass('red').removeClass('green');
+            error: function (resp) {
+                var $updateMsg = $('#update-state-msg');
+                $updateMsg.addClass('red').removeClass('green');
+                $updateMsg.css('text-align', 'center');
+                $updateMsg.html('Ошибка на сервере');
             },
             complete: function (jqXhr) {
-                console.log(jqXhr.responseJSON);
-                $('#update-state-msg').removeClass('hidden').html(jqXhr.responseJSON.message);
+                $('#update-state-msg').removeClass('hidden');
                 $('#profileForm').removeClass('loading');
             }
         });
@@ -58,6 +78,7 @@
     $('.ui.checkbox').checkbox();
     $('#profileForm').form({
         on: 'submit',
+        inline: true,
         fields: {
             NickName: {
                 rules: [
@@ -73,6 +94,7 @@
                 ]
             },
             FirstName: {
+                optional: true,
                 rules: [
                     {
                         type: 'regExp',
@@ -82,6 +104,7 @@
                 ]
             },
             LastName: {
+                optional: true,
                 rules: [
                     {
                         type: 'regExp',
@@ -91,9 +114,11 @@
                 ]
             },
             Age: {
+                optional: true,
                 rules: [
                     {
-                        type: 'regExp',
+                        type: 'integer[1..100]',
+                        prompt: 'Возраст введен с ошибкой'
                     }
                 ]
             }

@@ -317,7 +317,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Helpers\LogHelper.cs" />
+    <Compile Include="Helpers\Logger.cs" />
     <Compile Include="Helpers\ViewHelper.cs" />
     <Compile Include="DAL\Infrastructure\AppDbContext.cs" />
     <Compile Include="DAL\Infrastructure\UnitOfWork.cs" />
@@ -334,6 +334,10 @@
     <Compile Include="Migrations\201704241225251_AddYandexWal.cs" />
     <Compile Include="Migrations\201704241225251_AddYandexWal.Designer.cs">
       <DependentUpon>201704241225251_AddYandexWal.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201705021630483_delFollowerPrimaryKey.cs" />
+    <Compile Include="Migrations\201705021630483_delFollowerPrimaryKey.Designer.cs">
+      <DependentUpon>201705021630483_delFollowerPrimaryKey.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ChangePassModel.cs" />
@@ -496,6 +500,8 @@
     <Content Include="Views\UserSettings\ConfirmEmail.cshtml" />
     <Content Include="Views\Account\ResetPassword.cshtml" />
     <Content Include="Views\UserSettings\Wallets.cshtml" />
+    <Content Include="Views\Home\Donate.cshtml" />
+    <Content Include="Views\Home\Help.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -522,6 +528,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201704241225251_AddYandexWal.resx">
       <DependentUpon>201704241225251_AddYandexWal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201705021630483_delFollowerPrimaryKey.resx">
+      <DependentUpon>201705021630483_delFollowerPrimaryKey.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

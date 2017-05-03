@@ -35,7 +35,7 @@ namespace Mite.Controllers
             var profile = await _userService.GetUserProfileAsync(name ?? User.Identity.Name, User.Identity.GetUserId());
 
             if (profile == null)
-                return new HttpStatusCodeResult(HttpStatusCode.NotFound);
+                return NotFound();
 
             return View(profile);
         }

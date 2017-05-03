@@ -12,6 +12,7 @@ using Mite.BLL.Services;
 using Mite.Constants;
 using Mite.Models;
 using Mite.Core;
+using Mite.Helpers;
 
 namespace Mite.Controllers
 {
@@ -29,6 +30,10 @@ namespace Mite.Controllers
         }
         public ActionResult Login(string returnUrl)
         {
+            if (User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "UserProfile");
+            }
             ViewBag.ReturnUrl = returnUrl;
             var model = new LoginModel { Remember = true };
             return View(model);
@@ -40,9 +45,14 @@ namespace Mite.Controllers
         {
             if(Request.Url.Host == "test.mitegroup.ru")
             {
-                if(model.UserName != "landenor")
+                var allowedList = new List<string>
                 {
-                    ModelState.AddModelError("", "Только админу разрешено входить");
+                    "landenor",
+                    "dindon"
+                };
+                if(!allowedList.Contains(model.UserName))
+                {
+                    ModelState.AddModelError("", "Вход запрещен.");
                     return View(model);
                 }
             }
@@ -71,6 +81,10 @@ namespace Mite.Controllers
         }
         public ActionResult Register()
         {
+            if (User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "UserProfile");
+            }
             return View();
         }
 
@@ -83,14 +97,14 @@ namespace Mite.Controllers
                 return View(model);
             }
             var emailUser = await _userManager.FindByEmailAsync(model.Email);
-            if(emailUser != null)
-            {
-                ModelState.AddModelError("EmailNotUnique", "Пользователь с таким e-mail уже существует.");
-            }
             var nameUser = await _userManager.FindByNameAsync(model.UserName);
-            if(nameUser != null)
+            if (emailUser != null || nameUser != null)
             {
-                ModelState.AddModelError("UserNameNotUnique", "Пользователь с таким именем уже существует.");
+                if(emailUser != null)
+                    ModelState.AddModelError("EmailNotUnique", "Пользователь с таким e-mail уже существует.");
+                if(nameUser != null)
+                    ModelState.AddModelError("UserNameNotUnique", "Пользователь с таким именем уже существует.");
+                return View(model);
             }
             var result = await _userService.RegisterAsync(model);
             if (result.Succeeded)
@@ -98,13 +112,14 @@ namespace Mite.Controllers
                 //Отправляем e-mail для подтверждения адреса эл. почты
                 var user = await _userManager.FindByNameAsync(model.UserName);
                 string code = await _userManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code });
+                var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, "http");
 
-                await _userManager.SendEmailAsync(user.Id, "Подтверждение пароля", "Подтверждаем свой аккаунт. <a href=\"" + callbackUrl + "\">Жмак.</a>");
+                await _userManager.SendEmailAsync(user.Id, "MiteGroup.Подтверждение почты.", "Для подтверждения вашего аккаунта перейдите по <a href=\"" + callbackUrl + "\">ссылке.</a> MiteGroup.");
                 return RedirectToAction("Index", "Home");
             }
-            AddErrors(result.Errors);
             //Если что то пошло не так, отображаем форму заново(вместе с ошибками)
+            ModelState.AddModelError("", "Ошибка на сервере");
+            Logger.WriteErrors("AccountController, Register", result.Errors);
             return View(model);
         }
         /// <summary>
@@ -142,25 +157,18 @@ namespace Mite.Controllers
         {
             return View();
         }
-        [HttpPost]
-        public async Task<bool> IsEmailExist(string email)
-        {
-            var user = await _userManager.FindByEmailAsync(email);
-            return user != null;
-        }
-        [HttpPost]
-        public async Task<bool> IsUserNameExist(string userName)
-        {
-            var user = await _userManager.FindByNameAsync(userName);
-            return user != null;
-        }
-        public async Task<RedirectResult> ConfirmEmail(string userId, string code)
+        public async Task<ActionResult> ConfirmEmail(string userId, string code)
         {
             var result = await _userManager.ConfirmEmailAsync(userId, code);
-            if (result.Succeeded)
-                return Redirect("http://mitegroup.ru/user/settings#/security");
+            if (User.Identity.IsAuthenticated)
+            {
+                return Redirect($"http://{Request.Url.Host}/user/settings#/security");
+            }
             else
-                return Redirect("http://mitegroup.ru/user/settings#/security");
+            {
+                Logger.WriteErrors("AccountController, ConfirmEmail", result.Errors);
+                return RedirectToAction("Login", "Account");
+            }
         }
         public ActionResult ResetPassword(string code, string email)
         {

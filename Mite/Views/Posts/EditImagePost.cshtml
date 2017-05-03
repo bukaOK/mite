@@ -47,14 +47,14 @@
     }
 </div>
 <script>
-    $(document).ready(function() {
+    $(function() {
+        ViewHelper.activateSidebarItem('#editImageItem');
         $('.ui.checkbox').checkbox();
         $.ajax({
             url: '/api/tags',
             type: 'get',
             success: function(data){
                 var tagsMenu = $('#select-tags');
-                console.log(data);
                 var tagsItems = '';
                 for(var i = 0; i < data.length; i++){
                     tagsItems += '<div class="item" data-value="' + data[i] + '">' + data[i] + '</div>'
@@ -74,11 +74,13 @@
                 });
             },
             error: function(jqXhr){
-                console.log(jqXhr);
+                alert('Ошибка инициализации тегов.');
             }
         });
         //Отправляем форму
         $('#save-btn').click(function(ev) {
+            var $saveBtn = $(this);
+
             $('#imgPostForm').form('validate form');
             @{
                 var url = string.IsNullOrEmpty(Model.Header)
@@ -103,7 +105,7 @@
                     type: 'post',
                     dataType: 'json',
                     beforeSend: function () {
-                        $(ev).addClass('loading disabled');
+                        $saveBtn.addClass('loading disabled');
                     },
                     success: function (resp) {
                         $resultMsg.addClass('green').removeClass('red');
@@ -112,10 +114,9 @@
                     error: function (jqXhr) {
                         $resultMsg.addClass('red').removeClass('green');
                         $resultMsg.html('Ошибка во время добавления поста')
-                        console.log(jqXhr);
                     },
                     complete: function (jqXhr) {
-                        $(ev).removeClass('loading disabled');
+                        $saveBtn.removeClass('loading disabled');
                         $resultMsg.removeClass('hidden');
                     }
                 });

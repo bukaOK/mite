@@ -53,15 +53,14 @@
             <div class="ui two column grid container">
                 <div class="column">
                     <div class="ui inverted horizontal link list">
-                        <a class="item">О нас</a>
-                        <a class="item">Помощь</a>
-                        <a class="item">Еще</a>
+                        <a href="https://vk.com/mitegroup" class="item">Мы ВКонтакте</a>
+                        @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "item" })
+                        @Html.ActionLink("Поддержать проект", "Donate", "Home", null, new { @class = "item" })
                     </div>
                 </div>
                 <div class="right aligned column">
                     <div class="ui inverted horizontal link list">
-                        <a class="item">Поддержать проект</a>
-                        <a href="/" class="item">&copy; Mite</a>
+                        <a href="/" class="item">&copy; MiteGroup</a>
                     </div>
                 </div>
             </div>

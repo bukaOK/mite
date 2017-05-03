@@ -7,48 +7,6 @@
 }
 <script src="~/Scripts/password-strength.js"></script>
 <script>
-    function isEmailExist(email) {
-        var emailData = "email=" + email;
-        return $.post("/Account/IsEmailExist", emailData);
-    }
-    function isUserNameExist(userName) {
-        var userNameData = "userName=" + userName;
-        return $.post("/Account/IsUserNameExist", userNameData);
-    }
-    function sendForm() {
-        $.ajax({
-            type: "post",
-            data: $("form").serialize(),
-            success: function(data) {
-                console.log(data);
-            }
-        });
-
-    }
-    $.fn.form.settings.rules.isUnique = function (value, existingField) {
-        if (value == "" || value == null)
-            return;
-        $.ajax({
-            async: false,
-            method: "post",
-            url: "/Account/Is" + existingField + "Exist",
-            data: {
-                value: value
-            },
-            success: function(resp) {
-                console.log(resp);
-
-                switch (resp) {
-                case "True":
-                    return false;
-                case "False":
-                    return true;
-                default:
-                    return false;
-                }
-            }
-        });
-    };
     $(function () {
             $('.ui.dropdown').dropdown();
             $(".ui.form").form({
@@ -105,40 +63,12 @@
                             }
                         ]
                     }
-                },
-                onSuccess: function (event, data) {
-                    console.log(event);
-                    console.log(data);
-                    $.when(isEmailExist(data.Email), isUserNameExist(data.UserName))
-                        .done(function(email, userName) {
-                            if (!(email[0] === "False" && userName[0] === "False")) {
-                                $(".ui.message.error").show();
-                                $(".ui.message.error").html("<ul class=\"list\"></ul>");
-                                if (email[0] !== "False") {
-                                    console.log(email);
-                                    $(".ui.message.error")
-                                        .children("ul.list")
-                                        .append("<li>Данный Email уже существует</li>");
-                                }
-                                if (userName[0] !== "False") {
-                                    console.log(userName);
-                                    $(".ui.message.error")
-                                        .children("ul.list")
-                                        .append("<li>Данный Ник уже существует</li>");
-                                }
-                                $(".ui.message.error").show();
-                                return false;
-                            } else {
-                                sendForm();
-                            }
-                        });
-                    return false;
                 }
             });
             initPassStrength('#Password');
         });
 </script>
-<div class="ui middle aligned center aligned grid">
+<div class="ui center aligned grid">
         @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "ui sixteen wide mobile eight wide tablet six wide computer column left aligned register form" }))
         {
             <h2 class="ui blue header">

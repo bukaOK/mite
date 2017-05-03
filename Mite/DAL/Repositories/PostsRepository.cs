@@ -19,9 +19,16 @@ namespace Mite.DAL.Repositories
         {
             var query = "select top 1 UserId from dbo.Posts where Id=@id";
             var currentUserId = await Db.QueryFirstAsync<string>(query, new { id });
-            query = "update dbo.Comments set PostId=NULL where PostId=@id; delete from dbo.Ratings where PostId=@id; delete from dbo.Posts where Id=@id;"
-                + "update dbo.AspNetUsers set Rating=(select SUM(Value) from dbo.Ratings where OwnerId=@userId) where Id=@userId";
-            await Db.ExecuteAsync(query, new { Id = id, userId = currentUserId });
+            var queryParams = new { Id = id, userId = currentUserId };
+            //Удаляем пост
+            //Удаляем с комментариев ссылку на пост, чтобы комменты не потеряли рейтинг(несправедливо жи)
+            query = "update dbo.Comments set PostId=NULL where PostId=@id; delete from dbo.Ratings where PostId=@id; delete from dbo.Posts where Id=@id;";
+            await Db.ExecuteAsync(query, queryParams);
+            //Получаем новый рейтинг(нельзя все пихать в один запрос, т.к. новый рейтинг может быть null и выкинет исключение)
+            query = "select SUM(Value) from dbo.Ratings where OwnerId=@userId";
+            var newRating = (await Db.QueryFirstAsync<int?>(query, queryParams)) ?? 0;
+            query = "update dbo.AspNetUsers set Rating=@newRating where Id=@userId";
+            await Db.ExecuteAsync(query, new { Id = id, userId = currentUserId, newRating = newRating });
         }
         public Task<IEnumerable<Post>> GetByUserAsync(string userId, bool isPublished)
         {

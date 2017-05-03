@@ -43,10 +43,14 @@ namespace Mite.DAL.Repositories
             var query = "select top 1 UserId from dbo.Comments where Id=@Id";
             var currentUserId = await Db.QueryFirstAsync<string>(query, new { Id = id });
 
-            query = "delete from dbo.Ratings where CommentId=@Id;" +
-                "delete from dbo.Comments where Id=@Id;"
-                + "update dbo.AspNetUsers set Rating = (select SUM(Value) from dbo.Ratings where OwnerId=@UserId) where Id=@UserId;";
+            query = "delete from dbo.Ratings where CommentId=@Id;delete from dbo.Comments where Id=@Id;";
             await Db.ExecuteAsync(query, new { Id = id, UserId = currentUserId });
+            //Получаем новый рейтинг(нельзя все пихать в один запрос, т.к. новый рейтинг может быть null и выкинет исключение)
+            query = "select SUM(Value) from dbo.Ratings where OwnerId=@UserId";
+            var newRating = (await Db.QueryFirstAsync<int?>(query, new { Id = id, UserId = currentUserId })) ?? 0;
+
+            query = "update dbo.AspNetUsers set Rating=@newRating where Id=@UserId;";
+            await Db.ExecuteAsync(query, new { Id = id, UserId = currentUserId, newRating = newRating });
         }
         /// <summary>
         /// Возвращает комментарий с родительским комментом и пользователем

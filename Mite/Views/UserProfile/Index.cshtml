@@ -15,10 +15,13 @@
 <div class="ui profile center aligned three column grid segment">
     <div class="row">
         <div class="right aligned column">
-            <button class="ui green labeled icon button" onclick="$('#donateModal').modal('show')">
-                <i class="heart icon"></i>
-                Поддержать
-            </button>
+            @if (Model.YandexWalId != null)
+            {
+                <button class="ui green labeled icon button" onclick="$('#donateModal').modal('show')">
+                    <i class="heart icon"></i>
+                    Поддержать
+                </button>
+            }
         </div>
         <div class="column">
             <img class="ui centered circular image" src="@Model.AvatarSrc" width="150" />
@@ -32,14 +35,20 @@
         <div class="left aligned column">
             @if (currentUserName != pageUserName && !Model.IsFollowing && User.Identity.IsAuthenticated)
             {
-                <button class="ui primary button" onclick="addFollower('@Model.UserId')">
+                <button class="ui primary button" onclick="addFollower('@Model.UserId', this)">
                     <i class="add user icon"></i>Подписаться
+                </button>
+                <button class="ui red button" onclick="deleteFollower('@Model.UserId', this)" style="display: none">
+                    <i class="remove user icon"></i>Отписаться
                 </button>
             }
             @if (Model.IsFollowing)
             {
-                <button class="ui red button" onclick="deleteFollower('@Model.UserId')">
+                <button class="ui red button" onclick="deleteFollower('@Model.UserId', this)">
                     <i class="remove user icon"></i>Отписаться
+                </button>
+                <button class="ui primary button" onclick="addFollower('@Model.UserId', this)" style="display: none">
+                    <i class="add user icon"></i>Подписаться
                 </button>
             }
         </div>
@@ -169,7 +178,7 @@ else
         Поддержать @User.Identity.Name
     </div>
     <div class="content">
-        <form class="ui form" id="donateForm" action="https://money.yandex.ru/quickpay/confirm.xml" method="post">
+        <form class="ui form" id="donateForm" action="https://money.yandex.ru/quickpay/confirm.xml" method="post" target="_blank">
             <div class="field">
                 <textarea placeholder="Ваши пожелания =)" name="comment" rows="3"></textarea>
             </div>
@@ -357,22 +366,27 @@ else
                 window.location.reload();
             },
             error: function(){
-                console.log()
                 alert('Ошибка при попытке публикации');
             }
-        })
+        });
     }
-    function addFollower(followingUserId) {
-        console.log(followingUserId);
+    function addFollower(followingUserId, btn) {
+        var $btn = $(btn);
+        $btn.addClass('loading disabled');
+
         $.ajax({
             url: '/api/followers',
             type: 'post',
             data: '=' + followingUserId,
             success: function (resp) {
-                console.log(resp);
+                $btn.hide();
+                $btn.siblings().show();
             },
             error: function (jqXhr) {
-                console.log(jqXhr);
+                alert('Ошибка сервера');
+            },
+            complete: function(){
+                $btn.removeClass('loading disabled');
             }
         });
         $.ajax({
@@ -386,16 +400,23 @@ else
             }
         });
     }
-    function deleteFollower(followingUserId) {
+    function deleteFollower(followingUserId, btn) {
+        var $btn = $(btn);
+        $btn.addClass('loading disabled');
+
         $.ajax({
             url: '/api/followers',
             type: 'delete',
             data: '=' + followingUserId,
             success: function (resp) {
-                console.log(resp);
+                $btn.hide();
+                $btn.siblings().show();
             },
             error: function (jqXhr) {
-                console.log(jqXhr);
+                alert('Ошибка сервера');
+            },
+            complete: function(){
+                $btn.removeClass('loading disabled');
             }
         });
     }
@@ -404,6 +425,27 @@ else
         $('#confirmPostDelete').modal('show');
     }
     $(function () {
+        $('#donateForm').form({
+            on: 'submit',
+            fields: {
+                sum: {
+                    rules: [
+                        {
+                            type: 'integer',
+                            prompt: 'В качестве суммы укажите целое число'
+                        }
+                    ]
+                },
+                paymentType: {
+                    rules: [
+                        {
+                            type: 'empty',
+                            prompt: 'Выберите тип оплаты'
+                        }
+                    ]
+                }
+            }
+        })
         var currentUser = '@currentUserName'
         var pageUser = '@pageUserName';
 
@@ -416,13 +458,12 @@ else
         $('.ui.dropdown').dropdown();
         @if(currentUserName == pageUserName)
         {
-            <text>$("#userProfileItem").addClass("active");</text>
+            <text>ViewHelper.activateSidebarItem('#userProfileItem')</text>
         }
         var deletePostModal = $('#confirmPostDelete').modal({
             onApprove: function() {
                 var postId = delPostId;
                 var deleteElem = $('.column[data-post-id="' + postId + '"]')[0];
-                debugger;
                 $.ajax({
                     url: '/posts/deletepost/' + postId,
                     type: 'post',
@@ -432,7 +473,6 @@ else
                         $('.tab[data-tab="' + tab + '"]').masonry('layout');
                     },
                     error: function (jqXhr) {
-                        console.log(jqXhr);
                     }
                 });
             }
@@ -450,7 +490,6 @@ else
                 },
                 beforeSuccess: function (resp) {
                     var jsonResp = JSON.parse(resp);
-                    console.log(jsonResp);
                     var currentTab = getCurrentTab();
                     if(jsonResp.data.length == 0){
                         if(currentTab == 'followers'){
@@ -471,6 +510,7 @@ else
                         //Для постов делаем красивенькое время(словами)
                         if(tmplName == 'postsTmpl'){
                             jsonResp.data.forEach(function(elem){
+                                elem.LastEdit += elem.LastEdit[elem.LastEdit - 1] == 'Z' ? '' : 'Z';
                                 elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.LastEdit).getTime());
                             });
                         }
