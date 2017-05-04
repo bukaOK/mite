@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNet.Identity;
 using Mite.BLL.IdentityManagers;
 using Mite.BLL.Services;
+using Mite.Core;
 using Mite.Models;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -20,40 +20,34 @@ namespace Mite.Controllers
             _userManager = userManager;
         }
         [HttpGet]
-        public Task<List<NotificationModel>> GetByUser()
+        public Task<List<NotificationModel>> GetByUser(bool onlyNew)
         {
-            return _notificationService.GetNotificationsByUser(User.Identity.GetUserId());
+            return _notificationService.GetByUserAsync(User.Identity.GetUserId(), onlyNew);
         }
         [HttpPost]
-        public async Task<IHttpActionResult> AddNotification(NotificationModel model)
+        public async Task<IHttpActionResult> Add(NotificationModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest();
             if (model.User.Id == User.Identity.GetUserId())
                 return Ok();
-            try
+            model.NotifyUser = new UserShortModel
             {
-                model.NotifyUser = new UserShortModel
-                {
-                    Id = User.Identity.GetUserId()
-                };
-                await _notificationService.AddNotification(model);
-                return Ok();
-            }
-            catch (Exception)
-            {
-                return InternalServerError();
-            }
+                Id = User.Identity.GetUserId()
+            };
+            await _notificationService.AddAsync(model);
+            return Ok();
         }
         [HttpPut]
-        public Task ReadNotifications()
+        public Task Read()
         {
-            return _notificationService.ReadNotificationsAsync(User.Identity.GetUserId());
+            return _notificationService.ReadAsync(User.Identity.GetUserId());
         }
         [HttpDelete]
-        public Task<int> GetNotificationsCount()
+        public async Task<IHttpActionResult> Clean()
         {
-            return _notificationService.GetNewNotificationsCountAsync(User.Identity.GetUserId());
+            await _notificationService.Clean(User.Identity.GetUserId());
+            return Ok();
         }
     }
 }

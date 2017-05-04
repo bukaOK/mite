@@ -22,6 +22,11 @@ namespace Mite
                 defaults: new {controller = "UserSettings", action = "Index"}
             );
             routes.MapRoute(
+                name: "UserNotifications",
+                url: "user/notifications",
+                defaults: new { controller = "UserProfile", action = "Notifications" }
+            );
+            routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }

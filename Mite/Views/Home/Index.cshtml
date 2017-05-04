@@ -50,7 +50,7 @@
             </div>
         </article>
         <footer>
-            <div class="ui two column grid container">
+            <div class="ui computer tablet only two column grid container">
                 <div class="column">
                     <div class="ui inverted horizontal link list">
                         <a href="https://vk.com/mitegroup" class="item">Мы ВКонтакте</a>
@@ -60,6 +60,16 @@
                 </div>
                 <div class="right aligned column">
                     <div class="ui inverted horizontal link list">
+                        <a href="/" class="item">&copy; MiteGroup</a>
+                    </div>
+                </div>
+            </div>
+            <div class="ui mobile only grid center aligned container">
+                <div class="ui basic segment" style="padding-top: 0">
+                    <div class="ui inverted divided list">
+                        <a href="https://vk.com/mitegroup" class="item">Мы ВКонтакте</a>
+                        @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "item" })
+                        @Html.ActionLink("Поддержать проект", "Donate", "Home", null, new { @class = "item" })
                         <a href="/" class="item">&copy; MiteGroup</a>
                     </div>
                 </div>

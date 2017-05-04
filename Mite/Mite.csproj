@@ -280,6 +280,7 @@
     <Compile Include="Controllers\PostsController.cs" />
     <Compile Include="Controllers\RatingController.cs" />
     <Compile Include="Controllers\TagsController.cs" />
+    <Compile Include="Controllers\TopController.cs" />
     <Compile Include="Controllers\UserProfileController.cs" />
     <Compile Include="DAL\Core\Repository.cs" />
     <Compile Include="DAL\Entities\Follower.cs" />
@@ -502,6 +503,7 @@
     <Content Include="Views\UserSettings\Wallets.cshtml" />
     <Content Include="Views\Home\Donate.cshtml" />
     <Content Include="Views\Home\Help.cshtml" />
+    <Content Include="Views\UserProfile\Notifications.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

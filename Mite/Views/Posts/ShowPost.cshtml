@@ -30,12 +30,12 @@
         </div>
     </div>
     <div class="ui divider"></div>
-    <div class="two column row">
-        <div class="centered column">
+    <div class="row">
+        <div class="twelve wide computer twelve wide tablet sixteen wide mobile centered column">
             <div class="ui items">
                 <div class="item">
-                    <div class="ui tiny circular image" style="margin: 3px">
-                        <img src="@Model.User.AvatarSrc" alt="@Model.User.UserName" />
+                    <div class="ui tiny circular image" style="width: 80px !important">
+                        <img src="@Model.User.AvatarSrc" alt="@Model.User.UserName" style="border-radius: 500rem !important;"/>
                     </div>
                     <div class="content">
                         <a href="@Url.Action("Index", "UserProfile", new { name = Model.User.UserName })" class="header">&copy;@Model.User.UserName</a>
@@ -47,6 +47,9 @@
                             <span id="post-rating" data-rating="@Model.Rating">(@Model.Rating)</span>
                         </div>
                         <div class="description">
+                            <h4>@Model.Description</h4>
+                        </div>
+                        <div class="extra">
                             @foreach (var tag in Model.Tags)
                             {
                                 <div class="ui label">@tag</div>
@@ -56,13 +59,10 @@
                 </div>
             </div>
         </div>
-        <div class="column">
-            <h4>@Model.Description</h4>
-        </div>
     </div>
     <div class="ui divider"></div>
     <div class="row">
-        <div class="twelve wide centered column">
+        <div class="twelve wide computer twelve wide tablet sixteen wide mobile centered column">
             <div class="ui large comments">
                 <h4 class="ui header" id="comments-count">
                     @Model.CommentsCount @ViewHelper.GetWordCase(Model.CommentsCount, "комментарий", "комментария", "комментариев")

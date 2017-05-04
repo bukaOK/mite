@@ -12,6 +12,8 @@
     "imagesloaded": "^4.1.1",
     "uikit": "^2.27.2",
     "jquery.scrollbar": "^0.2.11",
-    "perfect-scrollbar": "^0.6.16"
+    "perfect-scrollbar": "^0.6.16",
+    "jquery-ui-touch-punch": "*",
+    "pep": "jquery.pep#^0.6.10"
   }
 }

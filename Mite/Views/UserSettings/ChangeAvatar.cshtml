@@ -1,7 +1,7 @@
 ﻿@model string
 
 @*ToDo: Обработать случай, когда аватарка не выбрана и пользователь нажал сохранить*@
-<div class="ui two column center aligned grid change-avatar">
+<div class="ui stackable two column center aligned grid change-avatar">
     <div class="column">
         <input type="file" id="ava-download">
         <label for="ava-download" class="ui labeled icon large primary button">
@@ -22,7 +22,7 @@
 </div>
 @Scripts.Render("~/bundles/croppie")
 <script>
-    $(document).ready(function(){
+    $(function(){
         $("avaSet").addClass("active");
         var uploadCrop = $('.avatar.edit');
         uploadCrop.croppie({
@@ -32,7 +32,7 @@
                 type: 'circle'
             },
             boundary: {
-                width: 400,
+                width: $('.cr-boundary').parents('.column').width() * 0.77,
                 height: 400
             }
         });

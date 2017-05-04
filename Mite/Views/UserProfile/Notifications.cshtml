@@ -1,0 +1,103 @@
+﻿@using Mite.Enums
+@{
+    ViewBag.Title = "Уведомления";
+}
+
+<div class="ui grid">
+    <div class="nine wide computer eleven wide tablet sixteen wide mobile centered column">
+        <div class="ui stackable grid">
+            <div class="six wide column">
+                <div class="ui vertical menu" id="feedsFilter">
+                    <a class="active item" data-tab="all">Все</a>
+                    <a class="item" data-tab="comments">Комментарии</a>
+                    <a class="item" data-tab="followers">Подписки</a>
+                    <a class="item" data-tab="ratings">Оценки</a>
+                </div>
+                <button class="ui inverted fluid red button" onclick="cleanNotifications(this)">
+                    <i class="remove icon"></i>Очистить
+                </button>
+            </div>
+            <div class="ten wide column">
+                <div class="ui center aligned segment">
+                    <h3 class="ui left aligned dividing header">
+                        Уведомления
+                    </h3>
+                    <div class="ui active loading basic segment feed tab" data-tab="all"></div>
+                    <div class="ui loading basic segment feed tab" data-tab="comments"></div>
+                    <div class="ui loading basic segment feed tab" data-tab="followers"></div>
+                    <div class="ui loading basic segment feed tab" data-tab="ratings"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function initUserNotifications() {
+        $.ajax({
+            url: '/api/notification',
+            data: 'onlyNew=false',
+            type: 'get',
+            success: function (resp) {
+                resp.forEach(function (item) {
+                    item.DateStr = ViewHelper.getPastTense(new Date(item.NotifyDate).getTime());
+                });
+                var commentsArr = resp.filter(function (item) {
+                    return item.NotificationType === @((byte)NotificationTypes.PostComment);
+                });
+                var ratingsArr = resp.filter(function(item){
+                    return item.NotificationType === @((byte)NotificationTypes.CommentRating)
+                        || item.NotificationType === @((byte)NotificationTypes.PostRating);
+                });
+                var followersArr = resp.filter(function(item){
+                    return item.NotificationType == @((byte)NotificationTypes.Follower);
+                });
+
+                var emptyMsg = '<span>Уведомлений нет</span>';
+                var tmpl = $.templates('{{for tmpl="#eventTmpl" /}}');
+                if(resp.length === 0){
+                    $('.tab.feed').html(emptyMsg);
+                } else{
+                    $('.tab.feed').each(function(index, elem){
+                        switch($(elem).data('tab')){
+                            case 'all':
+                                $(elem).html(tmpl.render(resp));
+                                break;
+                            case 'comments':
+                                $(elem).html(commentsArr.length === 0 ? emptyMsg : tmpl.render(commentsArr));
+                                break;
+                            case 'followers':
+                                $(elem).html(followersArr.length === 0 ? emptyMsg : tmpl.render(followersArr));
+                                break;
+                            case 'ratings':
+                                $(elem).html(ratingsArr.length === 0 ? emptyMsg : tmpl.render(ratingsArr));
+                                break;
+                        }
+                    });
+                }
+                $('.feed.tab').removeClass('loading');
+            }
+        })
+    }
+    function cleanNotifications(btn) {
+        $(btn).addClass('loading disabled');
+        $.ajax({
+            type: 'delete',
+            url: '/api/notification',
+            success: function(){
+                var emptyMsg = '<span>Уведомлений нет</span>';
+                $('.tab.feed').html(emptyMsg);
+            },
+            error: function(){
+                alert('Ошибка сервера');
+            },
+            complete: function(){
+                $(btn).removeClass('loading disabled');
+            }
+        });
+    }
+    $(function () {
+        initUserNotifications();
+        $('#feedsFilter .item').tab();
+    });
+</script>
+

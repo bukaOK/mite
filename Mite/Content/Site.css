@@ -1,4 +1,13 @@
 ﻿/*Общее*/
+@media only screen and (max-width: 767px){
+    header.menu>.container>.computer.only.item, header.menu>.container>.tablet.only.item {
+        display: none !important;
+    }
+    .sidebar
+}
+html, body{
+    height: 100% !important;
+}
 .ui.search.selection.dropdown{
     border: 2px solid #e8e8e8;
 }
@@ -54,8 +63,9 @@ form.login>.segment, form.register>.segment{
     padding: 0 10px;
 }
 /*Настраиваем сайдбар*/
-.ui.sidebar{
+.ui.right.sidebar{
     overflow: visible !important;
+    width: 200px;
 }
 .side-avatar{
     margin: 10px auto 0;
@@ -105,7 +115,7 @@ article.ui.container{
 .logoff.button{
     margin-top: 10px;
     margin-left: 10px;
-    max-width: 236px;
+    max-width: 178px;
 }
 .pusher{
     background-color: #f4f4f4 !important;
@@ -229,4 +239,21 @@ input[type="file"] {
     width: auto;
     max-width: 95%;
     max-height: 95%;
+}
+@media only screen and (max-width: 767px){
+    #postAvatarWrapper img{
+        border-radius: 200px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+/*Уведомления*/
+.segment.feed.tab{
+    display: none;
+}
+.active.segment.feed.tab{
+    display: block;
+}
+#feedsFilter{
+    width: 100%;
 }

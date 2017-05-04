@@ -6,7 +6,7 @@
 }
 <div class="ui segment">
     <h2 class="ui dividing header">@ViewBag.Title</h2>
-    @using (Html.BeginForm("AddPost", "Posts", FormMethod.Post, new { @class = "ui two column center aligned grid form", id = "imgPostForm" }))
+    @using (Html.BeginForm("AddPost", "Posts", FormMethod.Post, new { @class = "ui stackable two column center aligned grid form", id = "imgPostForm" }))
     {
         <div class="column">
             <input type="file" id="img-download">

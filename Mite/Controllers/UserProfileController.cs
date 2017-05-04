@@ -39,6 +39,10 @@ namespace Mite.Controllers
 
             return View(profile);
         }
+        public ViewResult Notifications()
+        {
+            return View();
+        }
         public async Task<JsonResult> Followers(string userId, SortFilter sort)
         {
             var userModels = await _followersService.GetFollowersByUserAsync(userId);

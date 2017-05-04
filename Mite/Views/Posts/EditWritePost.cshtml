@@ -10,17 +10,15 @@
     @using (Html.BeginForm("AddPost", "Posts", FormMethod.Post, new { @class = "ui form" }))
     {
         @Html.EditorFor(x => x.Header)
-        <div class="ui grid">
-            <div class="nine wide column">
-                @Html.EditorFor(x => x.Description)
+        <div class="two fields">
+            <div class="field">
+                @Html.TextAreaFor(x => x.Description, new {@placeholder = Html.DisplayNameFor(y => y.Description) })
             </div>
-            <div class="seven wide column">
-                <div class="field">
-                    <div class="ui fluid search multiple selection dropdown" id="select-tags">
-                        @Html.HiddenFor(x => x.Tags, new { Value = tagsRow })
-                        <div class="default text">Теги</div>
-                        <div class="menu">
-                        </div>
+            <div class="field">
+                <div class="ui fluid search multiple selection dropdown" id="select-tags">
+                    @Html.HiddenFor(x => x.Tags, new { Value = tagsRow })
+                    <div class="default text">Теги</div>
+                    <div class="menu">
                     </div>
                 </div>
             </div>
@@ -77,9 +75,51 @@
             ContentEdit.LANGUAGE = 'ru';
         }
     });
+    ContentTools.ToolboxUI.prototype.mount = function () {
+        var coord, position, restore;
+        this._domElement = this.constructor.createDiv(['ct-widget', 'ct-toolbox']);
+        this.parent().domElement().appendChild(this._domElement);
+        this._domGrip = this.constructor.createDiv(['ct-toolbox__grip', 'ct-grip']);
+        this._domElement.appendChild(this._domGrip);
+        this._domGrip.appendChild(this.constructor.createDiv(['ct-grip__bump']));
+        this._domGrip.appendChild(this.constructor.createDiv(['ct-grip__bump']));
+        this._domGrip.appendChild(this.constructor.createDiv(['ct-grip__bump']));
+        this._domToolGroups = this.constructor.createDiv(['ct-tool-groups']);
+        this._domElement.appendChild(this._domToolGroups);
+        this.tools(this._tools);
+        restore = window.localStorage.getItem('ct-toolbox-position');
+        if (restore && /^\d+,\d+$/.test(restore)) {
+            position = (function () {
+                var _i, _len, _ref, _results;
+                _ref = restore.split(',');
+                _results = [];
+                for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                    coord = _ref[_i];
+                    _results.push(parseInt(coord));
+                }
+                return _results;
+            })();
+            this._domElement.style.left = "" + position[0] + "px";
+            this._domElement.style.top = "" + position[1] + "px";
+            this._contain();
+        }
+        var self = this;
+        $(this._domElement).pep({
+            initiate: function () {
+                self.addCSSClass('ct-toolbox--dragging');
+            },
+            stop: function(){
+                self.removeCSSClass('ct-toolbox--dragging');
+            },
+            elementsWithInteraction: '.ct-tool-groups'
+        });
+        return this._addDOMEventListeners();
+    };
+
     $(function () {
         ViewHelper.activateSidebarItem('#editDocItem');
         var headerId = '#@Html.IdFor(x => x.Header)';
+
         $(headerId).keyup(function (ev) {
             $('.ui.form').children('h2').html(ev.target.value);
         });

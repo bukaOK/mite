@@ -18,7 +18,7 @@ namespace Mite
                 "~/Scripts/jquery.signalR-2.2.1.min.js"));
             bundles.Add(new ScriptBundle("~/bundles/croppie").Include("~/node_modules/croppie/croppie.js"));
             bundles.Add(new ScriptBundle("~/bundles/editor").Include(
-                "~/Scripts/content-tools.js"));
+                "~/Scripts/content-tools.js", "~/bower_components/pep/src/jquery.pep.js"));
             bundles.Add(new ScriptBundle("~/bundles/jsrender").Include("~/bower_components/jsrender/jsrender.min.js"));
 
             bundles.Add(new StyleBundle("~/Content/semantic").Include(

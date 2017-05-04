@@ -8,23 +8,32 @@ using AutoMapper;
 using Mite.DAL.Entities;
 using Mite.Enums;
 using System.Text;
-using Mite.Hubs;
-using Mite.BLL.IdentityManagers;
 using System.Linq;
 
 namespace Mite.BLL.Services
 {
     public interface INotificationService
     {
-        Task AddNotification(NotificationModel notifyModel);
-        Task<List<NotificationModel>> GetNotificationsByUser(string userId);
+        Task AddAsync(NotificationModel notifyModel);
+        /// <summary>
+        /// Возвращает новые уведомления пользователя
+        /// </summary>
+        /// <param name="userId">Id пользователя</param>
+        /// <param name="onlyNew">Только новые или все</param>
+        /// <returns></returns>
+        Task<List<NotificationModel>> GetByUserAsync(string userId, bool onlyNew);
         /// <summary>
         /// Делаем новые уведомления устаревшими
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        Task ReadNotificationsAsync(string userId);
-        Task<int> GetNewNotificationsCountAsync(string userId);
+        Task ReadAsync(string userId);
+        /// <summary>
+        /// Удаляет все уведомления у пользователя
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task Clean(string userId);
     }
     public class NotificationService : DataService, INotificationService
     {
@@ -32,7 +41,7 @@ namespace Mite.BLL.Services
         {
         }
 
-        public Task AddNotification(NotificationModel notifyModel)
+        public Task AddAsync(NotificationModel notifyModel)
         {
             notifyModel.IsNew = true;
             notifyModel.NotifyDate = DateTime.UtcNow;
@@ -42,14 +51,13 @@ namespace Mite.BLL.Services
             return Database.NotificationRepository.AddAsync(notify);
         }
 
-        public Task<int> GetNewNotificationsCountAsync(string userId)
+        public Task Clean(string userId)
         {
-            return Database.NotificationRepository.GetNewNotificationsCountAsync(userId);
+            return Database.NotificationRepository.RemoveByUserAsync(userId);
         }
-
-        public async Task<List<NotificationModel>> GetNotificationsByUser(string userId)
+        public async Task<List<NotificationModel>> GetByUserAsync(string userId, bool onlyNew)
         {
-            var notifications = await Database.NotificationRepository.GetNewNotificationsByUserAsync(userId);
+            var notifications = await Database.NotificationRepository.GetByUserAsync(userId, onlyNew);
             var notificationModels = Mapper.Map<List<NotificationModel>>(notifications);
             var content = new StringBuilder();
             foreach(var notifyModel in notificationModels)
@@ -77,7 +85,8 @@ namespace Mite.BLL.Services
             }
             return notificationModels.OrderByDescending(x => x.NotifyDate).ToList();
         }
-        public Task ReadNotificationsAsync(string userId)
+        
+        public Task ReadAsync(string userId)
         {
             return Database.NotificationRepository.ReadByUserAsync(userId);
         }

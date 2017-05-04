@@ -78,7 +78,7 @@
         tabContent.css('display', this.tabContent.display);
 
         if (dataUrl !== '' && dataUrl != undefined) {
-            itemUrl += dataUrl[0] === '/' ? dataUrl : '/' + dataUrl;
+            itemUrl = dataUrl[0] === '/' ? dataUrl : '/' + dataUrl;
         } else {
             itemUrl += dataTab[0] === '/' ? dataTab : '/' + dataTab;
         }

@@ -12,35 +12,27 @@ namespace Mite.DAL.Repositories
         public NotificationRepository(IDbConnection db) : base(db)
         {
         }
-        public Task<IEnumerable<Notification>> GetNewNotificationsByUserAsync(string userId)
+        public Task<IEnumerable<Notification>> GetByUserAsync(string userId, bool onlyNew)
         {
             var query = "select * from dbo.Notifications inner join dbo.AspNetUsers on NotifyUserId=dbo.AspNetUsers.Id "
-                + "where UserId=@userId and IsNew=1";
+                + "where UserId=@userId";
+            if (onlyNew)
+                query += " and IsNew=1";
             return Db.QueryAsync<Notification, User, Notification>(query, (notification, user) =>
             {
                 notification.NotifyUser = user;
                 return notification;
             }, new { userId });
         }
-        public Task<IEnumerable<Notification>> GetNotificationsByUserAsync(string userId)
-        {
-            var query = "select * from dbo.Notifications where UserId=@UserId";
-            return Db.QueryAsync<Notification>(query, new { UserId = userId });
-        }
         public Task ReadByUserAsync(string userId)
         {
             var query = "update dbo.Notifications set IsNew=0 where UserId=@UserId and IsNew=1";
             return Db.ExecuteAsync(query, new { UserId = userId });
         }
-        public int GetNewNotificationsCount(string userId)
+        public Task RemoveByUserAsync(string userId)
         {
-            var query = "select COUNT(*) from dbo.Notifications where UserId=@userId and IsNew=1";
-            return Db.QueryFirst<int>(query, new { userId });
-        }
-        public Task<int> GetNewNotificationsCountAsync(string userId)
-        {
-            var query = "select COUNT(*) from dbo.Notifications where UserId=@userId and IsNew=1";
-            return Db.QueryFirstAsync<int>(query, new { userId });
+            var query = "delete from dbo.Notifications where UserId=@userId";
+            return Db.ExecuteAsync(query, new { userId });
         }
     }
 }

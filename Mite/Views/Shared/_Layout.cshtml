@@ -76,7 +76,7 @@
                 <i class="user icon"></i>Моя страница
             </a>
             <a href="@Url.Action("AddPost", "Posts")?postType=@PostTypes.Image.ToString().ToLower()" class="violet item" id="editImageItem">
-                <i class="image icon"></i>Добавить изображение
+                <i class="image icon"></i>Добавить изобр.
             </a>
             <a href="@Url.Action("AddPost", "Posts")?postType=@PostTypes.Document.ToString().ToLower()" class="violet item" id="editDocItem">
                 <i class="file text outline icon"></i>Добавить документ
@@ -107,9 +107,9 @@
                 <a href="@Url.Action("Index", "Home")" class="header main item">
                     <img class="logo" src="/Content/images/mite-logo-icon.png" alt="Логотип"/>
                 </a>
-                @Html.ActionLink("Главная", "Index", "Home", null, new { @class = "item" })
-                @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "item" })
-                @Html.ActionLink("Поддержать нас", "Donate", "Home", null, new { @class = "item" })
+                @Html.ActionLink("Главная", "Index", "Home", null, new { @class = "computer tablet only item" })
+                @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "computer tablet only item" })
+                @Html.ActionLink("Поддержать нас", "Donate", "Home", null, new { @class = "computer tablet only item" })
                 @if (Request.IsAuthenticated)
                 {
                     <div class="right menu">
@@ -133,7 +133,7 @@
             @RenderBody()
         </article>
         <footer>
-            <div class="ui two column grid container">
+            <div class="ui computer tablet only two column grid container">
                 <div class="column">
                     <div class="ui inverted horizontal link list">
                         <a href="https://vk.com/mitegroup" class="item">Мы ВКонтакте</a>
@@ -143,6 +143,16 @@
                 </div>
                 <div class="right aligned column">
                     <div class="ui inverted horizontal link list">
+                        <a href="/" class="item">&copy; MiteGroup</a>
+                    </div>
+                </div>
+            </div>
+            <div class="ui mobile only grid center aligned container">
+                <div class="ui basic segment" style="padding-top: 0">
+                    <div class="ui inverted divided list">
+                        <a href="https://vk.com/mitegroup" class="item">Мы ВКонтакте</a>
+                        @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "item" })
+                        @Html.ActionLink("Поддержать проект", "Donate", "Home", null, new { @class = "item" })
                         <a href="/" class="item">&copy; MiteGroup</a>
                     </div>
                 </div>
@@ -164,22 +174,7 @@
             </div>
         </div>
     </script>
-    
     <script>
-        function loadNotificationsCount() {
-            $.ajax({
-                url: '/api/notification',
-                type: 'delete',
-                success: function (resp) {
-                    if (+resp > 0) {
-                        $('#notifications-item .label').html(resp).show();
-                    }
-                },
-                error: function (jqXhr) {
-                    alert('Ошибка при загрузке уведомлений');
-                }
-            });
-        }
         function readNotifications() {
             $.ajax({
                 url: '/api/notification',
@@ -192,8 +187,11 @@
             $.ajax({
                 url: '/api/notification/',
                 type: 'get',
+                data: 'onlyNew=true',
                 success: function (resp) {
                     if (resp.length > 0) {
+                        //Ставим счетчик
+                        $('#notifications-item .label').html(resp.length).show();
                         resp.forEach(function (item) {
                             item.DateStr = ViewHelper.getPastTense(new Date(item.NotifyDate).getTime());
                         });
@@ -203,7 +201,8 @@
                         $(item).popup('reposition');
                     } else {
                         $popup.addClass('empty');
-                        $popup.html('У вас пока нет новых уведомлений.');
+                        var emptyMsg = 'У вас пока нет новых уведомлений. <a href="@Url.Action("Notifications", "UserProfile")">Посмотреть все.</a>';
+                        $popup.html(emptyMsg);
                     }
                 }
             }).then(function () {
@@ -223,14 +222,18 @@
                 onHide: function (item) {
                     $(item).removeClass('active');
                     this.addClass('empty');
-                    this.html('У вас пока нет новых уведомлений.');
+                    var emptyMsg = 'У вас пока нет новых уведомлений. <a href="@Url.Action("Notifications", "UserProfile")">Посмотреть все.</a>';
+                    this.html(emptyMsg);
                     //Обнуляем и скрываем счетчик уведомлений
                     $(item).children('.label').html(0).hide();
+                },
+                onUnplaceable: function ($module) {
+                    location.href = '@Url.Action("Notifications", "UserProfile")'
                 }
             });
         }
         $(function () {
-            loadNotificationsCount();
+            $('article').css('margin-bottom', $('footer').height() + 50 + 'px')
             $(".ui.sidebar").sidebar({
                 onShow: function () {
                     $(this).css('z-index', '200');
