@@ -337,7 +337,6 @@ else
     </div>
 </script>
 <script id="emptyPostTmpl" type="text/x-jsrender">
-    <div class="column"></div>
     <div class="column">
         <h2 class="ui center aligned icon header" style="color: #6D6788; margin-top: 20px;">
             <i class="frown icon"></i>
@@ -360,6 +359,25 @@ else
         </h2>
     </div>
 </script>
+<template id="newPostTmpl">
+    @if (currentUserName == pageUserName)
+    {
+        <div class="column">
+            <div class="ui segment">
+                <h2 class="ui center aligned icon header" style="color: #6D6788; margin-top: 20px;">
+                    <i class="smile icon"></i>
+                    <span class="content">
+                        Добавить ещё
+                        <span class="sub header">
+                            @Html.ActionLink("изображение", "AddPost", "Posts", new { postType = PostTypes.Image.ToString().ToLower() }, null)
+                            или @Html.ActionLink("документ", "AddPost", "Posts", new { postType = PostTypes.Document.ToString().ToLower() }, null)
+                        </span>
+                    </span>
+                </h2>
+            </div>
+        </div>
+    }
+</template>
 <script id="emptyFollowersTmpl" type="text/x-jsrender">
     <div class="column">
         <h3 class="ui header" style="color: #6D6788">
@@ -410,6 +428,18 @@ else
             }
         });
     }
+    function sendNotification(){
+        $.ajax({
+            url: '/api/notification',
+            type: 'post',
+            data: {
+                NotificationType: @((byte)NotificationTypes.Follower),
+                User: {
+                    Id: '@Model.UserId'
+                }
+            }
+        });
+    }
     function addFollower(followingUserId, btn) {
         var $btn = $(btn);
         $btn.addClass('loading disabled');
@@ -421,6 +451,7 @@ else
             success: function (resp) {
                 $btn.hide();
                 $btn.siblings().show();
+                sendNotification();
             },
             error: function (jqXhr) {
                 alert('Ошибка сервера');
@@ -429,16 +460,7 @@ else
                 $btn.removeClass('loading disabled');
             }
         });
-        $.ajax({
-            url: '/api/notification',
-            type: 'post',
-            data: {
-                NotificationType: @((byte)NotificationTypes.Follower),
-                User: {
-                    Id: '@Model.UserId'
-                }
-            }
-        });
+        
     }
     function deleteFollower(followingUserId, btn) {
         var $btn = $(btn);
@@ -537,7 +559,7 @@ else
                         } else if(currentTab == 'followings'){
                             return $('#emptyFollowingsTmpl').html();
                         }
-                        return $('#emptyPostTmpl').html();
+                        return '<div class="column"></div>' + $('#emptyPostTmpl').html();
                     }
                     var status = @((byte)JsonResponseStatuses.Success);
                     if (jsonResp.status == status) {
@@ -558,7 +580,7 @@ else
                             tmplName = 'eventTmpl';
                         }
                         var tmpl = $.templates('#' + tmplName);
-                        return tmpl.render(jsonResp.data);
+                        return tmpl.render(jsonResp.data) + $('#newPostTmpl').html();
                     }
                     return 'Ошибка';
                 },

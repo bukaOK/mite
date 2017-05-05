@@ -18,7 +18,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="centered column" id="post-content">
+        <div class="fifteen wide centered column" id="post-content">
             @if (Model.IsImage)
             {
                 <img src="@Model.Content" class="ui centered image" />
@@ -115,7 +115,6 @@
 @if (Model.IsImage)
 {
     <div class="ui modal" id="post-image-modal" style="display: none">
-        <i class="close icon"></i>
         <div class="image content">
             <img src="@Model.Content" class="ui centered image" />
         </div>
@@ -188,7 +187,7 @@
             url: '/api/comments/',
             data: model,
             success: function (data) {
-                sendNotification('@NotificationTypes.PostComment');
+                sendNotification('@NotificationTypes.PostComment', '@Model.User.Id');
 
                 commentsCount++;
                 loadCommentsCount();
@@ -248,7 +247,7 @@
                     commentRating.innerHTML++;
                 }
                 $(ev).data('isRate', !isRate);
-                sendNotification('@NotificationTypes.CommentRating')
+                sendNotification('@NotificationTypes.CommentRating', userId);
             },
             error: function(jqXhr){
                 alert('Ошибка сервера при оценке!');
@@ -266,24 +265,24 @@
         $('#remove-reply').css('display', 'none');
         $('#CommentContent').removeData('replyComment');
     }
-    function sendNotification(notificType){
+    function sendNotification(notificType, targetUserId){
         $.ajax({
             url: '/api/notification',
             type: 'post',
             data: {
                 NotificationType: notificType,
                 User: {
-                    Id: '@Model.User.Id'
+                    Id: targetUserId
                 }
             },
             success: function(data){
+                window.hubReady.done(function(){
+                    $.connection.notifyHub.server.newNotification(targetUserId, notificType);
+                });
             },
             error: function(jqXhr){
                 alert('Ошибка при отправке уведомления.');
             }
-        });
-        window.hubReady.done(function(){
-            $.connection.notifyHub.server.newNotification('@Model.User.Id', notificType);
         });
     }
     function initRating(){
@@ -305,7 +304,7 @@
                         $("#post-rating").text("(" + newPostRating + ")").data('rating', currentPostRating + newRating);
 
                         lastRateValue = rateValue;
-                        sendNotification('@NotificationTypes.PostRating', '');
+                        sendNotification('@NotificationTypes.PostRating', '@Model.User.Id');
                     },
                     error: function (jqXhr) {
                         alert('Ошибка инициализации рейтинга.');
@@ -329,8 +328,21 @@
             inline: true
         });
     }
-    $(document).ready(function () {
+    function resizeModalImage(){
+        var $modal = $('#post-image-modal');
+        if($modal.length == 0)
+            return;
+        var img = $modal.find('img')[0];
+        if(img.naturalWidth > $modal.width()){
+            $(img).css({
+                width: '100%',
+                height: '100%'
+            });
+        }
+    }
+    $(function () {
         loadPostTime();
+        resizeModalImage();
         $('.ui.dropdown').dropdown();
         lastRateValue = $(".ui.rating").data("rating");
         initComments('@Model.Id', @((byte)SortFilter.Old)).then(function(){
@@ -341,7 +353,6 @@
         @if (Model.IsImage)
         {
             <text>
-        $('#post-content').addClass('twelve wide');
         $('#post-image-modal')
             .modal({
                 onShow: function(){
@@ -350,5 +361,8 @@
             }).modal('attach events', '#post-content');
             </text>
         }
+        $('.dimmer.modals.page').click(function(ev){
+            $('#post-image-modal').modal('hide');
+        });
     });
 </script>

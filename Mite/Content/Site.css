@@ -233,12 +233,11 @@ input[type="file"] {
     cursor: zoom-in;
     cursor: -webkit-zoom-in;
     cursor: -moz-zoom-in;
+    max-height: 800px;
 }
 .responsive.modal{
     display: inline-block !important;
-    width: auto;
-    max-width: 95%;
-    max-height: 95%;
+    max-width: 90%;
 }
 @media only screen and (max-width: 767px){
     #postAvatarWrapper img{
@@ -247,6 +246,15 @@ input[type="file"] {
         margin-right: auto;
     }
 }
+#post-image-modal{
+    box-shadow: none;
+    background-color: transparent;
+    font-size: 20px;
+}
+#post-image-modal .image.content{
+    background-color: transparent;
+}
+
 /*Уведомления*/
 .segment.feed.tab{
     display: none;

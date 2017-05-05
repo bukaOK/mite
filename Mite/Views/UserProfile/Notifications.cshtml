@@ -6,7 +6,7 @@
 <div class="ui grid">
     <div class="nine wide computer eleven wide tablet sixteen wide mobile centered column">
         <div class="ui stackable grid">
-            <div class="six wide column">
+            <div class="five wide column">
                 <div class="ui vertical menu" id="feedsFilter">
                     <a class="active item" data-tab="all">Все</a>
                     <a class="item" data-tab="comments">Комментарии</a>
@@ -17,7 +17,7 @@
                     <i class="remove icon"></i>Очистить
                 </button>
             </div>
-            <div class="ten wide column">
+            <div class="eleven wide column">
                 <div class="ui center aligned segment">
                     <h3 class="ui left aligned dividing header">
                         Уведомления
@@ -96,6 +96,7 @@
         });
     }
     $(function () {
+        $('#notifications-item').addClass('active');
         initUserNotifications();
         $('#feedsFilter .item').tab();
     });
