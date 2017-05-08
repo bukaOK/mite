@@ -280,7 +280,6 @@
     <Compile Include="Controllers\PostsController.cs" />
     <Compile Include="Controllers\RatingController.cs" />
     <Compile Include="Controllers\TagsController.cs" />
-    <Compile Include="Controllers\TopController.cs" />
     <Compile Include="Controllers\UserProfileController.cs" />
     <Compile Include="DAL\Core\Repository.cs" />
     <Compile Include="DAL\Entities\Follower.cs" />
@@ -294,7 +293,9 @@
     <Compile Include="DAL\Repositories\RatingRepository.cs" />
     <Compile Include="DAL\Repositories\TagsRepository.cs" />
     <Compile Include="Enums\NotificationTypes.cs" />
+    <Compile Include="Enums\PostTimeFilter.cs" />
     <Compile Include="Enums\PostTypes.cs" />
+    <Compile Include="Enums\PostUserFilter.cs" />
     <Compile Include="Enums\SortFilter.cs" />
     <Compile Include="Extensions\ClaimsExtensions.cs" />
     <Compile Include="Extensions\ValidationExtensions.cs" />
@@ -357,6 +358,7 @@
     <Compile Include="Models\ProfileSettingsModel.cs" />
     <Compile Include="Models\RegisterModel.cs" />
     <Compile Include="Models\ResetPasswordModel.cs" />
+    <Compile Include="Models\TopPostModel.cs" />
     <Compile Include="Models\UserShortModel.cs" />
     <Compile Include="Models\WalletsSettingsModel.cs" />
     <Compile Include="Models\WritingPostModel.cs" />
@@ -409,7 +411,6 @@
     <Content Include="Content\images\some-logo.png" />
     <Content Include="Content\images\video.svg" />
     <Content Include="Content\landing.css" />
-    <Content Include="ErrorPages\404.html" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
@@ -426,6 +427,7 @@
     <Content Include="package.json" />
     <Content Include="Content\icons.woff" />
     <Content Include="Content\icons\manifest.json" />
+    <Content Include="ErrorPages\404.cshtml" />
     <None Include="Properties\PublishProfiles\MiteProfile.pubxml" />
     <None Include="Properties\PublishProfiles\MiteTestProfile.pubxml" />
     <None Include="Scripts\jquery-3.1.1.intellisense.js" />
@@ -504,16 +506,16 @@
     <Content Include="Views\Home\Donate.cshtml" />
     <Content Include="Views\Home\Help.cshtml" />
     <Content Include="Views\UserProfile\Notifications.cshtml" />
+    <Content Include="Views\Posts\Top.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Attributes\Filters\" />
     <Folder Include="bower_components\" />
     <Folder Include="Infrastructure\" />
-    <Folder Include="Public\documents\" />
-    <Folder Include="Public\images\" />
     <Folder Include="ViewModels\" />
     <Folder Include="Views\Base\" />
+    <Folder Include="Views\Top\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />

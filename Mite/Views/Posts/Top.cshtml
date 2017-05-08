@@ -1,0 +1,225 @@
+﻿@using Mite.Enums
+@{
+    ViewBag.Title = "Публикации";
+}
+@Scripts.Render("~/bundles/grid")
+<div class="loader-wrapper"><div class="ui active loader"></div></div>
+<div class="ui stackable menu">
+    <div class="item">
+        <i class="filter icon"></i>
+        Сначала&nbsp;
+        <div class="ui inline dropdown" id="sortType">
+            <div class="text">высший рейтинг</div>
+            <i class="dropdown icon"></i>
+            <div class="menu">
+                <div class="active item" data-text="высший рейтинг" data-value="@((byte)SortFilter.Popular)">Высший рейтинг</div>
+                <div class="item" data-text="новые" data-value="@((byte)SortFilter.New)">Новые</div>
+                <div class="item" data-text="старые" data-value="@((byte)SortFilter.Old)">Старые</div>
+            </div>
+        </div>
+    </div>
+    <div class="item">
+        <i class="calendar icon"></i>
+        Искать за&nbsp;
+        <div class="ui inline dropdown" id="postTimeFilter">
+            <div class="text">все время</div>
+            <i class="dropdown icon"></i>
+            <div class="menu">
+                <div class="active item" data-text="все время" data-value="@((byte)PostTimeFilter.All)">Все время</div>
+                <div class="item" data-text="последний месяц" data-value="@((byte)PostTimeFilter.Month)">Последний месяц</div>
+                <div class="item" data-text="последнюю неделю" data-value="@((byte)PostTimeFilter.Week)">Последняя неделя</div>
+                <div class="item" data-text="последний день" data-value="@((byte)PostTimeFilter.Day)">Последний день</div>
+            </div>
+        </div>
+    </div>
+    <div class="item">
+        <i class="users icon"></i>
+        Искать среди&nbsp;
+        <div class="ui inline dropdown" id="postUserFilter">
+            <div class="text">всех</div>
+            <i class="dropdown icon"></i>
+            <div class="menu">
+                <div class="active item" data-text="всех" data-value="@((byte)PostUserFilter.All)">Все</div>
+                <div class="item" data-text="моих подписок" data-value="@((byte)PostUserFilter.OnlyFollowings)">Мои подписки</div>
+            </div>
+        </div>
+    </div>
+    <div class="right item">
+        <div class="ui transparent icon input">
+            <input type="text" placeholder="Поиск..." id="postsSearch" />
+            <i class="search link icon" onclick="SearchFilters.changeFilter()"></i>
+        </div>
+    </div>
+</div>
+<div class="ui posts stackable three column basic segment grid" id="postsGrid">
+</div>
+
+<script id="topPostTmpl" type="text/x-jsrender">
+    <div class="column">
+        <div class="ui segment post-item">
+            <div class="extra content">
+                <img src="{{:User.AvatarSrc}}" class="ui avatar image" />
+                <a href="/user/profile/{{:User.UserName}}">{{:User.UserName}}</a>
+                <a style="float: right" class="ui basic compact violet button" href="/posts/showpost/{{:Id}}">Смотреть</a>
+            </div>
+            <div class="ui divider"></div>
+            {{if IsImage}}
+            <img src="{{:Content}}" class="ui image" style="margin-bottom: 10px"/>
+            {{else}}
+            <div class="content">
+                {{:Content}}
+            </div>
+            {{/if}}
+            <div class="ui divider"></div>
+            <div class="extra content">
+                <h3 class="ui header" style="margin-bottom: 5px">
+                    {{:Title}}
+                    <span class="sub header">
+                        {{:Description}}
+                    </span>
+                </h3>
+                {{for Tags}}
+                <a class="ui label" onclick="loadTag('{{>#data}}')">{{>#data}}</a>
+                {{/for}}
+            </div>
+            <div class="ui divider"></div>
+            <div class="extra content">
+                <span>{{:PublicTimeStr}}</span>
+                <div class="right floated" style="float: right">
+                    <i class="yellow star icon"></i>{{:Rating}}
+                    <i class="blue unhide icon"></i>{{:Views}}
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<template id="emptyResultTmpl">
+    <div class="column"></div>
+    <div class="column">
+        <h2 class="ui center aligned icon header" style="color: #6D6788; margin-top: 20px;">
+            <i class="frown icon"></i>
+            <span class="content">
+                К сожалению, по вашему запросу ничего не найдено.
+            </span>
+        </h2>
+    </div>
+</template>
+<script>
+    function loadTag(name) {
+        $('#postsSearch').val(name);
+        SearchFilters.changeFilter();
+    }
+    $(function () {
+        var grid = $('#postsGrid').masonry();
+        $('.ui.dropdown').dropdown({
+            onChange: function () {
+                if (SearchFilters.initialized) {
+                    SearchFilters.changeFilter();
+                }
+            }
+        });
+        SearchFilters.init({
+            beforeLoad: function(){
+                $('.loader-wrapper').show();
+            },
+            onSuccess: function (resp) {
+                if (resp.status == null || resp.status == undefined) {
+                    resp = JSON.parse(resp);
+                }
+                resp.data.forEach(function (elem) {
+                    elem.LastEdit += elem.LastEdit[elem.LastEdit - 1] == 'Z' ? '' : 'Z';
+                    elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.LastEdit).getTime());
+                });
+                
+                $('#postsGrid .loader').remove();
+                if (resp.data.length > 0) {
+                    var tmpl = $.templates('#topPostTmpl');
+                    var html = tmpl.render(resp.data);
+
+                    if (SearchFilters._loadNextPage) {
+                        $('#postsGrid').append(html);
+                    } else {
+                        $('#postsGrid').html(html);
+                    }
+                }
+                else if(SearchFilters._page <= 1) {
+                    $('#postsGrid').html($('#emptyResultTmpl').html());
+                }
+                grid.imagesLoaded(function () {
+                    grid.masonry('reloadItems').masonry('layout');
+                });
+            },
+            onError: function () {
+                alert('Ошибка сервера');
+            },
+            onComplete: function(){
+                $('.loader-wrapper').hide();
+            },
+            ajax: {
+                type: 'post',
+                url: '@Url.Action("Top", "Posts")',
+                checkResponseLength: function (resp) {
+                    if (resp.status == null || resp.status == undefined) {
+                        resp = JSON.parse(resp);
+                    }
+                    if (resp.data.length == 0) {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            filters: [
+                {
+                    name: 'input',
+                    selector: '#postsSearch',
+                    getVal: function () {
+                        return $(this.selector).val();
+                    },
+                    updateState: function (newVal) {
+                        $(this.selector).val(newVal);
+                    }
+                },
+                {
+                    name: 'sortFilter',
+                    selector: '#sortType',
+                    getVal: function () {
+                        return $(this.selector).dropdown('get value') == ''
+                            ? '0' : $(this.selector).dropdown('get value');
+                    },
+                    updateState: function (newVal) {
+                        $(this.selector).dropdown('set selected', newVal);
+                    }
+                },
+                {
+                    name: 'postTimeFilter',
+                    selector: '#postTimeFilter',
+                    getVal: function () {
+                        return $(this.selector).dropdown('get value') == ''
+                            ? '0' : $(this.selector).dropdown('get value');
+                    },
+                    updateState: function (newVal) {
+                        console.log(this.selector);
+                        $(this.selector).dropdown('set selected', newVal);
+                    }
+                },
+                {
+                    name: 'postUserFilter',
+                    selector: '#postUserFilter',
+                    getVal: function () {
+                        return $(this.selector).dropdown('get value') == ''
+                            ? '0' : $(this.selector).dropdown('get value');
+                    },
+                    updateState: function (newVal) {
+                        $(this.selector).dropdown('set selected', newVal);
+                    }
+                }
+            ]
+        });
+        Scrolling.init('footer', function () {
+            return SearchFilters.loadNext();
+        });
+        SearchFilters.loadNext();
+        $('.ui.checkbox').checkbox();
+    })
+</script>
+

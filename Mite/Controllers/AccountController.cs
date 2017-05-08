@@ -119,7 +119,6 @@ namespace Mite.Controllers
             }
             //Если что то пошло не так, отображаем форму заново(вместе с ошибками)
             ModelState.AddModelError("", "Ошибка на сервере");
-            Logger.WriteErrors("AccountController, Register", result.Errors);
             return View(model);
         }
         /// <summary>
@@ -166,7 +165,6 @@ namespace Mite.Controllers
             }
             else
             {
-                Logger.WriteErrors("AccountController, ConfirmEmail", result.Errors);
                 return RedirectToAction("Login", "Account");
             }
         }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Dapper;
 using Mite.DAL.Core;
 using Mite.DAL.Entities;
+using Mite.Enums;
 
 namespace Mite.DAL.Repositories
 {
@@ -87,6 +88,176 @@ namespace Mite.DAL.Repositories
         public Task PublishPost(Guid id)
         {
             return Db.ExecuteAsync("update dbo.Posts set IsPublished=1 where Id=@Id", new { Id = id });
+        }
+        /// <summary>
+        /// Получить посты по тегам
+        /// </summary>
+        /// <param name="tagIds">Список Id тегов</param>
+        /// <param name="isPublished">Опубликованный ли пост</param>
+        /// <param name="minDate">Дата, с которой начинается отбор постов</param>
+        /// <param name="onlyFollowings">Выбрать только из тех на кого подписан</param>
+        /// <param name="currentUserId">Id текущего пользователя</param>
+        /// <param name="sortType">Как сортировать</param>
+        /// <param name="offset">Сколько строк пропустить, прежде чем начать отбор</param>
+        /// <param name="range">Сколько постов достать</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Post>> GetByTagsAsync(IEnumerable<Guid> tagIds, bool isPublished, 
+            DateTime minDate, bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range)
+        {
+            var query = "select Post_Id from dbo.TagPosts where Tag_Id in @tagIds";
+            IEnumerable<string> followings;
+
+            var postIds = await Db.QueryAsync<Guid>(query, new { tagIds });
+            query = "select * from dbo.Posts left outer join dbo.TagPosts on dbo.TagPosts.Post_Id=dbo.Posts.Id" +
+                " left outer join dbo.Tags on dbo.TagPosts.Tag_Id=dbo.Tags.Id " +
+                "inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId " +
+                "where dbo.Posts.Id in @postIds and IsPublished=@isPublished "
+                + "and dbo.AspNetUsers.Id=dbo.Posts.UserId and LastEdit > @minDate ";
+            object queryParams = new { postIds, isPublished, minDate };
+
+            if (onlyFollowings)
+            {
+                var followingsQuery = "select FollowingUserId from dbo.Followers where UserId=@currentUserId";
+                followings = await Db.QueryAsync<string>(followingsQuery, new { currentUserId });
+                query += "and dbo.AspNetUsers.Id in @followings ";
+                queryParams = new { postIds, isPublished, minDate, followings };
+            }
+            switch (sortType)
+            {
+                case SortFilter.Popular:
+                    query += "order by dbo.Posts.Rating desc";
+                    break;
+                case SortFilter.New:
+                    query += "order by dbo.Posts.LastEdit desc";
+                    break;
+                case SortFilter.Old:
+                    query += "order by dbo.Posts.LastEdit asc";
+                    break;
+            }
+            query += $" offset {offset} rows fetch next {range} rows only";
+            return (await Db.QueryAsync<Post, Tag, User, Post>(query, (post, tag, user) =>
+            {
+                post.User = user;
+                if (post.Tags == null)
+                    post.Tags = new List<Tag>();
+                if (tag != null)
+                    post.Tags.Add(tag);
+                return post;
+            }, queryParams))
+            .GroupBy(x => x.Id)
+            .Select(group =>
+            {
+                var post = group.First();
+                post.Tags = group.SelectMany(x => x.Tags).ToList();
+                return post;
+            });
+        }
+        /// <summary>
+        /// Получить посты по имени
+        /// </summary>
+        /// <param name="postName">Имя поста</param>
+        /// <param name="isPublished">Опубликованный ли пост</param>
+        /// <param name="minDate">Дата, скоторой начинается отбор</param>
+        /// <param name="onlyFollowings">Выбрать только из тех на кого подписан</param>
+        /// <param name="currentUserId">Id текущего пользователя</param>
+        /// <param name="sortType">Как сортировать</param>
+        /// <param name="offset">Сколько строк пропустить, прежде чем начать отбор</param>
+        /// <param name="range">Сколько нужно взять</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Post>> GetByNameAsync(string postName, bool isPublished, DateTime minDate,
+            bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range)
+        {
+            var query = "select * from dbo.Posts left outer join dbo.TagPosts on dbo.TagPosts.Post_Id=dbo.Posts.Id" +
+                " left outer join dbo.Tags on dbo.TagPosts.Tag_Id=dbo.Tags.Id " +
+                "inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId "
+                + "where Title like @postName and IsPublished=@isPublished and LastEdit > @minDate ";
+            IEnumerable<string> followings;
+            object queryParams = new { postName, isPublished, minDate };
+
+            if (onlyFollowings)
+            {
+                var followingsQuery = "select FollowingUserId from dbo.Followers where UserId=@currentUserId ";
+                followings = await Db.QueryAsync<string>(followingsQuery, new { currentUserId });
+                query += "and dbo.AspNetUsers.Id in @followings ";
+                queryParams = new { postName, isPublished, minDate, followings };
+            }
+            switch (sortType)
+            {
+                case SortFilter.Popular:
+                    query += "order by dbo.Posts.Rating desc";
+                    break;
+                case SortFilter.New:
+                    query += "order by dbo.Posts.LastEdit desc";
+                    break;
+                case SortFilter.Old:
+                    query += "order by dbo.Posts.LastEdit asc";
+                    break;
+            }
+            //Получаем по диапазону
+            query += $" offset {offset} rows fetch next {range} rows only";
+            return (await Db.QueryAsync<Post, Tag, User, Post>(query, (post, tag, user) =>
+            {
+                post.User = user;
+                if (post.Tags == null)
+                    post.Tags = new List<Tag>();
+                if (tag != null)
+                    post.Tags.Add(tag);
+                return post;
+            }, queryParams))
+            .GroupBy(x => x.Id)
+            .Select(group =>
+            {
+                var post = group.First();
+                post.Tags = group.SelectMany(x => x.Tags).ToList();
+                return post;
+            });
+        }
+        public async Task<IEnumerable<Post>> GetByFilterAsync(bool isPublished, DateTime minDate,
+            bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range)
+        {
+            var query = "select * from dbo.Posts left outer join dbo.TagPosts on dbo.TagPosts.Post_Id=dbo.Posts.Id" +
+                " left outer join dbo.Tags on dbo.TagPosts.Tag_Id=dbo.Tags.Id " +
+                "inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId" +
+                " where dbo.Posts.IsPublished=@isPublished "
+                + " and LastEdit > @minDate ";
+            IEnumerable<string> followings;
+            object queryParams = new { isPublished, minDate };
+            if (onlyFollowings)
+            {
+                var followingsQuery = "select FollowingUserId from dbo.Followers where UserId=@currentUserId ";
+                followings = await Db.QueryAsync<string>(followingsQuery, new { currentUserId });
+                query += "and dbo.AspNetUsers.Id in @followings ";
+                queryParams = new { isPublished, minDate, followings };
+            }
+            switch (sortType)
+            {
+                case SortFilter.Popular:
+                    query += "order by dbo.Posts.Rating desc";
+                    break;
+                case SortFilter.New:
+                    query += "order by dbo.Posts.LastEdit desc";
+                    break;
+                case SortFilter.Old:
+                    query += "order by dbo.Posts.LastEdit asc";
+                    break;
+            }
+            query += $" offset {offset} rows fetch next {range} rows only";
+            return (await Db.QueryAsync<Post, Tag, User, Post>(query, (post, tag, user) =>
+            {
+                post.User = user;
+                if (post.Tags == null)
+                    post.Tags = new List<Tag>();
+                if(tag != null)
+                    post.Tags.Add(tag);
+                return post;
+            }, queryParams))
+            .GroupBy(x => x.Id)
+            .Select(group =>
+            {
+                var post = group.First();
+                post.Tags = group.SelectMany(x => x.Tags).ToList();
+                return post;
+            });
         }
     }
 }

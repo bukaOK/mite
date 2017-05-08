@@ -8,10 +8,7 @@
     var pageUserName = Model.UserName;
     var currentUserName = User.Identity.Name;
 }
-@Scripts.Render("~/bundles/jsrender")
-<script src="~/Scripts/masonry.pkgd.min.js"></script>
-<script src="~/Scripts/MiteUtilities.js"></script>
-<script src="~/bower_components/imagesloaded/imagesloaded.pkgd.min.js"></script>
+@Scripts.Render("~/bundles/jsrender", "~/bundles/grid")
 <div class="ui profile center aligned three column stackable grid segment">
     <div class="computer tablet only row">
         <div class="right aligned column">
@@ -175,7 +172,7 @@ else
 {
     <div class="ui tab stackable three column basic segment grid" data-tab="posts/published"></div>
 }
-<div class="ui doubling tab four column basic segment grid" data-tab="followers">
+<div class="ui stackable tab four column basic segment grid" data-tab="followers">
 </div>
 @if (currentUserName == pageUserName)
 {
@@ -274,6 +271,61 @@ else
         </div>
     </div>
 </script>
+@*<script id="" type="text/x-jsrender">
+    <div class="column" data-post-id="{{:Id}}">
+        <div class="ui link raised card">
+            {{if IsImage}}
+            <div class="image">
+                <img src="{{:Content}}" />
+            </div>
+            {{else}}
+            <div class="content">
+                {{:Content}}
+            </div>
+            {{/if}}
+            <div class="content">
+                @if (currentUserName == pageUserName)
+                {
+                    <text>
+                        {{if IsPublished}}
+                        <a class="header" href="/posts/showpost/{{:Id}}">{{:Header}}</a>
+                        {{else}}
+                        <a class="header" href="/posts/editpost/{{:Id}}">{{:Header}}</a>
+                        {{/if}}
+                    </text>
+                }
+                else
+                {
+                    <a class="header" href="/posts/showpost/{{:Id}}">{{:Header}}</a>
+                }
+                <div class="description">
+                    <p>{{:Description}}</p>
+                </div>
+            </div>
+            <div class="extra content">
+                {{if IsPublished}}
+                <a href="@Url.Action("ShowPost", "Posts")/{{:Id}}" class="ui primary compact button">Смотреть</a>
+                {{/if}}
+                @if (currentUserName == pageUserName)
+                {
+                    <button class="ui red post-del compact button" onclick="showDeletePostModal('{{:Id}}')">Удалить</button>
+                        <button class="ui blue compact button" onclick="publishPost('{{:Id}}')">Опубликовать</button>
+                        <text>
+                            {{if !IsPublished}}
+                            <a class="ui primary compact button" href="@Url.Action("EditPost", "Posts")/{{:Id}}">Редактировать</a>
+                            {{/if}}
+                        </text>
+                }
+                {{if IsPublished}}
+                <div class="right floated">
+                    <i class="yellow star icon"></i>{{:Rating}}
+                    <i class="blue unhide icon"></i>{{:Views}}
+                </div>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+</script>*@
 <script id="postsTmpl" type="text/x-jsrender">
     <div class="column" data-post-id="{{:Id}}">
         <div class="ui segment post-item">
@@ -310,7 +362,7 @@ else
                             <span class="sub header">{{:Description}}</span>
                         </h2>
                         {{if IsPublished}}
-                        <a href="/posts/showpost/{{:Id}}" class="ui primary button">Просмотр</a>
+                        <a href="/posts/showpost/{{:Id}}" class="ui primary button">Смотреть</a>
                         {{/if}}
                         @if (currentUserName == pageUserName)
                         {
@@ -517,7 +569,6 @@ else
         var publishedPostsGrid = $('.tab[data-tab="posts/published"]').masonry();
         var draftsPostsGrid = $('.tab[data-tab="posts/drafts"]').masonry();
 
-        $('.ui.dropdown').dropdown();
         @if(currentUserName == pageUserName)
         {
             <text>ViewHelper.activateSidebarItem('#userProfileItem')</text>
@@ -559,7 +610,6 @@ else
                         } else if(currentTab == 'followings'){
                             return $('#emptyFollowingsTmpl').html();
                         }
-                        return '<div class="column"></div>' + $('#emptyPostTmpl').html();
                     }
                     var status = @((byte)JsonResponseStatuses.Success);
                     if (jsonResp.status == status) {
@@ -580,15 +630,14 @@ else
                             tmplName = 'eventTmpl';
                         }
                         var tmpl = $.templates('#' + tmplName);
-                        return tmpl.render(jsonResp.data) + $('#newPostTmpl').html();
+                        if(tabName !== 'followers' && tabName !== 'followings'){
+                            return tmpl.render(jsonResp.data) + $('#newPostTmpl').html();
+                        }
+                        return tmpl.render(jsonResp.data);
                     }
                     return 'Ошибка';
                 },
                 afterSuccess: function(item, tabContent){
-                    $('.post-item').dimmer({
-                        on: 'hover',
-                        opacity: 0.5
-                    });
                     tabContent.css('display', 'flex');
                     if($(item).data('tab') == 'posts' && currentUser != pageUser){
                         postsGrid.imagesLoaded(function(){
@@ -603,6 +652,10 @@ else
                             draftsPostsGrid.masonry('reloadItems').masonry('layout');
                         });
                     }
+                    $('.post-item').dimmer({
+                        on: 'hover',
+                        opacity: 0.5
+                    })
                 }
             }
         });

@@ -21,16 +21,11 @@ namespace Mite.Controllers
     public class PostsController : BaseController
     {
         private readonly IPostsService _postsService;
-        private readonly ITagsService _tagsService;
-        private readonly ICommentsService _commentsService;
         private readonly IRatingService _ratingService;
 
-        public PostsController(IPostsService postsService, ITagsService tagsService,
-            ICommentsService commentsService, IRatingService ratingService)
+        public PostsController(IPostsService postsService, IRatingService ratingService)
         {
             _postsService = postsService;
-            _tagsService = tagsService;
-            _commentsService = commentsService;
             _ratingService = ratingService;
         }
         [HttpGet]
@@ -198,6 +193,18 @@ namespace Mite.Controllers
             {
                 posts = await _postsService.GetByUserAsync(userId, sort, PostTypes.Drafts);
             }
+            return JsonResponse(JsonResponseStatuses.Success, posts);
+        }
+        public ViewResult Top()
+        {
+            return View();
+        }
+        [HttpPost]
+        public async Task<JsonResult> Top(string input, SortFilter sortFilter,
+            PostTimeFilter postTimeFilter, PostUserFilter postUserFilter, int page)
+        {
+            var posts = await _postsService.GetTopAsync(input, sortFilter, postTimeFilter, postUserFilter,
+                User.Identity.GetUserId(), page);
             return JsonResponse(JsonResponseStatuses.Success, posts);
         }
     }

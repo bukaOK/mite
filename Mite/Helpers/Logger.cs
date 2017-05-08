@@ -1,44 +1,59 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
+using System.IO;
+using System.Threading.Tasks;
+using System.Web.Hosting;
 
 namespace Mite.Helpers
 {
     public static class Logger
     {
-        private const string SourceName = "Mite";
-        private const string LogName = "Application";
-        private const int EventId = 1309;
+        private const string LogFilePath = "~\\error.log";
 
-        public static void WriteError(Exception exception)
+        public static void WriteError(Exception e)
         {
-            var log = new EventLog();
-            var message = $"Event Message: {exception.Message}\nEvent time: {DateTime.Now}\nEventTimeUtc: {DateTime.UtcNow}\nStackTrace:\n";
-            message += exception.StackTrace;
-            EventLog.WriteEntry(SourceName, message, EventLogEntryType.Warning, EventId);
-        }
-        public static void WriteError(string message)
-        {
-            EventLog.WriteEntry(SourceName, message, EventLogEntryType.Warning, EventId);
-        }
-        /// <summary>
-        /// Пишет в лог несколько сообщений
-        /// </summary>
-        /// <param name="source">Источник или место ошибки</param>
-        /// <param name="messages"></param>
-        public static void WriteErrors(string source, IEnumerable<string> messages)
-        {
-            var errors = new StringBuilder($"Ошибка в {source}\n");
-            foreach(var message in messages)
+            var msg = $"Message: {e.Message}" + Environment.NewLine
+             + $"Source: {e.Source}" + Environment.NewLine
+                + $"StackTrace: {e.StackTrace}" + Environment.NewLine;
+            if(e.InnerException != null)
             {
-                errors.Append(message).Append("\n");
+                msg += $"Inner Exception Message: {e.InnerException.Message}" + Environment.NewLine
+                    + $"Inner Exception StackTrace: {e.InnerException.StackTrace}" + Environment.NewLine;
             }
-            EventLog.WriteEntry(SourceName, errors.ToString());
+            Write(EventTypes.Error, msg);
         }
-        public static void WriteInfo(string message)
+        public static Task WriteErrorAsync(Exception e)
         {
-            EventLog.WriteEntry(SourceName, message, EventLogEntryType.Information, EventId);
+            var msg = $"Message: {e.Message}\n"
+                + $"Source: {e.Source}"
+                + $"Stack Trace: {e.StackTrace}\n"
+                + $"Inner Exception Message: {e.InnerException.Message}";
+            return WriteAsync(EventTypes.Error, msg);
         }
+        public static void Write(EventTypes eventType, string message)
+        {
+            var logPath = HostingEnvironment.MapPath(LogFilePath);
+            var errorStr = Environment.NewLine + $"Event Type: { eventType.ToString()}" + Environment.NewLine
+                + $"UTC DateTime: {DateTime.Now}" + Environment.NewLine
+                + $"Event Info : " + Environment.NewLine + message + Environment.NewLine;
+            using (var writer = File.AppendText(logPath))
+            {
+                writer.Write(errorStr);
+            }
+        }
+        public static Task WriteAsync(EventTypes eventType, string message)
+        {
+            var logPath = HostingEnvironment.MapPath(LogFilePath);
+            var errorStr = Environment.NewLine + $"Event Type: { eventType.ToString()}" + Environment.NewLine
+                + $"UTC DateTime: {DateTime.Now}" + Environment.NewLine
+                + $"Event Info : " + Environment.NewLine + message + Environment.NewLine;
+            using (var writer = File.AppendText(logPath))
+            {
+                return writer.WriteAsync(errorStr);
+            }
+        }
+    }
+    public enum EventTypes
+    {
+        Info, Warning, Error
     }
 }

@@ -20,8 +20,7 @@ namespace Mite.DAL.Repositories
         }
         public Task<IEnumerable<Tag>> GetByNameAsync(string name)
         {
-            
-            return Db.QueryAsync<Tag>("select * from dbo.Tags where Name like @name", name);
+            return Db.QueryAsync<Tag>("select * from dbo.Tags where Name like @name", new { name });
         }
         /// <summary>
         /// Меняем один тег на другой(если например имя старого тега неправильно записано)

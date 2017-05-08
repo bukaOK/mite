@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mite.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -10,6 +11,7 @@ namespace Mite.Controllers
     {
         public ActionResult Index()
         {
+            Logger.WriteError(new Exception("Проверочка"));
             if (User.Identity.IsAuthenticated)
             {
                 return RedirectToRoute("UserProfile", new { name = User.Identity.Name });

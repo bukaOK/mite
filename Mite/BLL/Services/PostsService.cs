@@ -34,6 +34,8 @@ namespace Mite.BLL.Services
         /// <returns></returns>
         Task AddViews(Guid postId);
         Task PublishPost(Guid postId);
+        Task<IEnumerable<TopPostModel>> GetTopAsync(string input, SortFilter sortFilter,
+            PostTimeFilter postTimeFilter, PostUserFilter postUserFilter, string currentUserId, int page);
     }
     public class PostsService : DataService, IPostsService
     {
@@ -166,9 +168,10 @@ namespace Mite.BLL.Services
             {
                 if (!post.IsImage)
                 {
+                    const int minChars = 400;
                     var charsCount = FilesHelper.GetDocCharsCount(post.Content);
-                    post.Content = await FilesHelper.ReadDocumentAsync(post.Content, 250);
-                    if (charsCount > 250)
+                    post.Content = await FilesHelper.ReadDocumentAsync(post.Content, minChars);
+                    if (charsCount > minChars)
                         post.Content += "...";
                 }
             }
@@ -196,6 +199,72 @@ namespace Mite.BLL.Services
         public Task PublishPost(Guid postId)
         {
             return Database.PostsRepository.PublishPost(postId);
+        }
+
+        public async Task<IEnumerable<TopPostModel>> GetTopAsync(string input, SortFilter sortFilter, 
+            PostTimeFilter postTimeFilter, PostUserFilter postUserFilter, string currentUserId, int page)
+        {
+            var currentDate = DateTime.Now;
+            DateTime minDate;
+            var onlyFollowings = PostUserFilter.OnlyFollowings == postUserFilter;
+            const int range = 3;
+            var offset = (page - 1) * range;
+
+            switch (postTimeFilter)
+            {
+                case PostTimeFilter.All:
+                    minDate = new DateTime(1800, 1, 1);
+                    break;
+                case PostTimeFilter.Day:
+                    minDate = currentDate.AddDays(-1);
+                    break;
+                case PostTimeFilter.Month:
+                    minDate = currentDate.AddMonths(-1);
+                    break;
+                case PostTimeFilter.Week:
+                    minDate = currentDate.AddDays(-7);
+                    break;
+                default:
+                    throw new NullReferenceException("Не задан фильтр времени при поиске поста");
+            }
+            var posts = new List<Post>();
+            //Если строка поиска не пустая, ищем по тегам и по названию поста
+            if (!string.IsNullOrWhiteSpace(input))
+            {
+                //Находим теги по входящей строке
+                var tags = await Database.TagsRepository.GetByNameAsync(input);
+                //Находим 
+                var inputPosts = await Database.PostsRepository.GetByNameAsync(input, true, minDate, onlyFollowings, currentUserId,
+                        sortFilter, offset, range);
+                if (tags.Count() > 0)
+                {
+                    var tagPosts = await Database.PostsRepository.GetByTagsAsync(tags.Select(x => x.Id), true, minDate, onlyFollowings,
+                        currentUserId, sortFilter, offset, range);
+                    posts.AddRange(tagPosts);
+                    posts.AddRange(inputPosts.Where(x => !tagPosts.Any(y => y.Id == x.Id)));
+                }
+                else
+                {
+                    posts = inputPosts.ToList();
+                }
+            }
+            else
+            {
+                posts = (await Database.PostsRepository.GetByFilterAsync(true, minDate, onlyFollowings, currentUserId,
+                    sortFilter, offset, range)).ToList();
+            }
+            foreach (var post in posts)
+            {
+                if (!post.IsImage)
+                {
+                    const int minChars = 400;
+                    var charsCount = FilesHelper.GetDocCharsCount(post.Content);
+                    post.Content = await FilesHelper.ReadDocumentAsync(post.Content, minChars);
+                    if (charsCount > minChars)
+                        post.Content += "...";
+                }
+            }
+            return Mapper.Map<List<TopPostModel>>(posts);
         }
     }
 }

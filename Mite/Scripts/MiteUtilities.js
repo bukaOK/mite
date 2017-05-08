@@ -34,9 +34,6 @@
         if (window.location.hash !== '') {
             var tabName = window.location.hash;
             tabName = tabName.substr(1, tabName.length - 1);
-            if (tabName[0] == '/') {
-
-            }
             return tabName;
         }
         var $activeTabs = $(this.items.wrapperSelector + '>.active' + this.items.selector);
@@ -86,7 +83,7 @@
         
         this.ajaxSettings.url = itemUrl;
         this.ajaxSettings.data = this.ajaxSettings.dynamicData();
-        if (ajaxData !== '' && ajaxData != undefined) {
+        if (ajaxData !== '' && ajaxData !== undefined) {
             this.ajaxSettings.data = ajaxData;
         }
         this.ajaxSettings.success = function (resp) {
@@ -111,28 +108,230 @@
     },
     _initSettings: function (initObj) {
         //Ставим настройки ajax
-        if (initObj.ajaxSettings != undefined) {
+        if (initObj.ajaxSettings !== undefined) {
             for (var prop in this.ajaxSettings) {
-                if (initObj.ajaxSettings != undefined && initObj.ajaxSettings[prop] != undefined) {
+                if (initObj.ajaxSettings !== undefined && initObj.ajaxSettings[prop] !== undefined) {
                     this.ajaxSettings[prop] = initObj.ajaxSettings[prop];
                 }
             }
         }
         //Ставим настройки tabContent
-        if (initObj.tabContent != undefined) {
+        if (initObj.tabContent !== undefined) {
             for (var prop in this.tabContent) {
-                if (initObj.tabContent != undefined && initObj.tabContent[prop] != undefined) {
+                if (initObj.tabContent !== undefined && initObj.tabContent[prop] !== undefined) {
                     this.tabContent[prop] = initObj.tabContent[prop];
                 }
             }
         }
         //Ставим настройки items
-        if (initObj.items != undefined) {
+        if (initObj.items !== undefined) {
             for (var prop in this.items) {
-                if (initObj.items[prop] != undefined) {
+                if (initObj.items[prop] !== undefined) {
                     this.items[prop] = initObj.items[prop];
                 }
             }
         }
+    }
+}
+var MiteMobile = {
+    initSwipeListener: function () {
+        var xDown;
+        var yDown;
+
+        var xDiff;
+        var yDiff;
+        document.addEventListener('touchstart', function (evt) {
+            xDown = evt.touches[0].clientX;
+            yDown = evt.touches[0].clientY;
+        }, false);
+        document.addEventListener('touchmove', function (evt) {
+            if (!xDown || !yDown) {
+                return;
+            }
+            var xUp = evt.touches[0].clientX;
+            var yUp = evt.touches[0].clientY;
+
+            xDiff = xDown - xUp;
+            yDiff = yDown - yUp;
+            /* reset values */
+            xDown = null;
+            yDown = null;
+        });
+        document.addEventListener('touchend', function (ev) {
+
+            if (Math.abs(xDiff) > Math.abs(yDiff)) {
+                if (xDiff > 0) {
+                    $('.ui.sidebar').sidebar('show');
+                    console.log('swipe');
+                } else {
+                    $('.ui.sidebar').sidebar('hide');
+                }
+            } else {
+                if (yDiff > 0) {
+                    /* up swipe */
+                } else {
+                    /* down swipe */
+                }
+            }
+        });
+    }
+}
+var SearchFilters = {
+    initialized: false,
+    _loadNextPage: false,
+    _pagesEnded: false,
+    _page: 0,
+    filters: [
+        {
+            name: 'name',
+            val: 'val',
+            selector: 'selector',
+            getVal: function () {
+                return this.val;
+            },
+            updateState: function () {
+                //Вызывается только один раз, при первой загрузке страницы
+                //Обновляет состояние каждого фильтра
+            }
+        }
+    ],
+    callbacks: {
+        beforeLoad: function () { },
+        onSuccess: function (resp) { },
+        onError: function (jqXhr) { return false; },
+        onComplete: function (jqXhr) { return false; }
+    },
+    ajax: {
+        type: 'get',
+        url: '',
+        success: function (resp) {
+            SearchFilters._pagesEnded = !this.checkResponseLength(resp);
+            SearchFilters.callbacks.onSuccess(resp);
+        },
+        error: function (jqXhr) {
+            SearchFilters.callbacks.onError(resp);
+        },
+        complete: function (jqXhr) {
+            SearchFilters.callbacks.onComplete(jqXhr);
+        },
+        checkResponseLength: function (resp) {
+            //Если длина ответа 0
+            //Возвращает false
+        }
+    },
+    init: function (settings) {
+        if(settings.beforeLoad != undefined){
+            this.callbacks.beforeLoad = settings.beforeLoad;
+        }
+        if (settings.onSuccess != undefined) {
+            this.callbacks.onSuccess = settings.onSuccess;
+        }
+        if (settings.onError != undefined) {
+            this.callbacks.onError = settings.onError;
+        }
+        if (settings.onComplete != undefined) {
+            this.callbacks.onComplete = settings.onComplete;
+        }
+
+        this.ajax.type = settings.ajax.type;
+        this.ajax.url = settings.ajax.url;
+        this.ajax.checkResponseLength = settings.ajax.checkResponseLength;
+
+        this.filters = settings.filters;
+        this._updateFiltersState(location.hash.replace('#', ''));
+        this.initialized = true;
+    },
+    changeFilter: function(){
+        this._page = 1;
+        this._loadNextPage = false;
+        this._pagesEnded = false;
+        return this.load();
+    },
+    loadNext: function () {
+        this._loadNextPage = true;
+        if (this._pagesEnded) {
+            return;
+        }
+        this._page++;
+        return this.load();
+    },
+    load: function () {
+        this.callbacks.beforeLoad();
+        //Переводим в строку
+        var stringParams = this._getStringParams()
+        this.ajax.data = stringParams;
+        location.hash = stringParams;
+        return $.ajax(this.ajax);
+    },
+    _getStringParams: function () {
+        var str = '';
+        var filters = this.filters;
+
+        filters.forEach(function (elem, index) {
+            str += elem.name + '=' + elem.getVal() + '&';
+        });
+        str += 'page=' + this._page;
+        return str;
+    },
+    _updateFiltersState: function (paramsStr) {
+        var self = this;
+        var params = paramsStr.split('&');
+        console.log(params);
+        params.forEach(function (param) {
+            var name = param.split('=')[0];
+            var val = param.split('=')[1];
+
+            self.filters.forEach(function (elem) {
+                if (elem.name == name) {
+                    elem.updateState(val);
+                }
+            });
+        });
+    }
+}
+var Scrolling = {
+    init: function (selector, callback) {
+        $(window).scroll(function () {
+            if (!Scrolling._isBlocked && Scrolling._isInView(selector)) {
+                Scrolling._isBlocked = true;
+                var exeFunc = callback();
+                if (exeFunc != undefined) {
+                    exeFunc.then(function () {
+                        Scrolling._isBlocked = false;
+                    });
+                } else {
+                    Scrolling._isBlocked = false;
+                }
+            }
+        });
+        $(document).on('touchmove', function () {
+            if (!Scrolling._isBlocked && Scrolling._isInView(selector)) {
+                Scrolling._isBlocked = true;
+                var exeFunc = callback();
+                if (exeFunc != undefined) {
+                    exeFunc.then(function () {
+                        Scrolling._isBlocked = false;
+                    });
+                } else {
+                    Scrolling._isBlocked = false;
+                }
+            }
+        });
+    },
+    _isBlocked: false,
+    _isInView: function (elm) {
+        var vpH = $(window).height(), // Viewport Height
+            st = $(window).scrollTop(), // Scroll Top
+            y = $(elm).offset().top,
+            elementHeight = $(elm).height();
+
+        return ((y < (vpH + st)) && (y > (st - elementHeight)));
+    },
+    _touchListener: function () {
+        document.addEventListener('touchstart', function (e) {
+            lastY = e.touches[0].clientY;
+            lastX = e.touches[0].clientX;
+        })
+        
     }
 }

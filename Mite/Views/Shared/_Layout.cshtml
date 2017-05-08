@@ -3,7 +3,7 @@
 @using Mite.Enums
 
 <!DOCTYPE html>
-<html>
+<html style="height: 100% !important">
 <head>
     <link rel="apple-touch-icon" sizes="57x57" href="~/Content/icons/apple-icon-57x57.png" />
     <link rel="apple-touch-icon" sizes="60x60" href="~/Content/icons/apple-icon-60x60.png" />
@@ -27,7 +27,7 @@
     @RenderSection("styles", false)
     <title>@ViewBag.Title</title>
 </head>
-<body class="pushable">
+<body class="pushable" style="height: 100% !important">
     @Scripts.Render("~/bundles/main", "~/bundles/site", "~/bundles/jsrender")
     <script src="~/signalr/hubs"></script>
     @if (User.Identity.IsAuthenticated)
@@ -112,6 +112,7 @@
                 @Html.ActionLink("Поддержать нас", "Donate", "Home", null, new { @class = "computer tablet only item" })
                 @if (Request.IsAuthenticated)
                 {
+                    @Html.ActionLink("Публикации", "Top", "Posts", null, new { @class = "item" })
                     <div class="right menu">
                         <a class="item menu-btn"><i class="list layout icon"></i>Меню</a>
                     </div>
@@ -198,7 +199,7 @@
                         //Рендерим уведомления
                         var html = '<div class="ui feed">' + $.templates('{{for tmpl="#eventTmpl" /}}').render(resp) + '</div>';
                         $popup.html(html);
-                        $(item).popup('reposition');
+                        $('#notifications-item').popup('reposition');
                     } else {
                         $popup.addClass('empty');
                         var emptyMsg = 'У вас пока нет новых уведомлений. <a href="@Url.Action("Notifications", "UserProfile")">Посмотреть все.</a>';
@@ -246,6 +247,7 @@
             $(".ui.accordion").accordion();
             initNotifications();
             $('#notify-popup').perfectScrollbar();
+            MiteMobile.initSwipeListener();
         });
     </script>
 </body>

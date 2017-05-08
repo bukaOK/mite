@@ -3,7 +3,6 @@
     header.menu>.container>.computer.only.item, header.menu>.container>.tablet.only.item {
         display: none !important;
     }
-    .sidebar
 }
 html, body{
     height: 100% !important;
@@ -172,9 +171,7 @@ input[type="file"] {
     box-shadow: 0 -10px 20px 0 rgba(0,0,0,0.1);
     background-color: white;
 }
-.post-item .content:not(.extra){
-    min-height: 150px;
-}
+
 .post-item .extra.content{
     font-weight: bold;
     color: rgba(0,0,0,0.4);
@@ -264,4 +261,21 @@ input[type="file"] {
 }
 #feedsFilter{
     width: 100%;
+}
+/*Страница помощи*/
+p.docs{
+    margin: 1em 0;
+}
+/*Топ публикаций*/
+.loader-wrapper{
+    z-index: 2000;
+    position: fixed;
+    left: 50%;
+    top: 150px;
+    background-color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 100px;
+    transform: translateX(-50%) translateY(-50%);
+    box-shadow: 0px 0px 10px rgba(34, 36, 38, 0.35)
 }
