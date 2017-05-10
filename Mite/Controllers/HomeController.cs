@@ -11,7 +11,6 @@ namespace Mite.Controllers
     {
         public ActionResult Index()
         {
-            Logger.WriteError(new Exception("Проверочка"));
             if (User.Identity.IsAuthenticated)
             {
                 return RedirectToRoute("UserProfile", new { name = User.Identity.Name });

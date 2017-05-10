@@ -116,7 +116,7 @@ namespace Mite.Controllers
             var msg = "Ваш код подтверждения: " + code;
             await _userManager.SendSmsAsync(User.Identity.GetUserId(), msg);
         }
-        public async Task<PartialViewResult> ConfirmEmail()
+        public async Task<PartialViewResult> EmailSettings()
         {
             var model = new EmailSettingsModel
             {
@@ -156,6 +156,33 @@ namespace Mite.Controllers
             user.YandexWalId = model.YandexWalId;
             await _userManager.UpdateAsync(user);
             return JsonResponse(JsonResponseStatuses.Success, "Яндекс кошелек успешно добавлен/обновлен");
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<JsonResult> ChangeEmail(EmailSettingsModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return JsonResponse(JsonResponseStatuses.ValidationError, GetModelErrors());
+            }
+            var errors = new List<string>();
+            var user = await _userManager.FindByIdAsync(User.Identity.GetUserId());
+
+            var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
+            if (!isPasswordValid)
+                errors.Add("Неверный пароль");
+
+            var isEmailConfimed = await _userManager.IsEmailConfirmedAsync(user.Id);
+            if (isEmailConfimed)
+                errors.Add("Ваш e-mail уже подтвержден");
+
+            if (errors.Count > 0)
+                return JsonResponse(JsonResponseStatuses.ValidationError, errors);
+
+            user.EmailConfirmed = false;
+            user.Email = model.NewEmail;
+            await _userManager.UpdateAsync(user);
+            return JsonResponse(JsonResponseStatuses.Success, "E-mail успешно обновлен");
         }
     }
 }

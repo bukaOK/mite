@@ -7,7 +7,8 @@ namespace Mite.Helpers
 {
     public static class Logger
     {
-        private const string LogFilePath = "~\\error.log";
+        private const string ErrorLogFilePath = "~\\error.log";
+        private const string OtherLogFilePath = "~\\logs.log";
 
         public static void WriteError(Exception e)
         {
@@ -31,7 +32,12 @@ namespace Mite.Helpers
         }
         public static void Write(EventTypes eventType, string message)
         {
-            var logPath = HostingEnvironment.MapPath(LogFilePath);
+            string logPath;
+            if (eventType == EventTypes.Error)
+                logPath = HostingEnvironment.MapPath(ErrorLogFilePath);
+            else
+                logPath = HostingEnvironment.MapPath(OtherLogFilePath);
+
             var errorStr = Environment.NewLine + $"Event Type: { eventType.ToString()}" + Environment.NewLine
                 + $"UTC DateTime: {DateTime.Now}" + Environment.NewLine
                 + $"Event Info : " + Environment.NewLine + message + Environment.NewLine;
@@ -42,7 +48,12 @@ namespace Mite.Helpers
         }
         public static Task WriteAsync(EventTypes eventType, string message)
         {
-            var logPath = HostingEnvironment.MapPath(LogFilePath);
+            string logPath;
+            if(eventType == EventTypes.Error)
+                logPath = HostingEnvironment.MapPath(ErrorLogFilePath);
+            else
+                logPath = HostingEnvironment.MapPath(OtherLogFilePath);
+
             var errorStr = Environment.NewLine + $"Event Type: { eventType.ToString()}" + Environment.NewLine
                 + $"UTC DateTime: {DateTime.Now}" + Environment.NewLine
                 + $"Event Info : " + Environment.NewLine + message + Environment.NewLine;

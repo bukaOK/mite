@@ -12,7 +12,7 @@
         @Html.EditorFor(x => x.Header)
         <div class="two fields">
             <div class="field">
-                @Html.TextAreaFor(x => x.Description, new {@placeholder = Html.DisplayNameFor(y => y.Description) })
+                @Html.TextAreaFor(x => x.Description, new { @placeholder = Html.DisplayNameFor(y => y.Description) })
             </div>
             <div class="field">
                 <div class="ui fluid search multiple selection dropdown" id="select-tags">
@@ -32,7 +32,14 @@
             <h2>@Model.Header</h2>
         }
         <div style="clear: both" data-editable data-name="@Html.NameFor(x => x.Content)">
-            @Html.Raw(Model.Content)
+            @if (string.IsNullOrEmpty(Model.Content))
+            {
+                <p data-ce-placeholder="Начинаем =)"></p>
+            }
+            else
+            {
+                Html.Raw(Model.Content);
+            }
         </div>
     }
 </div>

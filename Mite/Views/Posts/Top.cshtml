@@ -60,34 +60,35 @@
             <div class="extra content">
                 <img src="{{:User.AvatarSrc}}" class="ui avatar image" />
                 <a href="/user/profile/{{:User.UserName}}">{{:User.UserName}}</a>
-                <a style="float: right" class="ui basic compact violet button" href="/posts/showpost/{{:Id}}">Смотреть</a>
+                <span style="float: right">{{:PublicTimeStr}}</span>
             </div>
             <div class="ui divider"></div>
             {{if IsImage}}
-            <img src="{{:Content}}" class="ui image" style="margin-bottom: 10px"/>
+            <a href="/posts/showpost/{{:Id}}">
+                <img src="{{:Content}}" class="ui image" style="margin-bottom: 10px" />
+            </a>
             {{else}}
-            <div class="content">
+            <a class="content" href="/posts/showpost/{{:Id}}">
                 {{:Content}}
-            </div>
+            </a>
             {{/if}}
             <div class="ui divider"></div>
             <div class="extra content">
-                <h3 class="ui header" style="margin-bottom: 5px">
+                <a class="ui header" style="margin-bottom: 5px" href="#">
                     {{:Title}}
                     <span class="sub header">
                         {{:Description}}
                     </span>
-                </h3>
+                </a>
                 {{for Tags}}
                 <a class="ui label" onclick="loadTag('{{>#data}}')">{{>#data}}</a>
                 {{/for}}
             </div>
             <div class="ui divider"></div>
             <div class="extra content">
-                <span>{{:PublicTimeStr}}</span>
+                <i class="yellow star icon"></i>Рейтинг: {{:Rating}}
                 <div class="right floated" style="float: right">
-                    <i class="yellow star icon"></i>{{:Rating}}
-                    <i class="blue unhide icon"></i>{{:Views}}
+                    <i class="blue unhide icon"></i>Просмотры: {{:Views}}
                 </div>
             </div>
         </div>

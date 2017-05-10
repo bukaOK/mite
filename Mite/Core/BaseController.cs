@@ -73,6 +73,17 @@ namespace Mite.Core
         {
             return new HttpStatusCodeResult(HttpStatusCode.NotFound);
         }
+        protected IEnumerable<string> GetModelErrors()
+        {
+            var errors = ModelState.Where(x => x.Value.Errors.Count > 0);
+            foreach (var error in errors)
+            {
+                foreach (var valueError in error.Value.Errors)
+                {
+                    yield return valueError.ErrorMessage;
+                }
+            }
+        }
     }
     public enum JsonResponseStatuses
     {

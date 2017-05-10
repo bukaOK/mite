@@ -345,7 +345,7 @@
     <Compile Include="Models\ChangePassModel.cs" />
     <Compile Include="Models\CommentModel.cs" />
     <Compile Include="Models\CommentRatingModel.cs" />
-    <Compile Include="Models\ConfirmEmailModel.cs" />
+    <Compile Include="Models\EmailSettingsModel.cs" />
     <Compile Include="Models\ForgotPassModel.cs" />
     <Compile Include="Models\GooglePlaces\AddressComponent.cs" />
     <Compile Include="Models\NotificationModel.cs" />
@@ -500,7 +500,7 @@
     <Content Include="Views\Error\Template.cshtml" />
     <Content Include="Views\UserSettings\_ChangePass.cshtml" />
     <Content Include="Views\Account\ForgotPassword.cshtml" />
-    <Content Include="Views\UserSettings\ConfirmEmail.cshtml" />
+    <Content Include="Views\UserSettings\EmailSettings.cshtml" />
     <Content Include="Views\Account\ResetPassword.cshtml" />
     <Content Include="Views\UserSettings\Wallets.cshtml" />
     <Content Include="Views\Home\Donate.cshtml" />

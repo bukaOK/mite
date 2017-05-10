@@ -39,7 +39,9 @@
 
             if ($popup.hasClass('initialized')) {
                 var data = JSON.parse(notification);
-                data.DateStr = ViewHelper.getPastTense(new Date(data.NotifyDate).getTime());
+                var dateIso = data.NotifyDate;
+                dateIso += dateIso[dateIso.length - 1] == 'Z' ? '' : 'Z';
+                data.DateStr = ViewHelper.getPastTense(new Date(dateIso).getTime());
                 var label = $('#notifications-item > .label');
                 label[0].innerHTML++;
                 var tmpl = $.templates('#eventTmpl');
@@ -229,7 +231,9 @@
                     $(item).children('.label').html(0).hide();
                 },
                 onUnplaceable: function ($module) {
-                    location.href = '@Url.Action("Notifications", "UserProfile")'
+                    if (!location.href.includes('notifications')) {
+                        location.href = '/user/notifications';
+                    }
                 }
             });
         }
@@ -247,7 +251,6 @@
             $(".ui.accordion").accordion();
             initNotifications();
             $('#notify-popup').perfectScrollbar();
-            MiteMobile.initSwipeListener();
         });
     </script>
 </body>

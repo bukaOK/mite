@@ -45,7 +45,7 @@ namespace Mite.DAL.Repositories
         public Task<IEnumerable<Follower>> GetFollowingsByUserAsync(string userId)
         {
             var query = "select * from dbo.Followers inner join dbo.AspNetUsers on " +
-                "dbo.AspNetUsers.Id = dbo.Followers.FollowingUserId where dbo.Followers.Id=@userId";
+                "dbo.AspNetUsers.Id = dbo.Followers.FollowingUserId where dbo.Followers.UserId=@userId";
             return Db.QueryAsync<Follower, User, Follower>(query, (follower, user) =>
             {
                 follower.FollowingUser = user;

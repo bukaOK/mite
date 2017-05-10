@@ -212,7 +212,7 @@ else
 <div class="ui small modal" id="donateModal">
     <i class="close icon"></i>
     <div class="header">
-        Поддержать @User.Identity.Name
+        Поддержать @Model.UserName
     </div>
     <div class="content">
         <form class="ui form" id="donateForm" action="https://money.yandex.ru/quickpay/confirm.xml" method="post" target="_blank">
@@ -389,25 +389,13 @@ else
     </div>
 </script>
 <script id="emptyPostTmpl" type="text/x-jsrender">
+    <div class="column"></div>
     <div class="column">
         <h2 class="ui center aligned icon header" style="color: #6D6788; margin-top: 20px;">
             <i class="frown icon"></i>
-            @if (currentUserName == pageUserName)
-            {
-                <span class="content">
-                    У вас пока нет постов
-                    <span class="sub header">
-                        Добавить @Html.ActionLink("изображение", "AddPost", "Posts", new { postType = PostTypes.Image.ToString().ToLower() }, null)
-                        или @Html.ActionLink("документ", "AddPost", "Posts", new { postType = PostTypes.Document.ToString().ToLower() }, null)
-                    </span>
-                </span>
-            }
-            else
-            {
-                <span class="content">
-                    У пользователя пока нет постов
-                </span>
-            }
+            <span class="content">
+                У пользователя пока нет постов
+            </span>
         </h2>
     </div>
 </script>
@@ -603,12 +591,19 @@ else
                 },
                 beforeSuccess: function (resp) {
                     var jsonResp = JSON.parse(resp);
+                    console.log(jsonResp);
                     var currentTab = getCurrentTab();
                     if(jsonResp.data.length == 0){
                         if(currentTab == 'followers'){
                             return $('#emptyFollowersTmpl').html();
                         } else if(currentTab == 'followings'){
                             return $('#emptyFollowingsTmpl').html();
+                        }
+                        @if(currentUserName != pageUserName)
+                        {
+                            <text>
+                        return $('#emptyPostTmpl').html();
+                        </text>
                         }
                     }
                     var status = @((byte)JsonResponseStatuses.Success);

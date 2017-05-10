@@ -207,7 +207,7 @@ namespace Mite.BLL.Services
             var currentDate = DateTime.Now;
             DateTime minDate;
             var onlyFollowings = PostUserFilter.OnlyFollowings == postUserFilter;
-            const int range = 3;
+            const int range = 20;
             var offset = (page - 1) * range;
 
             switch (postTimeFilter)

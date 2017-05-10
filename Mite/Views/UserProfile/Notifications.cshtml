@@ -39,7 +39,9 @@
             type: 'get',
             success: function (resp) {
                 resp.forEach(function (item) {
-                    item.DateStr = ViewHelper.getPastTense(new Date(item.NotifyDate).getTime());
+                    var dateIso = item.NotifyDate;
+                    dateIso += dateIso[dateIso.length - 1] == 'Z' ? '' : 'Z';
+                    item.DateStr = ViewHelper.getPastTense(new Date(dateIso).getTime());
                 });
                 var commentsArr = resp.filter(function (item) {
                     return item.NotificationType === @((byte)NotificationTypes.PostComment);

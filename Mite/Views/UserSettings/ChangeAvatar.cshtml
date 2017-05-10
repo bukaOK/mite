@@ -12,8 +12,16 @@
         <div class="ui dashed segment" id="drop-zone">
             <h3 class="ui disabled grey">Перетащите сюда</h3>
         </div>
-        <span id="loading-span" style="display: none">Загрузка...</span>
         <button type="button" class="ui fluid green button" id="save-btn">Сохранить</button>
+        <div class="ui divider"></div>
+        <button class="ui ava-rotate primary button" data-deg="-90" style="display: none">
+            <i class="reply icon"></i>
+            Повернуть влево
+        </button>
+        <button class="ui ava-rotate primary button" data-deg="90" style="display: none">
+            <i class="share icon"></i>
+            Повернуть вправо
+        </button>
         <div class="ui hidden message" style="text-align: center" id="change-ava-msg"></div>
     </div>
     <div class="column">
@@ -34,8 +42,12 @@
             boundary: {
                 width: $('.cr-boundary').parents('.column').width() * 0.77,
                 height: 400
-            }
+            },
+            enableOrientation: true
         });
+        $('.ava-rotate').click(function () {
+            $('.avatar.edit').croppie('rotate', +$(this).data('deg'));
+        })
         $('#save-btn')
             .click(function(event) {
                 uploadCrop.croppie('result',
@@ -89,6 +101,7 @@
             reader.onload = function(){
                 uploadCrop.show();
                 $("#save-btn").show();
+                $('.ava-rotate').show();
                 uploadCrop.croppie('bind', reader.result);
             };
             reader.readAsDataURL(file);
