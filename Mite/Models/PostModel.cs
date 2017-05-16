@@ -10,8 +10,8 @@ namespace Mite.Models
         [Required]
         [Display(Name = "Заголовок")]
         public string Header { get; set; }
-        [Required]
         public string Content { get; set; }
+        [MaxLength(200, ErrorMessage = "Слишком большое описание")]
         public string Description { get; set; }
         public byte PostType { get; set; }
         public bool IsImage { get; set; }
@@ -28,6 +28,7 @@ namespace Mite.Models
         /// Список имен тегов
         /// </summary>
         public List<string> Tags { get; set; }
+        public string Cover { get; set; }
         public UserShortModel User { get; set; }
     }
 }

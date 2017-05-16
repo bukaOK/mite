@@ -10,5 +10,6 @@ namespace Mite.DAL.Infrastructure
         RatingRepository RatingRepository { get; }
         FollowersRepository FollowersRepository { get; }
         NotificationRepository NotificationRepository { get; }
+        HelpersRepository HelpersRepository { get; }
     }
 }

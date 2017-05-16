@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Hosting;
 
 namespace Mite.Helpers
@@ -16,7 +17,7 @@ namespace Mite.Helpers
         /// </summary>
         /// <param name="virtualPath">Относительный путь к папке сохранения</param>
         /// <param name="base64Str">Само изображение(в кодировке base64)</param>
-        /// <returns>Полный путь к сохраненному изображению</returns>
+        /// <returns>Относительный путь к сохраненному изображению</returns>
         public static string CreateImage(string virtualPath, string base64Str)
         {
             var path = HostingEnvironment.MapPath(virtualPath);
@@ -29,7 +30,6 @@ namespace Mite.Helpers
             var memoryStream = new MemoryStream(bytes);
 
             var image = Image.FromStream(memoryStream);
-            //Todo: проверить, какие исключения выбросятся, если попытаться сохранить два одинаковых файла
 
             string imageName;
             string imagePath;
@@ -46,7 +46,27 @@ namespace Mite.Helpers
             virtualPath += virtualPath[virtualPath.Length - 1] == '/' ? "" : "/";
             return Regex.Replace(virtualPath, "~", "") + imageName;
         }
+        public static string CreateImage(string virtualPath, HttpPostedFileBase image)
+        {
+            var path = HostingEnvironment.MapPath(virtualPath);
+            var imageNameArr = image.FileName.Split('.');
+            var imgFormat = imageNameArr[imageNameArr.Length - 1];
+            if (imgFormat != "gif" && imgFormat != "jpg" && imgFormat != "png")
+                return null;
 
+            string imageName;
+            string imagePath;
+            //Проверяем на то, есть ли уже изображения с таким именем
+            do
+            {
+                imageName = Guid.NewGuid() + "." + imgFormat;
+                imagePath = path[path.Length - 1] == '\\' ? path + imageName : path + "\\" + imageName;
+            } while (File.Exists(imagePath));
+
+            image.SaveAs(imagePath);
+            virtualPath += virtualPath[virtualPath.Length - 1] == '/' ? "" : "/";
+            return Regex.Replace(virtualPath, "~", "") + imageName;
+        }
         public static string CreateDocument(string virtualPath, string content)
         {
             var path = HostingEnvironment.MapPath(virtualPath);
@@ -117,7 +137,7 @@ namespace Mite.Helpers
             return fileInfo.Length;
         }
         /// <summary>
-        /// Считывает определенное кол-во символов в документе
+        /// Считывает определенное кол-во символов в документе(для списка постов)
         /// </summary>
         /// <param name="path">путь</param>
         /// <param name="charsCount">кол-во символов</param>
@@ -125,10 +145,26 @@ namespace Mite.Helpers
         public static async Task<string> ReadDocumentAsync(string path, int charsCount)
         {
             var reader = new StreamReader(HostingEnvironment.MapPath(path));
-            var buffer = new char[charsCount];
-            await reader.ReadAsync(buffer, 0, charsCount);
+            var str = await reader.ReadToEndAsync();
             reader.Close();
-            return new string(buffer);
+            //После удаляем картинки, т.к. они будут некорректно отображаться
+            str = Regex.Replace(str, @"<img.+(>|\/>)", "");
+            str = Regex.Replace(str, @"<table>.+</table>", "");
+
+            var substr = str.Substring(0, str.Length < charsCount ? str.Length : charsCount);
+            if(charsCount < GetDocCharsCount(path))
+            {
+                substr += "...";
+            }
+            //Проверяем, закрыт ли тег в конце, т.к. мы обрезали строку
+            var lastPMatches = Regex.Matches(substr, "<p[^>]*>");
+            var lastP = lastPMatches[lastPMatches.Count - 1];
+            var lastPCloseMatches = Regex.Matches(substr, "</p>");
+            var lastPClose = lastPCloseMatches[lastPCloseMatches.Count - 1];
+
+            if (lastP.Index > lastPClose.Index)
+                substr += "</p>";
+            return substr;
         }
         public static string ReadDocument(string path, int charsCount)
         {

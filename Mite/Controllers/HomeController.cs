@@ -13,7 +13,7 @@ namespace Mite.Controllers
         {
             if (User.Identity.IsAuthenticated)
             {
-                return RedirectToRoute("UserProfile", new { name = User.Identity.Name });
+                return RedirectToAction("Top", "Posts");
             }
             return View();
         }

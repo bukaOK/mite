@@ -7,6 +7,7 @@ using Mite.DAL.Entities;
 using System.Linq;
 using Mite.BLL.Core;
 using System;
+using Mite.BLL.DTO;
 
 namespace Mite.BLL.Services
 {
@@ -19,6 +20,7 @@ namespace Mite.BLL.Services
         /// <returns></returns>
         Task<IEnumerable<string>> GetForUser();
         Task<IEnumerable<Tag>> GetForModer();
+        Task<IEnumerable<TagDTO>> GetWithPopularity(bool isConfirmed);
     }
     public class TagsService : DataService, ITagsService
     {
@@ -42,6 +44,11 @@ namespace Mite.BLL.Services
         {
             var tags = await Database.TagsRepository.GetAllAsync();
             return tags;
+        }
+
+        public Task<IEnumerable<TagDTO>> GetWithPopularity(bool isConfirmed)
+        {
+            return Database.TagsRepository.GetAllWithPopularityAsync(isConfirmed);
         }
     }
 }

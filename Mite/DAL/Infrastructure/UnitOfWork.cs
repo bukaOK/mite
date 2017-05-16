@@ -8,30 +8,33 @@ namespace Mite.DAL.Infrastructure
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly IDbConnection _db;
+        private readonly IDbConnection db;
 
-        private PostsRepository _postsRepository;
-        private TagsRepository _tagsRepository;
-        private CommentsRepository _commentsRepository;
-        private RatingRepository _ratingRepository;
-        private FollowersRepository _followersRepository;
-        private NotificationRepository _notificationRepository;
+        private PostsRepository postsRepository;
+        private TagsRepository tagsRepository;
+        private CommentsRepository commentsRepository;
+        private RatingRepository ratingRepository;
+        private FollowersRepository followersRepository;
+        private NotificationRepository notificationRepository;
+        private HelpersRepository helpersRepository;
 
-        public PostsRepository PostsRepository => _postsRepository ?? (_postsRepository = new PostsRepository(_db));
-        public TagsRepository TagsRepository => _tagsRepository ?? (_tagsRepository = new TagsRepository(_db));
+        public PostsRepository PostsRepository => postsRepository ?? (postsRepository = new PostsRepository(db));
+        public TagsRepository TagsRepository => tagsRepository ?? (tagsRepository = new TagsRepository(db));
         public CommentsRepository CommentsRepository
-            => _commentsRepository ?? (_commentsRepository = new CommentsRepository(_db));
-        public RatingRepository RatingRepository => _ratingRepository ?? (_ratingRepository = new RatingRepository(_db));
+            => commentsRepository ?? (commentsRepository = new CommentsRepository(db));
+        public RatingRepository RatingRepository => ratingRepository ?? (ratingRepository = new RatingRepository(db));
 
         public FollowersRepository FollowersRepository 
-            => _followersRepository ?? (_followersRepository = new FollowersRepository(_db));
+            => followersRepository ?? (followersRepository = new FollowersRepository(db));
 
         public NotificationRepository NotificationRepository 
-            => _notificationRepository ?? (_notificationRepository = new NotificationRepository(_db));
+            => notificationRepository ?? (notificationRepository = new NotificationRepository(db));
+
+        public HelpersRepository HelpersRepository => helpersRepository ?? (helpersRepository = new HelpersRepository(db));
 
         public UnitOfWork()
         {
-            _db = new SqlConnection(ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString);
+            db = new SqlConnection(ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString);
         }
     }
 }

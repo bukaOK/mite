@@ -14,6 +14,7 @@ namespace Mite.DAL.Infrastructure
         public DbSet<Group> Groups { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Helper> Helpers { get; set; }
 
         public AppDbContext()
             : base("DefaultConnection")

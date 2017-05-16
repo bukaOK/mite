@@ -22,7 +22,7 @@ html, body{
     border-color: #b540c6;
 }
 .ui.fixed.menu{
-    z-index: 2000;
+    z-index: 900;
 }
 .text-right{
     text-align: right;
@@ -101,6 +101,7 @@ div.center.aligned{
 }
 article.ui.container{
     margin-top: 60px;
+    width: 90%;
 }
 .list.layout.icon{
     margin-top: 1px !important;
@@ -108,9 +109,9 @@ article.ui.container{
 .ui.accordion.item>.title{
     padding: 0;
 }
-.ui.action.input input[type="file"] {
+/*.ui.action.input input[type="file"] {
     display: none;
-}
+}*/
 .logoff.button{
     margin-top: 10px;
     margin-left: 10px;
@@ -125,9 +126,9 @@ article.ui.container{
     overflow-y: scroll;
 }
 /*Настройки пользователя*/
-input[type="file"] {
+/*input[type="file"] {
     display: none !important;
-}
+}*/
 .dashed.segment{
     border: 2px dashed rgba(0,0,0,0.2);
     box-shadow: none;
@@ -191,6 +192,9 @@ input[type="file"] {
     border-radius: 5px;
 }
 /*Редактор*/
+.ct-control--rotate-ccw, .ct-control--rotate-cw, .ct-control--crop{
+    display: none !important;
+}
 .poem p {
     text-align: center;
 }
@@ -226,6 +230,7 @@ input[type="file"] {
 .edit.post.segment {
     margin-left: auto;
     max-width: 1100px;
+    margin-right: auto;
 }
 /*Страница поста*/
 #post-content img{
@@ -284,6 +289,27 @@ p.docs{
 .posts.grid.basic.segment{
     margin: -1rem;
 }
+.post-content.content{
+    min-height: 100px;
+}
 .post-item .content{
     color: rgba(0,0,0,0.87);
+}
+.segment.post-item.invert{
+    background-size: cover !important;
+}
+.post-item .ui.invert.label{
+    background-color: violet !important;
+}
+.post-item.invert .content{
+    color: rgba(255,255,255,0.87);
+}
+.post-item.invert a.username{
+    color: wheat;
+}
+.post-item.invert a.username:hover{
+    color: wheat;
+}
+.post-item .ui.label{
+    margin-top: 5px;
 }

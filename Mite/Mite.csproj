@@ -255,6 +255,7 @@
   <ItemGroup>
     <Compile Include="App_Start\DbInitializer.cs" />
     <Compile Include="BLL\DTO\PostDTO.cs" />
+    <Compile Include="BLL\DTO\TagDTO.cs" />
     <Compile Include="BLL\IdentityManagers\AppSignInManager.cs" />
     <Compile Include="BLL\IdentityManagers\AppUserManager.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
@@ -264,6 +265,7 @@
     <Compile Include="Attributes\DataAnnotations\UIDataAttribute.cs" />
     <Compile Include="BLL\Services\CommentsService.cs" />
     <Compile Include="BLL\Services\FollowersService.cs" />
+    <Compile Include="BLL\Services\HelpersService.cs" />
     <Compile Include="BLL\Services\NotificationService.cs" />
     <Compile Include="BLL\Services\PostsService.cs" />
     <Compile Include="BLL\Services\RatingService.cs" />
@@ -280,18 +282,22 @@
     <Compile Include="Controllers\PostsController.cs" />
     <Compile Include="Controllers\RatingController.cs" />
     <Compile Include="Controllers\TagsController.cs" />
+    <Compile Include="Controllers\UserHelpersController.cs" />
     <Compile Include="Controllers\UserProfileController.cs" />
     <Compile Include="DAL\Core\Repository.cs" />
     <Compile Include="DAL\Entities\Follower.cs" />
+    <Compile Include="DAL\Entities\Helper.cs" />
     <Compile Include="DAL\Entities\Notification.cs" />
     <Compile Include="DAL\Entities\Rating.cs" />
     <Compile Include="DAL\Entities\Tag.cs" />
     <Compile Include="DAL\Repositories\CommentsRepository.cs" />
     <Compile Include="DAL\Repositories\FollowersRepository.cs" />
+    <Compile Include="DAL\Repositories\HelpersRepository.cs" />
     <Compile Include="DAL\Repositories\NotificationRepository.cs" />
     <Compile Include="DAL\Repositories\PostsRepository.cs" />
     <Compile Include="DAL\Repositories\RatingRepository.cs" />
     <Compile Include="DAL\Repositories\TagsRepository.cs" />
+    <Compile Include="Enums\HelperTypes.cs" />
     <Compile Include="Enums\NotificationTypes.cs" />
     <Compile Include="Enums\PostTimeFilter.cs" />
     <Compile Include="Enums\PostTypes.cs" />
@@ -299,6 +305,7 @@
     <Compile Include="Enums\SortFilter.cs" />
     <Compile Include="Extensions\ClaimsExtensions.cs" />
     <Compile Include="Extensions\ValidationExtensions.cs" />
+    <Compile Include="Infrastructure\ArticleImagesContainer.cs" />
     <Compile Include="Helpers\ClaimsHelper.cs" />
     <Compile Include="Helpers\FilesHelper.cs" />
     <Compile Include="BLL\Services\UserService.cs" />
@@ -319,7 +326,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Helpers\Logger.cs" />
+    <Compile Include="Infrastructure\Logger.cs" />
     <Compile Include="Helpers\ViewHelper.cs" />
     <Compile Include="DAL\Infrastructure\AppDbContext.cs" />
     <Compile Include="DAL\Infrastructure\UnitOfWork.cs" />
@@ -341,6 +348,14 @@
     <Compile Include="Migrations\201705021630483_delFollowerPrimaryKey.Designer.cs">
       <DependentUpon>201705021630483_delFollowerPrimaryKey.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201705111616138_addPostCover.cs" />
+    <Compile Include="Migrations\201705111616138_addPostCover.Designer.cs">
+      <DependentUpon>201705111616138_addPostCover.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201705151234391_AddHelpers.cs" />
+    <Compile Include="Migrations\201705151234391_AddHelpers.Designer.cs">
+      <DependentUpon>201705151234391_AddHelpers.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ChangePassModel.cs" />
     <Compile Include="Models\CommentModel.cs" />
@@ -348,6 +363,7 @@
     <Compile Include="Models\EmailSettingsModel.cs" />
     <Compile Include="Models\ForgotPassModel.cs" />
     <Compile Include="Models\GooglePlaces\AddressComponent.cs" />
+    <Compile Include="Models\HelperModel.cs" />
     <Compile Include="Models\NotificationModel.cs" />
     <Compile Include="Models\LoginModel.cs" />
     <Compile Include="Models\ImagePostModel.cs" />
@@ -358,6 +374,7 @@
     <Compile Include="Models\ProfileSettingsModel.cs" />
     <Compile Include="Models\RegisterModel.cs" />
     <Compile Include="Models\ResetPasswordModel.cs" />
+    <Compile Include="Models\TagModel.cs" />
     <Compile Include="Models\TopPostModel.cs" />
     <Compile Include="Models\UserShortModel.cs" />
     <Compile Include="Models\WalletsSettingsModel.cs" />
@@ -512,10 +529,9 @@
     <Folder Include="App_Data\" />
     <Folder Include="Attributes\Filters\" />
     <Folder Include="bower_components\" />
-    <Folder Include="Infrastructure\" />
     <Folder Include="ViewModels\" />
     <Folder Include="Views\Base\" />
-    <Folder Include="Views\Top\" />
+    <Folder Include="Views\UserHelpers\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
@@ -535,6 +551,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201705021630483_delFollowerPrimaryKey.resx">
       <DependentUpon>201705021630483_delFollowerPrimaryKey.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201705111616138_addPostCover.resx">
+      <DependentUpon>201705111616138_addPostCover.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201705151234391_AddHelpers.resx">
+      <DependentUpon>201705151234391_AddHelpers.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

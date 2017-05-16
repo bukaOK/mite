@@ -48,9 +48,10 @@ namespace Mite.Controllers
                 var allowedList = new List<string>
                 {
                     "landenor",
-                    "dindon"
+                    "dindon",
+                    "lex"
                 };
-                if(!allowedList.Contains(model.UserName))
+                if(!allowedList.Contains(model.UserName.ToLower()))
                 {
                     ModelState.AddModelError("", "Вход запрещен.");
                     return View(model);

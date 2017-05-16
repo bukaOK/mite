@@ -7,9 +7,35 @@
 @Scripts.Render("~/bundles/editor")
 <div class="ui edit post segment">
     <h2 class="ui dividing header">@ViewBag.Title</h2>
+    <div class="ui center aligned grid" style="margin-bottom: 0">
+        <div class="row">
+            <div class="column">
+                <label for="wrapperImg" class="ui labeled centered icon primary button">
+                    Добавить обложку
+                    <i class="cloud download icon"></i>
+                </label>
+            </div>
+        </div>
+        @if (string.IsNullOrEmpty(Model.Cover))
+        {
+            <div class="row" style="display: none">
+                <div class="ten wide column" id="img-wrapper"></div>
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                <div class="ten wide column" id="img-wrapper">
+                    <img src="@Model.Cover" alt="@Model.Header" style="max-width: 100%" />
+                </div>
+            </div>
+        }
+    </div>
     @using (Html.BeginForm("AddPost", "Posts", FormMethod.Post, new { @class = "ui form" }))
     {
         @Html.EditorFor(x => x.Header)
+        @Html.HiddenFor(x => x.Cover)
+        <input type="file" id="wrapperImg" style="display: none"/>
         <div class="two fields">
             <div class="field">
                 @Html.TextAreaFor(x => x.Description, new { @placeholder = Html.DisplayNameFor(y => y.Description) })
@@ -19,6 +45,18 @@
                     @Html.HiddenFor(x => x.Tags, new { Value = tagsRow })
                     <div class="default text">Теги</div>
                     <div class="menu">
+                    </div>
+                </div>
+                <div class="ui blue icon message">
+                    <i class="info icon"></i>
+                    <div class="content">
+                        <div class="header">
+                            Внимание!
+                        </div>
+                        <p>
+                            Вы также можете добавлять другие тематические теги, 
+                            <b>не включенные в список сервиса</b> (теги, содержащие названия, бренды и пр., будут удаляться).
+                        </p>
                     </div>
                 </div>
             </div>
@@ -38,15 +76,15 @@
             }
             else
             {
-                Html.Raw(Model.Content);
+                @Html.Raw(Model.Content)
             }
         </div>
     }
 </div>
-<div class="ui small modal">
+<div class="ui small modal" id="saveModal">
     <i class="close icon"></i>
     <div class="header">
-        Вы уверены?
+        Опубликовать работу?
     </div>
     <div class="content">
         После публикации работу невозможно будет редактировать. 
@@ -58,17 +96,130 @@
     </div>
 </div>
 <script>
-    var postId = '@Model.Id';
-    var defaultId = '@Guid.Empty';
-    ContentTools.DEFAULT_TOOLS = [
-        ['bold', 'italic', 'line-break'],
-        [
-            'heading', 'subheading', 'paragraph',
-            'align-left', 'align-center', 'align-right'
-        ],
-        ['undo', 'redo', 'remove']
-    ];
+    function initEditPopup(){
+        var $editBtn = $('.ct-ignition__button--edit');
+        $editBtn.popup({
+            on: 'manual',
+            position: 'right center',
+            content: 'Нажми на меня!'
+        });
+        $editBtn.popup('show');
+        $editBtn.click(function(ev){
+            $editBtn.popup('hide');
+            $.ajax({
+                url: '@Url.Action("InitHelper", "UserHelpers")',
+                data: {
+                    helperType: '@HelperTypes.EditDocBtn'
+                }
+            });
+        });
+    }
+    function articleImageUploader(dialog) {
+        var image;
+        dialog.addEventListener('imageuploader.fileready', function (ev) {
+            var reader = new FileReader();
+            image = new Image();
+            var file = ev.detail().file;
+            reader.onload = function () {
+                image.src = reader.result;
+            }
+            image.onload = function () {
+                this.size = [this.width, this.height];
+                dialog.populate(this.src, this.size);
+            };
+            reader.readAsDataURL(file);
+            image.src = window.URL.createObjectURL(file);
+        });
+        dialog.addEventListener('imageuploader.cancelupload', function () {
+            dialog.state('empty');
+        });
+        dialog.addEventListener('imageuploader.clear', function () {
+            dialog.clear();
+            image = null;
+        });
+        dialog.addEventListener('imageuploader.save', function () {
+            var crop, cropRegion, formData;
 
+            dialog.save(image.src, image.size, {
+                'data-ce-max-width': image.size[0]
+            });
+        });
+    }
+    function readImage(file, evt) {
+        var reader = new FileReader();
+        reader.onload = function () {
+            $('#img-wrapper').html('<img src="' + reader.result + '" style="max-width: 100%"/>');
+            $('#img-wrapper').parent('.row').show();
+            $('#Cover').val(reader.result);
+        }
+        isCoverLarge = file.size / 1024 / 1024 > 4;
+        reader.readAsDataURL(file);
+    }
+    function inputDownloadHandler(evt) {
+        var file = evt.target.files[0];
+        readImage(file, evt);
+    }
+    function savePost(isPublished, editorInstance){
+        @{
+            var url = string.IsNullOrEmpty(Model.Header)
+                ? Url.Action("AddPost", "Posts")
+                : Url.Action("UpdatePost", "Posts");
+        }
+        formData.IsPublished = isPublished;
+        editorInstance.busy(true);
+        $.ajax({
+            data: formData,
+            type: 'post',
+            url: '@url',
+            success: function (data) {
+                var validErrorStatus = @((byte)Mite.Core.JsonResponseStatuses.ValidationError);
+                if(data.status == validErrorStatus){
+                    var errorStr = 'Ошибка при сохранении<br>' + data.message;
+                    alert(errorStr);
+                } else{
+                    alert('Ваша работа успешно сохранена!');
+                }
+            },
+            error: function (jqXhr) {
+                $('.ct-ignition__button--edit').css('background', '#e74c3c');
+                alert('Ошибка при сохранении');
+            },
+            complete: function (jqXhr) {
+                editorInstance.busy(false);
+            }
+        });
+    }
+    var isCoverLarge = false,
+        postId = '@Model.Id',
+        defaultId = '@Guid.Empty',
+        formData;
+
+    ContentTools.DEFAULT_TOOLS = [
+        [
+            'bold',
+            'italic',
+            'image'
+        ], [
+            'align-left',
+            'align-center',
+            'align-right'
+        ],
+        [
+            'heading',
+            'subheading',
+            'paragraph',
+            'unordered-list',
+            'ordered-list',
+            'table',
+            'indent',
+            'unindent',
+            'line-break'
+        ], [
+            'undo',
+            'redo',
+            'remove'
+        ]
+    ];
     ContentTools.StylePalette.add([
         new ContentTools.Style('Описание', 'description', ['h3'])
     ]);
@@ -82,6 +233,8 @@
             ContentEdit.LANGUAGE = 'ru';
         }
     });
+    ContentTools.IMAGE_UPLOADER = articleImageUploader;
+
     ContentTools.ToolboxUI.prototype.mount = function () {
         var coord, position, restore;
         this._domElement = this.constructor.createDiv(['ct-widget', 'ct-toolbox']);
@@ -115,14 +268,14 @@
             initiate: function () {
                 self.addCSSClass('ct-toolbox--dragging');
             },
-            stop: function(){
+            stop: function () {
                 self.removeCSSClass('ct-toolbox--dragging');
             },
             elementsWithInteraction: '.ct-tool-groups'
         });
+        $(this._domElement).css('position', 'fixed');
         return this._addDOMEventListeners();
     };
-
     $(function () {
         ViewHelper.activateSidebarItem('#editDocItem');
         var headerId = '#@Html.IdFor(x => x.Header)';
@@ -130,6 +283,7 @@
         $(headerId).keyup(function (ev) {
             $('.ui.form').children('h2').html(ev.target.value);
         });
+        $('')
         $('form').form({
             inline: true,
             fields: {
@@ -154,11 +308,11 @@
         $.ajax({
             url: '/api/tags',
             type: 'get',
-            success: function(data){
+            success: function (data) {
                 var tagsMenu = $('#select-tags');
                 var tagsItems = '';
-                for(var i = 0; i < data.length; i++){
-                    tagsItems += '<div class="item" data-value="' + data[i] + '">' + data[i] + '</div>'
+                for (var i = 0; i < data.length; i++) {
+                    tagsItems += '<div class="item" data-value="' + data[i].Name + '">' + data[i].Name + '</div>'
                 }
                 tagsMenu.children('.menu').html(tagsItems);
                 tagsMenu.dropdown({
@@ -172,54 +326,59 @@
                     forceSelection: false
                 });
             },
-            error: function(jqXhr){
+            error: function (jqXhr) {
                 alert('Ошибка инициализации тегов.');
             }
         });
-        @{
-            var url = string.IsNullOrEmpty(Model.Header)
-                ? Url.Action("AddPost", "Posts")
-                : Url.Action("UpdatePost", "Posts");
-        }
         var editor = ContentTools.EditorApp.get();
 
         editor.init('*[data-editable]', 'data-name');
+
         editor.inspector().show = function () { return false; }
         editor.addEventListener('saved',
-            function(ev) {
-                if(!$('form').form('is valid')){
+            function (ev) {
+                if (!$('form').form('is valid')) {
                     $('.ct-ignition__button--edit').css('background', '#e74c3c');
                     return false;
                 }
                 var content = ev.detail().regions.Content;
+                if (isCoverLarge) {
+                    alert('Обложка не может иметь размер больше 4 мбайт.');
+                    return false;
+                }
+                @if (string.IsNullOrEmpty(Model.Header))
+                {
+                    <text>
                 if (content == '' || content == null || content == undefined) {
                     alert('Контент не может быть пустым!');
                     return false;
                 }
-                this.busy(true);
-                $.ajax({
-                    data: {
-                        Content: content,
-                        Header: $(headerId).val(),
-                        Description: $('#Description').val(),
-                        Id: '@Model.Id',
-                        IsImage: false,
-                        Tags: $('#Tags').val().split(','),
-                        IsPublished: false
-                    },
-                    type: 'post',
-                    url: '@url',
-                    success: function(data){
-                        $('.ct-ignition__button--edit').css('background', '#27ae60');
-                    },
-                    error: function(jqXhr){
-                        $('.ct-ignition__button--edit').css('background', '#e74c3c');
-                        alert('Ошибка при сохранении');
-                    },
-                    complete: function(jqXhr){
-                        editor.busy(false);
-                    }
-                });
+                </text>
+                }
+                formData = {
+                    Content: content,
+                    Header: $(headerId).val(),
+                    Description: $('#Description').val(),
+                    Id: '@Model.Id',
+                    IsImage: false,
+                    Tags: $('#Tags').val().split(','),
+                    Cover: $('#Cover').val()
+                };
+                $('#saveModal').modal('show');
             });
+        $("#saveModal").modal({
+            onDeny: function(){
+                savePost(false, editor);
+            },
+            onApprove: function(){
+                savePost(true, editor);
+            }
+        });
+        var wrapperInput = document.getElementById("wrapperImg");
+        wrapperInput.onchange = inputDownloadHandler;
+        @if (!Model.Helper.EditDocBtn)
+        {
+            <text>initEditPopup();</text>
+        }
     });
 </script>

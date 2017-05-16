@@ -13,6 +13,7 @@ namespace Mite.Models
         public bool IsImage { get; set; }
         public DateTime LastEdit { get; set; }
         public string Description { get; set; }
+        public string Cover { get; set; }
         public int Rating { get; set; }
         public int Views { get; set; }
         public List<string> Tags { get; set; }

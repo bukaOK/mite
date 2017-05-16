@@ -1,17 +1,12 @@
 ﻿using Microsoft.AspNet.Identity;
 using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
-using Mite.Models;
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Net;
-using System.Linq;
-using AutoMapper;
-using Mite.Enums;
-using Mite.Helpers;
+using Mite.Infrastructure;
 
 namespace Mite.Controllers
 {

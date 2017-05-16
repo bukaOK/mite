@@ -93,6 +93,7 @@ namespace Mite.DAL.Repositories
         /// Получить посты по тегам
         /// </summary>
         /// <param name="tagIds">Список Id тегов</param>
+        /// <param name="excludePostsIds">Посты, которые мы уже нашли и их нужно исключить из поиска</param>
         /// <param name="isPublished">Опубликованный ли пост</param>
         /// <param name="minDate">Дата, с которой начинается отбор постов</param>
         /// <param name="onlyFollowings">Выбрать только из тех на кого подписан</param>
@@ -101,16 +102,14 @@ namespace Mite.DAL.Repositories
         /// <param name="offset">Сколько строк пропустить, прежде чем начать отбор</param>
         /// <param name="range">Сколько постов достать</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Post>> GetByTagsAsync(IEnumerable<Guid> tagIds, bool isPublished, 
+        public async Task<IEnumerable<Post>> GetByTagsAsync(IEnumerable<Guid> tagIds, IEnumerable<Guid> excludePostsIds, bool isPublished, 
             DateTime minDate, bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range)
         {
-            var query = "select Post_Id from dbo.TagPosts where Tag_Id in @tagIds";
+            var query = "select Post_Id from dbo.TagPosts where Tag_Id in @tagIds and Post_Id not in @excludePostsIds";
             IEnumerable<string> followings;
-
+            
             var postIds = await Db.QueryAsync<Guid>(query, new { tagIds });
-            query = "select * from dbo.Posts left outer join dbo.TagPosts on dbo.TagPosts.Post_Id=dbo.Posts.Id" +
-                " left outer join dbo.Tags on dbo.TagPosts.Tag_Id=dbo.Tags.Id " +
-                "inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId " +
+            query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId " +
                 "where dbo.Posts.Id in @postIds and IsPublished=@isPublished "
                 + "and dbo.AspNetUsers.Id=dbo.Posts.UserId and LastEdit > @minDate ";
             object queryParams = new { postIds, isPublished, minDate };
@@ -135,22 +134,12 @@ namespace Mite.DAL.Repositories
                     break;
             }
             query += $" offset {offset} rows fetch next {range} rows only";
-            return (await Db.QueryAsync<Post, Tag, User, Post>(query, (post, tag, user) =>
+            var posts = await Db.QueryAsync<Post, User, Post>(query, (post, user) =>
             {
                 post.User = user;
-                if (post.Tags == null)
-                    post.Tags = new List<Tag>();
-                if (tag != null)
-                    post.Tags.Add(tag);
                 return post;
-            }, queryParams))
-            .GroupBy(x => x.Id)
-            .Select(group =>
-            {
-                var post = group.First();
-                post.Tags = group.SelectMany(x => x.Tags).ToList();
-                return post;
-            });
+            }, queryParams);
+            return posts;
         }
         /// <summary>
         /// Получить посты по имени
@@ -167,10 +156,15 @@ namespace Mite.DAL.Repositories
         public async Task<IEnumerable<Post>> GetByNameAsync(string postName, bool isPublished, DateTime minDate,
             bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range)
         {
-            var query = "select * from dbo.Posts left outer join dbo.TagPosts on dbo.TagPosts.Post_Id=dbo.Posts.Id" +
-                " left outer join dbo.Tags on dbo.TagPosts.Tag_Id=dbo.Tags.Id " +
-                "inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId "
+#if !DEBUG
+            postName = "\"" + postName + "*\"";
+#endif
+            var query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId "
+#if DEBUG
                 + "where Title like @postName and IsPublished=@isPublished and LastEdit > @minDate ";
+#else
+            + "where CONTAINS(Title, @postName) and IsPublished=@isPublished and LastEdit > @minDate ";
+#endif
             IEnumerable<string> followings;
             object queryParams = new { postName, isPublished, minDate };
 
@@ -195,31 +189,19 @@ namespace Mite.DAL.Repositories
             }
             //Получаем по диапазону
             query += $" offset {offset} rows fetch next {range} rows only";
-            return (await Db.QueryAsync<Post, Tag, User, Post>(query, (post, tag, user) =>
+            
+            var posts = await Db.QueryAsync<Post, User, Post>(query, (post, user) =>
             {
                 post.User = user;
-                if (post.Tags == null)
-                    post.Tags = new List<Tag>();
-                if (tag != null)
-                    post.Tags.Add(tag);
                 return post;
-            }, queryParams))
-            .GroupBy(x => x.Id)
-            .Select(group =>
-            {
-                var post = group.First();
-                post.Tags = group.SelectMany(x => x.Tags).ToList();
-                return post;
-            });
+            }, queryParams);
+            return posts;
         }
         public async Task<IEnumerable<Post>> GetByFilterAsync(bool isPublished, DateTime minDate,
             bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range)
         {
-            var query = "select * from dbo.Posts left outer join dbo.TagPosts on dbo.TagPosts.Post_Id=dbo.Posts.Id" +
-                " left outer join dbo.Tags on dbo.TagPosts.Tag_Id=dbo.Tags.Id " +
-                "inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId" +
-                " where dbo.Posts.IsPublished=@isPublished "
-                + " and LastEdit > @minDate ";
+            var query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId" +
+                " where dbo.Posts.IsPublished=@isPublished and LastEdit > @minDate ";
             IEnumerable<string> followings;
             object queryParams = new { isPublished, minDate };
             if (onlyFollowings)
@@ -242,22 +224,12 @@ namespace Mite.DAL.Repositories
                     break;
             }
             query += $" offset {offset} rows fetch next {range} rows only";
-            return (await Db.QueryAsync<Post, Tag, User, Post>(query, (post, tag, user) =>
+            var posts = await Db.QueryAsync<Post, User, Post>(query, (post, user) =>
             {
                 post.User = user;
-                if (post.Tags == null)
-                    post.Tags = new List<Tag>();
-                if(tag != null)
-                    post.Tags.Add(tag);
                 return post;
-            }, queryParams))
-            .GroupBy(x => x.Id)
-            .Select(group =>
-            {
-                var post = group.First();
-                post.Tags = group.SelectMany(x => x.Tags).ToList();
-                return post;
-            });
+            }, queryParams);
+            return posts;
         }
     }
 }

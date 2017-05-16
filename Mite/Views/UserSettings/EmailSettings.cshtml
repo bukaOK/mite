@@ -24,16 +24,18 @@ else
         @Html.AntiForgeryToken()
         <button type="button" class="ui primary button" id="confirmEmailBtn" onclick="sendEmailConfirmation(this)">Отправить подтверждение</button>
     }
-    <h3 class="ui header">Изменение e-mail</h3>
-    using (Html.BeginForm("", "", FormMethod.Post, new { @class = "ui form", id = "emailChangeForm" }))
+}
+<h3 class="ui header">Изменение e-mail</h3>
+    @using (Html.BeginForm("", "", FormMethod.Post, new { @class = "ui form", id = "emailChangeForm" }))
     {
         @Html.EditorFor(x => x.NewEmail)
         @Html.EditorFor(x => x.Password)
-        <button type="button" class="ui primary button" onclick="changeEmail()">Изменить</button>
+        @Html.AntiForgeryToken()
+        <button type="button" class="ui primary button" onclick="changeEmail(this)">Изменить</button>
         <div class="ui red message" hidden id="emailSendingFailedMsg">
         </div>
     }
-    <script>
+<script>
         function sendEmailConfirmation(ev) {
             $(ev).addClass('loading disabled');
             $.ajax({
@@ -51,24 +53,45 @@ else
                 }
             });
         }
-        function changeEmail() {
+        function changeEmail(btn) {
             var $form = $('#emailChangeForm');
             if(!$form.form('is valid')){
                 return;
             }
+            $(btn).addClass('loading disabled');
             $.ajax({
                 url: '@Url.Action("ChangeEmail", "UserSettings")',
                 type: 'post',
+                data: $form.serialize(),
                 success: function (resp) {
                     var validErrorStatus = @((byte)JsonResponseStatuses.ValidationError);
                     if (resp.status == undefined) {
                         resp = JSON.parse(resp);
                     }
+                    var $msg = $('#emailSendingFailedMsg');
                     if(resp.status == validErrorStatus){
                         var errorStr = '';
+                        resp.data.forEach(function(elem){
+                            errorStr += '<li>' + elem + '</li>';
+                        });
+                        $msg.addClass('red').removeClass('green');
+                        $msg.html(errorStr);
+                    } else{
+                        $msg.addClass('green').removeClass('red');
+                        $msg.html('E-mail успешно изменен.');
                     }
+                },
+                error: function(err){
+                    console.log(err);
+                    var $msg = $('#emailSendingFailedMsg');
+                    $msg.addClass('red').removeClass('green');
+                    $msg.html('Ошибка сервера.');
+                },
+                complete: function(){
+                    $(btn).removeClass('loading disabled');
+                    $('#emailSendingFailedMsg').show();
                 }
-            })
+            });
         }
         $(function () {
             $('#emailChangeForm').form({
@@ -95,7 +118,6 @@ else
                         ]
                     }
                 }
-            })
+            });
         });
-    </script>
-}
+</script>

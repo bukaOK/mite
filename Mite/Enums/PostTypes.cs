@@ -7,6 +7,7 @@ namespace Mite.Enums
         //По типу контента
         Image,
         Document,
+        Article,
         //Опубликованные / неопубликованные(черновик)
         Published,
         Drafts

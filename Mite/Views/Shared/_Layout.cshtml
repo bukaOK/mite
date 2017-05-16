@@ -81,7 +81,7 @@
                 <i class="image icon"></i>Добавить изобр.
             </a>
             <a href="@Url.Action("AddPost", "Posts")?postType=@PostTypes.Document.ToString().ToLower()" class="violet item" id="editDocItem">
-                <i class="file text outline icon"></i>Добавить документ
+                <i class="newspaper icon"></i>Добавить документ
             </a>
             <a class="violet item" id="notifications-item">
                 <i class="feed icon"></i>
@@ -109,14 +109,13 @@
                 <a href="@Url.Action("Index", "Home")" class="header main item">
                     <img class="logo" src="/Content/images/mite-logo-icon.png" alt="Логотип"/>
                 </a>
-                @Html.ActionLink("Главная", "Index", "Home", null, new { @class = "computer tablet only item" })
                 @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "computer tablet only item" })
                 @Html.ActionLink("Поддержать нас", "Donate", "Home", null, new { @class = "computer tablet only item" })
                 @if (Request.IsAuthenticated)
                 {
                     @Html.ActionLink("Публикации", "Top", "Posts", null, new { @class = "item" })
                     <div class="right menu">
-                        <a class="item menu-btn"><i class="list layout icon"></i>Меню</a>
+                        <a class="item menu-btn"><i class=" list layout icon"></i>Меню</a>
                     </div>
                 }
                 else

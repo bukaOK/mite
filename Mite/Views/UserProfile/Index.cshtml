@@ -271,78 +271,24 @@ else
         </div>
     </div>
 </script>
-@*<script id="" type="text/x-jsrender">
-    <div class="column" data-post-id="{{:Id}}">
-        <div class="ui link raised card">
-            {{if IsImage}}
-            <div class="image">
-                <img src="{{:Content}}" />
-            </div>
-            {{else}}
-            <div class="content">
-                {{:Content}}
-            </div>
-            {{/if}}
-            <div class="content">
-                @if (currentUserName == pageUserName)
-                {
-                    <text>
-                        {{if IsPublished}}
-                        <a class="header" href="/posts/showpost/{{:Id}}">{{:Header}}</a>
-                        {{else}}
-                        <a class="header" href="/posts/editpost/{{:Id}}">{{:Header}}</a>
-                        {{/if}}
-                    </text>
-                }
-                else
-                {
-                    <a class="header" href="/posts/showpost/{{:Id}}">{{:Header}}</a>
-                }
-                <div class="description">
-                    <p>{{:Description}}</p>
-                </div>
-            </div>
-            <div class="extra content">
-                {{if IsPublished}}
-                <a href="@Url.Action("ShowPost", "Posts")/{{:Id}}" class="ui primary compact button">Смотреть</a>
-                {{/if}}
-                @if (currentUserName == pageUserName)
-                {
-                    <button class="ui red post-del compact button" onclick="showDeletePostModal('{{:Id}}')">Удалить</button>
-                        <button class="ui blue compact button" onclick="publishPost('{{:Id}}')">Опубликовать</button>
-                        <text>
-                            {{if !IsPublished}}
-                            <a class="ui primary compact button" href="@Url.Action("EditPost", "Posts")/{{:Id}}">Редактировать</a>
-                            {{/if}}
-                        </text>
-                }
-                {{if IsPublished}}
-                <div class="right floated">
-                    <i class="yellow star icon"></i>{{:Rating}}
-                    <i class="blue unhide icon"></i>{{:Views}}
-                </div>
-                {{/if}}
-            </div>
-        </div>
-    </div>
-</script>*@
 <script id="postsTmpl" type="text/x-jsrender">
     <div class="column" data-post-id="{{:Id}}">
-        <div class="ui segment post-item">
+        <div class="ui segment {{if Cover != null}}invert{{/if}} post-item" {{if Cover != null}}
+             style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})"{{/if}}>
             {{if IsImage}}
             <img src="{{:Content}}" class="ui image" />
             {{else}}
-            <div class="content">
+            <div class="post-content content">
                 {{:Content}}
             </div>
             {{/if}}
-            <div class="ui divider"></div>
+            <div class="ui {{if Cover != null}}inverted{{/if}} divider"></div>
             <div class="extra content">
                 {{:PublicTimeStr}}
                 {{if IsPublished}}
                 <div class="right floated" style="float: right">
                     <i class="yellow star icon"></i>{{:Rating}}
-                    <i class="blue unhide icon"></i>{{:Views}}
+                    <i class="{{if Cover == null}}blue{{else}}black{{/if}} unhide icon"></i>{{:Views}}
                 </div>
                 {{/if}}
             </div>

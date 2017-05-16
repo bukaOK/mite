@@ -10,15 +10,18 @@ using Mite.Models;
 using Mite.BLL.IdentityManagers;
 using Mite.Enums;
 using System.Collections.Generic;
+using System.Web;
+using Microsoft.AspNet.Identity;
+using System.Web.Hosting;
 
 namespace Mite.BLL.Services
 {
     public interface IPostsService
     {
         Task<PostModel> GetPostAsync(Guid postId);
-        Task AddPostAsync(PostModel postModel, string postsFolder, string userId);
+        Task<IdentityResult> AddPostAsync(PostModel postModel, string userId);
         Task DeletePostAsync(Guid postId);
-        Task UpdatePostAsync(PostModel postModel, string postsFolder);
+        Task<IdentityResult> UpdatePostAsync(PostModel postModel);
         Task<PostModel> GetWithTagsAsync(Guid postId);
         /// <summary>
         /// Возвращает вместе с тегами и владельцем поста
@@ -40,6 +43,8 @@ namespace Mite.BLL.Services
     public class PostsService : DataService, IPostsService
     {
         private readonly AppUserManager _userManager;
+        private readonly string imagesFolder = HostingEnvironment.ApplicationVirtualPath + "Public/images/";
+        private readonly string documentsFolder = HostingEnvironment.ApplicationVirtualPath + "Public/documents/";
 
         public PostsService(IUnitOfWork unitOfWork, AppUserManager userManager) : base(unitOfWork)
         {
@@ -55,26 +60,41 @@ namespace Mite.BLL.Services
             return postModel;
         }
 
-        public async Task AddPostAsync(PostModel postModel, string postsFolder, string userId)
+        public async Task<IdentityResult> AddPostAsync(PostModel postModel, string userId)
         {
-            var filePath = postModel.IsImage
-                ? FilesHelper.CreateImage(postsFolder, postModel.Content)
-                : FilesHelper.CreateDocument(postsFolder, postModel.Content);
-
+            if (postModel.IsImage)
+            {
+                if(postModel.Content == null)
+                {
+                    return IdentityResult.Failed("Изображение не найдено.");
+                }
+                postModel.Content = FilesHelper.CreateImage(imagesFolder, postModel.Content);
+            }
+            else
+            {
+                if(postModel.Cover != null)
+                {
+                    postModel.Cover = FilesHelper.CreateImage(imagesFolder, postModel.Cover);
+                }
+                if(postModel.Content == null)
+                {
+                    return IdentityResult.Failed("Контент не может быть пустым.");
+                }
+                postModel.Content = FilesHelper.CreateDocument(documentsFolder, postModel.Content);
+            }
             postModel.Tags = postModel.Tags.Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
             var post = Mapper.Map<Post>(postModel);
 
             post.Id = Guid.NewGuid();
-            post.Content = filePath;
             post.UserId = userId;
             post.LastEdit = DateTime.UtcNow;
             post.Rating = 0;
-            post.IsPublished = false;
 
             await Database.PostsRepository.AddAsync(post);
             foreach (var tag in post.Tags)
                 tag.Name = tag.Name.ToLower();
             await Database.TagsRepository.AddWithPostAsync(post.Tags, post.Id);
+            return IdentityResult.Success;
         }
 
         public async Task DeletePostAsync(Guid postId)
@@ -87,9 +107,9 @@ namespace Mite.BLL.Services
         /// Обновляет пост, PostModel.Content может быть null(когда не было изменений), если это файл
         /// </summary>
         /// <param name="postModel">модель</param>
-        /// <param name="postsFolder">папка для сохранения поста</param>
+        /// 
         /// <returns></returns>
-        public async Task UpdatePostAsync(PostModel postModel, string postsFolder)
+        public async Task<IdentityResult> UpdatePostAsync(PostModel postModel)
         {
             var currentPost = await Database.PostsRepository.GetAsync(postModel.Id);
             postModel.Tags = postModel.Tags.Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
@@ -97,14 +117,25 @@ namespace Mite.BLL.Services
 
             if (postModel.IsImage && postModel.Content != currentPost.Content)
             {
+                if (postModel.Content == null)
+                    return IdentityResult.Failed("Изображение не может быть пустым");
                 FilesHelper.DeleteFile(currentPost.Content);
-                post.Content = FilesHelper.CreateImage(postsFolder, postModel.Content) ;
+                post.Content = FilesHelper.CreateImage(imagesFolder, postModel.Content);
             }
             else if(!postModel.IsImage)
             {
-                if(postModel.Content != null)
+                if(!string.IsNullOrWhiteSpace(postModel.Content))
                     FilesHelper.UpdateDocument(currentPost.Content, postModel.Content);
                 post.Content = currentPost.Content;
+                if(!string.IsNullOrWhiteSpace(postModel.Cover) && postModel.Cover != currentPost.Cover)
+                {
+                    FilesHelper.DeleteFile(currentPost.Cover);
+                    post.Cover = FilesHelper.CreateImage(imagesFolder, postModel.Cover);
+                }
+                if(postModel.Cover == null && !string.IsNullOrEmpty(currentPost.Cover))
+                {
+                    FilesHelper.DeleteFile(currentPost.Cover);
+                }
             }
             post.LastEdit = DateTime.UtcNow;
 
@@ -112,6 +143,8 @@ namespace Mite.BLL.Services
                 tag.Name = tag.Name.ToLower();
             await Database.TagsRepository.AddWithPostAsync(post.Tags, post.Id);
             await Database.PostsRepository.UpdateAsync(post);
+
+            return IdentityResult.Success;
         }
         /// <summary>
         /// Получить пост с тегами(для редактирования поста)
@@ -148,7 +181,6 @@ namespace Mite.BLL.Services
 
             return postModel;
         }
-
         public async Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userId, SortFilter sort, PostTypes type)
         {
             IEnumerable<Post> posts;
@@ -164,15 +196,12 @@ namespace Mite.BLL.Services
             {
                 throw new ArgumentException("Не подходящий тип поста");
             }
-            foreach(var post in posts)
+            const int minChars = 400;
+            foreach (var post in posts)
             {
                 if (!post.IsImage)
                 {
-                    const int minChars = 400;
-                    var charsCount = FilesHelper.GetDocCharsCount(post.Content);
                     post.Content = await FilesHelper.ReadDocumentAsync(post.Content, minChars);
-                    if (charsCount > minChars)
-                        post.Content += "...";
                 }
             }
             var postModels = Mapper.Map<IEnumerable<ProfilePostModel>>(posts);
@@ -207,7 +236,7 @@ namespace Mite.BLL.Services
             var currentDate = DateTime.Now;
             DateTime minDate;
             var onlyFollowings = PostUserFilter.OnlyFollowings == postUserFilter;
-            const int range = 20;
+            const int range = 9;
             var offset = (page - 1) * range;
 
             switch (postTimeFilter)
@@ -232,14 +261,15 @@ namespace Mite.BLL.Services
             if (!string.IsNullOrWhiteSpace(input))
             {
                 //Находим теги по входящей строке
-                var tags = await Database.TagsRepository.GetByNameAsync(input);
-                //Находим 
+                var inputTags = await Database.TagsRepository.GetByNameAsync(input);
+                //Находим посты по входящей строке
                 var inputPosts = await Database.PostsRepository.GetByNameAsync(input, true, minDate, onlyFollowings, currentUserId,
                         sortFilter, offset, range);
-                if (tags.Count() > 0)
+
+                if (inputTags.Count() > 0)
                 {
-                    var tagPosts = await Database.PostsRepository.GetByTagsAsync(tags.Select(x => x.Id), true, minDate, onlyFollowings,
-                        currentUserId, sortFilter, offset, range);
+                    var tagPosts = await Database.PostsRepository.GetByTagsAsync(inputTags.Select(x => x.Id), inputPosts.Select(x => x.Id),
+                        true, minDate, onlyFollowings, currentUserId, sortFilter, offset, range);
                     posts.AddRange(tagPosts);
                     posts.AddRange(inputPosts.Where(x => !tagPosts.Any(y => y.Id == x.Id)));
                 }
@@ -253,18 +283,32 @@ namespace Mite.BLL.Services
                 posts = (await Database.PostsRepository.GetByFilterAsync(true, minDate, onlyFollowings, currentUserId,
                     sortFilter, offset, range)).ToList();
             }
+
+            var postTags = await Database.TagsRepository.GetByPostsAsync(posts.Select(x => x.Id));
+            const int minChars = 400;
             foreach (var post in posts)
             {
                 if (!post.IsImage)
                 {
-                    const int minChars = 400;
-                    var charsCount = FilesHelper.GetDocCharsCount(post.Content);
                     post.Content = await FilesHelper.ReadDocumentAsync(post.Content, minChars);
-                    if (charsCount > minChars)
-                        post.Content += "...";
                 }
+                post.Tags = postTags.Where(x => x.Posts.Any(y => y.Id == post.Id)).ToList();
             }
             return Mapper.Map<List<TopPostModel>>(posts);
+        }
+        /// <summary>
+        /// Объединяем посты с тегами, на основе Id поста
+        /// </summary>
+        /// <param name="posts"></param>
+        /// <param name="tags"></param>
+        /// <returns></returns>
+        private IEnumerable<Post> ConcatTagWithPosts(IEnumerable<Post> posts, IEnumerable<Tag> tags)
+        {
+            foreach(var post in posts)
+            {
+                post.Tags = tags.Where(x => x.Posts.Any(y => y.Id == post.Id)).ToList();
+            }
+            return posts;
         }
     }
 }

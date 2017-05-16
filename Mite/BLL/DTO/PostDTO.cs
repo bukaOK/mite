@@ -11,7 +11,7 @@ namespace Mite.BLL.DTO
         public string Description { get; set; }
         public string Content { get; set; }
         public byte PostType { get; set; }
-        public List<string> Tags { get; set; }
+        public List<TagDTO> Tags { get; set; }
         public List<CommentModel> Comments { get; set; }
     }
 }

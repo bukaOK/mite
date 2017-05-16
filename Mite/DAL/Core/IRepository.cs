@@ -13,6 +13,7 @@ namespace Mite.DAL.Core
         /// <param name="id">Id сущности</param>
         /// <returns></returns>
         Task<T> GetAsync(Guid id);
+        T Get(Guid id);
         /// <summary>
         /// Возвращает список всех сущностей данного типа
         /// </summary>
@@ -25,7 +26,9 @@ namespace Mite.DAL.Core
         /// <param name="entity"></param>
         /// <returns></returns>
         Task AddAsync(T entity);
+        void Add(T entity);
         Task RemoveAsync(Guid id);
+        void Remove(Guid id);
         Task UpdateAsync(T entity);
     }
 }

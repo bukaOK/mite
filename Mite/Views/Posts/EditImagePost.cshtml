@@ -9,7 +9,7 @@
     @using (Html.BeginForm("AddPost", "Posts", FormMethod.Post, new { @class = "ui stackable two column center aligned grid form", id = "imgPostForm" }))
     {
         <div class="column">
-            <input type="file" id="img-download">
+            <input type="file" id="img-download" style="display: none">
             <label for="img-download" class="ui labeled icon large primary button">
                 Загрузить
                 <i class="cloud download icon"></i>
@@ -18,7 +18,6 @@
             <div class="ui dashed segment" id="drop-zone">
                 <h3 class="ui disabled grey">Перетащите сюда</h3>
             </div>
-            <span id="loading-span" style="display: none">Загрузка...</span>
         </div>
         <div class="left aligned column">
             @Html.EditorFor(x => x.Header)
@@ -32,6 +31,18 @@
                     </div>
                 </div>
             </div>
+            <div class="ui blue icon message">
+                <i class="info icon"></i>
+                <div class="content">
+                    <div class="header">
+                        Внимание!
+                    </div>
+                    <p>
+                        Вы также можете добавлять другие тематические теги,
+                        <b>не включенные в список сервиса</b> (теги, содержащие названия, бренды и пр., будут удаляться).
+                    </p>
+                </div>
+            </div>
         </div>
         <div class="ten wide column">
             <div id="img-wrapper">
@@ -40,14 +51,76 @@
                     <img src="@Model.Content" alt="@Model.Header" style="max-width: 100%" />
                 }
             </div>
-            <button type="button" class="ui green button" id="save-btn" >Сохранить</button>
+            <button type="button" class="ui green button" id="save-btn">Сохранить</button>
             @Html.ValidationSum()
             <div class="ui hidden message" style="text-align: center" id="result-msg"></div>
         </div>
     }
 </div>
+<div class="ui small modal" id="saveModal">
+    <i class="close icon"></i>
+    <div class="header">
+        Опубликовать работу?
+    </div>
+    <div class="content">
+        После публикации работу невозможно будет редактировать.
+        При нажатии "Нет" она сохранится в черновиках и будет доступна для изменений.
+    </div>
+    <div class="actions">
+        <button class="ui red cancel button">Нет, просто сохранить</button>
+        <button class="ui green ok button">Да</button>
+    </div>
+</div>
 <script>
+    function savePost(isPublished){
+        var $saveBtn = $('#saveBtn');
+        var $resultMsg = $('#result-msg');
+        @{
+            var url = string.IsNullOrEmpty(Model.Header)
+                ? Url.Action("AddPost", "Posts")
+                : Url.Action("UpdatePost", "Posts");
+        }
+        $.ajax({
+            url: '@url',
+            data: {
+                model: {
+                    Header: $('#Header').val(),
+                    Content: $('#Content').val(),
+                    Description: $('#Description').val(),
+                    IsImage: true,
+                    Id: '@Model.Id',
+                    IsPublished: isPublished,
+                    Tags: $('#Tags').val().split(',')
+                }
+            },
+            type: 'post',
+            dataType: 'json',
+            beforeSend: function () {
+                $saveBtn.addClass('loading disabled');
+            },
+            success: function (resp) {
+                var validErrorStatus = @((byte)Mite.Core.JsonResponseStatuses.ValidationError);
+                if(resp.status == validErrorStatus){
+                    $resultMsg.addClass('red').removeClass('green');
+                    var errorStr = 'Ошибка при сохранении: ' + resp.message;
+                    alert(errorStr);
+                } else{
+                    $resultMsg.addClass('green').removeClass('red');
+                    $resultMsg.html('Ваш пост успешно добавлен!');
+                }
+            },
+            error: function (jqXhr) {
+                $resultMsg.addClass('red').removeClass('green');
+                $resultMsg.html('Ошибка во время добавления поста')
+            },
+            complete: function (jqXhr) {
+                $saveBtn.removeClass('loading disabled');
+                $resultMsg.removeClass('hidden');
+            }
+        });
+    }
     $(function() {
+        var isImageLarge = false;
         ViewHelper.activateSidebarItem('#editImageItem');
         $('.ui.checkbox').checkbox();
         $.ajax({
@@ -57,7 +130,7 @@
                 var tagsMenu = $('#select-tags');
                 var tagsItems = '';
                 for(var i = 0; i < data.length; i++){
-                    tagsItems += '<div class="item" data-value="' + data[i] + '">' + data[i] + '</div>'
+                    tagsItems += '<div class="item" data-value="' + data[i].Name + '">' + data[i].Name + '</div>'
                 }
                 tagsMenu.children('.menu').html(tagsItems);
                 tagsMenu.dropdown({
@@ -81,46 +154,11 @@
         //Отправляем форму
         $('#save-btn').click(function(ev) {
             var $saveBtn = $(this);
-
-            $('#imgPostForm').form('validate form');
-            @{
-                var url = string.IsNullOrEmpty(Model.Header)
-                    ? Url.Action("AddPost", "Posts")
-                    : Url.Action("UpdatePost", "Posts");
+            if(isImageLarge){
+                $('#imgPostForm').form('add errors', ['Размер файла не может быть больше 4 мбайт']);
             }
             if ($('#imgPostForm').form('is valid')) {
-                var $resultMsg = $('#result-msg');
-
-                $.ajax({
-                    url: '@url',
-                    data: {
-                        model: {
-                            Header: $('#Header').val(),
-                            Content: $('#Content').val(),
-                            Description: $('#Description').val(),
-                            IsImage: true,
-                            Id: '@Model.Id',
-                            Tags: $('#Tags').val().split(',')
-                        }
-                    },
-                    type: 'post',
-                    dataType: 'json',
-                    beforeSend: function () {
-                        $saveBtn.addClass('loading disabled');
-                    },
-                    success: function (resp) {
-                        $resultMsg.addClass('green').removeClass('red');
-                        $resultMsg.html(resp.message);
-                    },
-                    error: function (jqXhr) {
-                        $resultMsg.addClass('red').removeClass('green');
-                        $resultMsg.html('Ошибка во время добавления поста')
-                    },
-                    complete: function (jqXhr) {
-                        $saveBtn.removeClass('loading disabled');
-                        $resultMsg.removeClass('hidden');
-                    }
-                });
+                $('#saveModal').modal('show');
             }
         });
         $('#imgPostForm').form({
@@ -151,14 +189,20 @@
                 }
             }
         });
+        $("#saveModal").modal({
+            onDeny: function(){
+                savePost(false);
+            },
+            onApprove: function(){
+                savePost(true);
+            }
+        });
         function readFile(file, evt) {
             var reader = new FileReader();
             reader.onprogress = function () {
-                $("#loading-span").css("display: inline");
                 $(evt).addClass('loading');
             };
             reader.onloadend = function () {
-                $("#loading-span").css('display: none');
                 $(evt).removeClass('loading');
             };
             reader.onload = function () {
@@ -166,6 +210,9 @@
                 $('#img-wrapper').html('<img src="' + reader.result + '" style="max-width: 100%"/>');
                 $('#Content').val(reader.result);
             };
+            if(file.size / 1024 / 1024 > 1){
+                isImageLarge = true;
+            }
             reader.readAsDataURL(file);
         }
         //Когда перемещаем файл мышкой и курсор над областью

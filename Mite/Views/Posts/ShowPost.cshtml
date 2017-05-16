@@ -18,16 +18,18 @@
         </div>
     </div>
     <div class="row">
-        <div class="fifteen wide centered column" id="post-content">
-            @if (Model.IsImage)
-            {
+        @if (Model.IsImage)
+        {
+            <div class="fifteen wide centered column" id="post-content">
                 <img src="@Model.Content" class="ui centered image" />
-            }
-            else
-            {
+            </div>
+        }
+        else
+        {
+            <div data-editable class="fifteen wide centered column" id="post-content">
                 @Html.Raw(Model.Content)
-            }
-        </div>
+            </div>
+        }
     </div>
     <div class="ui divider"></div>
     <div class="row">
@@ -93,7 +95,7 @@
             <a href="/User/Profile/{{:User.UserName}}" class="author">{{:User.UserName}}</a>
             <div class="metadata">
                 {{if ParentComment != null}}
-                <i class="violet share icon"></i>{{:ParentComment.User.UserName}} | <span class="date">{{:PublicDateStr}}</span>
+                <i class="violet share icon"></i>{{:ParentComment.User.UserName}} |
                 {{/if}}
                 <span class="date">{{:PublicDateStr}}</span>
             </div>

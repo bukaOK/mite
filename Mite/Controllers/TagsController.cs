@@ -7,6 +7,7 @@ using AutoMapper;
 using System.Web.Http;
 using Mite.Models;
 using Mite.DAL.Entities;
+using Mite.BLL.DTO;
 
 namespace Mite.Controllers
 {
@@ -20,10 +21,10 @@ namespace Mite.Controllers
             _unitOfWork = unitOfWork;
         }
         [HttpGet]
-        public async Task<IEnumerable<string>> GetForUser()
+        public async Task<IEnumerable<TagModel>> GetForUser()
         {
-            var tags = await _unitOfWork.TagsRepository.GetAllAsync(true);
-            return Mapper.Map<IEnumerable<string>>(tags);
+            var tags = await _unitOfWork.TagsRepository.GetAllWithPopularityAsync(true);
+            return Mapper.Map<IEnumerable<TagModel>>(tags);
         }
         [HttpGet]
         public async Task<IEnumerable<string>> GetByName(string name)

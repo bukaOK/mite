@@ -14,7 +14,7 @@ using Microsoft.AspNet.SignalR;
 using Autofac;
 using Autofac.Integration.WebApi;
 using Autofac.Integration.Mvc;
-using Autofac.Integration.SignalR;
+using Mite.Infrastructure;
 
 namespace Mite
 {
@@ -54,6 +54,8 @@ namespace Mite
             builder.RegisterType<RatingService>().As<IRatingService>();
             builder.RegisterType<FollowersService>().As<IFollowersService>();
             builder.RegisterType<NotificationService>().As<INotificationService>();
+            builder.RegisterType<ArticleImagesContainer>().As<IImagesContainer>().SingleInstance();
+            builder.RegisterType<HelpersService>().As<IHelpersService>();
         }
     }
 }

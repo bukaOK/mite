@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
+using Mite.BLL.DTO;
 using Mite.DAL.Entities;
 using Mite.Helpers;
+using Mite.Infrastructure;
 using Mite.Models;
 using System;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
-using WebGrease;
 
 namespace Mite
 {
@@ -38,6 +39,7 @@ namespace Mite
                     });
                 cfg.CreateMap<Tag, string>()
                     .ConvertUsing(x => x.Name);
+                cfg.CreateMap<TagDTO, TagModel>();
 
                 cfg.CreateMap<User, UserShortModel>();
 
@@ -92,6 +94,7 @@ namespace Mite
                     .ForMember(dest => dest.NotifyUser, opt => opt.Ignore())
                     .ForMember(dest => dest.User, opt => opt.Ignore());
                 cfg.CreateMap<Notification, NotificationModel>();
+                cfg.CreateMap<Helper, HelperModel>();
             });
         }
     }

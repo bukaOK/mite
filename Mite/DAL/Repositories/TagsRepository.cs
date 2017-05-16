@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Dapper;
 using Mite.DAL.Core;
 using Mite.DAL.Entities;
+using Mite.BLL.DTO;
 
 namespace Mite.DAL.Repositories
 {
@@ -18,9 +19,63 @@ namespace Mite.DAL.Repositories
         {
             return Db.QueryAsync<Tag>("select * from dbo.Tags where IsConfirmed=@isConfirmed", new { isConfirmed });
         }
+        public Task<IEnumerable<TagDTO>> GetAllWithPopularityAsync(bool isConfirmed)
+        {
+            var query = "select dbo.Tags.Name, COUNT(dbo.TagPosts.Tag_Id) as Popularity "
+                + "from dbo.Tags left outer join dbo.TagPosts on dbo.TagPosts.Tag_Id=dbo.Tags.Id where IsConfirmed=@isConfirmed" 
+                + " group by dbo.Tags.Name order by Popularity desc";
+            return Db.QueryAsync<TagDTO>(query, new { isConfirmed });
+        }
         public Task<IEnumerable<Tag>> GetByNameAsync(string name)
         {
-            return Db.QueryAsync<Tag>("select * from dbo.Tags where Name like @name", new { name });
+#if DEBUG
+            var query = "select * from dbo.Tags where Name like @name";
+#else
+            var query = "select * from dbo.Tags where CONTAINS(Name, @name)";
+            name = "\"" + name + "*\"";
+#endif
+            return Db.QueryAsync<Tag>(query, new { name });
+        }
+        /// <summary>
+        /// Исходя из списка постов, получаем теги
+        /// </summary>
+        /// <param name="postsIds"></param>
+        /// <returns></returns>
+        public async Task<List<Tag>> GetByPostsAsync(IEnumerable<Guid> postsIds)
+        {
+            var query = "select * from dbo.TagPosts left outer join"
+                + " dbo.Tags on dbo.Tags.Id=dbo.TagPosts.Tag_Id where Post_Id in @postsIds";
+            var tags = new List<Tag>();
+            var rows = await Db.QueryAsync(query, new { postsIds });
+            foreach(var row in rows)
+            {
+                var tag = tags.FirstOrDefault(x => x.Id == row.Id);
+                if(tag == default(Tag))
+                {
+                    tag = new Tag
+                    {
+                        Id = row.Id,
+                        Name = row.Name,
+                        IsConfirmed = row.IsConfirmed,
+                        Posts = new List<Post>
+                        {
+                            new Post
+                            {
+                                Id = row.Post_Id
+                            }
+                        }
+                    };
+                    tags.Add(tag);
+                }
+                else
+                {
+                    tag.Posts.Add(new Post
+                    {
+                        Id = row.Post_Id
+                    });
+                }
+            }
+            return tags;
         }
         /// <summary>
         /// Меняем один тег на другой(если например имя старого тега неправильно записано)

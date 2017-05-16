@@ -30,7 +30,6 @@ namespace Mite.DAL.Core
         {
             return Db.QueryFirstAsync<T>($"select top 1 * from dbo.{_tableName} where Id=@Id", new { Id = id });
         }
-
         public virtual Task RemoveAsync(Guid id)
         {
             var query = $"delete from dbo.{_tableName} where Id=@Id";
@@ -93,6 +92,42 @@ namespace Mite.DAL.Core
         public IEnumerable<T> GetAll()
         {
             return Db.Query<T>($"select * from dbo.{_tableName}");
+        }
+
+        public void Add(T entity)
+        {
+            //Если Id пустой, генерим новый
+            entity.Id = entity.Id == Guid.Empty ? Guid.NewGuid() : entity.Id;
+
+            //Составляем список свойств для вставки
+            var propsNames = typeof(T).GetProperties().Where(IsSqlType).Select(x => x.Name).ToArray();
+            var query = new StringBuilder($"insert into dbo.{_tableName} (");
+            for (int i = 0; i < propsNames.Length; i++)
+            {
+                query.Append(propsNames[i]);
+                if (i < propsNames.Length - 1)
+                    query.Append(",");
+            }
+            query.Append(") values(");
+            for (int i = 0; i < propsNames.Length; i++)
+            {
+                query.Append("@").Append(propsNames[i]);
+                if (i != propsNames.Length - 1)
+                    query.Append(",");
+            }
+            query.Append(")");
+            Db.Execute(query.ToString(), entity);
+        }
+
+        public T Get(Guid id)
+        {
+            return Db.QueryFirst<T>($"select top 1 * from dbo.{_tableName} where Id=@Id", new { Id = id });
+        }
+
+        public void Remove(Guid id)
+        {
+            var query = $"delete from dbo.{_tableName} where Id=@Id";
+            Db.Execute(query, new { Id = id });
         }
     }
 }

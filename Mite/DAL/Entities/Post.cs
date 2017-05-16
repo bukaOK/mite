@@ -28,6 +28,10 @@ namespace Mite.DAL.Entities
         public bool IsPublished { get; set; }
         public List<Tag> Tags { get; set; }
         public List<Comment> Comments { get; set; }
+        /// <summary>
+        /// Путь к обложке
+        /// </summary>
+        public string Cover { get; set; }
         public string Description { get; set; }
         /// <summary>
         /// Для экономии добавляем int'овое значение рейтинга

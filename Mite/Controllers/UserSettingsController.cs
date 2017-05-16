@@ -168,13 +168,17 @@ namespace Mite.Controllers
             var errors = new List<string>();
             var user = await _userManager.FindByIdAsync(User.Identity.GetUserId());
 
+            var emailUser = await _userManager.FindByEmailAsync(model.NewEmail);
+            if (emailUser != null && emailUser.Id != user.Id)
+                errors.Add("Такой e-mail уже существует");
+
             var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
             if (!isPasswordValid)
                 errors.Add("Неверный пароль");
 
-            var isEmailConfimed = await _userManager.IsEmailConfirmedAsync(user.Id);
-            if (isEmailConfimed)
-                errors.Add("Ваш e-mail уже подтвержден");
+            //var isEmailConfimed = await _userManager.IsEmailConfirmedAsync(user.Id);
+            //if (isEmailConfimed)
+            //    errors.Add("Ваш e-mail уже подтвержден");
 
             if (errors.Count > 0)
                 return JsonResponse(JsonResponseStatuses.ValidationError, errors);

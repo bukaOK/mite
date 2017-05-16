@@ -9,11 +9,11 @@
         <i class="filter icon"></i>
         Сначала&nbsp;
         <div class="ui inline dropdown" id="sortType">
-            <div class="text">высший рейтинг</div>
+            <div class="text">новые</div>
             <i class="dropdown icon"></i>
             <div class="menu">
-                <div class="active item" data-text="высший рейтинг" data-value="@((byte)SortFilter.Popular)">Высший рейтинг</div>
-                <div class="item" data-text="новые" data-value="@((byte)SortFilter.New)">Новые</div>
+                <div class="active item" data-text="новые" data-value="@((byte)SortFilter.New)">Новые</div>
+                <div class="item" data-text="высший рейтинг" data-value="@((byte)SortFilter.Popular)">Высший рейтинг</div>
                 <div class="item" data-text="старые" data-value="@((byte)SortFilter.Old)">Старые</div>
             </div>
         </div>
@@ -51,18 +51,36 @@
         </div>
     </div>
 </div>
-<div class="ui posts stackable three column basic segment grid" id="postsGrid">
+<div class="ui stackable grid">
+    <div class="three wide column">
+        <div class="ui top-tags loading segment">
+            <h3 class="ui dividing header">Теги</h3>
+        </div>
+    </div>
+    <div class="thirteen wide column">
+        <div class="ui posts stackable three column basic segment grid" id="postsGrid">
+        </div>
+    </div>
 </div>
 
 <script id="topPostTmpl" type="text/x-jsrender">
     <div class="column">
-        <div class="ui segment post-item">
+        <div class="ui segment {{if Cover != null}}invert{{/if}} post-item" {{if Cover != null}}
+             style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})" {{/if}}>
             <div class="extra content">
                 <img src="{{:User.AvatarSrc}}" class="ui avatar image" />
-                <a href="/user/profile/{{:User.UserName}}">{{:User.UserName}}</a>
-                <span style="float: right">{{:PublicTimeStr}}</span>
+                <a href="/user/profile/{{:User.UserName}}" class="username">{{:User.UserName}}</a>
+                <span style="float: right">
+                    <a class="ui compact inverted {{if Cover == null}}violet {{/if}}button" href="/posts/showpost/{{:Id}}">
+                        {{if IsImage}}
+                        Смотреть
+                        {{else}}
+                        Читать
+                        {{/if}}
+                    </a>
+                </span>
             </div>
-            <div class="ui divider"></div>
+            <div class="ui {{if Cover != null}}inverted {{/if}}divider"></div>
             {{if IsImage}}
             <a href="/posts/showpost/{{:Id}}">
                 <img src="{{:Content}}" class="ui image" style="margin-bottom: 10px" />
@@ -72,28 +90,36 @@
                 {{:Content}}
             </a>
             {{/if}}
-            <div class="ui divider"></div>
+            <div class="ui {{if Cover != null}}inverted {{/if}}divider"></div>
             <div class="extra content">
-                <a class="ui header" style="margin-bottom: 5px" href="#">
+                <a class="ui {{if Cover != null}}inverted {{/if}}header" style="margin-bottom: 5px" href="/posts/showpost/{{:Id}}">
                     {{:Title}}
                     <span class="sub header">
                         {{:Description}}
                     </span>
                 </a>
-                {{for Tags}}
-                <a class="ui label" onclick="loadTag('{{>#data}}')">{{>#data}}</a>
+                {{for Tags ~Cover=Cover}}
+                <a class="ui{{if ~Cover != null}} invert{{/if}} label" onclick="loadTag('{{>#data}}')">{{>#data}}</a>
                 {{/for}}
             </div>
-            <div class="ui divider"></div>
+            <div class="ui {{if Cover != null}}inverted {{/if}} divider"></div>
             <div class="extra content">
-                <i class="yellow star icon"></i>Рейтинг: {{:Rating}}
+                <span>{{:PublicTimeStr}}</span>
                 <div class="right floated" style="float: right">
-                    <i class="blue unhide icon"></i>Просмотры: {{:Views}}
+                    <i class="yellow star icon"></i>{{:Rating}}
+                    <i class="{{if Cover == null}}blue{{else}}black{{/if}} unhide icon"></i>{{:Views}}
                 </div>
             </div>
         </div>
     </div>
 </script>
+<template id="topTagsTmpl">
+    <div class="ui column">
+        <div class="ui top-tags loading segment">
+            <h3 class="ui dividing header">Теги</h3>
+        </div>
+    </div>
+</template>
 <template id="emptyResultTmpl">
     <div class="column"></div>
     <div class="column">
@@ -106,12 +132,31 @@
     </div>
 </template>
 <script>
+    var tagsInitialized = false;
     function loadTag(name) {
         $('#postsSearch').val(name);
         SearchFilters.changeFilter();
     }
+    function initTags() {
+        $.ajax({
+            url: '/api/tags',
+            success: function (resp) {
+                var tmpl = '<a class="ui label" onclick="loadTag(\'{{:Name}}\')">{{:Name}}' +
+                    '{{if Popularity > 0}}<span class="detail">{{:Popularity}}</span>{{/if}}</a>'
+                var html = $.templates(tmpl).render(resp);
+                $('.top-tags').append(html);
+                $('.top-tags').removeClass('loading');
+            },
+            error: function (jqXhr) {
+                alert('Ошибка при загрузке тегов');
+            }
+        });
+    }
     $(function () {
-        var grid = $('#postsGrid').masonry();
+        initTags();
+        var grid = $('#postsGrid').masonry({
+            itemSelector: '.column'
+        });
         $('.ui.dropdown').dropdown({
             onChange: function () {
                 if (SearchFilters.initialized) {
@@ -134,6 +179,8 @@
                 
                 $('#postsGrid .loader').remove();
                 if (resp.data.length > 0) {
+                    if (!SearchFilters._loadNextPage) {
+                    }
                     var tmpl = $.templates('#topPostTmpl');
                     var html = tmpl.render(resp.data);
 
@@ -148,12 +195,11 @@
                 }
                 grid.imagesLoaded(function () {
                     grid.masonry('reloadItems').masonry('layout');
+                    $('.loader-wrapper').hide();
                 });
             },
             onError: function () {
                 alert('Ошибка сервера');
-            },
-            onComplete: function(){
                 $('.loader-wrapper').hide();
             },
             ajax: {
@@ -185,7 +231,7 @@
                     selector: '#sortType',
                     getVal: function () {
                         return $(this.selector).dropdown('get value') == ''
-                            ? '0' : $(this.selector).dropdown('get value');
+                            ? '@((byte)SortFilter.New)' : $(this.selector).dropdown('get value');
                     },
                     updateState: function (newVal) {
                         $(this.selector).dropdown('set selected', newVal);
@@ -199,7 +245,6 @@
                             ? '0' : $(this.selector).dropdown('get value');
                     },
                     updateState: function (newVal) {
-                        console.log(this.selector);
                         $(this.selector).dropdown('set selected', newVal);
                     }
                 },

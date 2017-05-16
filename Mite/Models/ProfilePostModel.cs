@@ -17,6 +17,7 @@ namespace Mite.Models
         public int CommentsCount { get; set; }
         public byte PostType { get; set; }
         public bool IsPublished { get; set; }
+        public string Cover { get; set; }
         public int Views { get; set; }
         public bool IsImage { get; set; }
         public string PostTypeName { get; set; }
