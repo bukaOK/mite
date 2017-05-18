@@ -13,6 +13,7 @@ using AutoMapper;
 using System.Net;
 using System.Collections.Generic;
 using System.Web;
+using Mite.Infrastructure;
 
 namespace Mite.Controllers
 {
@@ -114,11 +115,11 @@ namespace Mite.Controllers
         {
             if (!ModelState.IsValid)
                 return JsonResponse(JsonResponseStatuses.ValidationError, "Проверьте правильность заполнения полей");
-            if (model.Description.Contains(">") || model.Description.Contains("<"))
+            if (!string.IsNullOrEmpty(model.Description) && (model.Description.Contains(">") || model.Description.Contains("<")))
                 return JsonResponse(JsonResponseStatuses.ValidationError, "Обнаружены опасные символы в описании");
             
             //Если изображение, сохраняем на сервере, в контент ставим путь к папке
-            if (Regex.IsMatch(model.Content, @"<\s*(script|a)") || Regex.IsMatch(model.Description, @"<\s(script)"))
+            if (Regex.IsMatch(model.Content, @"<\s*(script|a)") || (!string.IsNullOrEmpty(model.Description) && Regex.IsMatch(model.Description, @"<\s(script)")))
             {
                 return JsonResponse(JsonResponseStatuses.ValidationError, "Обнаружены опасные данные внутри запроса");
             }
@@ -169,8 +170,9 @@ namespace Mite.Controllers
                 await postsService.DeletePostAsync(postId);
                 return new HttpStatusCodeResult(HttpStatusCode.OK);
             }
-            catch(Exception)
+            catch(Exception e)
             {
+                Logger.WriteError(e);
                 return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
             }
         }
@@ -187,8 +189,9 @@ namespace Mite.Controllers
                 await postsService.PublishPost(postId);
                 return new HttpStatusCodeResult(HttpStatusCode.OK);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Logger.WriteError(e);
                 return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
             }
         }

@@ -152,7 +152,7 @@ namespace Mite.Helpers
             str = Regex.Replace(str, @"<table>.+</table>", "");
 
             var substr = str.Substring(0, str.Length < charsCount ? str.Length : charsCount);
-            if(charsCount < GetDocCharsCount(path))
+            if (charsCount < GetDocCharsCount(path))
             {
                 substr += "...";
             }
@@ -160,10 +160,17 @@ namespace Mite.Helpers
             var lastPMatches = Regex.Matches(substr, "<p[^>]*>");
             var lastP = lastPMatches[lastPMatches.Count - 1];
             var lastPCloseMatches = Regex.Matches(substr, "</p>");
-            var lastPClose = lastPCloseMatches[lastPCloseMatches.Count - 1];
+            if (lastPCloseMatches.Count > 0)
+            {
+                var lastPClose = lastPCloseMatches[lastPCloseMatches.Count - 1];
+                if (lastP.Index > lastPClose.Index)
+                    substr += "</p>";
+            }
+            else
+            {
+                substr += "<p/>";
+            }
 
-            if (lastP.Index > lastPClose.Index)
-                substr += "</p>";
             return substr;
         }
         public static string ReadDocument(string path, int charsCount)
@@ -174,5 +181,8 @@ namespace Mite.Helpers
             reader.Close();
             return new string(buffer);
         }
+        //public static Image ResizeImage(Image sourceImg, int width, int height = 0)
+        //{
+        //}
     }
 }

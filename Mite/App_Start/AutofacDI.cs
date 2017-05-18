@@ -54,7 +54,6 @@ namespace Mite
             builder.RegisterType<RatingService>().As<IRatingService>();
             builder.RegisterType<FollowersService>().As<IFollowersService>();
             builder.RegisterType<NotificationService>().As<INotificationService>();
-            builder.RegisterType<ArticleImagesContainer>().As<IImagesContainer>().SingleInstance();
             builder.RegisterType<HelpersService>().As<IHelpersService>();
         }
     }

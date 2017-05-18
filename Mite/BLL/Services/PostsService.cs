@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using System.Web;
 using Microsoft.AspNet.Identity;
 using System.Web.Hosting;
+using System.Net;
+using System.IO;
 
 namespace Mite.BLL.Services
 {
@@ -126,8 +128,10 @@ namespace Mite.BLL.Services
             {
                 if(!string.IsNullOrWhiteSpace(postModel.Content))
                     FilesHelper.UpdateDocument(currentPost.Content, postModel.Content);
+
                 post.Content = currentPost.Content;
-                if(!string.IsNullOrWhiteSpace(postModel.Cover) && postModel.Cover != currentPost.Cover)
+                if(!string.IsNullOrWhiteSpace(postModel.Cover) && postModel.Cover != currentPost.Cover &&
+                    currentPost.Cover != null)
                 {
                     FilesHelper.DeleteFile(currentPost.Cover);
                     post.Cover = FilesHelper.CreateImage(imagesFolder, postModel.Cover);

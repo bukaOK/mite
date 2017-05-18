@@ -3,7 +3,7 @@
     ViewBag.Title = "Публикации";
 }
 @Scripts.Render("~/bundles/grid")
-<div class="loader-wrapper"><div class="ui active loader"></div></div>
+<div class="active loader-wrapper"><div class="ui active loader"></div></div>
 <div class="ui stackable menu">
     <div class="item">
         <i class="filter icon"></i>
@@ -166,7 +166,7 @@
         });
         SearchFilters.init({
             beforeLoad: function(){
-                $('.loader-wrapper').show();
+                $('.loader-wrapper').addClass('active');
             },
             onSuccess: function (resp) {
                 if (resp.status == null || resp.status == undefined) {
@@ -195,12 +195,12 @@
                 }
                 grid.imagesLoaded(function () {
                     grid.masonry('reloadItems').masonry('layout');
-                    $('.loader-wrapper').hide();
+                    $('.loader-wrapper').removeClass('active');
                 });
             },
             onError: function () {
                 alert('Ошибка сервера');
-                $('.loader-wrapper').hide();
+                $('.loader-wrapper').removeClass('active');
             },
             ajax: {
                 type: 'post',
@@ -262,7 +262,9 @@
             ]
         });
         Scrolling.init('footer', function () {
-            return SearchFilters.loadNext();
+            if (!$('.loader-wrapper').hasClass('active')) {
+                return SearchFilters.loadNext();
+            }
         });
         SearchFilters.loadNext();
         $('.ui.checkbox').checkbox();

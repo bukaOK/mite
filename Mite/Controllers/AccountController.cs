@@ -69,7 +69,11 @@ namespace Mite.Controllers
             switch (result)
             {
                 case SignInStatus.Success:
-                    return RedirectToLocal(returnUrl);
+                    if (!string.IsNullOrEmpty(returnUrl))
+                    {
+                        return RedirectToLocal(returnUrl);
+                    }
+                    return RedirectToAction("Index", "UserProfile");
                 case SignInStatus.LockedOut:
                     return View("Lockout");
                 case SignInStatus.RequiresVerification:
@@ -116,7 +120,7 @@ namespace Mite.Controllers
                 var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, "http");
 
                 await _userManager.SendEmailAsync(user.Id, "MiteGroup.Подтверждение почты.", "Для подтверждения вашего аккаунта перейдите по <a href=\"" + callbackUrl + "\">ссылке.</a> MiteGroup.");
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "UserProfile");
             }
             //Если что то пошло не так, отображаем форму заново(вместе с ошибками)
             ModelState.AddModelError("", "Ошибка на сервере");

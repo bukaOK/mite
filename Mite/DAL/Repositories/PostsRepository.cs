@@ -108,7 +108,7 @@ namespace Mite.DAL.Repositories
             var query = "select Post_Id from dbo.TagPosts where Tag_Id in @tagIds and Post_Id not in @excludePostsIds";
             IEnumerable<string> followings;
             
-            var postIds = await Db.QueryAsync<Guid>(query, new { tagIds });
+            var postIds = await Db.QueryAsync<Guid>(query, new { tagIds, excludePostsIds });
             query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId " +
                 "where dbo.Posts.Id in @postIds and IsPublished=@isPublished "
                 + "and dbo.AspNetUsers.Id=dbo.Posts.UserId and LastEdit > @minDate ";
