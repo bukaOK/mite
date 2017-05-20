@@ -110,7 +110,6 @@ namespace Mite.Controllers
 
         }
         [HttpPost]
-        [ValidateInput(false)]
         public async Task<JsonResult> AddPost(PostModel model)
         {
             if (!ModelState.IsValid)
@@ -131,14 +130,7 @@ namespace Mite.Controllers
 
             return JsonResponse(JsonResponseStatuses.Success, "Пост успешно добавлен");
         }
-        //[HttpPost]
-        //public Task<JsonResult> UploadArticleImage()
-        //{
-        //    var file = Request.Files[0];
-
-        //}
         [HttpPost]
-        [ValidateInput(false)]
         public async Task<JsonResult> UpdatePost(PostModel model)
         {
             //Здесь не применяется ModelState, потому что Content может быть null
@@ -207,6 +199,18 @@ namespace Mite.Controllers
                 posts = await postsService.GetByUserAsync(userId, sort, PostTypes.Drafts);
             }
             return JsonResponse(JsonResponseStatuses.Success, posts);
+        }
+        /// <summary>
+        /// Получаем список изображений пользователя (для галереи при показе поста)
+        /// </summary>
+        /// <param name="userId">Id пользователя</param>
+        /// <returns></returns>
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<JsonResult> UserGallery(string userId)
+        {
+            var result = await postsService.GetGalleryByUserAsync(userId);
+            return JsonResponse(JsonResponseStatuses.Success, result);
         }
         public ViewResult Top()
         {

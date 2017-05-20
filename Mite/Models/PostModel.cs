@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Web.Mvc;
 
 namespace Mite.Models
 {
@@ -9,7 +10,9 @@ namespace Mite.Models
         public Guid Id { get; set; }
         [Required]
         [Display(Name = "Заголовок")]
+        [MaxLength(100, ErrorMessage = "Слишком большой заголовок")]
         public string Header { get; set; }
+        [AllowHtml]
         public string Content { get; set; }
         [MaxLength(200, ErrorMessage = "Слишком большое описание")]
         public string Description { get; set; }

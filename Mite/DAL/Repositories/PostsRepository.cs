@@ -231,5 +231,10 @@ namespace Mite.DAL.Repositories
             }, queryParams);
             return posts;
         }
+        public Task<IEnumerable<Post>> GetGalleryByUserAsync(string userId)
+        {
+            var query = "select Id, Content from dbo.Posts where UserId=@userId and IsPublished=1 and IsImage=1";
+            return Db.QueryAsync<Post>(query, new { userId });
+        }
     }
 }

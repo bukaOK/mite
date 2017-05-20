@@ -64,6 +64,8 @@ namespace Mite
                     .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Header))
                     .ForMember(dest => dest.Ratings, opt => opt.Ignore())
                     .ForMember(dest => dest.User, opt => opt.Ignore());
+                cfg.CreateMap<Post, GalleryPostModel>()
+                    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString("N")));
 
                 cfg.CreateMap<ProfileSettingsModel, User>()
                     .ForMember(dest => dest.UserName, opts => opts.MapFrom(src => src.NickName))

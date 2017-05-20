@@ -292,6 +292,10 @@
                         {
                             type: 'empty',
                             prompt: $('#Header').data('valRequired')
+                        },
+                        {
+                            type: 'maxLength[' + $('#Description').data('val-maxlength-max') + ']',
+                            prompt: $('#Header').data('val-maxlength')
                         }
                     ]
                 },

@@ -10,6 +10,7 @@ using Mite.Helpers;
 using Mite.Models;
 using Microsoft.AspNet.Identity;
 using System.Text.RegularExpressions;
+using Mite.BLL.DTO;
 
 namespace Mite.BLL.Services
 {
@@ -88,10 +89,13 @@ namespace Mite.BLL.Services
             try
             {
                 imagePath = FilesHelper.CreateImage(imagesFolder, imageBase64);
+                //Создаем сжатую копию аватарки
+                var img = new ImageDTO(imagePath, imagesFolder);
+                img.Compress();
             }
             catch (FormatException)
             {
-                return new IdentityResult("Изображение имеет неверный формат");
+                return IdentityResult.Failed("Изображение имеет неверный формат");
             }
 
             var existingUser = await _userManager.FindByIdAsync(userId);
@@ -101,6 +105,12 @@ namespace Mite.BLL.Services
             if(existingAvatarSrc != null && existingAvatarFolders[1] == "Public")
                 FilesHelper.DeleteFile(existingAvatarSrc);
 
+            //Создаем объект изображения и удаляем сжатую копию старой аватарки
+            var existingImg = new ImageDTO(existingAvatarSrc, imagesFolder);
+            if (existingImg.IsCompressedExists)
+            {
+                FilesHelper.DeleteFile(existingImg.CompressedVirtualPath);
+            }
             var result = await _userManager.UpdateAsync(existingUser);
             return result;
         }

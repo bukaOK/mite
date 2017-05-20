@@ -45,6 +45,9 @@ form.login>.segment, form.register>.segment{
     box-shadow: 0px 0px 20px rgba(34, 36, 38, 0.15) !important;
 }
 /*"Затемнители" постов*/
+.segment .ui.dimmer{
+    z-index: 890;
+}
 .ui.dimmer .meta{
     vertical-align: top;
     padding-top: 10px;
@@ -250,11 +253,58 @@ article.ui.container{
         margin-right: auto;
     }
 }
-#post-image-modal{
+/*Галерея изображений при показе поста*/
+.gallery .go.button{
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 10px;
+    z-index: 900;
+}
+@media only screen and (max-width: 767px){
+    .gallery .go.button{
+        top: 20px;
+    }
+}
+.gallery.image.content{
+    padding:0;
+}
+.gallery .btn{
+    width: 150px;
+    height: 100%;
+    position: absolute;
+    font-size: 50px;
+    cursor: pointer;
+    z-index: 1100;
+    color: white;
+    transition: color 0.3s ease-out;
+}
+.gallery img{
+    -webkit-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+    -moz-user-select: none;
+}
+.gallery .btn:hover{
+    color: #b540c6;
+}
+.gallery .prev{
+    left: 0;
+}
+.gallery .next{
+    right: 0;
+}
+.gallery .btn .icon{
+    position: absolute;
+    bottom: 40%;
+    transform: translateX(-50%) translateY(-50%);
+    left: 45%;
+}
+/*#post-image-modal{
     box-shadow: none;
     background-color: transparent;
     font-size: 20px;
-}
+}*/
 #post-image-modal .image.content{
     background-color: transparent;
 }

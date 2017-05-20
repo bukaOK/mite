@@ -335,3 +335,48 @@ var Scrolling = {
         
     }
 }
+var PostGallery = {
+    _postsList: [],
+    _currentIndex: 0,
+    _callbacks: {
+        nextItem: function (item) { },
+        previousItem: function (item) { }
+    },
+    init: function (settings) {
+        var currentPostId = settings.currentPostId,
+            posts = settings.posts;
+        this._callbacks.nextItem = settings.nextItemCall;
+        this._callbacks.previousItem = settings.previousItemCall;
+        var currentPostIndex;
+        for(var i = 0; i < posts.length; i++){
+            if (posts[i].Id == currentPostId) {
+                currentPostIndex = i;
+                break;
+            }
+        }
+        var currentItem = posts.splice(currentPostIndex, 1)[0];
+        posts.unshift(currentItem);
+        console.log(posts);
+        this._postsList = posts;
+    },
+    nextItem: function () {
+        this._currentIndex++;
+        if (this._currentIndex > this._postsList.length - 1) {
+            this._currentIndex--;
+        }
+        this._callbacks.nextItem(this._postsList[this._currentIndex]);
+    },
+    previousItem: function () {
+        this._currentIndex--;
+        if (this._currentIndex < 0) {
+            this._currentIndex++;
+        }
+        this._callbacks.previousItem(this._postsList[this._currentIndex]);
+    },
+    reset: function () {
+        this._currentIndex = 0;
+    },
+    getCurrentItem: function () {
+        return this._postsList[this._currentIndex];
+    }
+}

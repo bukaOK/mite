@@ -69,16 +69,23 @@
                 <h4 class="ui header" id="comments-count">
                     @Model.CommentsCount @ViewHelper.GetWordCase(Model.CommentsCount, "комментарий", "комментария", "комментариев")
                 </h4>
-                <form class="ui form" id="comments-form">
-                    <div class="field">
-                        <textarea name="CommentContent" id="CommentContent" rows="3" data-reply-comment></textarea>
-                    </div>
-                    <button type="button" class="ui primary small right labeled icon button" onclick="sendComment('@Model.Id')">
-                        Комментировать<i class="icon write"></i>
-                    </button>
-                    <a href="" id="reply-user"></a>
-                    <i id="remove-reply" class="remove red icon" style="display: none; cursor: pointer" onclick="removeReply()"></i>
-                </form>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <form class="ui form" id="comments-form">
+                        <div class="field">
+                            <textarea name="CommentContent" id="CommentContent" rows="3" data-reply-comment></textarea>
+                        </div>
+                        <button type="button" class="ui primary small right labeled icon button" onclick="sendComment('@Model.Id')">
+                            Комментировать<i class="icon write"></i>
+                        </button>
+                        <a href="" id="reply-user"></a>
+                        <i id="remove-reply" class="remove red icon" style="display: none; cursor: pointer" onclick="removeReply()"></i>
+                    </form>
+                }
+                else
+                {
+                    @Html.ActionLink("Зарегистрируйтесь, чтобы оставлять комментарии.", "Register", "Account")
+                }
                 <div class="ui comments" id="comments-wrapper">
                     <div class="ui active inline centered medium text active loader">Загрузка...</div>
                 </div>
@@ -116,9 +123,16 @@
 </template>
 @if (Model.IsImage)
 {
-    <div class="ui modal" id="post-image-modal" style="display: none">
-        <div class="image content">
-            <img src="@Model.Content" class="ui centered image" />
+    <div class="ui basic large modal" id="post-image-modal" style="display: none">
+        <div class="gallery image content">
+            <button class="ui primary go button" onclick="location.href='/posts/showpost/' + PostGallery.getCurrentItem()">Перейти</button>
+            <div class="prev btn" id="galleryPrevious">
+                <i class="angle left icon"></i>
+            </div>
+            <img src="@Model.Content" class="ui centered image"/>
+            <div class="next btn" id="galleryNext">
+                <i class="angle right icon"></i>
+            </div>
         </div>
     </div>
 }
@@ -256,6 +270,38 @@
             }
         });
     }
+    function loadUserGallery(){
+        return $.ajax({
+            type: 'post',
+            url: '@Url.Action("UserGallery", "Posts")',
+            data: {
+                userId: '@Model.User.Id',
+            },
+            success: function(resp) {
+                if(resp.status == undefined){
+                    resp = JSON.parse(resp);
+                }
+                PostGallery.init({
+                    currentPostId: '@Model.Id.ToString("N")',
+                    posts: resp.data,
+                    nextItemCall: function(item){
+                        $('#post-image-modal img').attr('src', item.Content);
+                    },
+                    previousItemCall: function(item){
+                        $('#post-image-modal img').attr('src', item.Content);
+                    }
+                });
+                $('#galleryPrevious').click(function(ev){
+                    PostGallery.previousItem();
+                });
+                $('#galleryNext').click(function(ev){
+                    PostGallery.nextItem();
+                });
+            },
+            error: function(jqXhr){
+            }
+        });
+    }
     function addReply(userName, replyCommentId){
         $('#reply-user').html('<i class="reply icon"></i>' + userName);
         $('#reply-user').attr('href', '/User/Profile/' + userName);
@@ -332,19 +378,32 @@
     }
     function resizeModalImage(){
         var $modal = $('#post-image-modal');
-        if($modal.length == 0)
+        if($modal.length == 0){
             return;
+        }    
         var img = $modal.find('img')[0];
         if(img.naturalWidth > $modal.width()){
             $(img).css({
                 width: '100%',
                 height: '100%'
             });
+        }else{
+            $(img).css({
+                width: '',
+                height: ''
+            });
         }
     }
     $(function () {
-        loadPostTime();
+        $('#post-image-modal img').on('load',function(){
+            resizeModalImage();
+            $("#post-image-modal").modal('refresh');
+        });
+        $('.modal').click(function(){
+            return false;
+        });
         resizeModalImage();
+        loadPostTime();
         $('.ui.dropdown').dropdown();
         lastRateValue = $(".ui.rating").data("rating");
         initComments('@Model.Id', @((byte)SortFilter.Old)).then(function(){
@@ -359,8 +418,12 @@
             .modal({
                 onShow: function(){
                     $(this).css('display', '').addClass('responsive');
+                },
+                onHidden: function(){
+                    PostGallery.reset();
                 }
             }).modal('attach events', '#post-content');
+        loadUserGallery();
             </text>
         }
         $('.dimmer.modals.page').click(function(ev){

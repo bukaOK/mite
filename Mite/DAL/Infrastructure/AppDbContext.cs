@@ -1,6 +1,4 @@
-﻿#define DEBUG
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Mite.DAL.Entities;

@@ -15,7 +15,7 @@ namespace Mite
                 "~/Scripts/jquery.address.js",
                 "~/bower_components/perfect-scrollbar/js/perfect-scrollbar.jquery.js",
                 "~/Scripts/ViewHelpers.js",
-                "~/Scripts/jquery.signalR-2.2.1.min.js",
+                "~/Scripts/jquery.signalR-2.2.2.min.js",
                 "~/Scripts/MiteUtilities.js"));
             bundles.Add(new ScriptBundle("~/bundles/croppie").Include("~/node_modules/croppie/croppie.js"));
             bundles.Add(new ScriptBundle("~/bundles/editor").Include(

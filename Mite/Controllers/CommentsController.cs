@@ -29,6 +29,7 @@ namespace Mite.Controllers
         /// <param name="page"></param>
         /// <returns></returns>
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IEnumerable<CommentModel>> GetByPost(Guid postId)
         {
             var comments = await _commentsService.GetCommentsByPostAsync(postId, User.Identity.GetUserId());

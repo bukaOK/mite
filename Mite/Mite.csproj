@@ -268,6 +268,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\DbInitializer.cs" />
+    <Compile Include="BLL\DTO\ImageDTO.cs" />
     <Compile Include="BLL\DTO\PostDTO.cs" />
     <Compile Include="BLL\DTO\TagDTO.cs" />
     <Compile Include="BLL\IdentityManagers\AppSignInManager.cs" />
@@ -320,7 +321,6 @@
     <Compile Include="Enums\SortFilter.cs" />
     <Compile Include="Extensions\ClaimsExtensions.cs" />
     <Compile Include="Extensions\ValidationExtensions.cs" />
-    <Compile Include="Helpers\ImagesHelper.cs" />
     <Compile Include="Helpers\ClaimsHelper.cs" />
     <Compile Include="Helpers\FilesHelper.cs" />
     <Compile Include="BLL\Services\UserService.cs" />
@@ -377,6 +377,7 @@
     <Compile Include="Models\CommentRatingModel.cs" />
     <Compile Include="Models\EmailSettingsModel.cs" />
     <Compile Include="Models\ForgotPassModel.cs" />
+    <Compile Include="Models\GalleryPostModel.cs" />
     <Compile Include="Models\GooglePlaces\AddressComponent.cs" />
     <Compile Include="Models\HelperModel.cs" />
     <Compile Include="Models\NotificationModel.cs" />

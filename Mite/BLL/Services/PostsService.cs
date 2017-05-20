@@ -15,6 +15,7 @@ using Microsoft.AspNet.Identity;
 using System.Web.Hosting;
 using System.Net;
 using System.IO;
+using Mite.BLL.DTO;
 
 namespace Mite.BLL.Services
 {
@@ -32,6 +33,7 @@ namespace Mite.BLL.Services
         /// <returns></returns>
         Task<PostModel> GetWithTagsUserAsync(Guid postId);
         Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userId, SortFilter sort, PostTypes type);
+        Task<IEnumerable<GalleryPostModel>> GetGalleryByUserAsync(string userId);
         /// <summary>
         /// Добавляем к посту один просмотр
         /// </summary>
@@ -70,7 +72,11 @@ namespace Mite.BLL.Services
                 {
                     return IdentityResult.Failed("Изображение не найдено.");
                 }
+                
                 postModel.Content = FilesHelper.CreateImage(imagesFolder, postModel.Content);
+                //Создаем сжатую копию изображения
+                var img = new ImageDTO(postModel.Content, imagesFolder);
+                img.Compress();
             }
             else
             {
@@ -102,6 +108,14 @@ namespace Mite.BLL.Services
         public async Task DeletePostAsync(Guid postId)
         {
             var post = await Database.PostsRepository.GetAsync(postId);
+            if (post.IsImage)
+            {
+                var img = new ImageDTO(post.Content, imagesFolder);
+                if (img.IsCompressedExists)
+                {
+                    FilesHelper.DeleteFile(img.CompressedVirtualPath);
+                }
+            }
             FilesHelper.DeleteFile(post.Content);
             await Database.PostsRepository.RemoveAsync(postId);
         }
@@ -207,6 +221,14 @@ namespace Mite.BLL.Services
                 {
                     post.Content = await FilesHelper.ReadDocumentAsync(post.Content, minChars);
                 }
+                else
+                {
+                    var img = new ImageDTO(post.Content, imagesFolder);
+                    if (img.IsCompressedExists)
+                    {
+                        post.Content = img.CompressedVirtualPath;
+                    }
+                }
             }
             var postModels = Mapper.Map<IEnumerable<ProfilePostModel>>(posts);
             switch (sort)
@@ -296,6 +318,19 @@ namespace Mite.BLL.Services
                 {
                     post.Content = await FilesHelper.ReadDocumentAsync(post.Content, minChars);
                 }
+                else
+                {
+                    var img = new ImageDTO(post.Content, imagesFolder);
+                    if (img.IsCompressedExists)
+                    {
+                        post.Content = img.CompressedVirtualPath;
+                    }
+                }
+                var avatarImg = new ImageDTO(post.User.AvatarSrc, imagesFolder);
+                if (avatarImg.IsCompressedExists)
+                {
+                    post.User.AvatarSrc = avatarImg.CompressedVirtualPath;
+                }
                 post.Tags = postTags.Where(x => x.Posts.Any(y => y.Id == post.Id)).ToList();
             }
             return Mapper.Map<List<TopPostModel>>(posts);
@@ -313,6 +348,12 @@ namespace Mite.BLL.Services
                 post.Tags = tags.Where(x => x.Posts.Any(y => y.Id == post.Id)).ToList();
             }
             return posts;
+        }
+
+        public async Task<IEnumerable<GalleryPostModel>> GetGalleryByUserAsync(string userId)
+        {
+            var posts = await Database.PostsRepository.GetGalleryByUserAsync(userId);
+            return Mapper.Map<IEnumerable<GalleryPostModel>>(posts);
         }
     }
 }

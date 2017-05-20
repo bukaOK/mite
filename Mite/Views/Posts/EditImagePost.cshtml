@@ -168,6 +168,10 @@
                         {
                             type: 'empty',
                             prompt: $('#@Html.IdFor(x => x.Header)').data('valRequired')
+                        },
+                        {
+                            type: 'maxLength[' + $('#Description').data('val-maxlength-max') + ']',
+                            prompt: $('#Header').data('val-maxlength')
                         }
                     ]
                 },
