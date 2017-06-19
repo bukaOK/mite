@@ -1,0 +1,229 @@
+﻿@using Mite.Models
+@using Microsoft.AspNet.Identity
+@using Mite.Constants
+@model CashModel
+@{
+    ViewBag.Title = "Счёт";
+}
+@Scripts.Render("~/bundles/clipboard")
+<div class="ui stackable grid">
+    <div class="four wide column">
+        <div class="ui segment">
+            <h2 class="ui dividing header">
+                @Model.CashSum &#8381;
+            </h2>
+            <nav class="ui two item tabs menu">
+                <a class="active item" data-tab="payIn">Ввод</a>
+                <a class="item" data-tab="payOut">Вывод</a>
+            </nav>
+            <div class="ui active tab" data-tab="payIn">
+                @Html.Partial("PayIn", new PayInModel())
+                <button type="submit" class="ui primary button" form="yaAuth" id="yaAuthBtn" style="display: none">Авторизовать Яндекс.Деньги</button>
+            </div>
+            <div class="ui tab" data-tab="payOut">
+                @if (Model.IsYandexAuthorized)
+                {
+                    @Html.Partial("PayOut", new PayOutModel())
+                }
+                else
+                {
+                    <button type="submit" class="ui primary button" form="yaAuth">Авторизовать Яндекс.Деньги</button>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="twelve wide column">
+        <div class="ui segment">
+            <nav class="ui secondary stackable tabs menu" style="border: none">
+                <a class="active item" data-tab="payhistory">История операций</a>
+                <a class="item" data-tab="referals">Рефералы</a>
+                <a class="item" data-tab="ad">Реклама</a>
+            </nav>
+            <div class="ui active loading tab" data-tab="payhistory"></div>
+            <div class="ui loading tab" data-tab="referals"></div>
+            <div class="ui tab" data-tab="ad">
+                <h3 class="ui header">Раздел в разработке.</h3>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="ui small modal" id="payOutModal">
+    <div class="header">
+        Пополнение счёта
+    </div>
+    <div class="content">
+        <form class="ui form" id="payOutForm" action="@Url.Action("PayOut", "Payments")" method="post">
+            <div class="field">
+                <input type="number" placeholder="Сумма" name="sum" />
+            </div>
+            @Html.AntiForgeryToken()
+            <button type="submit" class="ui primary button">Пополнить</button>
+        </form>
+    </div>
+</div>
+<script id="referalsTmpl" type="text/x-jsrender">
+    <div class="ui blue message">
+        <p>Чтобы пользователь стал вашим <b class="help word" data-tooltip="Пользователь, которого Вы пригласили.">рефералом</b>, следуйте следующим пунктам: </p>
+        <ol>
+            <li>Скопируйте ссылку, приведенную ниже.</li>
+            <li>Отправьте её знакомым, которые занимаются творчеством(рисуют, пишут, фотографируют и пр.)</li>
+            <li>После регистрации на сайте пользователь станет Вашим рефералом, и Вы сможете получать часть средств, которые он выведет из системы.</li>
+        </ol>
+    </div>
+    <div class="ui fluid action input">
+        <input type="text" value="http://test.mitegroup.ru/?refid=@User.Identity.GetUserId()" readonly 
+               style="background-color: #e0e0e0 !important" id="refLink"/>
+        <button class="ui green button" data-clipboard-target="#refLink" id="refCopyBtn">
+            <i class="copy icon"></i>
+            Копировать
+        </button>
+    </div>
+    <table class="ui very basic celled table">
+        <thead>
+            <tr>
+                <th>Ник пользователя</th>
+                <th>Доход</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{if data.length > 0}}
+            {{for data}}
+            <tr>
+                <td>{{:UserName}}</td>
+                <td>{{:Income}}</td>
+            </tr>
+            {{/for}}
+            {{else}}
+            <tr>
+                <td colspan="2">
+                    <h4 class="ui centered header">У вас пока нет рефералов.</h4>
+                </td>
+            </tr>
+            {{/if}}
+        </tbody>
+    </table>
+</script>
+<script id="paymentsTmpl" type="text/x-jsrender">
+    <table class="ui inverted violet table">
+        <thead>
+            <tr>
+                <th>Дата</th>
+                <th>Тип платежа</th>
+                <th>Сумма</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{if data.length > 0}}
+            {{for data}}
+            <tr class="">
+                <td>{{:Date}}</td>
+                <td>{{:Type}}</td>
+                {{if Sum > 0}}
+                <td>+{{:Sum}} &#8381;</td>
+                {{else}}
+                <td>{{:Sum}} &#8381;</td>
+                {{/if}}
+            </tr>
+            {{/for}}
+            {{else}}
+            <tr>
+                <td colspan="3">
+                    <h4 class="ui centered inverted header">Вы пока не провели никаких операций.</h4>
+                </td>
+            </tr>
+            {{/if}}
+        </tbody>
+    </table>
+</script>
+@*
+    Форма яндекса для авторизации
+*@
+<form action="https://money.yandex.ru/oauth/authorize" method="post" id="yaAuth">
+    <input type="hidden" name="client_id" value="@Model.ClientId" />
+    <input type="hidden" name="response_type" value="code" />
+    <input type="hidden" name="redirect_uri" value="@Model.RedirectUri" />
+    <input type="hidden" name="scope" value="account-info payment.to-account(&quot;@Model.SystemYandexWallet&quot;)" />
+</form>
+
+<script>
+    function loadReferals() {
+        $.ajax({
+            url: '/cash/referals',
+            type: 'post',
+            success: function (resp) {
+                if (resp.status == undefined) {
+                    resp = JSON.parse(resp);
+                }
+                var tmpl = $.templates('#referalsTmpl');
+                var html = tmpl.render(resp);
+                $('.tab[data-tab="referals"]').html(html);
+                $('.tab[data-tab="referals"]').removeClass('loading');
+            }
+        });
+    }
+    function loadPayments(){
+        $.ajax({
+            type: 'post',
+            url: '/cash/paymentshistory',
+            success: function(resp){
+                if(resp.status == undefined){
+                    resp = JSON.parse(resp);
+                }
+                var dateOptions = {
+                    year: 'numeric',
+                    day: 'numeric',
+                    month: 'long',
+                    hour: 'numeric',
+                    minute: 'numeric'
+                };
+                resp.data.forEach(function(elem){
+                    
+                    var dateIso = elem.Date;
+                    dateIso += dateIso[dateIso.length - 1] == 'Z' ? '' : 'Z';
+                    
+                    elem.Date = new Date(dateIso).toLocaleString("ru", dateOptions);
+                });
+                var tmpl = $.templates('#paymentsTmpl');
+                var html = tmpl.render(resp);
+                $('.tab[data-tab="payhistory"]').html(html);
+                $('.tab[data-tab="payhistory"]').removeClass('loading');
+            }
+        })
+    }
+    function initYaForm(){
+        var isYandexAuthorized = @Json.Encode(Model.IsYandexAuthorized);
+
+        if(!isYandexAuthorized){
+            $('#PayInSum').hide();
+            $('#payInBtn').hide();
+            $('#yaAuthBtn').show();
+        }
+    }
+    $(function () {
+        new Clipboard('#refCopyBtn');
+        loadReferals();
+        loadPayments();
+        initYaForm();
+        $('.ui.checkbox').checkbox();
+        $('#cashItem').addClass('active');
+        $('select').dropdown({
+            onChange: function (value) {
+                var yaAuthVal = '@((byte)Mite.Enums.PaymentType.YandexWallet)';
+                var isYandexAuthorized = @Json.Encode(Model.IsYandexAuthorized);
+
+                if(!isYandexAuthorized){
+                    if(yaAuthVal == value){
+                        $('#PayInSum').hide();
+                        $('#payInBtn').hide();
+                        $('#yaAuthBtn').show();
+                    } else{
+                        $('#PayInSum').show();
+                        $('#payInBtn').show();
+                        $('#yaAuthBtn').hide();
+                    }
+                }
+            }
+        });
+        $('.ui.tabs.menu .item').tab();
+    });
+</script>

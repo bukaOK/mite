@@ -4,8 +4,57 @@
 
 @{
     ViewBag.Title = "Регистрация";
+    var externalLogins = Context.GetOwinContext().Authentication.GetAuthenticationTypes();
+    var vkLogin = externalLogins.First(x => x.AuthenticationType.ToLower() == "vkontakte");
+    var facebookLogin = externalLogins.First(x => x.AuthenticationType.ToLower() == "facebook");
+    var twitterLogin = externalLogins.First(x => x.AuthenticationType.ToLower() == "twitter");
 }
-<script src="~/Scripts/password-strength.js"></script>
+<div class="ui center aligned grid">
+    <div class="sixteen wide mobile eight wide tablet six wide computer column">
+        <h2 class="ui blue header">
+            <i class="checkmark icon"></i>
+            <span class="content">Регистрация</span>
+        </h2>
+        <div class="ui left aligned segment">
+            @using (Html.BeginForm("InitExternalAuth", "Account", new { returnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { id = "externalLoginForm", @class = "ui form" }))
+            {
+                <div class="fields">
+                    <div class="field">
+                        @Html.AntiForgeryToken()
+                        <span style="font-size: medium; font-weight: bold">Войти с помощью:&nbsp;</span>
+                    </div>
+                    <div class="field">
+                        <button type="submit" class="ui circular facebook icon button" name="provider" value="@facebookLogin.AuthenticationType">
+                            <i class="facebook icon"></i>
+                        </button>
+                        <button type="submit" class="ui circular vk icon button" name="provider" value="@vkLogin.AuthenticationType">
+                            <i class="vk icon"></i>
+                        </button>
+                        <button type="submit" class="ui circular twitter icon button" name="provider" value="@twitterLogin.AuthenticationType">
+                            <i class="twitter icon"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+            <div class="ui horizontal divider">Or be classical</div>
+            @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "ui register form" }))
+            {
+                @Html.EditorFor(x => x.UserName, new { InputIcon = "hashtag" })
+                @Html.EditorFor(x => x.Email, new { InputIcon = "at" })
+                @Html.EditorFor(x => x.Password, new { InputIcon = "lock" })
+                <div class="ui message" style="display: none" id="pass-strength"></div>
+                @Html.EditorFor(x => x.ConfirmPassword, new { InputIcon = "mail forward" })
+                @Html.AntiForgeryToken()
+                <div class="g-recaptcha" data-sitekey="6LcTGyUUAAAAAJoKAP_S5zSjEtEqdUpY4GiWg2Nx"></div>
+                <button type="submit" class="ui animated blue button">
+                    <span class="visible content">Зарегистрироваться</span>
+                    <span class="hidden content"><i class="checkmark icon"></i></span>
+                </button>
+                @Html.ValidationSum()
+            }
+        </div>
+    </div>
+</div>
 <script>
     $(function () {
             $('.ui.dropdown').dropdown();
@@ -68,25 +117,3 @@
             initPassStrength('#Password');
         });
 </script>
-<div class="ui center aligned grid">
-        @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "ui sixteen wide mobile eight wide tablet six wide computer column left aligned register form" }))
-        {
-            <h2 class="ui blue header">
-                <i class="checkmark icon"></i>
-                <span class="content">Регистрация</span>
-            </h2>
-            <div class="ui top attached segment">
-                @Html.EditorFor(x => x.UserName, new { InputIcon = "hashtag"})
-                @Html.EditorFor(x => x.Email, new { InputIcon = "at" })
-                @Html.EditorFor(x => x.Password, new { InputIcon = "lock" })
-                <div class="ui message" style="display: none" id="pass-strength"></div>
-                @Html.EditorFor(x => x.ConfirmPassword, new {InputIcon = "mail forward" })
-                @Html.AntiForgeryToken()
-                <button type="submit" class="ui animated blue button">
-                    <span class="visible content">Зарегистрироваться</span>
-                    <span class="hidden content"><i class="checkmark icon"></i></span>
-                </button>
-            </div>
-            @Html.ValidationSum()
-        }
-</div>

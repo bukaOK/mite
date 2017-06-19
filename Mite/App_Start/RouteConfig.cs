@@ -11,6 +11,7 @@ namespace Mite
             routes.IgnoreRoute("Public/{all}");
             routes.LowercaseUrls = true;
 
+            routes.MapRoute("Sitemap", "sitemap.xml", new { controller = "Sitemap", action = "Index" });
             routes.MapRoute(
                 name: "UserProfile",
                 url: "User/Profile/{name}/{action}/{type}",

@@ -3,6 +3,9 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using Mite.DAL.Repositories;
+using Mite.DAL.Core;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Mite.DAL.Infrastructure
 {
@@ -17,21 +20,42 @@ namespace Mite.DAL.Infrastructure
         private FollowersRepository followersRepository;
         private NotificationRepository notificationRepository;
         private HelpersRepository helpersRepository;
+        private PaymentsRepository paymentsRepository;
+        private CashOperationsRepository cashOperationsRepository;
+        private ExternalServiceRepository externalServiceRepository;
+        private SocialLinksRepository socialLinksRepository;
 
         public PostsRepository PostsRepository => postsRepository ?? (postsRepository = new PostsRepository(db));
         public TagsRepository TagsRepository => tagsRepository ?? (tagsRepository = new TagsRepository(db));
-        public CommentsRepository CommentsRepository
-            => commentsRepository ?? (commentsRepository = new CommentsRepository(db));
+        public CommentsRepository CommentsRepository =>
+            commentsRepository ?? (commentsRepository = new CommentsRepository(db));
         public RatingRepository RatingRepository => ratingRepository ?? (ratingRepository = new RatingRepository(db));
 
-        public FollowersRepository FollowersRepository 
-            => followersRepository ?? (followersRepository = new FollowersRepository(db));
+        public FollowersRepository FollowersRepository =>
+            followersRepository ?? (followersRepository = new FollowersRepository(db));
 
         public NotificationRepository NotificationRepository 
             => notificationRepository ?? (notificationRepository = new NotificationRepository(db));
 
         public HelpersRepository HelpersRepository => helpersRepository ?? (helpersRepository = new HelpersRepository(db));
 
+        public PaymentsRepository PaymentsRepository => paymentsRepository ?? (paymentsRepository = new PaymentsRepository(db));
+        public CashOperationsRepository CashOperationsRepository => 
+            cashOperationsRepository ?? (cashOperationsRepository = new CashOperationsRepository(db));
+
+        public ExternalServiceRepository ExternalServiceRepository => 
+            externalServiceRepository ?? (externalServiceRepository = new ExternalServiceRepository(db));
+
+        public SocialLinksRepository SocialLinksRepository =>
+            socialLinksRepository ?? (socialLinksRepository = new SocialLinksRepository(db));
+
+
+        public TRepo GetRepository<TRepo, TEntity>() 
+            where TRepo : class, IRepository<TEntity>
+            where TEntity : class, IEntity
+        {
+            return (TRepo)Activator.CreateInstance(typeof(TRepo), db);
+        }
         public UnitOfWork()
         {
             db = new SqlConnection(ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString);

@@ -6,17 +6,19 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Net;
-using Mite.Infrastructure;
+using NLog;
 
 namespace Mite.Controllers
 {
     public class FollowersController : ApiController
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IUnitOfWork unitOfWork;
+        private readonly ILogger logger;
 
-        public FollowersController(IUnitOfWork unitOfWork)
+        public FollowersController(IUnitOfWork unitOfWork, ILogger logger)
         {
-            _unitOfWork = unitOfWork;
+            this.unitOfWork = unitOfWork;
+            this.logger = logger;
         }
         [HttpPost]
         public async Task<HttpResponseMessage> Add([FromBody]string followingId)
@@ -27,21 +29,19 @@ namespace Mite.Controllers
             }
             var follower = new Follower
             {
-                Id = Guid.NewGuid(),
                 FollowingUserId = followingId,
                 UserId = User.Identity.GetUserId()
         };
-            follower.Id = Guid.NewGuid();
             follower.UserId = User.Identity.GetUserId();
             follower.FollowTime = DateTime.UtcNow;
             try
             {
-                await _unitOfWork.FollowersRepository.AddAsync(follower);
+                await unitOfWork.FollowersRepository.AddAsync(follower);
                 return new HttpResponseMessage(HttpStatusCode.OK);
             }
             catch (Exception e)
             {
-                Logger.WriteError(e);
+                logger.Error(e, "Ошибка при добавлении подписчика");
                 return new HttpResponseMessage(HttpStatusCode.InternalServerError);
             }
         }
@@ -55,12 +55,12 @@ namespace Mite.Controllers
             var followerId = User.Identity.GetUserId();
             try
             {
-                await _unitOfWork.FollowersRepository.RemoveAsync(followerId, followingId);
+                await unitOfWork.FollowersRepository.RemoveAsync(followerId, followingId);
                 return new HttpResponseMessage(HttpStatusCode.OK);
             }
             catch (Exception e)
             {
-                Logger.WriteError(e);
+                logger.Error(e, "Ошибка при удалении подписчика");
                 return new HttpResponseMessage(HttpStatusCode.InternalServerError);
             }
         }

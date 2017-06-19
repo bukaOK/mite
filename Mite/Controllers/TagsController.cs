@@ -11,7 +11,7 @@ using Mite.BLL.DTO;
 
 namespace Mite.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "moder")]
     public class TagsController : ApiController
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -21,19 +21,20 @@ namespace Mite.Controllers
             _unitOfWork = unitOfWork;
         }
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IEnumerable<TagModel>> GetForUser()
         {
             var tags = await _unitOfWork.TagsRepository.GetAllWithPopularityAsync(true);
             return Mapper.Map<IEnumerable<TagModel>>(tags);
         }
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IEnumerable<string>> GetByName(string name)
         {
             var tags = await _unitOfWork.TagsRepository.GetByNameAsync(name);
             return Mapper.Map<IEnumerable<string>>(tags);
         }
         [HttpPost]
-        [Authorize(Roles = "moder")]
         public async Task<Tag> Add(Tag tag)
         {
             tag.Id = Guid.NewGuid();
@@ -42,13 +43,11 @@ namespace Mite.Controllers
             return tag;
         }
         [HttpPut]
-        [Authorize(Roles = "moder")]
         public Task Update(Tag tag)
         {
             return _unitOfWork.TagsRepository.UpdateAsync(tag);
         }
         [HttpDelete]
-        [Authorize(Roles = "moder")]
         public Task Delete(Guid id)
         {
             return _unitOfWork.TagsRepository.RemoveAsync(id);

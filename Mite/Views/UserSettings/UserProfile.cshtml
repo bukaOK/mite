@@ -4,28 +4,28 @@
 @*WithLabel используется только с TextBox!!*@
 
 <div class="ui center aligned grid">
-    @using (Html.BeginForm("UserProfile", "UserSettings", FormMethod.Post, 
-        new { @class = "ui sixteen wide mobile ten wide tablet eight wide computer left aligned column form", id = "profileForm" }))
-    {
-        @Html.EditorFor(x => x.NickName, new { WithLabel = true })
-        <div class="grouped fields">
-            @Html.EditorFor(x => x.Gender)
-        </div>
-        <div class="two fields">
-            @Html.EditorFor(x => x.FirstName, new { WithLabel = true })
-            @Html.EditorFor(x => x.LastName, new { WithLabel = true })
-        </div>
-        <div class="four wide fields">
-            @Html.EditorFor(x => x.Age, new { WithLabel = true })
-        </div>
-        @Html.EditorFor(x => x.About, new { WithLabel = true })
-        <button type="button" class="ui primary button" onclick="updateUserProfile(this)">Сохранить</button>
-        <div class="ui hidden message" style="text-align: center" id="update-state-msg">
-        </div>
-        @Html.ValidationSum()
-    }
+    <div class="sixteen wide mobile ten wide tablet eight wide computer left aligned column">
+        @using (Html.BeginForm("UserProfile", "UserSettings", FormMethod.Post, new { @class = "ui form", id = "profileForm" }))
+        {
+            @Html.EditorFor(x => x.NickName, new { WithLabel = true })
+            <div class="grouped fields">
+                @Html.EditorFor(x => x.Gender)
+            </div>
+            <div class="two fields">
+                @Html.EditorFor(x => x.FirstName, new { WithLabel = true })
+                @Html.EditorFor(x => x.LastName, new { WithLabel = true })
+            </div>
+            <div class="four wide fields">
+                @Html.EditorFor(x => x.Age, new { WithLabel = true })
+            </div>
+            @Html.EditorFor(x => x.About, new { WithLabel = true })
+            <button type="button" class="ui primary button" onclick="updateUserProfile(this)">Сохранить</button>
+            <div class="ui hidden message" style="text-align: center" id="update-state-msg">
+            </div>
+            @Html.ValidationSum()
+        }
+    </div>
 </div>
-
 <script>
     $(function () {
         $('#profileForm input:text').siblings('label').show();
@@ -55,7 +55,7 @@
                     resp.data.forEach(function (val) {
                         errorsStr += '<li>' + val + '</li>';
                     });
-                    $updateMsg.html('<ul>' + errorsStr + '</ul>');
+                    $updateMsg.html('<ul class="list">' + errorsStr + '</ul>');
                     $updateMsg.css('text-align', 'left');
                 } else {
                     $updateMsg.addClass('green').removeClass('red');

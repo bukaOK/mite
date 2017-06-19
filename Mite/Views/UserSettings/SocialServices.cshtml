@@ -1,0 +1,47 @@
+﻿@model Mite.Models.SocialLinksModel
+
+<div class="ui grid">
+    <div class="centered sixteen wide mobile ten wide tablet ten wide computer column" >
+        @using (Html.BeginForm("", "", FormMethod.Post, new { @class = "ui form", id = "socialServicesForm" }))
+        {
+            <div class="two fields">
+                @Html.EditorFor(x => x.Vk, new { label = "https://vk.com/"})
+                @Html.EditorFor(x => x.Facebook, new { label = "https://facebook.com/"})
+            </div>
+            <div class="two fields">
+                @Html.EditorFor(x => x.Twitter, new { label = "https://twitter.com/"})
+                @Html.EditorFor(x => x.Dribbble, new { label = "https://dribbble.com/"})
+            </div>
+            <div class="field">
+                @Html.EditorFor(x => x.ArtStation, new { label = "https://www.artstation.com/artist/" })
+            </div>
+            <button type="button" class="ui primary button" onclick="updateSocialLinks()">Обновить</button>
+            <div class="ui message" id="socialServicesMsg" hidden></div>
+        }
+    </div>
+</div>
+<script>
+    function updateSocialLinks() {
+        var $form = $('#socialServicesForm');
+        var $msg = $('#socialServicesMsg');
+
+        $form.addClass('loading');
+        $.ajax({
+            url: '@Url.Action("UpdateSocialServices")',
+            type: 'post',
+            data: $form.serialize(),
+            success: function () {
+                $msg.html('<p>Ссылки успешно обновлены</p>');
+                $msg.addClass('green').removeClass('red');
+            },
+            error: function () {
+                $msg.html('<p>Ошибка!</p>');
+                $msg.addClass('red').removeClass('green');
+            },
+            complete: function () {
+                $form.removeClass('loading');
+                $msg.show();
+            }
+        });
+    }
+</script>

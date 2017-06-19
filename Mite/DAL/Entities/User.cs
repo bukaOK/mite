@@ -6,6 +6,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Mite.BLL.IdentityManagers;
 using Mite.Constants;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Mite.DAL.Entities
 {
@@ -33,6 +34,10 @@ namespace Mite.DAL.Entities
         public string Placement { get; set; }
         public List<Post> Posts { get; set; }
         public List<Tag> Tags { get; set; }
+        /// <summary>
+        /// Счёт
+        /// </summary>
+        //public double Cash { get; set; }
         public int Rating { get; set; }
         public Group Group { get; set; }
         /// <summary>
@@ -51,6 +56,12 @@ namespace Mite.DAL.Entities
         /// Номер Яндекс кошелька
         /// </summary>
         public string YandexWalId { get; set; }
+        /// <summary>
+        /// Id пользователя, который пригласил данного
+        /// </summary>
+        [ForeignKey("Referer")]
+        public string RefererId { get; set; }
+        public User Referer { get; set; }
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(AppUserManager manager)
         {
             if(AvatarSrc == null)

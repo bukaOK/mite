@@ -2,6 +2,7 @@
 using Microsoft.AspNet.Identity;
 using System.Net.Mail;
 using System.Net;
+using System.Net.Http;
 
 namespace Mite
 {
@@ -27,7 +28,6 @@ namespace Mite
             return client.SendMailAsync(mail);
         }
     }
-
     public class SmsService : IIdentityMessageService
     {
         public Task SendAsync(IdentityMessage message)

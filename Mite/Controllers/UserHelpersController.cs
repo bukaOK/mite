@@ -3,9 +3,8 @@ using Mite.BLL.Services;
 using Mite.Core;
 using Mite.Enums;
 using Mite.Infrastructure;
+using NLog;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -15,10 +14,12 @@ namespace Mite.Controllers
     public class UserHelpersController : BaseController
     {
         private readonly IHelpersService helpersService;
+        private readonly ILogger logger;
 
-        public UserHelpersController(IHelpersService helpersService)
+        public UserHelpersController(IHelpersService helpersService, ILogger logger)
         {
             this.helpersService = helpersService;
+            this.logger = logger;
         }
         /// <summary>
         /// Удаляем использованного помощника
@@ -38,9 +39,14 @@ namespace Mite.Controllers
                 {
                     errorMsg += err + Environment.NewLine;
                 }
-                Logger.Write(EventTypes.Warning, errorMsg);
+                logger.Error(errorMsg);
                 return InternalServerError();
             }
+        }
+        public async Task<JsonResult> GetHelper()
+        {
+            var result = await helpersService.GetByUserAsync(User.Identity.GetUserId());
+            return JsonResponse(JsonResponseStatuses.Success, result);
         }
     }
 }

@@ -83,6 +83,10 @@
       <HintPath>..\packages\Dapper.Contrib.1.50.0\lib\net45\Dapper.Contrib.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Duke.Owin.VkontakteMiddleware, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Duke.Owin.VkontakteMiddleware.1.2.0.0\lib\net45\Duke.Owin.VkontakteMiddleware.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.AI.Agent.Intercept, Version=2.0.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.ApplicationInsights.Agent.Intercept.2.0.7\lib\net45\Microsoft.AI.Agent.Intercept.dll</HintPath>
       <Private>True</Private>
@@ -162,6 +166,14 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NLog.4.4.10\lib\net45\NLog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NLog.Web, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NLog.Web.4.5.0\lib\net35\NLog.Web.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="nQuant.Core, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
@@ -245,6 +257,10 @@
       <HintPath>..\packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Yandex.Money.Api.Sdk, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Yandex.Money.Api.Sdk.1.4.5\lib\net45\Yandex.Money.Api.Sdk.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="EntityFramework">
@@ -268,6 +284,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\DbInitializer.cs" />
+    <Compile Include="Attributes\Filters\ValidateReCaptchaAttribute.cs" />
+    <Compile Include="Attributes\Filters\MvcAjaxValidateAntiForgeryAttribute.cs" />
+    <Compile Include="Attributes\Filters\OnlyGuestsAttribute.cs" />
     <Compile Include="BLL\DTO\ImageDTO.cs" />
     <Compile Include="BLL\DTO\PostDTO.cs" />
     <Compile Include="BLL\DTO\TagDTO.cs" />
@@ -278,40 +297,66 @@
     <Compile Include="App_Start\Services.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Attributes\DataAnnotations\UIDataAttribute.cs" />
+    <Compile Include="BLL\Services\CashService.cs" />
     <Compile Include="BLL\Services\CommentsService.cs" />
+    <Compile Include="BLL\Services\ExternalServices.cs" />
     <Compile Include="BLL\Services\FollowersService.cs" />
     <Compile Include="BLL\Services\HelpersService.cs" />
     <Compile Include="BLL\Services\NotificationService.cs" />
+    <Compile Include="BLL\Services\PaymentService.cs" />
     <Compile Include="BLL\Services\PostsService.cs" />
     <Compile Include="BLL\Services\RatingService.cs" />
     <Compile Include="BLL\Services\TagsService.cs" />
     <Compile Include="Constants\ClaimConstants.cs" />
-    <Compile Include="Constants\SessionConstants.cs" />
+    <Compile Include="Constants\FacebookSettings.cs" />
+    <Compile Include="Constants\GoogleCaptchaSettings.cs" />
+    <Compile Include="Constants\GooglePlusSettings.cs" />
+    <Compile Include="Constants\SessionKeys.cs" />
+    <Compile Include="Constants\TwitterSettings.cs" />
+    <Compile Include="Constants\VkSettings.cs" />
+    <Compile Include="Constants\YaMoneySettings.cs" />
     <Compile Include="Controllers\AdminController.cs" />
+    <Compile Include="Controllers\CashController.cs" />
     <Compile Include="Controllers\CommentsController.cs" />
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\FeedsController.cs" />
     <Compile Include="Controllers\FollowersController.cs" />
     <Compile Include="Controllers\ModerController.cs" />
     <Compile Include="Controllers\NotificationController.cs" />
+    <Compile Include="Controllers\PaymentsController.cs" />
     <Compile Include="Controllers\PostsController.cs" />
     <Compile Include="Controllers\RatingController.cs" />
+    <Compile Include="Controllers\SitemapController.cs" />
     <Compile Include="Controllers\TagsController.cs" />
     <Compile Include="Controllers\UserHelpersController.cs" />
     <Compile Include="Controllers\UserProfileController.cs" />
+    <Compile Include="Controllers\VkController.cs" />
+    <Compile Include="Controllers\YandexController.cs" />
+    <Compile Include="DAL\Core\Entity.cs" />
     <Compile Include="DAL\Core\Repository.cs" />
+    <Compile Include="DAL\Entities\Advertising.cs" />
+    <Compile Include="DAL\Entities\CashOperation.cs" />
+    <Compile Include="DAL\Entities\ExternalService.cs" />
     <Compile Include="DAL\Entities\Follower.cs" />
     <Compile Include="DAL\Entities\Helper.cs" />
     <Compile Include="DAL\Entities\Notification.cs" />
+    <Compile Include="DAL\Entities\Payment.cs" />
     <Compile Include="DAL\Entities\Rating.cs" />
+    <Compile Include="DAL\Entities\SocialLinks.cs" />
     <Compile Include="DAL\Entities\Tag.cs" />
+    <Compile Include="DAL\Repositories\CashOperationsRepository.cs" />
+    <Compile Include="DAL\Repositories\ExternalServiceRepository.cs" />
+    <Compile Include="DAL\Repositories\PaymentsRepository.cs" />
     <Compile Include="DAL\Repositories\CommentsRepository.cs" />
     <Compile Include="DAL\Repositories\FollowersRepository.cs" />
     <Compile Include="DAL\Repositories\HelpersRepository.cs" />
     <Compile Include="DAL\Repositories\NotificationRepository.cs" />
     <Compile Include="DAL\Repositories\PostsRepository.cs" />
     <Compile Include="DAL\Repositories\RatingRepository.cs" />
+    <Compile Include="DAL\Repositories\SocialLinksRepository.cs" />
     <Compile Include="DAL\Repositories\TagsRepository.cs" />
+    <Compile Include="Enums\CashOperationTypes.cs" />
+    <Compile Include="Enums\PaymentType.cs" />
     <Compile Include="Enums\HelperTypes.cs" />
     <Compile Include="Enums\ImageSizes.cs" />
     <Compile Include="Enums\NotificationTypes.cs" />
@@ -321,7 +366,14 @@
     <Compile Include="Enums\SortFilter.cs" />
     <Compile Include="Extensions\ClaimsExtensions.cs" />
     <Compile Include="Extensions\ValidationExtensions.cs" />
+    <Compile Include="ExternalServices\Google\GoogleService.cs" />
+    <Compile Include="ExternalServices\YandexMoney\Authenticator.cs" />
+    <Compile Include="ExternalServices\YandexMoney\ExternalPayment.cs" />
+    <Compile Include="ExternalServices\YandexMoney\YaHttpClient.cs" />
+    <Compile Include="ExternalServices\YandexMoney\YandexService.cs" />
+    <Compile Include="ExternalServices\YandexMoney\YaP2PRequestParams.cs" />
     <Compile Include="Helpers\ClaimsHelper.cs" />
+    <Compile Include="Helpers\CookieHelper.cs" />
     <Compile Include="Helpers\FilesHelper.cs" />
     <Compile Include="BLL\Services\UserService.cs" />
     <Compile Include="Controllers\AccountController.cs" />
@@ -371,34 +423,64 @@
     <Compile Include="Migrations\201705151234391_AddHelpers.Designer.cs">
       <DependentUpon>201705151234391_AddHelpers.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201705241501038_AddReferal.cs" />
+    <Compile Include="Migrations\201705241501038_AddReferal.Designer.cs">
+      <DependentUpon>201705241501038_AddReferal.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201705301240246_AddCash.cs" />
+    <Compile Include="Migrations\201705301240246_AddCash.Designer.cs">
+      <DependentUpon>201705301240246_AddCash.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201706031139134_ChangeLoginKeyLength.cs" />
+    <Compile Include="Migrations\201706031139134_ChangeLoginKeyLength.Designer.cs">
+      <DependentUpon>201706031139134_ChangeLoginKeyLength.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201706041600141_DelSuccess.cs" />
+    <Compile Include="Migrations\201706041600141_DelSuccess.Designer.cs">
+      <DependentUpon>201706041600141_DelSuccess.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201706071150377_AddExternalService.cs" />
+    <Compile Include="Migrations\201706071150377_AddExternalService.Designer.cs">
+      <DependentUpon>201706071150377_AddExternalService.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201706081411322_RemoveExternalServiceExpires.cs" />
+    <Compile Include="Migrations\201706081411322_RemoveExternalServiceExpires.Designer.cs">
+      <DependentUpon>201706081411322_RemoveExternalServiceExpires.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201706111804251_AddPostsBtnHelper.cs" />
+    <Compile Include="Migrations\201706111804251_AddPostsBtnHelper.Designer.cs">
+      <DependentUpon>201706111804251_AddPostsBtnHelper.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201706141426526_AddSocialLinks.cs" />
+    <Compile Include="Migrations\201706141426526_AddSocialLinks.Designer.cs">
+      <DependentUpon>201706141426526_AddSocialLinks.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201706151720582_AddSocialServicesUserIdRequired.cs" />
+    <Compile Include="Migrations\201706151720582_AddSocialServicesUserIdRequired.Designer.cs">
+      <DependentUpon>201706151720582_AddSocialServicesUserIdRequired.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="Models\ChangePassModel.cs" />
+    <Compile Include="Models\AccountModels.cs" />
+    <Compile Include="Models\CashSettingsModels.cs" />
     <Compile Include="Models\CommentModel.cs" />
     <Compile Include="Models\CommentRatingModel.cs" />
-    <Compile Include="Models\EmailSettingsModel.cs" />
-    <Compile Include="Models\ForgotPassModel.cs" />
-    <Compile Include="Models\GalleryPostModel.cs" />
     <Compile Include="Models\GooglePlaces\AddressComponent.cs" />
     <Compile Include="Models\HelperModel.cs" />
     <Compile Include="Models\NotificationModel.cs" />
-    <Compile Include="Models\LoginModel.cs" />
-    <Compile Include="Models\ImagePostModel.cs" />
-    <Compile Include="Models\PostModel.cs" />
-    <Compile Include="Models\PostRatingModel.cs" />
-    <Compile Include="Models\ProfileModel.cs" />
-    <Compile Include="Models\ProfilePostModel.cs" />
-    <Compile Include="Models\ProfileSettingsModel.cs" />
-    <Compile Include="Models\RegisterModel.cs" />
-    <Compile Include="Models\ResetPasswordModel.cs" />
+    <Compile Include="Models\PaymentModel.cs" />
+    <Compile Include="Models\PostModels.cs" />
+    <Compile Include="Models\SitemapModels.cs" />
     <Compile Include="Models\TagModel.cs" />
-    <Compile Include="Models\TopPostModel.cs" />
+    <Compile Include="Models\UserProfileModels.cs" />
+    <Compile Include="Models\UserSettingsModels.cs" />
     <Compile Include="Models\UserShortModel.cs" />
     <Compile Include="Models\WalletsSettingsModel.cs" />
-    <Compile Include="Models\WritingPostModel.cs" />
+    <Compile Include="Modules\ReferalModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\bundle.txt" />
     <Content Include="Content\content-tools.min.css" />
     <Content Include="Content\icons\android-icon-144x144.png" />
     <Content Include="Content\icons\android-icon-192x192.png" />
@@ -434,6 +516,9 @@
     <Content Include="Content\images\drop-vert-above.svg" />
     <Content Include="Content\images\drop-vert-below.svg" />
     <Content Include="Content\images\female.png" />
+    <Content Include="Content\images\land\cash.png" />
+    <Content Include="Content\images\land\makeDoc.gif" />
+    <Content Include="Content\images\land\posts.png" />
     <Content Include="Content\images\logo.png" />
     <Content Include="Content\images\male.png" />
     <Content Include="Content\images\mite-logo-3.png" />
@@ -461,9 +546,17 @@
     <Content Include="Content\icons.woff" />
     <Content Include="Content\icons\manifest.json" />
     <Content Include="ErrorPages\404.cshtml" />
+    <Content Include="NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="NLog.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\PublishProfiles\MiteProfile.pubxml" />
     <None Include="Properties\PublishProfiles\MiteTestProfile.pubxml" />
     <None Include="Scripts\jquery-3.1.1.intellisense.js" />
+    <Content Include="robots.txt" />
+    <Content Include="Scripts\BrowserSupport.js" />
     <Content Include="Scripts\content-tools.js" />
     <Content Include="Scripts\content-tools.min.js" />
     <Content Include="Scripts\jquery-3.1.1.js" />
@@ -535,15 +628,25 @@
     <Content Include="Views\Account\ForgotPassword.cshtml" />
     <Content Include="Views\UserSettings\EmailSettings.cshtml" />
     <Content Include="Views\Account\ResetPassword.cshtml" />
-    <Content Include="Views\UserSettings\Wallets.cshtml" />
+    <Content Include="Views\Cash\Wallets.cshtml" />
     <Content Include="Views\Home\Donate.cshtml" />
     <Content Include="Views\Home\Help.cshtml" />
     <Content Include="Views\UserProfile\Notifications.cshtml" />
     <Content Include="Views\Posts\Top.cshtml" />
+    <Content Include="Views\Cash\Index.cshtml" />
+    <Content Include="Views\Payments\PayOut.cshtml" />
+    <Content Include="Views\Cash\PayOut.cshtml" />
+    <Content Include="Views\Cash\PayIn.cshtml" />
+    <Content Include="Views\Yandex\ConfirmExternalPayment.cshtml" />
+    <Content Include="Views\Account\ExternalRegister.cshtml" />
+    <Content Include="Views\Account\ExternalLogin.cshtml" />
+    <Content Include="Views\Home\Terms.cshtml" />
+    <Content Include="Views\Home\Privacy.cshtml" />
+    <Content Include="Views\UserSettings\SocialServices.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\LabeledTextBox.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Attributes\Filters\" />
     <Folder Include="bower_components\" />
     <Folder Include="ViewModels\" />
     <Folder Include="Views\Base\" />
@@ -573,6 +676,33 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201705151234391_AddHelpers.resx">
       <DependentUpon>201705151234391_AddHelpers.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201705241501038_AddReferal.resx">
+      <DependentUpon>201705241501038_AddReferal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201705301240246_AddCash.resx">
+      <DependentUpon>201705301240246_AddCash.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201706031139134_ChangeLoginKeyLength.resx">
+      <DependentUpon>201706031139134_ChangeLoginKeyLength.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201706041600141_DelSuccess.resx">
+      <DependentUpon>201706041600141_DelSuccess.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201706071150377_AddExternalService.resx">
+      <DependentUpon>201706071150377_AddExternalService.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201706081411322_RemoveExternalServiceExpires.resx">
+      <DependentUpon>201706081411322_RemoveExternalServiceExpires.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201706111804251_AddPostsBtnHelper.resx">
+      <DependentUpon>201706111804251_AddPostsBtnHelper.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201706141426526_AddSocialLinks.resx">
+      <DependentUpon>201706141426526_AddSocialLinks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201706151720582_AddSocialServicesUserIdRequired.resx">
+      <DependentUpon>201706151720582_AddSocialServicesUserIdRequired.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

@@ -632,6 +632,9 @@
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -1660,6 +1663,9 @@ th {
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -2050,6 +2056,9 @@ th {
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*******************************
              Mix-ins
 *******************************/
@@ -2810,6 +2819,9 @@ input::selection {
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/
@@ -6752,6 +6764,9 @@ input::selection {
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -7531,6 +7546,9 @@ input::selection {
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/
@@ -8418,6 +8436,9 @@ input::selection {
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/
@@ -9727,6 +9748,9 @@ h5 {
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/
@@ -13408,6 +13432,9 @@ i.icon.fa:before {
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -14342,6 +14369,9 @@ img.ui.bordered.image {
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/
@@ -15451,6 +15481,9 @@ img.ui.bordered.image {
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/
@@ -17296,6 +17329,9 @@ a.ui.basic.label:hover {
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -18869,6 +18905,9 @@ ol.ui.horizontal.list li:before,
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -19826,6 +19865,9 @@ ol.ui.horizontal.list li:before,
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -20608,6 +20650,9 @@ ol.ui.horizontal.list li:before,
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/
@@ -21466,6 +21511,9 @@ ol.ui.horizontal.list li:before,
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/
@@ -22827,6 +22875,9 @@ ol.ui.horizontal.list li:before,
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -23578,6 +23629,9 @@ ol.ui.horizontal.list li:before,
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/
@@ -25216,6 +25270,9 @@ ol.ui.horizontal.list li:before,
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/
@@ -27704,6 +27761,9 @@ ol.ui.horizontal.list li:before,
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -30184,6 +30244,9 @@ Floated Menu / Item
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -31265,6 +31328,9 @@ Floated Menu / Item
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/
@@ -32961,6 +33027,9 @@ Floated Menu / Item
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -33865,6 +33934,9 @@ Floated Menu / Item
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/
@@ -34796,6 +34868,9 @@ Floated Menu / Item
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/
@@ -35873,6 +35948,9 @@ Floated Menu / Item
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/
@@ -37039,6 +37117,9 @@ Floated Menu / Item
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -37917,6 +37998,9 @@ Floated Menu / Item
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -38123,7 +38207,7 @@ Floated Menu / Item
 .ui.checkbox input:focus ~ .box:before,
 .ui.checkbox input:focus ~ label:before {
   background: #FFFFFF;
-  border-color: #96C8DA;
+  border-color: #b540c6;
 }
 .ui.checkbox input:focus ~ .box:after,
 .ui.checkbox input:focus ~ label:after {
@@ -39141,6 +39225,9 @@ Floated Menu / Item
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -39956,6 +40043,9 @@ body.dimmable > .dimmer {
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -40106,8 +40196,9 @@ body.dimmable > .dimmer {
 /*******************************
     User Variable Overrides
 *******************************/
+/* <select> */
 @selection ActiveHoverBorderColor: #b540c6
-@labelBorderWidth: 0;
+@selectionBorderColor: #b540c6;
 /*******************************
              Mix-ins
 *******************************/
@@ -40406,7 +40497,7 @@ body.dimmable > .dimmer {
   padding: 0.78571429em 2.1em 0.78571429em 1em;
   color: rgba(0, 0, 0, 0.87);
   box-shadow: none;
-  border: 1px solid rgba(34, 36, 38, 0.15);
+  border: 2px solid rgba(34, 36, 38, 0.15);
   border-radius: 0.28571429rem;
   transition: box-shadow 0.1s ease, width 0.1s ease;
 }
@@ -40417,7 +40508,7 @@ body.dimmable > .dimmer {
 select.ui.dropdown {
   height: 38px;
   padding: 0.5em;
-  border: 1px solid rgba(34, 36, 38, 0.15);
+  border: 2px solid rgba(34, 36, 38, 0.15);
   visibility: visible;
 }
 .ui.selection.dropdown > .search.icon,
@@ -40504,11 +40595,11 @@ select.ui.dropdown {
 }
 /* Active */
 .ui.selection.active.dropdown {
-  border-color: #96C8DA;
+  border-color: #b540c6;
   box-shadow: 0px 2px 3px 0px rgba(34, 36, 38, 0.15);
 }
 .ui.selection.active.dropdown .menu {
-  border-color: #96C8DA;
+  border-color: #b540c6;
   box-shadow: 0px 2px 3px 0px rgba(34, 36, 38, 0.15);
 }
 /* Focus */
@@ -40527,11 +40618,11 @@ select.ui.dropdown {
 }
 /* Visible Hover */
 .ui.selection.active.dropdown:hover {
-  border-color: #96C8DA;
+  border-color: #b540c6;
   box-shadow: 0px 2px 3px 0px rgba(34, 36, 38, 0.15);
 }
 .ui.selection.active.dropdown:hover .menu {
-  border-color: #96C8DA;
+  border-color: #b540c6;
   box-shadow: 0px 2px 3px 0px rgba(34, 36, 38, 0.15);
 }
 /* Dropdown Icon */
@@ -41940,6 +42031,9 @@ select.ui.dropdown {
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -42737,6 +42831,9 @@ select.ui.dropdown {
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/
@@ -43835,6 +43932,9 @@ select.ui.dropdown {
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -44627,6 +44727,9 @@ a.ui.nag {
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/
@@ -45945,6 +46048,9 @@ a.ui.nag {
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -47057,6 +47163,9 @@ a.ui.nag {
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -47925,6 +48034,9 @@ a.ui.nag {
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/
@@ -48954,6 +49066,9 @@ a.ui.nag {
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -49719,6 +49834,9 @@ a.ui.nag {
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/
@@ -50846,6 +50964,9 @@ html.ios body {
 /* Negative */
 /*loader*/
 /*-------------------
+    Focused Input
+--------------------*/
+/*-------------------
  Component Variables
 ---------------------*/
 /* Default */
@@ -51541,6 +51662,9 @@ html.ios body {
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/
@@ -52253,6 +52377,9 @@ html.ios body {
 --------------------*/
 /* Negative */
 /*loader*/
+/*-------------------
+    Focused Input
+--------------------*/
 /*-------------------
  Component Variables
 ---------------------*/

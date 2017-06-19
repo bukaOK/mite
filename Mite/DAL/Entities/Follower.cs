@@ -5,18 +5,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Mite.DAL.Entities
 {
-    public class Follower : IEntity
+    public class Follower : Entity
     {
-        /// <summary>
-        /// Id подписчика
-        /// </summary>
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid Id { get; set; }
         /// <summary>
         /// Id пользователя на кого подписан
         /// </summary>
         [ForeignKey("FollowingUser")]
-        [Required]
         public string FollowingUserId { get; set; }
         /// <summary>
         /// Когда пользователь подписался
@@ -25,7 +19,7 @@ namespace Mite.DAL.Entities
         /// <summary>
         /// Кто подписался
         /// </summary>
-        [ForeignKey("User")]
+        [ForeignKey("User"), Required]
         public string UserId { get; set; }
         public User User { get; set; }
         public User FollowingUser { get; set; }

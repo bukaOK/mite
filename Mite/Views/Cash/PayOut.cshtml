@@ -1,0 +1,70 @@
+﻿@using Mite.Core
+@model Mite.Models.PayOutModel
+
+@using(Html.BeginForm("", "", FormMethod.Post, new { @class = "ui form", id = "payOutForm" }))
+{
+    @Html.EditorFor(x => x.PayOutSum)
+    @Html.AntiForgeryToken()
+    <button type="button" class="ui blue button" onclick="$('#payOutForm').form('validate form')">Вывести</button>
+    <div class="ui error message" hidden id="payOutMsg"></div>
+}
+<script>
+    function payOut(form) {
+        var $form = $(form);
+        
+        $form.addClass('loading');
+        var $msg = $('#payOutMsg');
+        $.ajax({
+            type: 'post',
+            data: $('#payOutForm').serialize(),
+            url: '/payments/payout',
+            success: function (resp) {
+                if (resp.status == undefined) {
+                    resp = JSON.parse(resp);
+                }
+                var errorStatus = @((byte)JsonResponseStatuses.ValidationError);
+                if(resp.status == errorStatus){
+                    var errorsStr = '<ul class="list">';
+                    resp.data.forEach(function(error){
+                        errorsStr += '<li>' + error + '</li>';
+                    });
+                    errorsStr += '</ul>'
+                    $msg.html(errorsStr);
+                    $msg.addClass('error').removeClass('green');
+                }
+                else{
+                    $msg.html('Платеж успешно проведен');
+                    $msg.addClass('green').removeClass('error');
+                }
+            },
+            error: function (jqXhr) {
+                $('#payOutMsg').html('Ошибка во время проведения платежа')
+            },
+            complete: function(){
+                $form.removeClass('loading');
+                $msg.show();
+            }
+        });
+    }
+    $(function(){
+        $('#payOutForm').form({
+            fields: {
+                PayOutSum: {
+                    rules: [
+                        {
+                            type: 'empty',
+                            prompt: 'Заполните сумму'
+                        },
+                        {
+                            type: 'integer',
+                            prompt: 'Введите целочисленное значение'
+                        }
+                    ]
+                }
+            },
+            onSuccess: function(){
+                payOut(this);
+            }
+        });
+    });
+</script>

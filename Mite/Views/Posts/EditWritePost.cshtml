@@ -14,6 +14,9 @@
                     Добавить обложку
                     <i class="cloud download icon"></i>
                 </label>
+                <button class="ui centered red button" onclick="removeCover()">
+                    Удалить обложку
+                </button>
             </div>
         </div>
         @if (string.IsNullOrEmpty(Model.Cover))
@@ -114,6 +117,11 @@
             });
         });
     }
+    function removeCover(){
+        $('#Cover').val('');
+        $('#img-wrapper').html('');
+        $('#img-wrapper').parent('.row').hide();
+    }
     function articleImageUploader(dialog) {
         var image;
         dialog.addEventListener('imageuploader.fileready', function (ev) {
@@ -152,7 +160,7 @@
             $('#img-wrapper').parent('.row').show();
             $('#Cover').val(reader.result);
         }
-        isCoverLarge = file.size / 1024 / 1024 > 4;
+        isCoverLarge = file.size / 1024 / 1024 > 10;
         reader.readAsDataURL(file);
     }
     function inputDownloadHandler(evt) {
@@ -171,13 +179,20 @@
             data: formData,
             type: 'post',
             url: '@url',
-            success: function (data) {
+            success: function (resp) {
+                if(resp.status == undefined){
+                    resp = JSON.parse(resp);
+                }
                 var validErrorStatus = @((byte)Mite.Core.JsonResponseStatuses.ValidationError);
-                if(data.status == validErrorStatus){
-                    var errorStr = 'Ошибка при сохранении<br>' + data.message;
+                if(resp.status == validErrorStatus){
+                    var errorStr = 'Ошибка при сохранении<br>' + resp.message;
                     alert(errorStr);
                 } else{
-                    alert('Ваша работа успешно сохранена!');
+                    if(formData.IsPublished){
+                        location.href = '/user/profile/@User.Identity.Name#posts/published';
+                    } else{
+                        location.href = '/user/profile/@User.Identity.Name#posts/drafts';
+                    }
                 }
             },
             error: function (jqXhr) {
@@ -294,16 +309,8 @@
                             prompt: $('#Header').data('valRequired')
                         },
                         {
-                            type: 'maxLength[' + $('#Description').data('val-maxlength-max') + ']',
+                            type: 'maxLength[' + $('#Header').data('val-maxlength-max') + ']',
                             prompt: $('#Header').data('val-maxlength')
-                        }
-                    ]
-                },
-                Description: {
-                    rules: [
-                        {
-                            type: 'maxLength[' + $('#Description').data('val-maxlength-max') + ']',
-                            prompt: $('#Description').data('val-maxlength')
                         }
                     ]
                 }
@@ -347,7 +354,7 @@
                 }
                 var content = ev.detail().regions.Content;
                 if (isCoverLarge) {
-                    alert('Обложка не может иметь размер больше 4 мбайт.');
+                    alert('Обложка не может иметь размер больше 10 мбайт.');
                     return false;
                 }
                 @if (string.IsNullOrEmpty(Model.Header))

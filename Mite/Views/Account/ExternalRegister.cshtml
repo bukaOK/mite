@@ -1,0 +1,70 @@
+﻿@using Mite.Extensions
+@model Mite.Models.ShortRegisterModel
+
+@{
+    ViewBag.Title = "Регистрация";
+}
+
+<div class="ui center aligned grid">
+    @using (Html.BeginForm("ExternalRegister", "Account", new { returnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "ui sixteen wide mobile eight wide tablet six wide computer column left aligned register form" }))
+    {
+        <h2 class="ui blue header">
+            <i class="checkmark icon"></i>
+            <span class="content">Регистрация</span>
+        </h2>
+            <div class="ui segment">
+                <div class="ui yellow icon message">
+                    <i class="warning icon"></i>
+                    <div class="content">
+                        <div class="header">Внимание!</div>
+                        <p>Если вы уже зарегистрированы на сайте, перейдите по @Html.ActionLink("ссылке", "ExternalLogin", new { returnUrl = ViewBag.ReturnUrl })</p>
+                    </div>
+                </div>
+                @Html.EditorFor(x => x.UserName, new { InputIcon = "hashtag" })
+                @Html.EditorFor(x => x.Email, new { InputIcon = "at" })
+                @Html.AntiForgeryToken()
+                <button type="submit" class="ui animated blue button">
+                    <span class="visible content">Зарегистрироваться</span>
+                    <span class="hidden content"><i class="checkmark icon"></i></span>
+                </button>
+            </div>
+            @Html.ValidationSum()
+    }
+</div>
+<script>
+    $(function () {
+            $('.ui.dropdown').dropdown();
+            $(".ui.form").form({
+                on: "submit",
+                fields: {
+                    UserName: {
+                        rules: [
+                            {
+                                type: "empty",
+                                prompt: $("#UserName").data("valRequired")
+                            },
+                            {
+                                type: "regExp",
+                                value: $("#UserName").data("valRegexPattern"),
+                                prompt: $("#UserName").data("valRegex")
+                            }
+                        ]
+                    },
+                    Email: {
+                        rules: [
+                            {
+                                type: "empty",
+                                prompt: $("#Email").data("valRequired")
+                            },
+                            {
+                                type: "email",
+                                prompt: "Введите правильный e-mail"
+                            }
+                        ]
+                    }
+                }
+            });
+            initPassStrength('#Password');
+        });
+</script>
+

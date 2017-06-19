@@ -1,6 +1,5 @@
 ﻿@model Mite.Models.ChangePassModel
 
-<script src="~/Scripts/password-strength.js"></script>
 <h3 class="ui header" style="margin-top: 0;">Изменить пароль</h3>
 @using (Html.BeginForm("", "", FormMethod.Post, new { @class = "ui form", id = "changePassForm" }))
 {
@@ -10,13 +9,14 @@
     @Html.AntiForgeryToken()
     <button type="button" class="ui primary button" id="changePassBtn">Изменить</button>
     <div class="ui hidden message" id="changePassMsg">
-
     </div>
 }
+<script src="~/Scripts/password-strength.js"></script>
 <script>
     function changePass(ev) {
         $('#changePassForm').form('validate form');
         if ($('#changePassForm').form('is valid')) {
+            $(ev.target).addClass('loading').addClass('disabled');
             $.ajax({
                 url: '/usersettings/changepassword',
                 type: 'post',
@@ -84,7 +84,6 @@
             }
         });
         $('#changePassBtn').click(function (ev) {
-            $(ev.target).addClass('loading').addClass('disabled');
             changePass(ev);
         });
     });

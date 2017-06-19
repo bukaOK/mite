@@ -1,0 +1,75 @@
+﻿@using Mite.Core
+@model Mite.Models.PayInModel
+
+@using (Html.BeginForm("", "", FormMethod.Post, new { @class = "ui form", id = "payInForm" }))
+{
+    @Html.EditorFor(x => x.PaymentType)
+    @Html.EditorFor(x => x.PayInSum)
+    @Html.AntiForgeryToken()
+    <button type="button" class="ui primary button" id="payInBtn" onclick="$('#payInForm').form('validate form')">Пополнить</button>
+    <div class="ui error message" hidden id="payInMsg"></div>
+}
+<script>
+    function payIn(form) {
+        var $form = $(form);
+        $form.addClass('loading');
+
+        var $msg = $('#payInMsg');
+
+        $.ajax({
+            type: 'post',
+            data: $form.serialize(),
+            url: '/payments/payin',
+            success: function (resp) {
+                if (resp.status == undefined) {
+                    resp = JSON.parse(resp);
+                }
+                var errorStatus = @((byte)JsonResponseStatuses.ValidationError);
+                if(resp.status == errorStatus){
+                    var errorsStr = '<ul class="list">';
+                    resp.data.forEach(function(error){
+                        errorsStr += '<li>' + error + '</li>';
+                    });
+                    errorsStr += '</ul>'
+                    $msg.html(errorsStr);
+                    $msg.addClass('error').removeClass('green');
+                }
+                else{
+                    $msg.html('Запрос успешно отправлен.');
+                    $msg.addClass('green').removeClass('error');
+                    if(resp.message != null && resp.message != undefined){
+                        location.href = resp.message;
+                    }
+                }
+            },
+            error: function (jqXhr) {
+                $msg.html('Ошибка во время проведения платежа')
+            },
+            complete: function(){
+                $form.removeClass('loading');
+                $msg.show();
+            }
+        });
+    }
+    $(function(){
+        $('#payInForm').form({
+            fields: {
+                PayInSum: {
+                    rules: [
+                        {
+                            type: 'empty',
+                            prompt: 'Заполните сумму.'
+                        },
+                        {
+                            type: 'integer',
+                            prompt: 'Введите целочисленное значение.'
+                        }
+                    ]
+                }
+            },
+            onSuccess: function(){
+                payIn(this);
+            }
+        });
+    });
+</script>

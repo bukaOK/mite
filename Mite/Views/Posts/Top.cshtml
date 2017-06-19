@@ -2,7 +2,7 @@
 @{
     ViewBag.Title = "Публикации";
 }
-@Scripts.Render("~/bundles/grid")
+<script type="text/javascript" src="//vk.com/js/api/openapi.js?146"></script>
 <div class="active loader-wrapper"><div class="ui active loader"></div></div>
 <div class="ui stackable menu">
     <div class="item">
@@ -40,7 +40,10 @@
             <i class="dropdown icon"></i>
             <div class="menu">
                 <div class="active item" data-text="всех" data-value="@((byte)PostUserFilter.All)">Все</div>
-                <div class="item" data-text="моих подписок" data-value="@((byte)PostUserFilter.OnlyFollowings)">Мои подписки</div>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <div class="item" data-text="моих подписок" data-value="@((byte)PostUserFilter.OnlyFollowings)">Мои подписки</div>
+                }
             </div>
         </div>
     </div>
@@ -52,10 +55,11 @@
     </div>
 </div>
 <div class="ui stackable grid">
-    <div class="three wide column">
+    <div class="three wide ce column">
         <div class="ui top-tags loading segment">
             <h3 class="ui dividing header">Теги</h3>
         </div>
+        <div id="vk_groups" style="width: 100%"></div>
     </div>
     <div class="thirteen wide column">
         <div class="ui posts stackable three column basic segment grid" id="postsGrid">
@@ -68,8 +72,11 @@
         <div class="ui segment {{if Cover != null}}invert{{/if}} post-item" {{if Cover != null}}
              style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})" {{/if}}>
             <div class="extra content">
-                <img src="{{:User.AvatarSrc}}" class="ui avatar image" />
-                <a href="/user/profile/{{:User.UserName}}" class="username">{{:User.UserName}}</a>
+                
+                <a href="/user/profile/{{:User.UserName}}" class="username">
+                    <img src="{{:User.AvatarSrc}}" class="ui avatar image" />
+                    {{:User.UserName}}
+                </a>
                 <span style="float: right">
                     <a class="ui compact inverted {{if Cover == null}}violet {{/if}}button" href="/posts/showpost/{{:Id}}">
                         {{if IsImage}}
@@ -83,7 +90,7 @@
             <div class="ui {{if Cover != null}}inverted {{/if}}divider"></div>
             {{if IsImage}}
             <a href="/posts/showpost/{{:Id}}">
-                <img src="{{:Content}}" class="ui image" style="margin-bottom: 10px" />
+                <img src="{{:Content}}" class="ui image" />
             </a>
             {{else}}
             <a class="content" href="/posts/showpost/{{:Id}}">
@@ -131,6 +138,7 @@
         </h2>
     </div>
 </template>
+@Scripts.Render("~/bundles/grid")
 <script>
     var tagsInitialized = false;
     function loadTag(name) {
@@ -141,8 +149,7 @@
         $.ajax({
             url: '/api/tags',
             success: function (resp) {
-                var tmpl = '<a class="ui label" onclick="loadTag(\'{{:Name}}\')">{{:Name}}' +
-                    '{{if Popularity > 0}}<span class="detail">{{:Popularity}}</span>{{/if}}</a>'
+                var tmpl = '<a class="ui label" onclick="loadTag(\'{{:Name}}\')">{{:Name}}</a>';
                 var html = $.templates(tmpl).render(resp);
                 $('.top-tags').append(html);
                 $('.top-tags').removeClass('loading');
@@ -154,6 +161,7 @@
     }
     $(function () {
         initTags();
+        VK.Widgets.Group("vk_groups", { mode: 3, no_cover: 1, width: $('.top-tags')[0].offsetWidth }, 143219082);
         var grid = $('#postsGrid').masonry({
             itemSelector: '.column'
         });
@@ -164,6 +172,11 @@
                 }
             }
         });
+        $('#postsSearch').keydown(function (ev) {
+            if (ev.which == 13) {
+                SearchFilters.changeFilter();
+            }
+        })
         SearchFilters.init({
             beforeLoad: function(){
                 $('.loader-wrapper').addClass('active');
@@ -176,7 +189,6 @@
                     elem.LastEdit += elem.LastEdit[elem.LastEdit - 1] == 'Z' ? '' : 'Z';
                     elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.LastEdit).getTime());
                 });
-                
                 $('#postsGrid .loader').remove();
                 if (resp.data.length > 0) {
                     if (!SearchFilters._loadNextPage) {
@@ -193,9 +205,11 @@
                 else if(SearchFilters._page <= 1) {
                     $('#postsGrid').html($('#emptyResultTmpl').html());
                 }
+                grid.masonry('reloadItems')
                 grid.imagesLoaded(function () {
-                    grid.masonry('reloadItems').masonry('layout');
                     $('.loader-wrapper').removeClass('active');
+                }).progress(function () {
+                    grid.masonry('layout');
                 });
             },
             onError: function () {
@@ -270,4 +284,3 @@
         $('.ui.checkbox').checkbox();
     })
 </script>
-

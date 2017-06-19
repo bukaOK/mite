@@ -5,7 +5,6 @@
         var self = this,
             itemsSelector = this.items.selector;
 
-        console.log(this.ajaxSettings);
         $(itemsSelector + '[data-tab]').click(function (ev) {
             //Если у таба есть потомки, показываем содержимое
             if (!self._haveChildren(this)) {
@@ -96,7 +95,6 @@
             self.ajaxSettings.afterSuccess(item, tabContent);
         }
         tabContent.addClass('loading');
-
         return $.ajax(this.ajaxSettings);
     },
     _haveChildren: function (item) {
@@ -162,7 +160,6 @@ var MiteMobile = {
             if (Math.abs(xDiff) > Math.abs(yDiff)) {
                 if (xDiff > 0) {
                     $('.ui.sidebar').sidebar('show');
-                    console.log('swipe');
                 } else {
                     $('.ui.sidebar').sidebar('hide');
                 }
@@ -276,7 +273,6 @@ var SearchFilters = {
     _updateFiltersState: function (paramsStr) {
         var self = this;
         var params = paramsStr.split('&');
-        console.log(params);
         params.forEach(function (param) {
             var name = param.split('=')[0];
             var val = param.split('=')[1];
@@ -336,7 +332,12 @@ var Scrolling = {
     }
 }
 var PostGallery = {
-    _postsList: [],
+    _postsList: [
+        {
+            Id: null,
+            IsLoaded: false
+        }
+    ],
     _currentIndex: 0,
     _callbacks: {
         nextItem: function (item) { },
@@ -348,7 +349,8 @@ var PostGallery = {
         this._callbacks.nextItem = settings.nextItemCall;
         this._callbacks.previousItem = settings.previousItemCall;
         var currentPostIndex;
-        for(var i = 0; i < posts.length; i++){
+        for (var i = 0; i < posts.length; i++) {
+            posts[i].IsLoaded = false;
             if (posts[i].Id == currentPostId) {
                 currentPostIndex = i;
                 break;
@@ -356,7 +358,7 @@ var PostGallery = {
         }
         var currentItem = posts.splice(currentPostIndex, 1)[0];
         posts.unshift(currentItem);
-        console.log(posts);
+
         this._postsList = posts;
     },
     nextItem: function () {
@@ -375,6 +377,7 @@ var PostGallery = {
     },
     reset: function () {
         this._currentIndex = 0;
+        this._callbacks.nextItem(this._postsList[this._currentIndex]);
     },
     getCurrentItem: function () {
         return this._postsList[this._currentIndex];

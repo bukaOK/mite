@@ -17,7 +17,7 @@ namespace Mite.Extensions
             {
                 foreach (var valueError in error.Value.Errors)
                 {
-                    stringBuilder.Append("<li>" + valueError.ErrorMessage + "</li>");
+                    stringBuilder.AppendFormat("<li>{0}</li>", valueError.ErrorMessage);
                 }
             }
             stringBuilder.Append("</ul></div>");

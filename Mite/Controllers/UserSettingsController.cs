@@ -135,28 +135,6 @@ namespace Mite.Controllers
 
             await _userManager.SendEmailAsync(userId, "MiteGroup.Подтверждение почты.", "Для подтверждения вашего аккаунта перейдите по <a href=\"" + callbackUrl + "\">ссылке.</a> MiteGroup.");
         }
-        public PartialViewResult WalletsSettings()
-        {
-            var user = _userManager.FindById(User.Identity.GetUserId());
-            var model = new WalletsSettingsModel
-            {
-                YandexWalId = user.YandexWalId
-            };
-            return PartialView("Wallets", model);
-        }
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<JsonResult> UpdateWallets(WalletsSettingsModel model)
-        {
-            var user = await _userManager.FindByIdAsync(User.Identity.GetUserId());
-            var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
-            if (!isPasswordValid)
-                return JsonResponse(JsonResponseStatuses.ValidationError, "Неверный пароль");
-
-            user.YandexWalId = model.YandexWalId;
-            await _userManager.UpdateAsync(user);
-            return JsonResponse(JsonResponseStatuses.Success, "Яндекс кошелек успешно добавлен/обновлен");
-        }
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> ChangeEmail(EmailSettingsModel model)
@@ -187,6 +165,17 @@ namespace Mite.Controllers
             user.Email = model.NewEmail;
             await _userManager.UpdateAsync(user);
             return JsonResponse(JsonResponseStatuses.Success, "E-mail успешно обновлен");
+        }
+        public PartialViewResult SocialServices()
+        {
+            var links = _userService.GetSocialLinks(User.Identity.GetUserId());
+            return PartialView(links);
+        }
+        [HttpPost]
+        public async Task<HttpStatusCodeResult> UpdateSocialServices(SocialLinksModel model)
+        {
+            await _userService.UpdateSocialLinksAsync(model, User.Identity.GetUserId());
+            return Ok();
         }
     }
 }

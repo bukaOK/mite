@@ -9,6 +9,7 @@ using System.Web.Http;
 
 namespace Mite.Controllers
 {
+    [Authorize]
     public class NotificationController : ApiController
     {
         private readonly INotificationService _notificationService;

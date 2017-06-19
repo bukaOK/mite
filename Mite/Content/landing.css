@@ -1,25 +1,26 @@
-﻿.wrapper{
-    position: relative;
+﻿body, html{
     min-height: 100%;
-    overflow:hidden;
 }
-body {
-    background: url("images/water-back.jpg"), round;
+.grid.main {    
+    background-image: url("images/water-back.jpg");
+    padding: 140px 0;
 }
 footer{
-    background-color: rgba(109, 103, 136, 0.5);
-    padding-bottom: 10px;
-    padding-top : 1rem;
-    position: absolute;
-    bottom: 0;
+    background-color: rgb(109, 103, 136);
+    padding-top: 10px;
     width: 100%;
+}
+footer .ui.grid{
+    margin: 0;
 }
 .logo.image{
     margin-bottom: -60px;
 }
 article.ui.grid{
-    padding-top: 10%;
 }
 .content-wrap{
     width: 500px !important;
+}
+.pusher, body {
+    background-color: white !important;
 }

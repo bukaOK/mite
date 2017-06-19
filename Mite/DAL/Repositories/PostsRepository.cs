@@ -31,6 +31,12 @@ namespace Mite.DAL.Repositories
             query = "update dbo.AspNetUsers set Rating=@newRating where Id=@userId";
             await Db.ExecuteAsync(query, new { Id = id, userId = currentUserId, newRating = newRating });
         }
+        public override Task UpdateAsync(Post entity)
+        {
+            var query = "update dbo.Posts set Title=@Title, Content=@Content, IsImage=@IsImage, LastEdit=@LastEdit, IsPublished=@IsPublished, " +
+                "Cover=@Cover, Description=@Description, Rating=@Rating, Views=@Views where Id=@Id";
+            return Db.ExecuteAsync(query, entity);
+        }
         public Task<IEnumerable<Post>> GetByUserAsync(string userId, bool isPublished)
         {
             var query = "select * from dbo.Posts where dbo.Posts.UserId=@UserId and IsPublished=@IsPublished";

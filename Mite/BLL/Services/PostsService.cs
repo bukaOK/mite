@@ -80,11 +80,11 @@ namespace Mite.BLL.Services
             }
             else
             {
-                if(postModel.Cover != null)
+                if(!string.IsNullOrEmpty(postModel.Cover))
                 {
                     postModel.Cover = FilesHelper.CreateImage(imagesFolder, postModel.Cover);
                 }
-                if(postModel.Content == null)
+                if(string.IsNullOrEmpty(postModel.Content))
                 {
                     return IdentityResult.Failed("Контент не может быть пустым.");
                 }
@@ -115,6 +115,10 @@ namespace Mite.BLL.Services
                 {
                     FilesHelper.DeleteFile(img.CompressedVirtualPath);
                 }
+            }
+            else if (!string.IsNullOrEmpty(post.Cover))
+            {
+                FilesHelper.DeleteFile(post.Cover);
             }
             FilesHelper.DeleteFile(post.Content);
             await Database.PostsRepository.RemoveAsync(postId);
@@ -150,9 +154,14 @@ namespace Mite.BLL.Services
                     FilesHelper.DeleteFile(currentPost.Cover);
                     post.Cover = FilesHelper.CreateImage(imagesFolder, postModel.Cover);
                 }
-                if(postModel.Cover == null && !string.IsNullOrEmpty(currentPost.Cover))
+                else if(string.IsNullOrEmpty(postModel.Cover) && !string.IsNullOrEmpty(currentPost.Cover))
                 {
                     FilesHelper.DeleteFile(currentPost.Cover);
+                    post.Cover = null;
+                }
+                else if(!string.IsNullOrEmpty(postModel.Cover) && string.IsNullOrEmpty(currentPost.Cover))
+                {
+                    post.Cover = FilesHelper.CreateImage(imagesFolder, postModel.Cover);
                 }
             }
             post.LastEdit = DateTime.UtcNow;

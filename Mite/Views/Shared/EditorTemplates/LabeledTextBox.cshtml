@@ -1,0 +1,11 @@
+﻿@model string
+
+<div class="field">
+    <label>@Html.DisplayName("")</label>
+    <div class="ui labeled input">
+        <div class="ui label">
+            @ViewData["label"]
+        </div>
+        @Html.TextBox("", Model, new { placeholder = ViewData["placeholder"] })
+    </div>
+</div>

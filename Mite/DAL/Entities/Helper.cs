@@ -12,16 +12,17 @@ namespace Mite.DAL.Entities
     /// Сущность "помощника" для пользователя(для непонятливых)
     /// Если true, значит помощник использован, и больше не нужен
     /// </summary>
-    public class Helper : IEntity
+    public class Helper : Entity
     {
-        [Key]
-        public Guid Id { get; set; }
         /// <summary>
         /// Нажата ли была кнопка для редактирования документа
         /// </summary>
         public bool EditDocBtn { get; set; }
-        [ForeignKey("User")]
-        [Required]
+        /// <summary>
+        /// Нажата ли кнопка логотипа для перехода к публикациям
+        /// </summary>
+        public bool PublicPostsBtn { get; set; }
+        [ForeignKey("User"), Required]
         public string UserId { get; set; }
         public User User { get; set; }
     }

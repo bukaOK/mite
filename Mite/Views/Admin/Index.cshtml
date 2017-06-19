@@ -11,9 +11,19 @@
 
 <nav class="ui stackable pointing secondary tabs menu" style="border: none">
     <a class="active item" data-tab="ModerRegister">Добавление модератора</a>
+    <a class="item" data-tab="extApps">Авторизовать приложения</a>
 </nav>
 <div class="ui active tab" data-tab="ModerRegister">
     @Html.Action("ModerRegister")
+</div>
+<div class="ui tab" data-tab="extApps">
+    <form action="https://money.yandex.ru/oauth/authorize" method="post">
+        <input type="hidden" name="client_id" value="@Mite.Constants.YaMoneySettings.ClientId" />
+        <input type="hidden" name="response_type" value="code" />
+        <input type="hidden" name="redirect_uri" value="@Mite.Constants.YaMoneySettings.RedirectUri" />
+        <input type="hidden" name="scope" value="account-info payment-p2p" />
+        <button type="submit" class="ui primary button">Авторизовать Яндекс.Деньги</button>
+    </form> 
 </div>
 <script>
     $(function () {

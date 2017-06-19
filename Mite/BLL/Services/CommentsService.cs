@@ -8,6 +8,7 @@ using AutoMapper;
 using Mite.DAL.Entities;
 using System.Linq;
 using Mite.Enums;
+using Mite.DAL.Repositories;
 
 namespace Mite.BLL.Services
 {
@@ -32,7 +33,7 @@ namespace Mite.BLL.Services
             comment.Rating = 0;
             comment.Id = Guid.NewGuid();
 
-            await Database.CommentsRepository.AddAsync(comment);
+            await Database.GetRepository<CommentsRepository, Comment>().AddAsync(comment);
             comment = await Database.CommentsRepository.GetFullAsync(comment.Id);
             return Mapper.Map<CommentModel>(comment);
         }

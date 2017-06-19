@@ -37,6 +37,7 @@ namespace Mite.Controllers
             if (profile == null)
                 return NotFound();
 
+            profile.SocialLinks = await _userService.GetSocialLinksAsync(profile.UserId.ToString());
             return View(profile);
         }
         public ViewResult Notifications()

@@ -32,11 +32,9 @@ namespace Mite.BLL.Services
             {
                 helper = new Helper
                 {
-                    Id = Guid.NewGuid(),
                     UserId = userId
                 };
                 Database.HelpersRepository.Add(helper);
-                helper = Database.HelpersRepository.Get(helper.Id);
             }
             return Mapper.Map<HelperModel>(helper);
         }
@@ -48,11 +46,9 @@ namespace Mite.BLL.Services
             {
                 helper = new Helper
                 {
-                    Id = Guid.NewGuid(),
                     UserId = userId
                 };
                 await Database.HelpersRepository.AddAsync(helper);
-                helper = await Database.HelpersRepository.GetAsync(helper.Id);
             }
             return Mapper.Map<HelperModel>(helper);
         }
@@ -64,6 +60,9 @@ namespace Mite.BLL.Services
             {
                 case HelperTypes.EditDocBtn:
                     helper.EditDocBtn = true;
+                    break;
+                case HelperTypes.PublicationsBtn:
+                    helper.PublicPostsBtn = true;
                     break;
                 default:
                     return IdentityResult.Failed("Неизвестный тип помощника");

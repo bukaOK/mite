@@ -10,6 +10,10 @@ namespace Mite.Enums
         /// <summary>
         /// Нажата ли была кнопка для редактирования документа
         /// </summary>
-        EditDocBtn
+        EditDocBtn,
+        /// <summary>
+        /// Нажата ли была кнопка с логотипом для перехода к публикациям
+        /// </summary>
+        PublicationsBtn
     }
 }

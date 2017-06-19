@@ -10,7 +10,7 @@
         if (num >= 10 && num <= 20) {
             return word0;
         }
-        var num = num % 10;
+        num = num % 10;
 
         switch(num){
             case 0:
@@ -29,7 +29,7 @@
        publicTime - время публикации (в миллисекундах)
     */
     getPastTense: function (publicTime) {
-        var currentTime = new Date().getTime(),
+        var currentTime = Date.now(),
         //Миллисекунды
             timeDiff = currentTime - publicTime,
             secsDiff = Math.floor(timeDiff / 1000),
@@ -40,7 +40,6 @@
             monthsDiff = Math.floor(daysDiff / 30),
             yearsDiff = Math.floor(daysDiff / 365);
 
-        console.log(yearsDiff);
         if(yearsDiff > 0){
             return yearsDiff + " " + this.getWordCase(yearsDiff, 'год', 'года', 'лет');
         }

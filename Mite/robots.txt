@@ -1,0 +1,4 @@
+﻿User-agent: *
+Disallow: /account/login/
+Disallow: /account/register/
+Host: mitegroup.ru

@@ -11,6 +11,7 @@ namespace Mite.DAL.Core
         /// Возвращает сущность по ID
         /// </summary>
         /// <param name="id">Id сущности</param>
+        /// <param name="allowDefault">Разрешить ли возвращать нулевые значения</param>
         /// <returns></returns>
         Task<T> GetAsync(Guid id);
         T Get(Guid id);

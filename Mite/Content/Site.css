@@ -7,6 +7,12 @@
 html, body{
     height: 100% !important;
 }
+.ui.tab:not(.active){
+    display: none;
+}
+.ui.tab.basic.segment:not(.grid){
+    margin: 0;
+}
 .ui.search.selection.dropdown{
     border: 2px solid #e8e8e8;
 }
@@ -26,6 +32,14 @@ html, body{
 }
 .text-right{
     text-align: right;
+}
+.help.word{
+    cursor: help;
+}
+/*Шапка*/
+header.ui.fixed.menu .item>.button{
+    padding: 8px 15px;
+    margin-right: -10px;
 }
 /*Тело*/
 article{
@@ -194,6 +208,27 @@ article.ui.container{
 .profile-post .image, .profile-post .dimmer, .profile-post{
     border-radius: 5px;
 }
+/*Соц. кнопки*/
+.ui.artstation.button{
+    background-color: #171717;
+    height:36px;
+    top: 2px;
+    position: relative;
+}
+.ui.artstation.button:hover{
+    background-color: #050505;
+}
+.ui.icon.circular.button>img{
+    width: 14px;
+    height: 14px;
+}
+.ui.dribbble.button{
+    background-color: #ea4c89;
+    color: white;
+}
+.ui.dribbble.button:hover{
+    background-color: #c32361;
+}
 /*Редактор*/
 .ct-control--rotate-ccw, .ct-control--rotate-cw, .ct-control--crop{
     display: none !important;
@@ -236,7 +271,7 @@ article.ui.container{
     margin-right: auto;
 }
 /*Страница поста*/
-#post-content img{
+img#post-content{
     cursor: zoom-in;
     cursor: -webkit-zoom-in;
     cursor: -moz-zoom-in;
@@ -339,6 +374,9 @@ p.docs{
 }
 .active.loader-wrapper{
     display: block;
+}
+.loader-wrapper>.ui.loader:after{
+    border-color: #6D6788 transparent transparent !important;
 }
 .posts.grid.basic.segment{
     margin: -1rem;

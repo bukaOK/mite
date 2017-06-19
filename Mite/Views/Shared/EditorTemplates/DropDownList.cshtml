@@ -1,6 +1,6 @@
 ﻿@using System.Reflection
 @using Mite.Attributes.DataAnnotations
-@model int?
+@model int
     
 @{
     var customAttribute =
@@ -17,6 +17,8 @@
         Text = displayName,
         Value = ""
     });
+    list.First(x => x.Value == Model.ToString()).Selected = true;
+
 }
 
 <div class="field">

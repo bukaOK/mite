@@ -13,6 +13,10 @@ namespace Mite.DAL.Infrastructure
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Helper> Helpers { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+        public DbSet<CashOperation> CashOperations { get; set; }
+        public DbSet<ExternalService> ExternalServices { get; set; }
+        public DbSet<SocialLinks> SocialLinks { get; set; }
 
         public AppDbContext()
             : base("DefaultConnection")

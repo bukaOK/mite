@@ -25,5 +25,13 @@ namespace Mite.Controllers
         {
             return View();
         }
+        public ActionResult Terms()
+        {
+            return View();
+        }
+        public ActionResult Privacy()
+        {
+            return View();
+        }
     }
 }

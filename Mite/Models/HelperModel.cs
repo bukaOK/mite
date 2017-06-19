@@ -9,5 +9,6 @@ namespace Mite.Models
     {
         public UserShortModel UserModel { get; set; }
         public bool EditDocBtn { get; set; }
+        public bool PublicPostsBtn { get; set; }
     }
 }

@@ -8,17 +8,12 @@
     var pageUserName = Model.UserName;
     var currentUserName = User.Identity.Name;
 }
-@Scripts.Render("~/bundles/jsrender", "~/bundles/grid")
+@Scripts.Render("~/bundles/grid")
 <div class="ui profile center aligned three column stackable grid segment">
     <div class="computer tablet only row">
         <div class="right aligned column">
-            @if (Model.YandexWalId != null)
-            {
-                <button class="ui green labeled icon button" onclick="$('#donateModal').modal('show')">
-                    <i class="heart icon"></i>
-                    Поддержать
-                </button>
-            }
+            
+            
         </div>
         <div class="column">
             <img class="ui centered circular image" src="@Model.AvatarSrc" width="150" />
@@ -28,25 +23,74 @@
                     @Model.About
                 </span>
             </h2>
+            @if (Model.SocialLinks.Vk != null)
+            {
+                <a href="https://vk.com/@Model.SocialLinks.Vk" class="ui circular vk icon button">
+                    <i class="vk icon"></i>
+                </a>
+            }
+            @if (Model.SocialLinks.Twitter != null)
+            {
+                <a href="https://twitter.com/@Model.SocialLinks.Twitter" class="ui circular twitter icon button">
+                    <i class="twitter icon"></i>
+                </a>
+            }
+            @if (Model.SocialLinks.Facebook != null)
+            {
+                <a href="https://facebook.com/@Model.SocialLinks.Facebook" class="ui circular facebook icon button">
+                    <i class="facebook icon"></i>
+                </a>
+            }
+            @if (Model.SocialLinks.Dribbble != null)
+            {
+                <a href="https://dribbble.com/@Model.SocialLinks.Dribbble" class="ui circular dribbble icon button">
+                    <i class="dribble icon"></i>
+                </a>
+            }
+            @if (Model.SocialLinks.ArtStation != null)
+            {
+                <a href="https://www.artstation.com/artist/@Model.SocialLinks.ArtStation" class="ui circular artstation icon button">
+                    <img src="http://www.wekoworks.com/images/FotterIcons/artstation_logo.png" />
+                </a>
+            }
         </div>
         <div class="left aligned column">
             @if (currentUserName != pageUserName && !Model.IsFollowing && User.Identity.IsAuthenticated)
             {
-                <button class="ui primary button" onclick="addFollower('@Model.UserId', this)">
+                <button class="ui green button" onclick="addFollower('@Model.UserId', this)">
                     <i class="add user icon"></i>Подписаться
                 </button>
                 <button class="ui red button" onclick="deleteFollower('@Model.UserId', this)" style="display: none">
                     <i class="remove user icon"></i>Отписаться
                 </button>
             }
-            @if (Model.IsFollowing)
+            else if (Model.IsFollowing && User.Identity.IsAuthenticated)
             {
                 <button class="ui red button" onclick="deleteFollower('@Model.UserId', this)">
                     <i class="remove user icon"></i>Отписаться
                 </button>
-                <button class="ui primary button" onclick="addFollower('@Model.UserId', this)" style="display: none">
+                <button class="ui green button" onclick="addFollower('@Model.UserId', this)" style="display: none">
                     <i class="add user icon"></i>Подписаться
                 </button>
+            }
+            else
+            {
+                <a href="@Url.RouteUrl("UserSettings")" class="ui blue button"><i class="setting icon"></i>Настройки</a>
+            }
+            @if(Model.YandexWalId != null)
+            {
+                <div class="ui left dropdown pointing icon button" id="userActionsDrop">
+                    <i class="options icon"></i>
+                    <div class="menu">
+                        @if (Model.YandexWalId != null)
+                        {
+                            <a class="item" onclick="$('#donateModal').modal('show')">
+                                <i class="heart icon"></i>
+                                Поддержать
+                            </a>
+                        }
+                    </div>
+                </div>
             }
         </div>
     </div>
@@ -393,6 +437,7 @@ else
         </h3>
     </div>
 </script>
+@Scripts.Render("~/bundles/jsrender", "~/bundles/grid")
 <script>
     var delPostId;
     function getCurrentTab(){
@@ -446,7 +491,7 @@ else
                 $btn.removeClass('loading disabled');
             }
         });
-        
+
     }
     function deleteFollower(followingUserId, btn) {
         var $btn = $(btn);
@@ -493,7 +538,12 @@ else
                     ]
                 }
             }
-        })
+        });
+        $('#userActionsDrop').dropdown({
+            action: 'nothing',
+            transition: 'slide right',
+            duration: 300
+        });
         var currentUser = '@currentUserName'
         var pageUser = '@pageUserName';
 
@@ -515,9 +565,9 @@ else
                     url: '/posts/deletepost/' + postId,
                     type: 'post',
                     success: function (data) {
-                        deleteElem.remove();
+                        //deleteElem.remove();
                         var tab = getCurrentTab();
-                        $('.tab[data-tab="' + tab + '"]').masonry('layout');
+                        $('.tab[data-tab="' + tab + '"]').masonry('remove', deleteElem).masonry('layout');
                     },
                     error: function (jqXhr) {
                     }
@@ -537,7 +587,6 @@ else
                 },
                 beforeSuccess: function (resp) {
                     var jsonResp = JSON.parse(resp);
-                    console.log(jsonResp);
                     var currentTab = getCurrentTab();
                     if(jsonResp.data.length == 0){
                         if(currentTab == 'followers'){
@@ -581,22 +630,31 @@ else
                 afterSuccess: function(item, tabContent){
                     tabContent.css('display', 'flex');
                     if($(item).data('tab') == 'posts' && currentUser != pageUser){
+                        postsGrid.masonry('reloadItems');
                         postsGrid.imagesLoaded(function(){
-                            postsGrid.masonry('reloadItems').masonry('layout');
+                            postsGrid.masonry('layout');
+                        }).progress(function(){
+                            postsGrid.masonry('layout');
                         });
                     } else if($(item).data('tab') == 'posts/published'){
+                        publishedPostsGrid.masonry('reloadItems');
                         publishedPostsGrid.imagesLoaded(function(){
-                            publishedPostsGrid.masonry('reloadItems').masonry('layout');
+                            publishedPostsGrid.masonry('layout');
+                        }).progress(function(){
+                            publishedPostsGrid.masonry('layout');
                         });
                     } else if($(item).data('tab') == 'posts/drafts'){
+                        draftsPostsGrid.masonry('reloadItems');
                         draftsPostsGrid.imagesLoaded(function(){
-                            draftsPostsGrid.masonry('reloadItems').masonry('layout');
+                            draftsPostsGrid.masonry('layout');
+                        }).progress(function(){
+                            draftsPostsGrid.masonry('layout');
                         });
                     }
                     $('.post-item').dimmer({
                         on: 'hover',
                         opacity: 0.5
-                    })
+                    });
                 }
             }
         });
@@ -607,6 +665,7 @@ else
                 Tabs.loadTab(item);
             }
         });
+        $('.social.dropdown').dropdown();
         $('.ui.checkbox').checkbox();
     });
 </script>

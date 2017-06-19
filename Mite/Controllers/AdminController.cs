@@ -1,5 +1,7 @@
 ﻿using Mite.BLL.IdentityManagers;
 using Mite.Core;
+using Mite.ExternalServices.YandexMoney;
+using System;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -10,10 +12,12 @@ namespace Mite.Controllers
     public class AdminController : BaseController
     {
         private readonly AppUserManager _userManager;
+        private readonly IYandexService yandexService;
 
-        public AdminController(AppUserManager userManager)
+        public AdminController(AppUserManager userManager, IYandexService yandexService)
         {
             _userManager = userManager;
+            this.yandexService = yandexService;
         }
         public ActionResult Index()
         {

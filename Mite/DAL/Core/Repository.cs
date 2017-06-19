@@ -12,37 +12,37 @@ namespace Mite.DAL.Core
     //TODO: проверка Guid на уникальность
     public abstract class Repository<T> : IRepository<T> where T : class, IEntity
     {
-        protected readonly IDbConnection Db;
-        private readonly string _tableName;
+        protected IDbConnection Db { get; }
+        protected string TableName { get; set; }
 
         protected Repository(IDbConnection db)
         {
             Db = db;
-            _tableName = typeof(T).Name + "s";
+            if(TableName == null)
+                TableName = typeof(T).Name + "s";
         }
         
         public virtual Task<IEnumerable<T>> GetAllAsync()
         {
-            return Db.QueryAsync<T>($"select * from dbo.{_tableName}");
+            return Db.QueryAsync<T>($"select * from dbo.{TableName}");
         }
 
         public virtual Task<T> GetAsync(Guid id)
         {
-            return Db.QueryFirstAsync<T>($"select top 1 * from dbo.{_tableName} where Id=@Id", new { Id = id });
+            return Db.QueryFirstAsync<T>($"select top 1 * from dbo.{TableName} where Id=@Id", new { Id = id });
         }
         public virtual Task RemoveAsync(Guid id)
         {
-            var query = $"delete from dbo.{_tableName} where Id=@Id";
+            var query = $"delete from dbo.{TableName} where Id=@Id";
             return Db.ExecuteAsync(query, new { Id = id });
         }
         public virtual Task AddAsync(T entity)
         {
             //Если Id пустой, генерим новый
             entity.Id = entity.Id == Guid.Empty ? Guid.NewGuid() : entity.Id;
-
             //Составляем список свойств для вставки
             var propsNames = typeof(T).GetProperties().Where(IsSqlType).Select(x => x.Name).ToArray();
-            var query = new StringBuilder($"insert into dbo.{_tableName} (");
+            var query = new StringBuilder($"insert into dbo.{TableName} (");
             for (int i = 0; i < propsNames.Length; i++)
             {
                 query.Append(propsNames[i]);
@@ -67,7 +67,7 @@ namespace Mite.DAL.Core
                     .Where(x => IsSqlType(x) && x.Name != "Id" && x.GetValue(entity) != null)
                     .Select(x => x.Name)
                     .ToArray();
-            var query = new StringBuilder($"update dbo.{_tableName} set ");
+            var query = new StringBuilder($"update dbo.{TableName} set ");
             for (int i = 0; i < propsNames.Length; i++)
             {
                 query.AppendFormat("{0}=@{0}", propsNames[i]);
@@ -91,17 +91,14 @@ namespace Mite.DAL.Core
 
         public IEnumerable<T> GetAll()
         {
-            return Db.Query<T>($"select * from dbo.{_tableName}");
+            return Db.Query<T>($"select * from dbo.{TableName}");
         }
 
         public void Add(T entity)
         {
-            //Если Id пустой, генерим новый
-            entity.Id = entity.Id == Guid.Empty ? Guid.NewGuid() : entity.Id;
-
             //Составляем список свойств для вставки
             var propsNames = typeof(T).GetProperties().Where(IsSqlType).Select(x => x.Name).ToArray();
-            var query = new StringBuilder($"insert into dbo.{_tableName} (");
+            var query = new StringBuilder($"insert into dbo.{TableName} (");
             for (int i = 0; i < propsNames.Length; i++)
             {
                 query.Append(propsNames[i]);
@@ -121,12 +118,12 @@ namespace Mite.DAL.Core
 
         public T Get(Guid id)
         {
-            return Db.QueryFirst<T>($"select top 1 * from dbo.{_tableName} where Id=@Id", new { Id = id });
+            return Db.QueryFirst<T>($"select top 1 * from dbo.{TableName} where Id=@Id", new { Id = id });
         }
 
         public void Remove(Guid id)
         {
-            var query = $"delete from dbo.{_tableName} where Id=@Id";
+            var query = $"delete from dbo.{TableName} where Id=@Id";
             Db.Execute(query, new { Id = id });
         }
     }

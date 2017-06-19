@@ -1,14 +1,22 @@
-﻿using Microsoft.AspNet.Identity;
+﻿using Autofac;
+using Duke.Owin.VkontakteMiddleware;
+using Duke.Owin.VkontakteMiddleware.Provider;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.DataProtection;
+using Microsoft.Owin.Security.Facebook;
+using Microsoft.Owin.Security.Twitter;
 using Mite.BLL.IdentityManagers;
+using Mite.Constants;
 using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
 using Owin;
 using System;
 using System.Data.Entity;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using System.Web.Http;
 
 [assembly: OwinStartup(typeof(Mite.Startup))]
@@ -18,16 +26,16 @@ namespace Mite
     {
         public void Configuration(IAppBuilder app)
         {
-            ConfigureAuth(app);
             Database.SetInitializer(new DbInitializer(app.GetDataProtectionProvider()));
             var dbContext = new AppDbContext();
             dbContext.Database.Initialize(false);
             var apiConfig = ConfigureWebApi();
-            AutofacDI.Initialize(app, apiConfig);
+            var container = AutofacDI.Initialize(app, apiConfig);
+            ConfigureAuth(app, container);
             app.UseWebApi(apiConfig);
             app.MapSignalR();
         }
-        private void ConfigureAuth(IAppBuilder app)
+        private void ConfigureAuth(IAppBuilder app, IContainer diContainer)
         {
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
@@ -40,8 +48,7 @@ namespace Mite
                         regenerateIdentity: (manager, user) => user.GenerateUserIdentityAsync(manager))
                 },
                 CookieName = "MiteCookie",
-                LogoutPath = new PathString("/account/logoff"),
-                
+                LogoutPath = new PathString("/account/logoff")
             });
             app.UseExternalSignInCookie(DefaultAuthenticationTypes.ExternalCookie);
 
@@ -52,15 +59,56 @@ namespace Mite
             //app.UseMicrosoftAccountAuthentication(
             //    clientId: "",
             //    clientSecret: "");
+            app.UseTwitterAuthentication(new TwitterAuthenticationOptions
+            {
+                ConsumerKey = "wqHlrgtp5UYi7mZtiBWpVawbN",
+                ConsumerSecret = "hhvpYmzxFLHTiH3aOIMukkIepZ3hRsMxeQnKcE2uZmrZDu8y1s",
+                AuthenticationType = TwitterSettings.DefaultAuthType,
+                Provider = new TwitterAuthenticationProvider
+                {
+                    OnAuthenticated = context =>
+                    {
+                        return Task.Run(() =>
+                        {
+                            context.Identity.AddClaim(new Claim(ClaimConstants.ExternalServiceToken, context.AccessToken));
+                        });
+                    }
+                }
+            });
+            app.UseFacebookAuthentication(new FacebookAuthenticationOptions
+            {
+                AppId = "1709833739044048",
+                AppSecret = "f8e4260827532461cf2eb39584f79fd7",
+                AuthenticationType = FacebookSettings.DefaultAuthType,
+                Provider = new FacebookAuthenticationProvider
+                {
+                    OnAuthenticated = context =>
+                    {
+                        return Task.Run(() =>
+                        {
+                            context.Identity.AddClaim(new Claim(ClaimConstants.ExternalServiceToken, context.AccessToken));
+                        });
+                    }
+                }
+            });
 
-            //app.UseTwitterAuthentication(
-            //   consumerKey: "",
-            //   consumerSecret: "");
-
-            //app.UseFacebookAuthentication(
-            //   appId: "",
-            //   appSecret: "");
-
+            app.UseVkontakteAuthentication(new VkAuthenticationOptions
+            {
+                AppId = "6013159",
+                AppSecret = "bfVzsqk5oyHvlGUwLM8P",
+                AuthenticationType = VkSettings.DefaultAuthType,
+                Caption = "Вконтакте",
+                Provider = new VkAuthenticationProvider
+                {
+                    OnAuthenticated = context =>
+                    {
+                        return Task.Run(() =>
+                        {
+                            context.Identity.AddClaim(new Claim(ClaimConstants.ExternalServiceToken, context.AccessToken));
+                        });
+                    }
+                }
+            });
             //app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
             //{
             //    ClientId = "",

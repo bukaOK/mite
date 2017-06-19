@@ -1,0 +1,7 @@
+﻿~/bower_components/semantic/src/semantic.css
+~/Content/landing.css
+~/node_modules/croppie/croppie.css
+~/Content/Site.css
+~/Content/ident.css
+~/Content/content-tools.min.css
+~/bower_components/perfect-scrollbar/css/perfect-scrollbar.css

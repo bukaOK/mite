@@ -3,15 +3,8 @@
     ViewBag.Title = "Главная";
     Layout = null;
 }
-@section styles{
-    <style>
-        .pusher, body {
-            background-color: white !important;
-        }
-    </style>
-}
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <link rel="apple-touch-icon" sizes="57x57" href="~/Content/icons/apple-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="~/Content/icons/apple-icon-60x60.png">
@@ -33,48 +26,146 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>MiteGroup</title>
     <meta name="description" content="Добро пожаловать в наше творческое сообщество!"/>
-    @Styles.Render("~/Content/semantic")
-    @Styles.Render("~/Content/landing")
+    @Styles.Render("~/Content/semantic", "~/Content/landing")
 </head>
 <body>
     @Scripts.Render("~/bundles/main")
-    <div class="wrapper">
-        <article class="ui center aligned middle aligned grid">
-            <div class="content-wrap column">
-                <img src="~/Content/images/some-logo.png" class="ui centered logo image" />
-                <div class="ui basic segment">
-                    @Html.ActionLink("Зарегистрироваться", "Register", "Account", null, new { @class = "ui blue button" })
-                    <div class="ui horizontal inverted divider">Или</div>
-                    @Html.ActionLink("Войти", "Login", "Account", null, new { @class = "ui primary button" })
-                </div>
+    <script src="~/bower_components/jquery.easing/js/jquery.easing.js"></script>
+    <script src="~/bower_components/jquery.scrollTo/jquery.scrollTo.js"></script>
+    <article class="ui stackable main center aligned middle aligned grid">
+        <div class="content-wrap column">
+            <img src="~/Content/images/some-logo.png" class="ui centered logo image" />
+            <div class="ui basic segment">
+                @Html.ActionLink("Зарегистрироваться", "Register", "Account", null, new { @class = "ui blue button" })
+                <div class="ui horizontal inverted divider">Или</div>
+                @Html.ActionLink("Войти", "Login", "Account", null, new { @class = "ui primary button" })
             </div>
-        </article>
-        <footer>
-            <div class="ui computer tablet only two column grid container">
-                <div class="column">
-                    <div class="ui inverted horizontal link list">
-                        <a href="https://vk.com/mitegroup" class="item">Мы ВКонтакте</a>
-                        @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "item" })
-                        @Html.ActionLink("Поддержать проект", "Donate", "Home", null, new { @class = "item" })
+        </div>
+    </article>
+    <div class="ui hidden divider"></div>
+    <article class="ui container">
+        <div class="ui stackable grid">
+            <div class="row">
+                <div class="seven wide column">
+                    <div class="ui basic segment">
+                        <h2 class="ui header">Ничего лишнего</h2>
+                        <p>Добавляйте анимацию, изображения, фотографии, литературу, статьи -
+                        любое искусство наш сервис встретит приветливым дизайном и удобным функционалом. </p>
+                        <p>А тем кто пишет, теперь не придётся использовать сторонние редакторы - ведь всё есть у нас!</p>
                     </div>
                 </div>
-                <div class="right aligned column">
+                <div class="nine wide column">
+                    <div class="ui basic segment">
+                        <img class="ui image" src="~/Content/images/land/makeDoc.gif" />
+                    </div>
+                </div>
+            </div>
+            <div class="ui divider"></div>
+            <div class="computer tablet only row">
+                <div class="nine wide column">
+                    <div class="ui basic segment">
+                        <img class="ui image" src="~/Content/images/land/posts.png" />
+                    </div>
+                </div>
+                <div class="seven wide column">
+                    <div class="ui basic segment">
+                        <h2 class="ui header">Рейтинги - наше всё</h2>
+                        <p>Рейтинг - краеугольный камень MiteGroup, заработать его можно от создания публикаций до обычного комментирования.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mobile only row">
+                <div class="seven wide column">
+                    <div class="ui basic segment">
+                        <h2 class="ui header">Рейтинги - наше всё</h2>
+                        <p>Рейтинг - краеугольный камень MiteGroup, заработать его можно от создания публикаций до обычного комментирования.</p>
+                    </div>
+                </div>
+                <div class="nine wide column">
+                    <div class="ui basic segment">
+                        <img class="ui image" src="~/Content/images/land/posts.png" />
+                    </div>
+                </div>
+            </div>
+            <div class="ui divider"></div>
+            <div class="row">
+                <div class="seven wide column">
+                    <div class="ui basic segment">
+                        <h2 class="ui header">Зарабатывай на том, что нравится</h2>
+                        <p>MiteGroup изначально был задуман как проект для развития и заработка на своём хобби. Приглашайте своих друзей и знакомых, занимающихся творчеством, и зарабатывайте вместе!</p>
+                    </div>
+                </div>
+                <div class="nine wide column">
+                    <div class="ui basic segment">
+                        <img class="ui image" src="~/Content/images/land/cash.png" />
+                    </div>
+                </div>
+            </div>
+            <div class="ui divider"></div>
+            <div class="row">
+                <div class="center aligned column">
+                    <div class="ui basic segment">
+                        <h2 class="ui header">Теперь дело за вами</h2>
+                        <button class="ui active large violet inverted basic button" onclick="scrollToTop()">Начинаем</button>
+                        @Html.ActionLink("Хочу ещё посмотреть", "Top", "Posts", null, new { @class = "ui large blue button" })
+                    </div>
+                </div>
+            </div>
+            <div class="ui hidden divider"></div>
+        </div>
+    </article>
+    <footer>
+        <div class="ui computer tablet only grid container">
+            <div class="row">
+                <div class="center aligned column">
+                    <div class="ui inverted horizontal link list">
+                        <div class="item">Мы в социальных сетях:</div>
+                        <div class="item">
+                            <a href="https://vk.com/mitegroup" class="ui circular inverted vk icon button"><i class="vk icon"></i></a>
+                        </div>
+                        <div class="item">
+                            <a href="https://twitter.com/fanmitegroup" class="ui circular inverted twitter icon button"><i class="twitter icon"></i></a>
+                        </div>
+                        <div class="item">
+                            <a href="https://facebook.com/fanmitegroup" class="ui circular inverted facebook icon button"><i class="facebook icon"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ui fitted inverted divider" style="margin: 0"></div>
+            <div class="row">
+                <div class="ten wide column">
+                    <div class="ui inverted horizontal link list">
+                        @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "item" })
+                        @Html.ActionLink("Условия пользования", "Terms", "Home", null, new { @class = "item" })
+                        @Html.ActionLink("Политика конфиденциальности", "Privacy", "Home", null, new { @class = "item" })
+                    </div>
+                </div>
+                <div class="six wide right aligned column">
                     <div class="ui inverted horizontal link list">
                         <a href="/" class="item">&copy; MiteGroup</a>
                     </div>
                 </div>
             </div>
-            <div class="ui mobile only grid center aligned container">
-                <div class="ui basic segment" style="padding-top: 0">
-                    <div class="ui inverted divided list">
-                        <a href="https://vk.com/mitegroup" class="item">Мы ВКонтакте</a>
-                        @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "item" })
-                        @Html.ActionLink("Поддержать проект", "Donate", "Home", null, new { @class = "item" })
-                        <a href="/" class="item">&copy; MiteGroup</a>
-                    </div>
+        </div>
+        <div class="ui mobile only grid center aligned container">
+            <div class="ui basic segment" style="padding-top: 0">
+                <div class="ui inverted divided list">
+                    @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "item" })
+                    @Html.ActionLink("Условия пользования", "Terms", "Home", null, new { @class = "item" })
+                    @Html.ActionLink("Политика конфиденциальности", "Privacy", "Home", null, new { @class = "item" })
+                    <a href="/" class="item">&copy; MiteGroup</a>
                 </div>
             </div>
-        </footer>
-    </div>
+        </div>
+    </footer>
+    <script>
+        function scrollToTop() {
+            $(window).scrollTo('.main.grid', 1800, {
+                easing: 'easeOutExpo',
+                offset: -10
+            });
+        }
+    </script>
 </body>
 </html>

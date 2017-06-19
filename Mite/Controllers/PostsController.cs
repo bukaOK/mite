@@ -11,9 +11,8 @@ using Mite.Models;
 using System.Text.RegularExpressions;
 using AutoMapper;
 using System.Net;
-using System.Collections.Generic;
-using System.Web;
-using Mite.Infrastructure;
+using NLog;
+using System.Linq;
 
 namespace Mite.Controllers
 {
@@ -23,14 +22,18 @@ namespace Mite.Controllers
         private readonly IPostsService postsService;
         private readonly IRatingService ratingService;
         private readonly IHelpersService helpersService;
+        private readonly ILogger logger;
+
         private readonly string imagesFolder = HostingEnvironment.ApplicationVirtualPath + "Public/images/";
         private readonly string documentsFolder = HostingEnvironment.ApplicationVirtualPath + "Public/documents/";
 
-        public PostsController(IPostsService postsService, IRatingService ratingService, IHelpersService helpersService)
+        public PostsController(IPostsService postsService, IRatingService ratingService, IHelpersService helpersService,
+            ILogger logger)
         {
             this.postsService = postsService;
             this.ratingService = ratingService;
             this.helpersService = helpersService;
+            this.logger = logger;
         }
         [HttpGet]
         [AllowAnonymous]
@@ -38,12 +41,12 @@ namespace Mite.Controllers
         {
             Guid postId;
             if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out postId))
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                return BadRequest();
 
             var post = await postsService.GetWithTagsUserAsync(postId);
             if (!post.IsPublished)
             {
-                return new HttpNotFoundResult();
+                return NotFound();
             }
             var userRating = (await ratingService.GetByPostAndUserAsync(postId, User.Identity.GetUserId()))
                 ?? new PostRatingModel();
@@ -73,7 +76,7 @@ namespace Mite.Controllers
                         Helper = helper
                     });
                 default:
-                    return new HttpNotFoundResult();
+                    return NotFound();
             }
         }
         public async Task<ActionResult> EditPost(string id)
@@ -86,11 +89,11 @@ namespace Mite.Controllers
             var post = await postsService.GetWithTagsAsync(postId);
             if (User.Identity.GetUserId() != post.User.Id)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
+                return Forbidden();
             }
             if (post.IsPublished)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                return BadRequest();
             }
 
             if (post.IsImage)
@@ -125,7 +128,7 @@ namespace Mite.Controllers
             var result = await postsService.AddPostAsync(model, User.Identity.GetUserId());
             if (!result.Succeeded)
             {
-                return JsonResponse(JsonResponseStatuses.ValidationError, result.Errors);
+                return JsonResponse(JsonResponseStatuses.ValidationError, result.Errors.ToList()[0]);
             }
 
             return JsonResponse(JsonResponseStatuses.Success, "Пост успешно добавлен");
@@ -155,17 +158,17 @@ namespace Mite.Controllers
             Guid postId;
             if (!Guid.TryParse(id, out postId))
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                return BadRequest();
             }
             try
             {
                 await postsService.DeletePostAsync(postId);
-                return new HttpStatusCodeResult(HttpStatusCode.OK);
+                return Ok();
             }
             catch(Exception e)
             {
-                Logger.WriteError(e);
-                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+                logger.Error(e, "Ошибка при удалении поста");
+                return InternalServerError();
             }
         }
         [HttpPost]
@@ -174,31 +177,18 @@ namespace Mite.Controllers
             Guid postId;
             if(string.IsNullOrEmpty(id) || !Guid.TryParse(id, out postId))
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                return BadRequest();
             }
             try
             {
                 await postsService.PublishPost(postId);
-                return new HttpStatusCodeResult(HttpStatusCode.OK);
+                return Ok();
             }
             catch (Exception e)
             {
-                Logger.WriteError(e);
-                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+                logger.Error(e, "Ошибка при публикации поста");
+                return InternalServerError();
             }
-        }
-        public async Task<JsonResult> UserPosts(string userId, SortFilter sort, PostTypes? type)
-        {
-            IEnumerable<ProfilePostModel> posts = new List<ProfilePostModel>();
-            if (type == null || type == PostTypes.Published)
-            {
-                posts = await postsService.GetByUserAsync(userId, sort, PostTypes.Published);
-            }
-            else if(User.Identity.GetUserId() == userId)
-            {
-                posts = await postsService.GetByUserAsync(userId, sort, PostTypes.Drafts);
-            }
-            return JsonResponse(JsonResponseStatuses.Success, posts);
         }
         /// <summary>
         /// Получаем список изображений пользователя (для галереи при показе поста)
@@ -212,11 +202,13 @@ namespace Mite.Controllers
             var result = await postsService.GetGalleryByUserAsync(userId);
             return JsonResponse(JsonResponseStatuses.Success, result);
         }
+        [AllowAnonymous]
         public ViewResult Top()
         {
             return View();
         }
         [HttpPost]
+        [AllowAnonymous]
         public async Task<JsonResult> Top(string input, SortFilter sortFilter,
             PostTimeFilter postTimeFilter, PostUserFilter postUserFilter, int page)
         {

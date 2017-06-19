@@ -53,6 +53,14 @@ namespace Mite.Core
                 }
             }
         }
+        protected ActionResult RedirectToLocal(string returnUrl)
+        {
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+            return RedirectToAction("Index", "Home");
+        }
         protected HttpStatusCodeResult Ok()
         {
             return new HttpStatusCodeResult(HttpStatusCode.OK);

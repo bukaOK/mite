@@ -3,7 +3,7 @@
 @using Mite.Enums
 
 <!DOCTYPE html>
-<html style="height: 100% !important">
+<html style="height: 100% !important" lang="ru">
 <head>
     <link rel="apple-touch-icon" sizes="57x57" href="~/Content/icons/apple-icon-57x57.png" />
     <link rel="apple-touch-icon" sizes="60x60" href="~/Content/icons/apple-icon-60x60.png" />
@@ -26,6 +26,7 @@
     @Styles.Render("~/Content/semantic", "~/Content/css")
     @RenderSection("styles", false)
     <title>@ViewBag.Title</title>
+    <script src='https://www.google.com/recaptcha/api.js'></script>
 </head>
 <body class="pushable" style="height: 100% !important">
     @Scripts.Render("~/bundles/main", "~/bundles/site", "~/bundles/jsrender")
@@ -33,34 +34,63 @@
     @if (User.Identity.IsAuthenticated)
     {
         <script>
-        var notifyHub = $.connection.notifyHub
-        notifyHub.client.notifyUser = function (notification) {
-            var $popup = $('#notify-popup');
+            var notifyHub = $.connection.notifyHub;
+            notifyHub.client.notifyUser = function (notification) {
+                var $popup = $('#notify-popup');
 
-            if ($popup.hasClass('initialized')) {
-                var data = JSON.parse(notification);
-                var dateIso = data.NotifyDate;
-                dateIso += dateIso[dateIso.length - 1] == 'Z' ? '' : 'Z';
-                data.DateStr = ViewHelper.getPastTense(new Date(dateIso).getTime());
-                var label = $('#notifications-item > .label');
-                label[0].innerHTML++;
-                var tmpl = $.templates('#eventTmpl');
-                var html = tmpl.render(data);
-                if ($popup.hasClass('empty')) {
-                    $popup.html('<div class="ui feed">' + html + '</div>');
-                    $popup.removeClass('empty');
-                } else {
-                    $('#notify-popup > .feed').prepend(html);
+                if ($popup.hasClass('initialized')) {
+                    var data = JSON.parse(notification);
+                    var dateIso = data.NotifyDate;
+                    dateIso += dateIso[dateIso.length - 1] == 'Z' ? '' : 'Z';
+                    data.DateStr = ViewHelper.getPastTense(new Date(dateIso).getTime());
+                    var label = $('#notifications-item > .label');
+                    label[0].innerHTML++;
+                    var tmpl = $.templates('#eventTmpl');
+                    var html = tmpl.render(data);
+                    if ($popup.hasClass('empty')) {
+                        $popup.html('<div class="ui feed">' + html + '</div>');
+                        $popup.removeClass('empty');
+                    } else {
+                        $('#notify-popup > .feed').prepend(html);
+                    }
+                    $('#notifications-item').popup('reposition');
+                    label.show();
                 }
-                $('#notifications-item').popup('reposition');
-                label.show();
             }
-        }
-        window.hubReady = $.connection.hub.start();
+            window.hubReady = $.connection.hub.start();
+            function initPostsBtnHelper() {
+                $.ajax({
+                    url: '@Url.Action("GetHelper", "UserHelpers")',
+                    dataType: 'json',
+                    type: 'post',
+                    success: function (resp) {
+                        if (resp.status == undefined) {
+                            resp = JSON.parse(resp);
+                        }
+                        if (!resp.data.PublicPostsBtn) {
+                            var $postsBtn = $('#publicPostsBtn');
+                            $postsBtn.popup({
+                                on: 'manual',
+                                position: 'right center',
+                                content: 'Публикации здесь =)',
+                                position: 'bottom left',
+                                variation: 'wide small'
+                            });
+                            $postsBtn.popup('show');
+                            $postsBtn.click(function (ev) {
+                                $postsBtn.popup('hide');
+                                $.ajax({
+                                    url: '@Url.Action("InitHelper", "UserHelpers")',
+                                    data: {
+                                        helperType: '@HelperTypes.PublicationsBtn'
+                                    }
+                                })
+                            });
+                        }
+                    }
+                });
+            }
         </script>
-    }
-    @if (Request.IsAuthenticated)
-    {
         <div class="ui right sidebar vertical borderless menu">
             <div class="acc-header">
                 <img class="ui tiny circular side-avatar image" src="@User.GetClaimValue(ClaimConstants.AvatarSrc)">
@@ -97,6 +127,10 @@
                 <i class="settings icon"></i>
                 Настройки
             </a>
+            <a href="@Url.Action("Index", "Cash")" class="violet item" id="cashItem">
+                <i class="ruble icon"></i>
+                Счёт
+            </a>
             <a class="ui red logoff fluid button" href="@Url.Action("LogOff", "Account")">
                 <i class="sign out icon"></i>
                 Выйти
@@ -106,16 +140,29 @@
     <div class="pusher">
         <header class="ui fixed borderless menu">
             <div class="ui container">
-                <a href="@Url.Action("Index", "Home")" class="header main item">
+                <a href="@Url.Action("Index", "Home")" class="header main item" id="publicPostsBtn">
                     <img class="logo" src="/Content/images/mite-logo-icon.png" alt="Логотип"/>
                 </a>
                 @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "computer tablet only item" })
                 @Html.ActionLink("Поддержать нас", "Donate", "Home", null, new { @class = "computer tablet only item" })
                 @if (Request.IsAuthenticated)
                 {
-                    @Html.ActionLink("Публикации", "Top", "Posts", null, new { @class = "item" })
+                    @Html.ActionLink("Публикации", "Top", "Posts", null, new { @class = "computer tablet only item" })
                     <div class="right menu">
-                        <a class="item menu-btn"><i class=" list layout icon"></i>Меню</a>
+                        <div class="item">
+                            <div class="ui dropdown top right pointing violet button" id="addPostMenu" style="">
+                                Добавить
+                                <div class="menu">
+                                    <a href="@Url.Action("AddPost", "Posts")?postType=@PostTypes.Image.ToString().ToLower()" class="item">
+                                        <i class="image icon"></i>Изображение
+                                    </a>
+                                    <a href="@Url.Action("AddPost", "Posts")?postType=@PostTypes.Document.ToString().ToLower()" class="item">
+                                        <i class="newspaper icon"></i>Документ
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <a class="item menu-btn"><i class="list layout icon"></i>Меню</a>
                     </div>
                 }
                 else
@@ -135,26 +182,45 @@
             @RenderBody()
         </article>
         <footer>
-            <div class="ui computer tablet only two column grid container">
-                <div class="column">
-                    <div class="ui inverted horizontal link list">
-                        <a href="https://vk.com/mitegroup" class="item">Мы ВКонтакте</a>
-                        @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "item" })
-                        @Html.ActionLink("Поддержать проект", "Donate", "Home", null, new { @class = "item" })
+            <div class="ui computer tablet only grid container">
+                <div class="row">
+                    <div class="center aligned column">
+                        <div class="ui inverted horizontal link list">
+                            <div class="item">Мы в социальных сетях:</div>
+                            <div class="item">
+                                <a href="https://vk.com/mitegroup" class="ui circular inverted vk icon button"><i class="vk icon"></i></a>
+                            </div>
+                            <div class="item">
+                                <a href="https://twitter.com/fanmitegroup" class="ui circular inverted twitter icon button"><i class="twitter icon"></i></a>
+                            </div>
+                            <div class="item">
+                                <a href="https://facebook.com/fanmitegroup" class="ui circular inverted facebook icon button"><i class="facebook icon"></i></a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="right aligned column">
-                    <div class="ui inverted horizontal link list">
-                        <a href="/" class="item">&copy; MiteGroup</a>
+                <div class="ui fitted inverted divider" style="margin: 0"></div>
+                <div class="row">
+                    <div class="ten wide column">
+                        <div class="ui inverted horizontal link list">
+                            @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "item" })
+                            @Html.ActionLink("Условия пользования", "Terms", "Home", null, new { @class = "item" })
+                            @Html.ActionLink("Политика конфиденциальности", "Privacy", "Home", null, new { @class = "item" })
+                        </div>
+                    </div>
+                    <div class="six wide right aligned column">
+                        <div class="ui inverted horizontal link list">
+                            <a href="/" class="item">&copy; MiteGroup</a>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="ui mobile only grid center aligned container">
                 <div class="ui basic segment" style="padding-top: 0">
                     <div class="ui inverted divided list">
-                        <a href="https://vk.com/mitegroup" class="item">Мы ВКонтакте</a>
                         @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "item" })
-                        @Html.ActionLink("Поддержать проект", "Donate", "Home", null, new { @class = "item" })
+                        @Html.ActionLink("Условия пользования", "Terms", "Home", null, new { @class = "item" })
+                        @Html.ActionLink("Политика конфиденциальности", "Privacy", "Home", null, new { @class = "item" })
                         <a href="/" class="item">&copy; MiteGroup</a>
                     </div>
                 </div>
@@ -237,7 +303,11 @@
             });
         }
         $(function () {
-            $('article').css('margin-bottom', $('footer').height() + 50 + 'px')
+            $('article').css('margin-bottom', $('footer').height() + 50 + 'px');
+            initPostsBtnHelper();
+            $('#addPostMenu').dropdown({
+                action: 'nothing'
+            });
             $(".ui.sidebar").sidebar({
                 onShow: function () {
                     $(this).css('z-index', '200');

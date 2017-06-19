@@ -7,13 +7,12 @@ using System.Threading.Tasks;
 
 namespace Mite.DAL.Repositories
 {
-    public sealed class FollowersRepository
+    public sealed class FollowersRepository : Repository<Follower>
     {
-        private IDbConnection Db;
-        public FollowersRepository(IDbConnection db)
+        public FollowersRepository(IDbConnection db) : base(db)
         {
-            Db = db;
         }
+
         public async Task<IEnumerable<Follower>> GetFollowersByUserAsync(string userId)
         {
             var query = "select * from dbo.Followers inner join dbo.AspNetUsers on"
@@ -24,12 +23,6 @@ namespace Mite.DAL.Repositories
                 return follower;
             }, new { UserId = userId });
             return followers;
-        }
-        public Task AddAsync(Follower entity)
-        {
-            var query = "insert into dbo.Followers(Id, UserId, FollowingUserId, FollowTime) " +
-                "values(@Id, @UserId, @FollowingUserId, @FollowTime)";
-            return Db.ExecuteAsync(query, entity);
         }
         public async Task<bool> IsFollower(string followerId, string followingId)
         {

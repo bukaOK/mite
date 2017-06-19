@@ -10,19 +10,23 @@ namespace Mite
             bundles.Add(new ScriptBundle("~/bundles/main").Include(
                 "~/Scripts/jquery-3.1.1.js",
                 "~/Scripts/semantic.js"
-                ));
+            ));
             bundles.Add(new ScriptBundle("~/bundles/site").Include(
                 "~/Scripts/jquery.address.js",
                 "~/bower_components/perfect-scrollbar/js/perfect-scrollbar.jquery.js",
                 "~/Scripts/ViewHelpers.js",
                 "~/Scripts/jquery.signalR-2.2.2.min.js",
-                "~/Scripts/MiteUtilities.js"));
+                "~/Scripts/MiteUtilities.js",
+                "~/Scripts/password-strength.js"));
             bundles.Add(new ScriptBundle("~/bundles/croppie").Include("~/node_modules/croppie/croppie.js"));
             bundles.Add(new ScriptBundle("~/bundles/editor").Include(
                 "~/Scripts/content-tools.js", "~/bower_components/pep/src/jquery.pep.js"));
             bundles.Add(new ScriptBundle("~/bundles/jsrender").Include("~/bower_components/jsrender/jsrender.min.js"));
             bundles.Add(new ScriptBundle("~/bundles/grid").Include("~/Scripts/masonry.pkgd.min.js", 
                 "~/bower_components/imagesloaded/imagesloaded.pkgd.min.js"));
+            bundles.Add(new ScriptBundle("~/bundles/clipboard").Include("~/bower_components/clipboard/dist/clipboard.min.js"));
+            bundles.Add(new ScriptBundle("~/bundles/scroll").Include("~/bower_components/scrollup/dist/jquery.scrollUp.min.js"));
+
             bundles.Add(new StyleBundle("~/Content/semantic").Include(
                 "~/bower_components/semantic/src/semantic.css"
             ));

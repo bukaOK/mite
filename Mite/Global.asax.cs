@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
 using Mite.BLL.DTO;
 using Mite.DAL.Entities;
-using Mite.Helpers;
-using Mite.Infrastructure;
 using Mite.Models;
+using NLog;
 using System;
 using System.Web.Mvc;
 using System.Web.Optimization;
@@ -13,6 +12,8 @@ namespace Mite
 {
     public class MvcApplication : System.Web.HttpApplication
     {
+        private static readonly ILogger logger = LogManager.GetLogger("LOGGER");
+
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();
@@ -25,13 +26,12 @@ namespace Mite
         protected void Application_Error(object sender, EventArgs e)
         {
             var exception = Server.GetLastError();
-            Logger.WriteError(exception);
+            logger.Error(exception, "Unhandled Error");
         }
         private void ConfigureAutoMapper()
         {
             Mapper.Initialize(cfg =>
             {
-                
                 cfg.CreateMap<string, Tag>()
                     .ConvertUsing(x => new Tag
                     {
@@ -97,6 +97,22 @@ namespace Mite
                     .ForMember(dest => dest.User, opt => opt.Ignore());
                 cfg.CreateMap<Notification, NotificationModel>();
                 cfg.CreateMap<Helper, HelperModel>();
+
+                cfg.CreateMap<Payment, OperationModel>()
+                    .ForMember(dest => dest.Type, opt => opt.ResolveUsing(src =>
+                    {
+                        switch (src.PaymentType)
+                        {
+                            case Enums.PaymentType.BankCard:
+                                return "Банковская карта";
+                            case Enums.PaymentType.YandexWallet:
+                                return "Яндекс.Деньги";
+                            default:
+                                throw new ArgumentException("Неизвестный тип платежа");
+                        }
+                    }));
+                cfg.CreateMap<SocialLinks, SocialLinksModel>();
+                cfg.CreateMap<SocialLinksModel, SocialLinks>();
             });
         }
     }

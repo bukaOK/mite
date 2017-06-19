@@ -105,8 +105,7 @@
                     var errorStr = 'Ошибка при сохранении: ' + resp.message;
                     alert(errorStr);
                 } else{
-                    $resultMsg.addClass('green').removeClass('red');
-                    $resultMsg.html('Ваш пост успешно добавлен!');
+                    location.href = "/user/profile/@User.Identity.Name";
                 }
             },
             error: function (jqXhr) {
@@ -155,8 +154,9 @@
         $('#save-btn').click(function(ev) {
             var $saveBtn = $(this);
             if(isImageLarge){
-                $('#imgPostForm').form('add errors', ['Размер файла не может быть больше 4 мбайт']);
+                $('#imgPostForm').form('add errors', ['Размер файла не может быть больше 30 мбайт']);
             }
+            $('#imgPostForm').form('validate');
             if ($('#imgPostForm').form('is valid')) {
                 $('#saveModal').modal('show');
             }
@@ -170,7 +170,7 @@
                             prompt: $('#@Html.IdFor(x => x.Header)').data('valRequired')
                         },
                         {
-                            type: 'maxLength[' + $('#Description').data('val-maxlength-max') + ']',
+                            type: 'maxLength[' + $('#Header').data('val-maxlength-max') + ']',
                             prompt: $('#Header').data('val-maxlength')
                         }
                     ]
@@ -180,14 +180,6 @@
                         {
                             type: 'empty',
                             prompt: $('#@Html.IdFor(x => x.Content)').data('valRequired')
-                        }
-                    ]
-                },
-                Description: {
-                    rules: [
-                        {
-                            type: 'maxLength[' + $('#Description').data('valMaxlengthMax') + ']',
-                            prompt: $('#Description').data('valMaxlength')
                         }
                     ]
                 }
@@ -214,7 +206,7 @@
                 $('#img-wrapper').html('<img src="' + reader.result + '" style="max-width: 100%"/>');
                 $('#Content').val(reader.result);
             };
-            if(file.size / 1024 / 1024 > 1){
+            if(file.size / 1024 / 1024 > 30){
                 isImageLarge = true;
             }
             reader.readAsDataURL(file);

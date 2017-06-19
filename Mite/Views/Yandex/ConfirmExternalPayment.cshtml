@@ -1,0 +1,67 @@
+﻿@model bool?
+@{
+    ViewBag.Title = "Ожидание ответа от банка...";
+}
+@section styles{
+    <style>
+        body{
+            background-color: white;
+        }
+    </style>    
+}
+<div class="ui grid">
+    <div class="four wide centered column">
+        <div class="ui segment">
+            <div class="ui centered inline large active text loader" id="paymentLoader">
+                Ожидаем ответа от банка...
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function confirmPayment() {
+        var $msg = $('#paymentLoader');
+
+        var isOperationSucceeded = @Json.Encode(Model);
+        if(isOperationSucceeded === true){
+            $.ajax({
+                type: 'post',
+                url: '/yandex/confirmexternalpayment',
+                success: function (resp) {
+                    if (resp.status == undefined) {
+                        resp = JSON.parse(resp);
+                    }
+                    if (resp.status == 2) {
+                        var error = 'Ошибка! ' + resp.data[0] + '. Перенаправление через 5 сек...';
+                        $msg.html(error);
+                    } else {
+                        $msg.html('Успешное выполнение. Перенаправление через 5 сек...');
+                    }
+                },
+                error: function(rep){
+                    $msg.html('Внутренняя ошибка. Перенаправление через 5 сек...');
+                }
+            }).then(function(){
+                setTimeout(function () {
+                    window.location.href = '/cash';
+                }, 5 * 1000);
+            });
+        }
+        else if(isOperationSucceeded === false){
+            $msg.html('Отказ банка. Перенаправление через 5 сек...');
+            setTimeout(function () {
+                window.location.href = '/cash';
+            }, 5 * 1000);
+        }
+        else{
+            $msg.html('Внутренняя ошибка. Перенаправление через 5 сек...');
+            setTimeout(function () {
+                window.location.href = '/cash';
+            }, 5 * 1000);
+        }
+    }
+    $(function () {
+        confirmPayment();
+    });
+</script>
+

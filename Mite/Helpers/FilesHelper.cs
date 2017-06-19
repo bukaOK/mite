@@ -122,6 +122,8 @@ namespace Mite.Helpers
         /// <returns></returns>
         public static async Task<string> ReadDocumentAsync(string path)
         {
+            if (!File.Exists(HostingEnvironment.MapPath(path)))
+                return "";
             var reader = new StreamReader(HostingEnvironment.MapPath(path));
             var result = await reader.ReadToEndAsync();
             reader.Close();
@@ -144,6 +146,9 @@ namespace Mite.Helpers
         /// <returns></returns>
         public static async Task<string> ReadDocumentAsync(string path, int charsCount)
         {
+            if (!File.Exists(HostingEnvironment.MapPath(path)))
+                return "";
+
             var reader = new StreamReader(HostingEnvironment.MapPath(path));
             var str = await reader.ReadToEndAsync();
             reader.Close();
@@ -152,6 +157,11 @@ namespace Mite.Helpers
             str = Regex.Replace(str, @"<table>.+</table>", "");
 
             var substr = str.Substring(0, str.Length < charsCount ? str.Length : charsCount);
+
+            //Удаляем все недооткрытые(вроде <p) в конце теги
+            substr = Regex.Replace(substr, @"(<|<p|<p>)$", "");
+            substr = Regex.Replace(substr, "<\\/$", "");
+
             if (charsCount < GetDocCharsCount(path))
             {
                 substr += "...";

@@ -15,12 +15,17 @@ using Autofac;
 using Autofac.Integration.WebApi;
 using Autofac.Integration.Mvc;
 using Mite.Infrastructure;
+using System.Net.Http;
+using Mite.ExternalServices.YandexMoney;
+using Yandex.Money.Api.Sdk.Interfaces;
+using NLog;
+using Mite.ExternalServices.Google;
 
 namespace Mite
 {
     public static class AutofacDI
     {
-        public static void Initialize(IAppBuilder app, HttpConfiguration apiConfiguration)
+        public static IContainer Initialize(IAppBuilder app, HttpConfiguration apiConfiguration)
         {
             var builder = new ContainerBuilder();
             var executingAssembly = Assembly.GetExecutingAssembly();
@@ -30,12 +35,14 @@ namespace Mite
             RegisterComponents(builder, app);
 
             var container = builder.Build();
-            DependencyResolver.SetResolver(new Autofac.Integration.Mvc.AutofacDependencyResolver(container));
+            DependencyResolver.SetResolver(new AutofacDependencyResolver(container));
             apiConfiguration.DependencyResolver = new AutofacWebApiDependencyResolver(container);
 
             app.UseAutofacMiddleware(container);
             app.UseAutofacWebApi(apiConfiguration);
             app.UseAutofacMvc();
+
+            return container;
         }
 
         private static void RegisterComponents(ContainerBuilder builder, IAppBuilder app)
@@ -55,6 +62,17 @@ namespace Mite
             builder.RegisterType<FollowersService>().As<IFollowersService>();
             builder.RegisterType<NotificationService>().As<INotificationService>();
             builder.RegisterType<HelpersService>().As<IHelpersService>();
+            builder.RegisterType<CashService>().As<ICashService>();
+            builder.RegisterType<YandexService>().As<IYandexService>();
+            builder.RegisterType<PaymentService>().As<IPaymentService>();
+            builder.RegisterType<BLL.Services.ExternalServices>().As<IExternalServices>();
+            builder.RegisterType<GoogleService>().As<IGoogleService>();
+
+            builder.RegisterType<HttpClient>().SingleInstance();
+            builder.RegisterType<YaHttpClient>().As<IHttpClient>();
+            builder.RegisterType<Authenticator>().InstancePerRequest();
+
+            builder.Register(c => LogManager.GetLogger("LOGGER")).As<ILogger>().SingleInstance();
         }
     }
 }
