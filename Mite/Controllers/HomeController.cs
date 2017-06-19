@@ -33,5 +33,9 @@ namespace Mite.Controllers
         {
             return View();
         }
+        public ActionResult BadJs()
+        {
+            return View();
+        }
     }
 }

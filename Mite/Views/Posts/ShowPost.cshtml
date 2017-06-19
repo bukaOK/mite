@@ -6,6 +6,7 @@
 
 @{ 
     ViewBag.Title = Model.Header;
+    ViewBag.MetaDescription = string.Format("Публикация {0} | {1}", Model.Header, Model.User.UserName);
     var userId = User.Identity.GetUserId();
 }
 <div class="ui segment grid">

@@ -644,6 +644,7 @@
     <Content Include="Views\Home\Privacy.cshtml" />
     <Content Include="Views\UserSettings\SocialServices.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\LabeledTextBox.cshtml" />
+    <Content Include="Views\Home\BadJs.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
