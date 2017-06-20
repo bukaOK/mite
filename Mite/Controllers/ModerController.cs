@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Mite.Core;
+using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -37,6 +38,12 @@ namespace Mite.Controllers
         public Task BindTag(Guid fromId, Guid toId)
         {
             return _unitOfWork.TagsRepository.BindAsync(fromId, toId);
+        }
+        [HttpPost]
+        public async Task UpdatePostTags(IList<string> tagsNames, Guid postId)
+        {
+            var tags = Mapper.Map<List<Tag>>(tagsNames);
+            await _unitOfWork.TagsRepository.AddWithPostAsync(tags, postId);
         }
     }
 }

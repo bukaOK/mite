@@ -105,6 +105,12 @@ namespace Mite.DAL.Repositories
             var query = "insert into dbo.Tags (Id, Name, IsConfirmed) values (@Id, @Name, @IsConfirmed)";
             await Db.ExecuteAsync(query, entity);
         }
+        /// <summary>
+        /// Обновляет теги поста
+        /// </summary>
+        /// <param name="tags"></param>
+        /// <param name="postId"></param>
+        /// <returns></returns>
         public async Task AddWithPostAsync(List<Tag> tags, Guid postId)
         {
             var query = "select * from dbo.Tags where Name in @Tags; "
