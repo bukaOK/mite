@@ -204,6 +204,7 @@
                 }
                 else if(SearchFilters._page <= 1) {
                     $('#postsGrid').html($('#emptyResultTmpl').html());
+                    grid.masonry('reloadItems').masonry('layout');
                 }
                 grid.masonry('reloadItems')
                 grid.imagesLoaded(function () {

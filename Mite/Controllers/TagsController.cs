@@ -39,6 +39,7 @@ namespace Mite.Controllers
         {
             tag.Id = Guid.NewGuid();
             tag.IsConfirmed = true;
+            tag.Checked = true;
             await _unitOfWork.TagsRepository.AddAsync(tag);
             return tag;
         }

@@ -102,7 +102,7 @@ namespace Mite.DAL.Repositories
             var sameTags = await Db.QueryAsync<Tag>("select top 1 * from dbo.Tags where Name=@Name", new { Name = entity.Name });
             if (sameTags.Count() > 0)
                 return;
-            var query = "insert into dbo.Tags (Id, Name, IsConfirmed) values (@Id, @Name, @IsConfirmed)";
+            var query = "insert into dbo.Tags (Id, Name, IsConfirmed, Checked) values (@Id, @Name, @IsConfirmed, @Checked)";
             await Db.ExecuteAsync(query, entity);
         }
         /// <summary>
@@ -126,8 +126,10 @@ namespace Mite.DAL.Repositories
             foreach(var tag in tagsToAdd)
             {
                 tag.Id = Guid.NewGuid();
+                tag.Checked = false;
+                tag.IsConfirmed = false;
             }
-            query = "insert into dbo.Tags (Id, Name, IsConfirmed) values (@Id, @Name, @IsConfirmed); ";
+            query = "insert into dbo.Tags (Id, Name, IsConfirmed, Checked) values (@Id, @Name, @IsConfirmed, @Checked); ";
             await Db.ExecuteAsync(query, tagsToAdd);
 
             tags = new List<Tag>();

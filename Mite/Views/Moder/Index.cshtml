@@ -11,12 +11,11 @@
 }
 <h1>Панель модератора</h1>
 <nav class="ui stackable pointing secondary tabs menu" style="border: none">
-    <a class="active item" data-tab="TagNotConfirmed">Неподтвержденные теги</a>
-    <a class="item" data-tab="TagConfirmed">Подтвержденные теги</a>
+    <a class="active item" data-tab="tagunchecked">Непроверенные теги</a>
+    <a class="item" data-tab="tagchecked">Проверенные теги</a>
 </nav>
-<div class="ui loading basic segment tab" data-tab="TagConfirmed">
-    <button class="ui primary button" onclick="showTagAddModal(this)">Добавить тег</button>
-    <table class="ui celled table confirmed">
+<div class="ui loading basic segment tab" data-tab="tagunchecked">
+    <table class="ui celled table unchecked">
         <thead>
             <tr>
                 <th>Id</th>
@@ -27,30 +26,47 @@
         <tbody></tbody>
     </table>
 </div>
-<div class="ui loading basic segment tab" data-tab="TagNotConfirmed">
-    <table class="ui celled table not-confirmed">
+<div class="ui loading basic segment tab" data-tab="tagchecked">
+    <button class="ui primary button" onclick="showTagAddModal(this)">Добавить тег</button>
+    <table class="ui celled table checked">
         <thead>
             <tr>
                 <th>Id</th>
                 <th>Название</th>
                 <th>Действие</th>
+                <th>Подтвержден</th>
             </tr>
         </thead>
         <tbody></tbody>
     </table>
 </div>
 <script id="tagRowTmpl" type="text/x-jsrender">
-    <tr data-id="{{:Id}}" data-name="{{:Name}}" data-confirmed="{{:IsConfirmed}}">
+    <tr data-id="{{:Id}}" data-name="{{:Name}}" data-confirmed="{{:IsConfirmed}}" data-checked="{{:Checked}}">
         <td>{{:Id}}</td>
         <td>{{:Name}}</td>
         <td>
-            {{if !IsConfirmed}}
-            <button class="ui tag-confirm primary button" onclick="confirmTag(this)">Подтвердить</button>
-            <button class="ui blue button" onclick="showTagBindModal('{{:Id}}')">Привязать к другому</button>
-            {{/if}}
-            <button class="ui tag-change button" onclick="showTagChangeModal(this)">Изменить</button>
-            <button class="ui tag-del red button" onclick="delTag(this)">Удалить</button>
+            <div class="ui buttons">
+                {{if !IsConfirmed}}
+                <button class="ui tag-confirm primary button" onclick="confirmTag(this)">Подтвердить</button>
+                <button class="ui blue button" onclick="showTagBindModal('{{:Id}}')">Привязать к другому</button>
+                {{/if}}
+                <button class="ui tag-change button" onclick="showTagChangeModal(this)">Изменить</button>
+                <button class="ui tag-del red button" onclick="delTag(this)">Удалить</button>
+                {{if !Checked}}
+                <button class="ui teal button" onclick="checkTag(this)">Проверить</button>
+                {{/if}}
+            </div>
+            
         </td>
+        {{if Checked}}
+        <td>
+            {{if IsConfirmed}}
+            Да
+            {{else}}
+            Нет
+            {{/if}}
+        </td>
+        {{/if}}
     </tr>
 </script>
 <div class="ui small modal" id="tagModal">
@@ -103,7 +119,8 @@
                     data: {
                         Name: $('#tagNameField').val(),
                         Id: $tagRow.data('id'),
-                        IsConfirmed: $tagRow.data('confirmed')
+                        IsConfirmed: $tagRow.data('confirmed'),
+                        Checked: $tagRow.data('checked')
                     },
                     success: function () {
                         $tagRow.children('td')[0].innerHTML = $('#tagNameField').val();
@@ -114,6 +131,28 @@
                 });
             }
         }).modal('show');
+    }
+    function checkTag(ev) {
+        var $tagRow = $(ev).parents('tr');
+        var data = {
+            Id: $tagRow.data('id'),
+            Name: $tagRow.data('name'),
+            IsConfirmed: $tagRow.data('confirmed'),
+            Checked: true
+        }
+        $.ajax({
+            url: '/api/tags',
+            type: 'put',
+            data: data,
+            success: function () {
+                $(ev).parents('tr')[0].remove();
+                var trToInsert = $.templates('#tagRowTmpl').render(data);
+                $('table.checked').prepend(trToInsert);
+            },
+            error: function () {
+                alert('Ошибка!');
+            }
+        })
     }
     function showTagBindModal(oldTagId) {
         $('#oldTagBind').val(oldTagId);
@@ -155,7 +194,7 @@
                         Name: $('#tagNameField').val()
                     },
                     success: function (data) {
-                        $('table.confirmed > tbody').prepend($.templates('#tagRowTmpl').render(data));
+                        $('table.checked > tbody').prepend($.templates('#tagRowTmpl').render(data));
                         $(ev).removeClass('loading').removeClass('disabled');
                     },
                     error: function (jqXhr) {
@@ -169,7 +208,8 @@
         var data = {
             Id: $(ev).parents('tr').data('id'),
             Name: $(ev).parents('tr').data('name'),
-            IsConfirmed: true
+            IsConfirmed: true,
+            Checked: true
         };
         $.ajax({
             url: '/api/tags',
@@ -179,7 +219,7 @@
                 $(ev).parents('tr').remove();
 
                 var tagRowHtml = $.templates('#tagRowTmpl').render(data);
-                $('table.confirmed tbody').prepend(tagRowHtml);
+                $('table.checked tbody').prepend(tagRowHtml);
             },
             error: function (jqXhr) {
                 alert('Ошибка сервера');
@@ -203,14 +243,18 @@
             url: '@Url.Action("Tags")',
             type: 'post',
             success: function (resp) {
-                resp = JSON.parse(resp);
-                var confirmedHtml = $.templates('#tagRowTmpl').render(resp.data.Confirmed);
-                var notConfirmedHtml = $.templates('#tagRowTmpl').render(resp.data.NotConfirmed);
+                if (resp.status == undefined) {
+                    resp = JSON.parse(resp);
+                }
+                var tagsRowTmpl = $.templates('#tagRowTmpl');
+                var confirmedHtml = tagsRowTmpl.render(resp.data.Confirmed);
+                var uncheckedHtml = tagsRowTmpl.render(resp.data.Unchecked);
+                var checkedHtml = tagsRowTmpl.render(resp.data.Checked);
 
-                $('.tab[data-tab="TagConfirmed"] tbody').html(confirmedHtml);
-                $('.tab[data-tab="TagNotConfirmed"] tbody').html(notConfirmedHtml);
-                $('.tab[data-tab="TagConfirmed"]').removeClass('loading');
-                $('.tab[data-tab="TagNotConfirmed"]').removeClass('loading');
+                $('.tab[data-tab="tagconfirmed"] tbody').html(confirmedHtml);
+                $('.tab[data-tab="tagunchecked"] tbody').html(uncheckedHtml);
+                $('.tab[data-tab="tagchecked"] tbody').html(checkedHtml);
+                $('.tab').removeClass('loading');
             }
         });
     }

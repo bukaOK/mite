@@ -11,7 +11,14 @@ namespace Mite.DAL.Entities
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
         public string Name { get; set; }
+        /// <summary>
+        /// Подтвержден ли тег
+        /// </summary>
         public bool IsConfirmed { get; set; }
+        /// <summary>
+        /// Проверен ли тег модератором
+        /// </summary>
+        public bool Checked { get; set; }
         public List<Post> Posts { get; set; }
         public List<User> Users { get; set; }
     }

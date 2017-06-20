@@ -459,6 +459,10 @@
     <Compile Include="Migrations\201706151720582_AddSocialServicesUserIdRequired.Designer.cs">
       <DependentUpon>201706151720582_AddSocialServicesUserIdRequired.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201706201234059_UpdateTagChecked.cs" />
+    <Compile Include="Migrations\201706201234059_UpdateTagChecked.Designer.cs">
+      <DependentUpon>201706201234059_UpdateTagChecked.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountModels.cs" />
     <Compile Include="Models\CashSettingsModels.cs" />
@@ -704,6 +708,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201706151720582_AddSocialServicesUserIdRequired.resx">
       <DependentUpon>201706151720582_AddSocialServicesUserIdRequired.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201706201234059_UpdateTagChecked.resx">
+      <DependentUpon>201706201234059_UpdateTagChecked.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

@@ -25,13 +25,14 @@ namespace Mite.Controllers
             return View();
         }
         [HttpPost]
-        public JsonResult Tags()
+        public async Task<JsonResult> Tags()
         {
-            var tags = _unitOfWork.TagsRepository.GetAll();
+            var tags = await _unitOfWork.TagsRepository.GetAllAsync();
             return JsonResponse(JsonResponseStatuses.Success, new
             {
                 Confirmed = tags.Where(x => x.IsConfirmed),
-                NotConfirmed = tags.Where(x => !x.IsConfirmed)
+                Unchecked = tags.Where(x => !x.Checked),
+                Checked = tags.Where(x => x.Checked)
             });
         }
         [HttpPost]
@@ -40,10 +41,17 @@ namespace Mite.Controllers
             return _unitOfWork.TagsRepository.BindAsync(fromId, toId);
         }
         [HttpPost]
-        public async Task UpdatePostTags(IList<string> tagsNames, Guid postId)
+        public async Task UpdatePostTags(IEnumerable<string> tagsNames, Guid postId)
         {
             var tags = Mapper.Map<List<Tag>>(tagsNames);
             await _unitOfWork.TagsRepository.AddWithPostAsync(tags, postId);
+        }
+        [HttpPost]
+        public async Task CheckTag(Guid tagId)
+        {
+            var tag = await _unitOfWork.TagsRepository.GetAsync(tagId);
+            tag.Checked = true;
+            await _unitOfWork.TagsRepository.UpdateAsync(tag);
         }
     }
 }

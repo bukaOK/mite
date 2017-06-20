@@ -81,7 +81,7 @@
         @if (User.IsInRole("moder"))
         {
             <div class="four wide column">
-                <form class="ui form">
+                <div class="ui form"> 
                     <div class="field">
                         <div class="ui fluid search multiple selection dropdown" id="select-tags">
                             @Html.HiddenFor(x => x.Tags, new { Value = tagsRow })
@@ -95,7 +95,7 @@
                     </div>
                     <div class="ui message" id="tagsUpdateMsg" hidden>
                     </div>
-                </form>
+                </div>
             </div>
             <script>
                 function updateTags(){
