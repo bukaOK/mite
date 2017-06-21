@@ -109,7 +109,7 @@
                     <div class="ui basic segment">
                         <h2 class="ui header">Теперь дело за вами</h2>
                         <button class="ui active large violet inverted basic button" onclick="scrollToTop()">Начинаем</button>
-                        @Html.ActionLink("Хочу ещё посмотреть", "Top", "Posts", null, new { @class = "ui large blue button" })
+                        <button class="ui large blue button" onclick="$('#tagsModal').modal('show')">Хочу ещё посмотреть</button>
                     </div>
                 </div>
             </div>
@@ -161,6 +161,22 @@
             </div>
         </div>
     </footer>
+    <div class="ui small modal" id="tagsModal">
+        <div class="header">Ваши предпочтения</div>
+        <div class="content">
+            <div class="ui fluid buttons">
+                <a href="/posts/top#input=#арт" class="ui button">Арт</a>
+                <a href="/posts/top#input=#литература" class="ui button">Литература</a>
+                <a href="/posts/top#input=#фотография" class="ui button">Фотография</a>
+                <a href="/posts/top#input=#анимация" class="ui button">Анимация</a>
+            </div>
+            <div class="ui horizontal divider">Или</div>
+            <div class="ui action fluid input">
+                <input type="text" placeholder="Другое..." id="tagInput">
+                <button class="ui primary button" onclick="goToTag()">Искать</button>
+            </div>
+        </div>
+    </div>
     <script>
         function scrollToTop() {
             $(window).scrollTo('.main.grid', 1800, {
@@ -168,6 +184,14 @@
                 offset: -10
             });
         }
+        function goToTag() {
+            location.href = '/posts/top/#input=#' + $('#tagInput').val();
+        }
+        $(function () {
+            $('#tagsModal').modal({
+                transition: 'vertical flip'
+            });
+        })
     </script>
 </body>
 </html>

@@ -15,7 +15,7 @@ namespace Mite.Controllers
             {
                 return RedirectToAction("Top", "Posts");
             }
-            return View();
+            return View("Land");
         }
         public ActionResult Help()
         {
