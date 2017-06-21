@@ -291,32 +291,34 @@ namespace Mite.BLL.Services
                 default:
                     throw new NullReferenceException("Не задан фильтр времени при поиске поста");
             }
-            var posts = new List<Post>();
-            //Если строка поиска не пустая, ищем по тегам и по названию поста
-            if (!string.IsNullOrWhiteSpace(input))
-            {
-                //Находим теги по входящей строке
-                var inputTags = await Database.TagsRepository.GetByNameAsync(input);
-                //Находим посты по входящей строке
-                var inputPosts = await Database.PostsRepository.GetByNameAsync(input, true, minDate, onlyFollowings, currentUserId,
-                        sortFilter, offset, range);
+            //Получаем массив вхождений для поиска, разделив строку по хэштегам
+            var inputs = input.Split('#');
+            //По логике первым всегда будет стоять или пустая строка или название работы
+            var postName = inputs[0];
+            //Список имен тегов
+            var tagsNames = inputs.Skip(1).ToArray();
 
-                if (inputTags.Count() > 0)
-                {
-                    var tagPosts = await Database.PostsRepository.GetByTagsAsync(inputTags.Select(x => x.Id), inputPosts.Select(x => x.Id),
-                        true, minDate, onlyFollowings, currentUserId, sortFilter, offset, range);
-                    posts.AddRange(tagPosts);
-                    posts.AddRange(inputPosts.Where(x => !tagPosts.Any(y => y.Id == x.Id)));
-                }
-                else
-                {
-                    posts = inputPosts.ToList();
-                }
+            IEnumerable<Post> posts;
+            if (!string.IsNullOrWhiteSpace(postName) && tagsNames.Length > 0)
+            {
+                //Находим посты по тегам и имени работы
+                posts = await Database.PostsRepository.GetByPostNameAndTagsAsync(postName, tagsNames, true, minDate, 
+                    onlyFollowings, currentUserId, sortFilter, offset, range);
+            }
+            else if (!string.IsNullOrEmpty(postName))
+            {
+                posts = await Database.PostsRepository.GetByPostNameAsync(postName, true, minDate,
+                    onlyFollowings, currentUserId, sortFilter, offset, range);
+            }
+            else if(tagsNames.Length > 0)
+            {
+                posts = await Database.PostsRepository.GetByTagsAsync(tagsNames, true, minDate,
+                    onlyFollowings, currentUserId, sortFilter, offset, range);
             }
             else
             {
-                posts = (await Database.PostsRepository.GetByFilterAsync(true, minDate, onlyFollowings, currentUserId,
-                    sortFilter, offset, range)).ToList();
+                posts = await Database.PostsRepository.GetByFilterAsync(true, minDate, onlyFollowings, currentUserId,
+                    sortFilter, offset, range);
             }
 
             var postTags = await Database.TagsRepository.GetByPostsAsync(posts.Select(x => x.Id));

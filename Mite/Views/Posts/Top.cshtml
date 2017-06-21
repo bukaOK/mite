@@ -106,7 +106,7 @@
                     </span>
                 </a>
                 {{for Tags ~Cover=Cover}}
-                <a class="ui{{if ~Cover != null}} invert{{/if}} label" onclick="loadTag('{{>#data}}')">{{>#data}}</a>
+                <a class="ui{{if ~Cover != null}} invert{{/if}} label" onclick="loadTag('#{{>#data}}')">{{>#data}}</a>
                 {{/for}}
             </div>
             <div class="ui {{if Cover != null}}inverted {{/if}} divider"></div>
@@ -149,7 +149,7 @@
         $.ajax({
             url: '/api/tags',
             success: function (resp) {
-                var tmpl = '<a class="ui label" onclick="loadTag(\'{{:Name}}\')">{{:Name}}</a>';
+                var tmpl = '<a class="ui label" onclick="loadTag(\'#{{:Name}}\')">{{:Name}}</a>';
                 var html = $.templates(tmpl).render(resp);
                 $('.top-tags').append(html);
                 $('.top-tags').removeClass('loading');
@@ -178,7 +178,7 @@
             }
         })
         SearchFilters.init({
-            beforeLoad: function(){
+            beforeLoad: function () {
                 $('.loader-wrapper').addClass('active');
             },
             onSuccess: function (resp) {
@@ -191,8 +191,6 @@
                 });
                 $('#postsGrid .loader').remove();
                 if (resp.data.length > 0) {
-                    if (!SearchFilters._loadNextPage) {
-                    }
                     var tmpl = $.templates('#topPostTmpl');
                     var html = tmpl.render(resp.data);
 
@@ -202,7 +200,7 @@
                         $('#postsGrid').html(html);
                     }
                 }
-                else if(SearchFilters._page <= 1) {
+                else if (SearchFilters._page <= 1) {
                     $('#postsGrid').html($('#emptyResultTmpl').html());
                     grid.masonry('reloadItems').masonry('layout');
                 }
@@ -283,5 +281,5 @@
         });
         SearchFilters.loadNext();
         $('.ui.checkbox').checkbox();
-    })
+    });
 </script>

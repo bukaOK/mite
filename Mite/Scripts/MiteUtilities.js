@@ -237,6 +237,10 @@ var SearchFilters = {
         this.filters = settings.filters;
         this._updateFiltersState(location.hash.replace('#', ''));
         this.initialized = true;
+
+        window.onpopstate = function () {
+
+        }
     },
     changeFilter: function(){
         this._page = 1;

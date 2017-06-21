@@ -50,30 +50,21 @@ namespace Mite.DAL.Repositories
             foreach(var row in rows)
             {
                 var tag = tags.FirstOrDefault(x => x.Id == row.Id);
-                if(tag == default(Tag))
+                if(tag == null)
                 {
                     tag = new Tag
                     {
                         Id = row.Id,
                         Name = row.Name,
                         IsConfirmed = row.IsConfirmed,
-                        Posts = new List<Post>
-                        {
-                            new Post
-                            {
-                                Id = row.Post_Id
-                            }
-                        }
+                        Posts = new List<Post>()
                     };
                     tags.Add(tag);
                 }
-                else
+                tag.Posts.Add(new Post
                 {
-                    tag.Posts.Add(new Post
-                    {
-                        Id = row.Post_Id
-                    });
-                }
+                    Id = row.Post_Id
+                });
             }
             return tags;
         }
