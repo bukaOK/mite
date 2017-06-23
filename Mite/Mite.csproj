@@ -297,6 +297,7 @@
     <Compile Include="App_Start\Services.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Attributes\DataAnnotations\UIDataAttribute.cs" />
+    <Compile Include="BLL\IdentityManagers\AppRoleManager.cs" />
     <Compile Include="BLL\Services\CashService.cs" />
     <Compile Include="BLL\Services\CommentsService.cs" />
     <Compile Include="BLL\Services\ExternalServices.cs" />

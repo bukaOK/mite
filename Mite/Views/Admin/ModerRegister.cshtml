@@ -1,13 +1,37 @@
-﻿@using Mite.Core
+﻿@model IEnumerable<User>
+@using Mite.Core
+@using Mite.DAL.Entities
 
 <div class="ui grid">
-    <form class="ui sixteen wide mobile ten wide tablet eight wide computer left aligned column form">
-        <div class="field">
-            <input type="text" placeholder="Имя пользователя" id="moderName" required/>
+    <div class="row">
+
+        <form class="ui sixteen wide mobile ten wide tablet eight wide computer left aligned column form">
+            <div class="field">
+                <input type="text" placeholder="Имя пользователя" id="moderName" required />
+            </div>
+            <button class="ui button" type="button" onclick="addModer()">Добавить</button>
+            <div class="ui hidden message" id="update-state-msg">Пользователь успешно добавлен</div>
+        </form>
+    </div>
+    <div class="row">
+        <div class="ten wide column">
+            <div class="ui basic segment" style="padding: 0">
+                <h4 class="ui header">Список модераторов</h4>
+                <div class="ui middle aligned selection list">
+                    @foreach (var moder in Model)
+                    {
+                        <a class="item" href="/user/profile/@moder.UserName">
+                            <img class="ui avatar image" src="@moder.AvatarSrc" />
+                            <span class="content">
+                                <span class="header">@moder.UserName</span>
+                                <span class="description">@moder.Description</span>
+                            </span>
+                        </a>
+                    }
+                </div>
+            </div>
         </div>
-        <button class="ui button" type="button" onclick="addModer()">Добавить</button>
-        <div class="ui hidden message" id="update-state-msg">Пользователь успешно добавлен</div>
-    </form>
+    </div>
 </div>
 <script>
     function addModer() {
@@ -19,7 +43,7 @@
         $.ajax({
             url: '@Url.Action("AddModer")',
             type: 'post',
-            data: value,
+            data: 'userName=' + value,
             success: function(resp){
                 var validationError = @((byte)JsonResponseStatuses.ValidationError);
                 if(resp.status == validationError){
@@ -27,7 +51,10 @@
                 } else{
                     $('#update-state-msg').addClass('green').removeClass('hidden');
                 }
+            },
+            error: function(){
+                $('#update-state-msg').addClass('red').removeClass('hidden').html('Ошибка');
             }
-        })
+        });
     }
 </script>

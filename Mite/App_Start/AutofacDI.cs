@@ -20,6 +20,7 @@ using Mite.ExternalServices.YandexMoney;
 using Yandex.Money.Api.Sdk.Interfaces;
 using NLog;
 using Mite.ExternalServices.Google;
+using Microsoft.AspNet.Identity;
 
 namespace Mite
 {
@@ -54,6 +55,8 @@ namespace Mite
             builder.Register(c => new AppUserManager(new UserStore<User>(c.Resolve<AppDbContext>()),
                 dataProtectionProvider));
             builder.RegisterType<AppSignInManager>();
+            builder.RegisterType<AppRoleManager>();
+
             builder.RegisterType<UserService>().As<IUserService>();
             builder.RegisterType<PostsService>().As<IPostsService>();
             builder.RegisterType<TagsService>().As<ITagsService>();

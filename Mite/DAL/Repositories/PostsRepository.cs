@@ -113,7 +113,9 @@ namespace Mite.DAL.Repositories
             bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range)
         {
             var tagNamesStr = new StringBuilder();
-
+#if !DEBUG
+            tagNamesStr.Append("CONTAINS(dbo.Tags.Name,"); 
+#endif
             for (var i = 0; i < tagsNames.Length; i++)
             {
 #if DEBUG
@@ -121,9 +123,11 @@ namespace Mite.DAL.Repositories
                 if (i < tagsNames.Length - 1)
                     tagNamesStr.Append("or ");
 #else
-                tagNamesStr.AppendFormat("\"{0}*\"", tagsNames[i]);
+                tagNamesStr.AppendFormat("'\"{0}*\"", tagsNames[i]);
                 if (i < tagsNames.Length - 1)
                     tagNamesStr.Append(" or ");
+                else
+                    tagNamesStr.Append("')");
 #endif
             }
             //Запрос для получения кол-ва совпадений тегов для каждого поста
@@ -181,6 +185,9 @@ namespace Mite.DAL.Repositories
             bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range)
         {
             var tagNamesStr = new StringBuilder();
+#if !DEBUG
+            tagNamesStr.Append("CONTAINS(dbo.Tags.Name, ");
+#endif
             for (var i = 0; i < tagsNames.Length; i++)
             {
 #if DEBUG
@@ -188,9 +195,11 @@ namespace Mite.DAL.Repositories
                 if (i < tagsNames.Length - 1)
                     tagNamesStr.Append("or ");
 #else
-                tagNamesStr.AppendFormat("\"{0}*\"", tagsNames[i]);
+                tagNamesStr.AppendFormat("'\"{0}*\"", tagsNames[i]);
                 if (i < tagsNames.Length - 1)
                     tagNamesStr.Append(" or ");
+                else
+                    tagNamesStr.Append("')");
 #endif
             }
             //Запрос для получения кол-ва совпадений тегов для каждого поста

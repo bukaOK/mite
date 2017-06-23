@@ -13,22 +13,18 @@
     {
         tagsRow = string.Join(",", Model.Tags);
     }
+    var vkWidgetImage = Model.IsImage ? "http://" + Request.Url.Host + Model.Content : "";
 }
 <div class="ui segment grid">
-    <div class="computer tablet only two column row">
+    <div class="two column row">
         <div class="column">
             <h2 class="ui header">@Model.Header</h2>
         </div>
         <div class="right aligned column">
-            <h3 class="ui header" id="post-time"></h3>
-        </div>
-    </div>
-    <div class="center aligned mobile only two column row">
-        <div class="column">
-            <h2 class="ui header">@Model.Header</h2>
-        </div>
-        <div class="column">
-            <h3 class="ui header" id="post-time"></h3>
+            <h3 class="ui post-time header">
+                <span class="content" style="display: block"></span>
+                <span class="sub header" id="vk_share" style="display: inline-block; margin-top: 5px;"></span>
+            </h3>
         </div>
     </div>
     <div class="row">
@@ -229,7 +225,6 @@
     var commentsCount = @Model.CommentsCount;
 
     function loadPostTime(){
-        var elem = document.getElementById('post-time');
         var options = {
             year: 'numeric',
             day: 'numeric',
@@ -241,7 +236,7 @@
         dateIso += dateIso[dateIso.length - 1] == 'Z' ? '' : 'Z';
         var date = new Date(dateIso);
 
-        elem.innerHTML = date.toLocaleString("ru", options);
+        $('.post-time>.content').html(date.toLocaleString("ru", options));
     }
     function loadCommentsCount(){
         var elem = document.getElementById('comments-count');
@@ -499,7 +494,19 @@
             });
         }
     }
+    function initVkWidget(){
+        document.getElementById('vk_share').innerHTML = VK.Share.button({
+            url: '@Request.Url.AbsoluteUri',
+            title: '@Model.Header',
+            image: '@vkWidgetImage',
+            noparse: true,
+        }, {
+            type: 'round',
+            text: 'Поделиться'
+        });
+    }
     $(function () {
+        initVkWidget();
         $('#post-image-modal img').on('load',function(){
             resizeModalImage();
             $("#post-image-modal").modal('refresh');
