@@ -161,12 +161,12 @@
     }
     $(function () {
         initTags();
-        VK.Widgets.Group("vk_groups", { mode: 3, no_cover: 1, width: $('.top-tags')[0].offsetWidth }, 143219082);
         var grid = $('#postsGrid').masonry({
             itemSelector: '.column'
         });
         $('.ui.dropdown').dropdown({
-            onChange: function () {
+            onChange: function (ev) {
+                console.log(ev);
                 if (SearchFilters.initialized) {
                     SearchFilters.changeFilter();
                 }
@@ -186,8 +186,8 @@
                     resp = JSON.parse(resp);
                 }
                 resp.data.forEach(function (elem) {
-                    elem.LastEdit += elem.LastEdit[elem.LastEdit - 1] == 'Z' ? '' : 'Z';
-                    elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.LastEdit).getTime());
+                    elem.PublishDate += elem.PublishDate[elem.PublishDate - 1] == 'Z' ? '' : 'Z';
+                    elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.PublishDate).getTime());
                 });
                 $('#postsGrid .loader').remove();
                 if (resp.data.length > 0) {
@@ -230,10 +230,24 @@
             },
             filters: [
                 {
-                    name: 'input',
+                    name: 'tags',
                     selector: '#postsSearch',
                     getVal: function () {
-                        return $(this.selector).val();
+                        var arr = $(this.selector).val().split('#')
+                        arr.shift();
+                        return arr.join();
+                    },
+                    updateState: function (newVal) {
+                        var arr = newVal.split(',');
+                        var str = arr.length > 0 ? '#' + arr.join('#') : '';
+                        $(this.selector).val(str);
+                    }
+                },
+                {
+                    name: 'postName',
+                    selector: '#postsSearch',
+                    getVal: function () {
+                        return $(this.selector).val().split('#')[0];
                     },
                     updateState: function (newVal) {
                         $(this.selector).val(newVal);
@@ -281,5 +295,6 @@
         });
         SearchFilters.loadNext();
         $('.ui.checkbox').checkbox();
+        //VK.Widgets.Group("vk_groups", { mode: 3, no_cover: 1, width: $('.top-tags')[0].offsetWidth }, 143219082);
     });
 </script>

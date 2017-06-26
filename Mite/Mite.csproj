@@ -464,6 +464,10 @@
     <Compile Include="Migrations\201706201234059_UpdateTagChecked.Designer.cs">
       <DependentUpon>201706201234059_UpdateTagChecked.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201706241200308_AddPublishDate.cs" />
+    <Compile Include="Migrations\201706241200308_AddPublishDate.Designer.cs">
+      <DependentUpon>201706241200308_AddPublishDate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountModels.cs" />
     <Compile Include="Models\CashSettingsModels.cs" />
@@ -712,6 +716,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201706201234059_UpdateTagChecked.resx">
       <DependentUpon>201706201234059_UpdateTagChecked.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201706241200308_AddPublishDate.resx">
+      <DependentUpon>201706241200308_AddPublishDate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

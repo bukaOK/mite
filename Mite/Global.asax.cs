@@ -58,12 +58,16 @@ namespace Mite
 
                 cfg.CreateMap<Post, PostModel>()
                     .ForMember(dest => dest.Header, opt => opt.MapFrom(src => src.Title))
-                    .ForMember(dest => dest.CurrentRating, opt => opt.Ignore());
+                    .ForMember(dest => dest.CurrentRating, opt => opt.Ignore())
+                    .ForMember(dest => dest.IsPublished, opt => opt.MapFrom(src => src.PublishDate != null));
 
+                //Добавление поста юзером
                 cfg.CreateMap<PostModel, Post>()
                     .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Header))
                     .ForMember(dest => dest.Ratings, opt => opt.Ignore())
-                    .ForMember(dest => dest.User, opt => opt.Ignore());
+                    .ForMember(dest => dest.User, opt => opt.Ignore())
+                    .ForMember(dest => dest.PublishDate, opt => opt.MapFrom(src => src.IsPublished ? (DateTime?)DateTime.UtcNow : null));
+                //Пост галереи
                 cfg.CreateMap<Post, GalleryPostModel>()
                     .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString("N")));
 
@@ -73,7 +77,8 @@ namespace Mite
 
                 cfg.CreateMap<Post, ProfilePostModel>()
                     .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString("N")))
-                    .ForMember(dest => dest.Header, opt => opt.MapFrom(src => src.Title));
+                    .ForMember(dest => dest.Header, opt => opt.MapFrom(src => src.Title))
+                    .ForMember(dest => dest.IsPublished, opt => opt.MapFrom(src => src.PublishDate != null));
                 cfg.CreateMap<Post, TopPostModel>()
                     .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString("N")));
 

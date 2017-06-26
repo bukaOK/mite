@@ -35,10 +35,15 @@ namespace Mite.Models
         public string Description { get; set; }
         public string Content { get; set; }
         public DateTime LastEdit { get; set; }
+        public DateTime? PublishDate { get; set; }
         public string PublicTimeStr { get; set; }
         public int CommentsCount { get; set; }
         public byte PostType { get; set; }
-        public bool IsPublished { get; set; }
+        public bool IsPublished => PublishDate != null;
+        /// <summary>
+        /// Может ли пользователь редактировать работу
+        /// </summary>
+        public bool CanEdit => (PublishDate == null) || (PublishDate != null && (DateTime.UtcNow - PublishDate).Value.TotalDays <= 3);
         public string Cover { get; set; }
         public int Views { get; set; }
         public bool IsImage { get; set; }

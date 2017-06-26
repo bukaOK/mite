@@ -51,7 +51,7 @@ namespace Mite.Controllers
             var userRating = (await ratingService.GetByPostAndUserAsync(postId, User.Identity.GetUserId()))
                 ?? new PostRatingModel();
             userRating.PostId = post.Id;
-            
+
             if (!post.IsImage)
             {
                 //Заменяем путь к документу на содержание
@@ -79,19 +79,15 @@ namespace Mite.Controllers
                     return NotFound();
             }
         }
-        public async Task<ActionResult> EditPost(string id)
+        public async Task<ActionResult> EditPost(Guid id)
         {
-            Guid postId;
             ViewBag.Title = "Редактирование работы";
-
-            if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out postId))
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            var post = await postsService.GetWithTagsAsync(postId);
+            var post = await postsService.GetWithTagsAsync(id);
             if (User.Identity.GetUserId() != post.User.Id)
             {
                 return Forbidden();
             }
-            if (post.IsPublished)
+            if (!post.CanEdit)
             {
                 return BadRequest();
             }
@@ -153,16 +149,16 @@ namespace Mite.Controllers
             return JsonResponse(JsonResponseStatuses.Success, "Успешно отредактировано");
         }
         [HttpPost]
-        public async Task<HttpStatusCodeResult> DeletePost(string id)
+        public async Task<HttpStatusCodeResult> DeletePost(Guid id)
         {
-            Guid postId;
-            if (!Guid.TryParse(id, out postId))
+            var post = await postsService.GetPostAsync(id);
+            if(User.Identity.GetUserId() != post.User.Id)
             {
-                return BadRequest();
+                return Forbidden();
             }
             try
             {
-                await postsService.DeletePostAsync(postId);
+                await postsService.DeletePostAsync(id);
                 return Ok();
             }
             catch(Exception e)
@@ -209,10 +205,11 @@ namespace Mite.Controllers
         }
         [HttpPost]
         [AllowAnonymous]
-        public async Task<JsonResult> Top(string input, SortFilter sortFilter,
+        public async Task<JsonResult> Top(string tags, string postName, SortFilter sortFilter,
             PostTimeFilter postTimeFilter, PostUserFilter postUserFilter, int page)
         {
-            var posts = await postsService.GetTopAsync(input, sortFilter, postTimeFilter, postUserFilter,
+            var tagsNames = string.IsNullOrEmpty(tags) ? new string[0] : tags.Split(',');
+            var posts = await postsService.GetTopAsync(tagsNames, postName, sortFilter, postTimeFilter, postUserFilter,
                 User.Identity.GetUserId(), page);
             return JsonResponse(JsonResponseStatuses.Success, posts);
         }

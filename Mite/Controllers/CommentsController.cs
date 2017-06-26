@@ -59,7 +59,7 @@ namespace Mite.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest();
-
+            
             model.User.Id = User.Identity.GetUserId();
             await _commentsService.UpdateCommentAsync(model);
             return Ok();

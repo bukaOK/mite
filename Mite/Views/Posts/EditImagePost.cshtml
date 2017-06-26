@@ -63,8 +63,8 @@
         Опубликовать работу?
     </div>
     <div class="content">
-        После публикации работу невозможно будет редактировать.
-        При нажатии "Нет" она сохранится в черновиках и будет доступна для изменений.
+        После публикации работу можно будет отредактировать в течение трёх дней.
+        При нажатии "Нет" она сохранится в черновиках и будет доступна для изменений в любое время.
     </div>
     <div class="actions">
         <button class="ui red cancel button">Нет, просто сохранить</button>
@@ -73,39 +73,44 @@
 </div>
 <script>
     function savePost(isPublished){
-        var $saveBtn = $('#saveBtn');
+        var $saveBtn = $('#save-btn');
+        $saveBtn.addClass('loading disabled');
         var $resultMsg = $('#result-msg');
         @{
             var url = string.IsNullOrEmpty(Model.Header)
-                ? Url.Action("AddPost", "Posts")
+                ? Url.RouteUrl("AddPost", new { postType = 0 })
                 : Url.Action("UpdatePost", "Posts");
+        }
+        var model = {
+            Header: $('#Header').val(),
+            Content: $('#Content').val(),
+            Description: $('#Description').val(),
+            IsImage: true,
+            Id: '@Model.Id',
+            Tags: $('#Tags').val().split(',')
+        };
+        if(isPublished){
+            model.PublishDate = new Date().toISOString();
         }
         $.ajax({
             url: '@url',
-            data: {
-                model: {
-                    Header: $('#Header').val(),
-                    Content: $('#Content').val(),
-                    Description: $('#Description').val(),
-                    IsImage: true,
-                    Id: '@Model.Id',
-                    IsPublished: isPublished,
-                    Tags: $('#Tags').val().split(',')
-                }
-            },
+            data: model,
             type: 'post',
             dataType: 'json',
-            beforeSend: function () {
-                $saveBtn.addClass('loading disabled');
-            },
             success: function (resp) {
                 var validErrorStatus = @((byte)Mite.Core.JsonResponseStatuses.ValidationError);
                 if(resp.status == validErrorStatus){
                     $resultMsg.addClass('red').removeClass('green');
                     var errorStr = 'Ошибка при сохранении: ' + resp.message;
-                    alert(errorStr);
+                    $resultMsg.html(errorStr)
                 } else{
-                    location.href = "/user/profile/@User.Identity.Name";
+                    $resultMsg.addClass('green').removeClass('red');
+                    $resultMsg.html('Работа успешно сохранена.');
+                    if(isPublished){
+                        location.href = "/user/profile/@User.Identity.Name";
+                    } else{
+                        location.href = "/user/profile/@User.Identity.Name#posts/drafts";
+                    }
                 }
             },
             error: function (jqXhr) {
@@ -121,6 +126,7 @@
     $(function() {
         var isImageLarge = false;
         ViewHelper.activateSidebarItem('#editImageItem');
+        ViewHelper.disableFormSubmitting('#imgPostForm');
         $('.ui.checkbox').checkbox();
         $.ajax({
             url: '/api/tags',
@@ -156,8 +162,12 @@
             if(isImageLarge){
                 $('#imgPostForm').form('add errors', ['Размер файла не может быть больше 30 мбайт']);
             }
+            var isPublished = @Model.IsPublished.ToString().ToLower();
             $('#imgPostForm').form('validate');
-            if ($('#imgPostForm').form('is valid')) {
+            if(isPublished){
+                savePost(true);
+            }
+            if ($('#imgPostForm').form('is valid') && !isPublished) {
                 $('#saveModal').modal('show');
             }
         });

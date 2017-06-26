@@ -25,6 +25,10 @@ namespace Mite.DAL.Entities
         /// Время последнего редактирования
         /// </summary>
         public DateTime LastEdit { get; set; }
+        /// <summary>
+        /// Когда опубликовано
+        /// </summary>
+        public DateTime? PublishDate { get; set; }
         public bool IsPublished { get; set; }
         public List<Tag> Tags { get; set; }
         public List<Comment> Comments { get; set; }

@@ -12,8 +12,6 @@
 <div class="ui profile center aligned three column stackable grid segment">
     <div class="computer tablet only row">
         <div class="right aligned column">
-            
-            
         </div>
         <div class="column">
             <img class="ui centered circular image" src="@Model.AvatarSrc" width="150" />
@@ -241,18 +239,6 @@ else
         </div>
     </div>
 </div>
-<div class="ui small center aligned modal" id="workChooseModal">
-    <i class="close icon"></i>
-    <div class="header">
-        Тип работы
-    </div>
-    <div class="content">
-        <div class="ui secondary labeled icon menu">
-            <a href="@Url.Action("AddPost", "Posts")?postType=image" class="violet item"><i class="image icon"></i>Изображение</a>
-            <a href="@Url.Action("AddPost", "Posts")?postType=doc" class="violet item"><i class="photo icon"></i>Документ</a>
-        </div>
-    </div>
-</div>
 <div class="ui small modal" id="donateModal">
     <i class="close icon"></i>
     <div class="header">
@@ -346,6 +332,20 @@ else
                         </button>
                     </div>
                     {{/if}}
+                    @if (currentUserName == pageUserName)
+                    {
+                        <text>
+                        {{if IsPublished && CanEdit}}
+                        <div class="meta">
+                            <a class="ui circular blue icon button" data-inverted data-tooltip="Редактировать"
+                                data-position="right center" href="/posts/editpost/{{:Id}}">
+                                <i class="edit icon"></i>
+                            </a>
+                        </div>
+                        {{/if}}
+                        </text>
+                    }
+                    
                     <div class="center">
                         <h2 class="ui inverted header">
                             {{:Header}}
@@ -357,15 +357,20 @@ else
                         @if (currentUserName == pageUserName)
                         {
                             <text>
-                                {{if IsPublished}}
-                                <button class="ui red post-del button" onclick="showDeletePostModal('{{:Id}}')">Удалить</button>
-                                {{else}}
-                                <a class="ui primary button" href="/posts/editpost/{{:Id}}">Редактировать</a>
-                                {{/if}}
+                        {{if IsPublished && !CanEdit}}
+                        <button class="ui red post-del button" onclick="showDeletePostModal('{{:Id}}')">Удалить</button>
+                        {{else}}
+                        {{if !IsPublished}}
+                        <a class="ui primary button" href="/posts/editpost/{{:Id}}">Редактировать</a>
+                        {{/if}}
+                        {{/if}}
                             </text>
                         }
                     </div>
-                    {{if !IsPublished}}
+                    @if(currentUserName == pageUserName)
+                    {
+                        <text>
+                    {{if !IsPublished || (IsPublished && CanEdit)}}
                     <div class="right meta">
                         <button data-inverted data-tooltip="Удалить" onclick="showDeletePostModal('{{:Id}}')"
                                 data-position="left center" class="ui circular icon red post-del button">
@@ -373,6 +378,8 @@ else
                         </button>
                     </div>
                     {{/if}}
+                    </text>
+                    }
                 </div>
             </div>
         </div>
@@ -384,7 +391,7 @@ else
         <h2 class="ui center aligned icon header" style="color: #6D6788; margin-top: 20px;">
             <i class="frown icon"></i>
             <span class="content">
-                У пользователя пока нет постов
+                У пользователя пока нет работ
             </span>
         </h2>
     </div>
@@ -399,8 +406,8 @@ else
                     <span class="content">
                         Добавить ещё
                         <span class="sub header">
-                            @Html.ActionLink("изображение", "AddPost", "Posts", new { postType = PostTypes.Image.ToString().ToLower() }, null)
-                            или @Html.ActionLink("документ", "AddPost", "Posts", new { postType = PostTypes.Document.ToString().ToLower() }, null)
+                            @Html.RouteLink("изображение", "AddPost", new { postType = PostTypes.Image.ToString().ToLower() })
+                            или @Html.RouteLink("документ", "AddPost", new { postType = PostTypes.Document.ToString().ToLower() })
                         </span>
                     </span>
                 </h2>
@@ -587,6 +594,7 @@ else
                 },
                 beforeSuccess: function (resp) {
                     var jsonResp = JSON.parse(resp);
+                    console.log(jsonResp);
                     var currentTab = getCurrentTab();
                     if(jsonResp.data.length == 0){
                         if(currentTab == 'followers'){
@@ -613,7 +621,12 @@ else
                         if(tmplName == 'postsTmpl'){
                             jsonResp.data.forEach(function(elem){
                                 elem.LastEdit += elem.LastEdit[elem.LastEdit - 1] == 'Z' ? '' : 'Z';
-                                elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.LastEdit).getTime());
+                                if(elem.PublishDate != null){
+                                    elem.PublishDate += elem.PublishDate[elem.PublishDate - 1] == 'Z' ? '' : 'Z';
+                                    elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.PublishDate).getTime());
+                                } else{
+                                    elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.LastEdit).getTime());
+                                }
                             });
                         }
                         if(tabName == 'notifications'){

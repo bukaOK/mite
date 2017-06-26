@@ -16,6 +16,7 @@ using System.Web.Hosting;
 using System.Net;
 using System.IO;
 using Mite.BLL.DTO;
+using NLog;
 
 namespace Mite.BLL.Services
 {
@@ -41,18 +42,20 @@ namespace Mite.BLL.Services
         /// <returns></returns>
         Task AddViews(Guid postId);
         Task PublishPost(Guid postId);
-        Task<IEnumerable<TopPostModel>> GetTopAsync(string input, SortFilter sortFilter,
+        Task<IEnumerable<TopPostModel>> GetTopAsync(string[] tags, string postName, SortFilter sortFilter,
             PostTimeFilter postTimeFilter, PostUserFilter postUserFilter, string currentUserId, int page);
     }
     public class PostsService : DataService, IPostsService
     {
         private readonly AppUserManager _userManager;
+        private readonly ILogger logger;
         private readonly string imagesFolder = HostingEnvironment.ApplicationVirtualPath + "Public/images/";
         private readonly string documentsFolder = HostingEnvironment.ApplicationVirtualPath + "Public/documents/";
 
-        public PostsService(IUnitOfWork unitOfWork, AppUserManager userManager) : base(unitOfWork)
+        public PostsService(IUnitOfWork unitOfWork, AppUserManager userManager, ILogger logger) : base(unitOfWork)
         {
             _userManager = userManager;
+            this.logger = logger;
         }
 
         public async Task<PostModel> GetPostAsync(Guid postId)
@@ -61,6 +64,10 @@ namespace Mite.BLL.Services
             var postModel = Mapper.Map<PostModel>(post);
 
             postModel.IsImage = FilesHelper.IsPath(postModel.Content);
+            postModel.User = new UserShortModel
+            {
+                Id = post.UserId
+            };
             return postModel;
         }
 
@@ -97,6 +104,10 @@ namespace Mite.BLL.Services
             post.UserId = userId;
             post.LastEdit = DateTime.UtcNow;
             post.Rating = 0;
+            if (postModel.IsPublished)
+            {
+                post.PublishDate = DateTime.UtcNow;
+            }
 
             await Database.PostsRepository.AddAsync(post);
             foreach (var tag in post.Tags)
@@ -165,7 +176,14 @@ namespace Mite.BLL.Services
                 }
             }
             post.LastEdit = DateTime.UtcNow;
-
+            if(currentPost.PublishDate == null && postModel.IsPublished)
+            {
+                post.PublishDate = DateTime.UtcNow;
+            }
+            else
+            {
+                post.PublishDate = currentPost.PublishDate;
+            }
             foreach (var tag in post.Tags)
                 tag.Name = tag.Name.ToLower();
             await Database.TagsRepository.AddWithPostAsync(post.Tags, post.Id);
@@ -228,7 +246,15 @@ namespace Mite.BLL.Services
             {
                 if (!post.IsImage)
                 {
-                    post.Content = await FilesHelper.ReadDocumentAsync(post.Content, minChars);
+                    try
+                    {
+                        post.Content = await FilesHelper.ReadDocumentAsync(post.Content, minChars);
+                    }
+                    catch(Exception e)
+                    {
+                        logger.Error($"Ошибка при чтении файла в топе, имя файла: {post.Content}, Ошибка : {e.Message}");
+                        post.Content = "Ошибка при чтении файла.";
+                    }
                 }
                 else
                 {
@@ -262,10 +288,10 @@ namespace Mite.BLL.Services
         }
         public Task PublishPost(Guid postId)
         {
-            return Database.PostsRepository.PublishPost(postId);
+            return Database.PostsRepository.PublishPost(postId, DateTime.UtcNow);
         }
 
-        public async Task<IEnumerable<TopPostModel>> GetTopAsync(string input, SortFilter sortFilter, 
+        public async Task<IEnumerable<TopPostModel>> GetTopAsync(string[] tagsNames, string postName, SortFilter sortFilter, 
             PostTimeFilter postTimeFilter, PostUserFilter postUserFilter, string currentUserId, int page)
         {
             var currentDate = DateTime.Now;
@@ -291,33 +317,27 @@ namespace Mite.BLL.Services
                 default:
                     throw new NullReferenceException("Не задан фильтр времени при поиске поста");
             }
-            //Получаем массив вхождений для поиска, разделив строку по хэштегам
-            var inputs = input.Split('#');
-            //По логике первым всегда будет стоять или пустая строка или название работы
-            var postName = inputs[0];
-            //Список имен тегов
-            var tagsNames = inputs.Skip(1).ToArray();
 
             IEnumerable<Post> posts;
             if (!string.IsNullOrWhiteSpace(postName) && tagsNames.Length > 0)
             {
                 //Находим посты по тегам и имени работы
-                posts = await Database.PostsRepository.GetByPostNameAndTagsAsync(postName, tagsNames, true, minDate, 
+                posts = await Database.PostsRepository.GetByPostNameAndTagsAsync(postName, tagsNames, minDate, 
                     onlyFollowings, currentUserId, sortFilter, offset, range);
             }
             else if (!string.IsNullOrEmpty(postName))
             {
-                posts = await Database.PostsRepository.GetByPostNameAsync(postName, true, minDate,
+                posts = await Database.PostsRepository.GetByPostNameAsync(postName, minDate,
                     onlyFollowings, currentUserId, sortFilter, offset, range);
             }
             else if(tagsNames.Length > 0)
             {
-                posts = await Database.PostsRepository.GetByTagsAsync(tagsNames, true, minDate,
+                posts = await Database.PostsRepository.GetByTagsAsync(tagsNames, minDate,
                     onlyFollowings, currentUserId, sortFilter, offset, range);
             }
             else
             {
-                posts = await Database.PostsRepository.GetByFilterAsync(true, minDate, onlyFollowings, currentUserId,
+                posts = await Database.PostsRepository.GetByFilterAsync(minDate, onlyFollowings, currentUserId,
                     sortFilter, offset, range);
             }
 
@@ -327,7 +347,15 @@ namespace Mite.BLL.Services
             {
                 if (!post.IsImage)
                 {
-                    post.Content = await FilesHelper.ReadDocumentAsync(post.Content, minChars);
+                    try
+                    {
+                        post.Content = await FilesHelper.ReadDocumentAsync(post.Content, minChars);
+                    }
+                    catch(Exception e)
+                    {
+                        logger.Error($"Ошибка при чтении файла в топе, имя файла: {post.Content}, Ошибка : {e.Message}");
+                        post.Content = "Ошибка при чтении файла.";
+                    }
                 }
                 else
                 {

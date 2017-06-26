@@ -34,7 +34,7 @@
             </div>
         }
     </div>
-    @using (Html.BeginForm("AddPost", "Posts", FormMethod.Post, new { @class = "ui form" }))
+    @using (Html.BeginForm("AddPost", "Posts", FormMethod.Post, new { @class = "ui form", id = "writeEditForm" }))
     {
         @Html.EditorFor(x => x.Header)
         @Html.HiddenFor(x => x.Cover)
@@ -90,8 +90,8 @@
         Опубликовать работу?
     </div>
     <div class="content">
-        После публикации работу невозможно будет редактировать. 
-        При нажатии "Нет" она сохранится в черновиках и будет доступна для изменений.
+        После публикации работу можно будет отредактировать в течение трёх дней.
+        При нажатии "Нет" она сохранится в черновиках и будет доступна для изменений в любое время
     </div>
     <div class="actions">
         <button class="ui red cancel button">Нет, просто сохранить</button>
@@ -170,10 +170,12 @@
     function savePost(isPublished, editorInstance){
         @{
             var url = string.IsNullOrEmpty(Model.Header)
-                ? Url.Action("AddPost", "Posts")
-                : Url.Action("UpdatePost", "Posts");
+                ? Url.RouteUrl("AddPost", new { postType = 0})
+                : Url.Action("UpdatePost", "Posts" );
         }
-        formData.IsPublished = isPublished;
+        if(isPublished){
+            formData.PublishDate = new Date().toISOString();
+        }
         editorInstance.busy(true);
         $.ajax({
             data: formData,
@@ -185,10 +187,10 @@
                 }
                 var validErrorStatus = @((byte)Mite.Core.JsonResponseStatuses.ValidationError);
                 if(resp.status == validErrorStatus){
-                    var errorStr = 'Ошибка при сохранении<br>' + resp.message;
+                    var errorStr = 'Ошибка при сохранении: ' + resp.message;
                     alert(errorStr);
                 } else{
-                    if(formData.IsPublished){
+                    if(isPublished){
                         location.href = '/user/profile/@User.Identity.Name#posts/published';
                     } else{
                         location.href = '/user/profile/@User.Identity.Name#posts/drafts';
@@ -293,6 +295,7 @@
     };
     $(function () {
         ViewHelper.activateSidebarItem('#editDocItem');
+        ViewHelper.disableFormSubmitting('#writeEditForm');
         var headerId = '#@Html.IdFor(x => x.Header)';
 
         $(headerId).keyup(function (ev) {
@@ -375,7 +378,12 @@
                     Tags: $('#Tags').val().split(','),
                     Cover: $('#Cover').val()
                 };
-                $('#saveModal').modal('show');
+                var isPublished = @Model.IsPublished.ToString().ToLower();
+                if(isPublished){
+                    savePost(true, editor);
+                } else{
+                    $('#saveModal').modal('show');
+                }
             });
         $("#saveModal").modal({
             onDeny: function(){

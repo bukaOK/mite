@@ -27,6 +27,7 @@ namespace Mite
                 url: "user/notifications",
                 defaults: new { controller = "UserProfile", action = "Notifications" }
             );
+            routes.MapRoute("AddPost", "posts/add/{postType}", new { controller = "Posts", Action = "AddPost" });
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",

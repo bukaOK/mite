@@ -235,17 +235,22 @@ var SearchFilters = {
         this.ajax.checkResponseLength = settings.ajax.checkResponseLength;
 
         this.filters = settings.filters;
-        this._updateFiltersState(location.hash.replace('#', ''));
+        this._updateFiltersState(decodeURI(location.search.substr(1)));
         this.initialized = true;
 
-        window.onpopstate = function () {
-
+        var self = this;
+        window.onpopstate = function (ev) {
+            self._updateFiltersState(ev.state);
+            return self.changeFilter(true);
         }
     },
-    changeFilter: function(){
+    changeFilter: function (toBack) {
         this._page = 1;
         this._loadNextPage = false;
         this._pagesEnded = false;
+        var stringParams = this._getStringParams();
+        if(!toBack)
+            history.pushState(stringParams, '', '?' + stringParams);
         return this.load();
     },
     loadNext: function () {
@@ -259,9 +264,8 @@ var SearchFilters = {
     load: function () {
         this.callbacks.beforeLoad();
         //Переводим в строку
-        var stringParams = this._getStringParams()
-        this.ajax.data = stringParams;
-        location.hash = stringParams;
+        var stringParams = this._getStringParams();
+        this.ajax.data = stringParams + '&page=' + this._page;
         return $.ajax(this.ajax);
     },
     _getStringParams: function () {
@@ -271,18 +275,17 @@ var SearchFilters = {
         filters.forEach(function (elem, index) {
             str += elem.name + '=' + elem.getVal() + '&';
         });
-        str += 'page=' + this._page;
-        return str;
+        return str.substr(0, str.length - 1);
     },
     _updateFiltersState: function (paramsStr) {
         var self = this;
-        var params = paramsStr.split('&');
-        params.forEach(function (param) {
+        var pairs = paramsStr.split('&');
+        pairs.forEach(function (param) {
             var name = param.split('=')[0];
             var val = param.split('=')[1];
 
             self.filters.forEach(function (elem) {
-                if (elem.name == name) {
+                if (elem.name == name && elem.getVal() != val) {
                     elem.updateState(val);
                 }
             });

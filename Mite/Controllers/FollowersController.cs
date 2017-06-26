@@ -21,28 +21,31 @@ namespace Mite.Controllers
             this.logger = logger;
         }
         [HttpPost]
-        public async Task<HttpResponseMessage> Add([FromBody]string followingId)
+        public async Task<IHttpActionResult> Add([FromBody]string followingId)
         {
             if (string.IsNullOrEmpty(followingId))
             {
-                return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                return BadRequest();
             }
             var follower = new Follower
             {
                 FollowingUserId = followingId,
                 UserId = User.Identity.GetUserId()
-        };
+            };
             follower.UserId = User.Identity.GetUserId();
             follower.FollowTime = DateTime.UtcNow;
             try
             {
+                var alreadyFollowed = await unitOfWork.FollowersRepository.IsFollower(follower.UserId, follower.FollowingUserId);
+                if (alreadyFollowed)
+                    return Ok();
                 await unitOfWork.FollowersRepository.AddAsync(follower);
-                return new HttpResponseMessage(HttpStatusCode.OK);
+                return Ok();
             }
             catch (Exception e)
             {
                 logger.Error(e, "Ошибка при добавлении подписчика");
-                return new HttpResponseMessage(HttpStatusCode.InternalServerError);
+                return InternalServerError();
             }
         }
         [HttpDelete]

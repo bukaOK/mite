@@ -24,20 +24,26 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="@ViewBag.MetaDescription" />
+    <meta charset="utf-8" />
     <noscript><meta http-equiv="refresh" content="0;URL=/home/badjs" /></noscript>
     @Styles.Render("~/Content/semantic", "~/Content/css")
     @RenderSection("styles", false)
     <title>@ViewBag.Title</title>
     <script src='https://www.google.com/recaptcha/api.js'></script>
     <script type="text/javascript" src="https://vk.com/js/api/share.js?93" charset="windows-1251"></script>
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({
+        google_ad_client: "ca-pub-7675079294669395",
+        enable_page_level_ads: true
+        });
+    </script>
 </head>
 <body class="pushable" style="height: 100% !important">
     @Scripts.Render("~/bundles/main", "~/bundles/site", "~/bundles/jsrender")
     <script src="~/signalr/hubs"></script>
-    <!-- Yandex.Metrika counter -->
     <script type="text/javascript"> (function (d, w, c) { (w[c] = w[c] || []).push(function() { try { w.yaCounter45009220 = new Ya.Metrika({ id:45009220, clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true }); } catch(e) { } }); var n = d.getElementsByTagName("script")[0], s = d.createElement("script"), f = function () { n.parentNode.insertBefore(s, n); }; s.type = "text/javascript"; s.async = true; s.src = "https://mc.yandex.ru/metrika/watch.js"; if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); } })(document, window, "yandex_metrika_callbacks"); </script> <noscript><div><img src="https://mc.yandex.ru/watch/45009220" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
-
+    <script type="text/javascript">(window.Image ? (new Image()) : document.createElement('img')).src = 'https://vk.com/rtrg?p=VK-RTRG-133112-6Ayto';</script>
     @if (User.Identity.IsAuthenticated)
     {
         <script>
@@ -114,10 +120,10 @@
             <a href="/user/profile/@User.Identity.Name" class="violet item" id="userProfileItem">
                 <i class="user icon"></i>Моя страница
             </a>
-            <a href="@Url.Action("AddPost", "Posts")?postType=@PostTypes.Image.ToString().ToLower()" class="violet item" id="editImageItem">
+            <a href="@Url.RouteUrl("AddPost", new { postType = PostTypes.Image.ToString().ToLower() })" class="violet item" id="editImageItem">
                 <i class="image icon"></i>Добавить изобр.
             </a>
-            <a href="@Url.Action("AddPost", "Posts")?postType=@PostTypes.Document.ToString().ToLower()" class="violet item" id="editDocItem">
+            <a href="@Url.RouteUrl("AddPost", new { postType = PostTypes.Document.ToString().ToLower() })" class="violet item" id="editDocItem">
                 <i class="newspaper icon"></i>Добавить документ
             </a>
             <a class="violet item" id="notifications-item">
@@ -150,20 +156,20 @@
                 <a href="@Url.Action("Index", "Home")" class="header main item" id="publicPostsBtn">
                     <img class="logo" src="/Content/images/mite-logo-icon.png" alt="Логотип"/>
                 </a>
-                @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "computer tablet only item" })
-                @Html.ActionLink("Поддержать нас", "Donate", "Home", null, new { @class = "computer tablet only item" })
+                <a href="/posts/top?tags=арт" class="computer tablet only item">Арт</a>
+                <a href="/posts/top?tags=литература" class="computer tablet only item">Литература</a>
+                <a href="/posts/top?tags=фото" class="computer tablet only item">Фото</a>
                 @if (Request.IsAuthenticated)
                 {
-                    @Html.ActionLink("Публикации", "Top", "Posts", null, new { @class = "computer tablet only item" })
                     <div class="right menu">
                         <div class="item">
                             <div class="ui dropdown top right pointing violet button" id="addPostMenu" style="">
                                 Добавить
                                 <div class="menu">
-                                    <a href="@Url.Action("AddPost", "Posts")?postType=@PostTypes.Image.ToString().ToLower()" class="item">
+                                    <a href="@Url.RouteUrl("AddPost", new { postType = PostTypes.Image.ToString().ToLower() })" class="item">
                                         <i class="image icon"></i>Изображение
                                     </a>
-                                    <a href="@Url.Action("AddPost", "Posts")?postType=@PostTypes.Document.ToString().ToLower()" class="item">
+                                    <a href="@Url.RouteUrl("AddPost", new { postType = PostTypes.Document.ToString().ToLower() })" class="item">
                                         <i class="newspaper icon"></i>Документ
                                     </a>
                                 </div>

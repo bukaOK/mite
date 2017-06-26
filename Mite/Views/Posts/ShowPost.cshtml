@@ -7,24 +7,33 @@
 @{ 
     ViewBag.Title = Model.Header;
     ViewBag.MetaDescription = string.Format("Публикация {0} | {1}", Model.Header, Model.User.UserName);
+
     var userId = User.Identity.GetUserId();
     var tagsRow = "";
+    var vkWidgetImage = Model.IsImage ? "http://" + Request.Url.Host + Model.Content : "";
+    var pageUserName = Model.User.UserName;
+    var currentUserName = User.Identity.Name;
+
     if (User.IsInRole("moder"))
     {
         tagsRow = string.Join(",", Model.Tags);
     }
-    var vkWidgetImage = Model.IsImage ? "http://" + Request.Url.Host + Model.Content : "";
+
 }
 <div class="ui segment grid">
-    <div class="two column row">
+    <div class="stackable two column row">
         <div class="column">
-            <h2 class="ui header">@Model.Header</h2>
+            <h2 class="ui header">
+                @Model.Header
+                <span class="sub header post-time"></span>
+            </h2>
         </div>
         <div class="right aligned column">
-            <h3 class="ui post-time header">
-                <span class="content" style="display: block"></span>
-                <span class="sub header" id="vk_share" style="display: inline-block; margin-top: 5px;"></span>
-            </h3>
+            <div id="vk_share" style="display: inline-block;"></div>
+            @if(currentUserName == pageUserName && Model.CanEdit)
+            {
+                @Html.ActionLink("Редактировать", "EditPost", "Posts", new { id = Model.Id }, new { @class = "ui primary small compact button" })
+            }
         </div>
     </div>
     <div class="row">
@@ -77,7 +86,7 @@
         @if (User.IsInRole("moder"))
         {
             <div class="four wide column">
-                <div class="ui form"> 
+                <div class="ui form">
                     <div class="field">
                         <div class="ui fluid search multiple selection dropdown" id="select-tags">
                             @Html.HiddenFor(x => x.Tags, new { Value = tagsRow })
@@ -89,8 +98,7 @@
                     <div class="field">
                         <button type="button" class="ui primary button" onclick="updateTags()">Обновить</button>
                     </div>
-                    <div class="ui message" id="tagsUpdateMsg" hidden>
-                    </div>
+                    <div class="ui message" id="tagsUpdateMsg" hidden></div>
                 </div>
             </div>
             <script>
@@ -128,7 +136,7 @@
                             }
                             tagsMenu.children('.menu').html(tagsItems);
                             tagsMenu.dropdown({
-                                allowAdditions: true,
+                                allowAdditions: false,
                                 fullTextSearch: true,
                                 keys: {
                                     delimiter: false
@@ -191,17 +199,20 @@
                 <span class="date">{{:PublicDateStr}}</span>
             </div>
             <div class="text">{{:Content}}</div>
-            <div class="actions">
-                <a data-reply-user="" onclick="addReply('{{:User.UserName}}', '{{:Id}}')">Ответить</a>
-                {{if User.Id == '@User.Identity.GetUserId()'}}
-                <a data-comment-id="{{:Id}}" onclick="deleteComment(this)">Удалить</a>
-                {{/if}}
-                {{if CurrentRating == null || CurrentRating.Value == 0}}
-                <a data-is-rate="false" data-variation="tiny" data-content="Нравится!" onclick="rateComment(this, '{{:Id}}', '{{:User.Id}}')"><i class="thumbs outline up violet icon"></i><span class="rating">{{:Rating}}</span></a>
-                {{else}}
-                <a data-is-rate="true" data-variation="tiny" data-content="Нравится!" onclick="rateComment(this, '{{:Id}}', '{{:User.Id}}')"><i class="thumbs up violet icon"></i><span class="rating">{{:Rating}}</span></a>
-                {{/if}}
-            </div>
+            @if (User.Identity.IsAuthenticated)
+            {
+                <div class="actions">
+                    <a data-reply-user="" onclick="addReply('{{:User.UserName}}', '{{:Id}}')">Ответить</a>
+                    {{if User.Id == '@User.Identity.GetUserId()'}}
+                    <a data-comment-id="{{:Id}}" onclick="deleteComment(this)">Удалить</a>
+                    {{/if}}
+                    {{if CurrentRating == null || CurrentRating.Value == 0}}
+                    <a data-is-rate="false" data-variation="tiny" data-content="Нравится!" onclick="rateComment(this, '{{:Id}}', '{{:User.Id}}')"><i class="thumbs outline up violet icon"></i><span class="rating">{{:Rating}}</span></a>
+                    {{else}}
+                    <a data-is-rate="true" data-variation="tiny" data-content="Нравится!" onclick="rateComment(this, '{{:Id}}', '{{:User.Id}}')"><i class="thumbs up violet icon"></i><span class="rating">{{:Rating}}</span></a>
+                    {{/if}}
+                </div>
+            }
         </div>
     </div>
 </template>
@@ -236,7 +247,7 @@
         dateIso += dateIso[dateIso.length - 1] == 'Z' ? '' : 'Z';
         var date = new Date(dateIso);
 
-        $('.post-time>.content').html(date.toLocaleString("ru", options));
+        $('.post-time').html(date.toLocaleString("ru", options));
     }
     function loadCommentsCount(){
         var elem = document.getElementById('comments-count');
@@ -501,8 +512,8 @@
             image: '@vkWidgetImage',
             noparse: true,
         }, {
-            type: 'round',
-            text: 'Поделиться'
+            type: 'custom',
+            text: '<span class="ui vk small compact button"><i class="vk icon"></i>Поделиться</span>'
         });
     }
     $(function () {

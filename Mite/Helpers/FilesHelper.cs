@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -159,28 +160,44 @@ namespace Mite.Helpers
             var substr = str.Substring(0, str.Length < charsCount ? str.Length : charsCount);
 
             //Удаляем все недооткрытые(вроде <p) в конце теги
-            substr = Regex.Replace(substr, @"(<|<p|<p>)$", "");
-            substr = Regex.Replace(substr, "<\\/$", "");
+            substr = Regex.Replace(substr, @"(<|<\/|<(h3|h2|p|i|b)[^>]*>*)$", "");
+            
+            substr = Regex.Replace(substr, @"(<h3[^>]*|h2[^>]*)", "<p");
 
+            var tags = new[] { "p", "i", "b" };
+            var closeTagsStack = new Stack<string>();
             if (charsCount < GetDocCharsCount(path))
             {
                 substr += "...";
             }
-            //Проверяем, закрыт ли тег в конце, т.к. мы обрезали строку
-            var lastPMatches = Regex.Matches(substr, "<p[^>]*>");
-            var lastP = lastPMatches[lastPMatches.Count - 1];
-            var lastPCloseMatches = Regex.Matches(substr, "</p>");
-            if (lastPCloseMatches.Count > 0)
-            {
-                var lastPClose = lastPCloseMatches[lastPCloseMatches.Count - 1];
-                if (lastP.Index > lastPClose.Index)
-                    substr += "</p>";
-            }
-            else
-            {
-                substr += "<p/>";
-            }
 
+            foreach (var tag in tags)
+            {
+                substr = Regex.Replace(substr, $"<\\/{tag}[ ]*$", $"<\\/{tag}>");
+                //Проверяем, закрыт ли тег в конце, т.к. мы обрезали строку
+                var lastTagMatches = Regex.Matches(substr, $"<{tag}[^>]*>");
+                if (lastTagMatches.Count == 0)
+                    continue;
+
+                var lastTag = lastTagMatches[lastTagMatches.Count - 1];
+                var lastTagCloseMatches = Regex.Matches(substr, $"</{tag}");
+                if (lastTagCloseMatches.Count > 0)
+                {
+                    var lastTagClose = lastTagCloseMatches[lastTagCloseMatches.Count - 1];
+                    if (lastTag.Index > lastTagClose.Index)
+                    {
+                        closeTagsStack.Push(tag);
+                    }
+                }
+                else
+                {
+                    closeTagsStack.Push(tag);
+                }
+            }
+            foreach(var closeTag in closeTagsStack)
+            {
+                substr += $"</{closeTag}>";
+            }
             return substr;
         }
         public static string ReadDocument(string path, int charsCount)

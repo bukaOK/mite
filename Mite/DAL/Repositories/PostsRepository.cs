@@ -7,7 +7,6 @@ using Dapper;
 using Mite.DAL.Core;
 using Mite.DAL.Entities;
 using Mite.Enums;
-using System.Text.RegularExpressions;
 using System.Text;
 
 namespace Mite.DAL.Repositories
@@ -35,14 +34,16 @@ namespace Mite.DAL.Repositories
         }
         public override Task UpdateAsync(Post entity)
         {
-            var query = "update dbo.Posts set Title=@Title, Content=@Content, IsImage=@IsImage, LastEdit=@LastEdit, IsPublished=@IsPublished, " +
+            var query = "update dbo.Posts set Title=@Title, Content=@Content, IsImage=@IsImage, LastEdit=@LastEdit, PublishDate=@PublishDate, " +
                 "Cover=@Cover, Description=@Description, Rating=@Rating, Views=@Views where Id=@Id";
             return Db.ExecuteAsync(query, entity);
         }
         public Task<IEnumerable<Post>> GetByUserAsync(string userId, bool isPublished)
         {
-            var query = "select * from dbo.Posts where dbo.Posts.UserId=@UserId and IsPublished=@IsPublished";
-            return Db.QueryAsync<Post>(query, new { UserId = userId, IsPublished = isPublished });
+            var query = "select * from dbo.Posts where dbo.Posts.UserId=@UserId and PublishDate is ";
+            var publishedQuery = isPublished ? "not null" : "null";
+            query += publishedQuery;
+            return Db.QueryAsync<Post>(query, new { UserId = userId });
         }
         /// <summary>
         /// Возвращает пост с тегами
@@ -76,32 +77,31 @@ namespace Mite.DAL.Repositories
         {
             var query = "select * from dbo.Posts left outer join dbo.TagPosts on dbo.TagPosts.Post_Id=dbo.Posts.Id"
                 + " left outer join dbo.Tags on dbo.TagPosts.Tag_Id=dbo.Tags.Id left outer join dbo.Comments"
-                + $" on dbo.Comments.Post_Id=dbo.Posts.Id where dbo.Posts.Id='{id}'";
+                + $" on dbo.Comments.Post_Id=dbo.Posts.Id where dbo.Posts.Id=@id";
 
             return (await Db.QueryAsync<Post, Tag, Comment, Post>(query, (post, tag, comment) =>
             {
                 post.Tags.Add(tag);
                 post.Comments.Add(comment);
                 return post;
-            })).FirstOrDefault();
+            }, new { id })).FirstOrDefault();
         }
         public Task<int> GetPublishedPostsCount(string userId)
         {
-            return Db.QueryFirstAsync<int>("select COUNT(*) from dbo.Posts where UserId=@UserId and IsPublished=1", new { UserId = userId });
+            return Db.QueryFirstAsync<int>("select COUNT(*) from dbo.Posts where UserId=@UserId and PublishDate is not null", new { UserId = userId });
         }
         public Task AddView(Guid id)
         {
             return Db.ExecuteAsync("update dbo.Posts set Views=Views+1 where Id=@Id", new { Id = id });
         }
-        public Task PublishPost(Guid id)
+        public Task PublishPost(Guid id, DateTime publishDate)
         {
-            return Db.ExecuteAsync("update dbo.Posts set IsPublished=1 where Id=@Id", new { Id = id });
+            return Db.ExecuteAsync("update dbo.Posts set PublishDate=@PublishDate where Id=@Id", new { Id = id, PublishDate = publishDate });
         }
         /// <summary>
         /// Получить посты по тегам
         /// </summary>
         /// <param name="tagIds">Список Id тегов</param>
-        /// <param name="isPublished">Опубликованный ли пост</param>
         /// <param name="minDate">Дата, с которой начинается отбор постов</param>
         /// <param name="onlyFollowings">Выбрать только из тех на кого подписан</param>
         /// <param name="currentUserId">Id текущего пользователя</param>
@@ -109,7 +109,7 @@ namespace Mite.DAL.Repositories
         /// <param name="offset">Сколько строк пропустить, прежде чем начать отбор</param>
         /// <param name="range">Сколько постов достать</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Post>> GetByTagsAsync(string[] tagsNames, bool isPublished, DateTime minDate, 
+        public async Task<IEnumerable<Post>> GetByTagsAsync(string[] tagsNames, DateTime minDate, 
             bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range)
         {
             var tagNamesStr = new StringBuilder();
@@ -139,7 +139,7 @@ namespace Mite.DAL.Repositories
                 .Select<dynamic, Guid>(x => Guid.Parse(x.Post_Id.ToString()));
 
             var query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId " +
-                "where dbo.Posts.Id in @postsIds and IsPublished=@isPublished and LastEdit > @minDate ";
+                "where dbo.Posts.Id in @postsIds and PublishDate is not null and LastEdit > @minDate ";
 
             IEnumerable<string> followings = new List<string>();
             if (onlyFollowings)
@@ -165,7 +165,7 @@ namespace Mite.DAL.Repositories
             {
                 post.User = user;
                 return post;
-            }, new { postsIds, isPublished, minDate, followings });
+            }, new { postsIds, minDate, followings });
             return posts;
         }
         /// <summary>
@@ -173,7 +173,6 @@ namespace Mite.DAL.Repositories
         /// </summary>
         /// <param name="postName">Название работы</param>
         /// <param name="tagsNames">Список имен тегов</param>
-        /// <param name="isPublished">Опубликованный ли пост</param>
         /// <param name="minDate">Дата, скоторой начинается отбор</param>
         /// <param name="onlyFollowings">Выбрать только из тех на кого подписан</param>
         /// <param name="currentUserId">Id текущего пользователя</param>
@@ -181,7 +180,7 @@ namespace Mite.DAL.Repositories
         /// <param name="offset">Сколько строк пропустить, прежде чем начать отбор</param>
         /// <param name="range">Сколько нужно взять</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Post>> GetByPostNameAndTagsAsync(string postName, string[] tagsNames, bool isPublished, DateTime minDate,
+        public async Task<IEnumerable<Post>> GetByPostNameAndTagsAsync(string postName, string[] tagsNames, DateTime minDate,
             bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range)
         {
             var tagNamesStr = new StringBuilder();
@@ -206,12 +205,12 @@ namespace Mite.DAL.Repositories
             var tagsCountQuery = "select COUNT(Tag_Id) as TagsCount, Post_Id from dbo.Tags inner join dbo.TagPosts " +
                     $"on dbo.Tags.Id=dbo.TagPosts.Tag_Id where {tagNamesStr.ToString()} group by Post_Id";
             var tagsCountRes = await Db.QueryAsync(tagsCountQuery);
-            //Чтобы у поста было точное кол-во совпадений с тегами(т.е. написали в запросе 2 тега - должно совпасть 2 тега)
-            var postsIds = tagsCountRes.Where(x => (int)x.TagsCount == tagsNames.Length)
+            //Чтобы у поста было точное кол-во совпадений с тегами(т.е. написали в запросе 2 тега - должно совпасть 2 тега или больше)
+            var postsIds = tagsCountRes.Where(x => (int)x.TagsCount >= tagsNames.Length)
                 .Select<dynamic, Guid>(x => Guid.Parse(x.Post_Id.ToString()));
 
             var query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId " +
-                "where dbo.Posts.Id in @postsIds and IsPublished=@isPublished and LastEdit > @minDate ";
+                "where dbo.Posts.Id in @postsIds and PublishDate is not null and LastEdit > @minDate ";
 #if DEBUG
             query += $"and dbo.Posts.Title like N'%{postName}%'";
 #else
@@ -244,14 +243,14 @@ namespace Mite.DAL.Repositories
             {
                 post.User = user;
                 return post;
-            }, new { isPublished, minDate, postsIds, followings, postName });
+            }, new { minDate, postsIds, followings, postName });
             return posts;
         }
-        public async Task<IEnumerable<Post>> GetByPostNameAsync(string postName, bool isPublished, DateTime minDate,
+        public async Task<IEnumerable<Post>> GetByPostNameAsync(string postName, DateTime minDate,
             bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range)
         {
             var query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.Posts.UserId=dbo.AspNetUsers.Id " +
-                "where dbo.Posts.IsPublished=@isPublished and LastEdit > @minDate and ";
+                "where dbo.Posts.PublishDate is not null and LastEdit > @minDate and ";
 #if DEBUG
             query += $"dbo.Posts.Title like N'%{postName}%'";
 #else
@@ -282,22 +281,22 @@ namespace Mite.DAL.Repositories
             {
                 post.User = user;
                 return post;
-            }, new { isPublished, minDate, postName, followings });
+            }, new { minDate, postName, followings });
             return posts;
         }
-        public async Task<IEnumerable<Post>> GetByFilterAsync(bool isPublished, DateTime minDate,
-            bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range)
+        public async Task<IEnumerable<Post>> GetByFilterAsync(DateTime minDate, bool onlyFollowings, 
+            string currentUserId, SortFilter sortType, int offset, int range)
         {
             var query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId" +
-                " where dbo.Posts.IsPublished=@isPublished and LastEdit > @minDate ";
+                " where dbo.Posts.PublishDate is not null and LastEdit > @minDate ";
             IEnumerable<string> followings;
-            object queryParams = new { isPublished, minDate };
+            object queryParams = new { minDate };
             if (onlyFollowings)
             {
                 var followingsQuery = "select FollowingUserId from dbo.Followers where UserId=@currentUserId ";
                 followings = await Db.QueryAsync<string>(followingsQuery, new { currentUserId });
                 query += "and dbo.AspNetUsers.Id in @followings ";
-                queryParams = new { isPublished, minDate, followings };
+                queryParams = new { minDate, followings };
             }
             switch (sortType)
             {
@@ -321,7 +320,7 @@ namespace Mite.DAL.Repositories
         }
         public Task<IEnumerable<Post>> GetGalleryByUserAsync(string userId)
         {
-            var query = "select Id, Content from dbo.Posts where UserId=@userId and IsPublished=1 and IsImage=1";
+            var query = "select Id, Content from dbo.Posts where UserId=@userId and PublishDate is not null and IsImage=1";
             return Db.QueryAsync<Post>(query, new { userId });
         }
     }

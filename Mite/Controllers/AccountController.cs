@@ -46,11 +46,11 @@ namespace Mite.Controllers
         public async Task<ActionResult> Login(LoginModel model, string returnUrl)
         {
             var recaptchaResult = await googleService.RecaptchaValidateAsync(Request["g-recaptcha-response"]);
-            //if (!recaptchaResult)
-            //{
-            //    ModelState.AddModelError("", "Ошибка ReCaptcha.");
-            //}
-            
+            if (!recaptchaResult)
+            {
+                ModelState.AddModelError("", "Ошибка ReCaptcha.");
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(model);

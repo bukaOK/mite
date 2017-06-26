@@ -22,13 +22,15 @@ namespace Mite.Models
         public bool IsImage { get; set; }
         public int Views { get; set; }
         public int CommentsCount { get; set; }
-        public bool IsPublished { get; set; }
+        public bool IsPublished => PublishDate != null;
         public int Rating { get; set; }
         /// <summary>
         /// Рейтинг, который поставил пользователь запроса
         /// </summary>
         public PostRatingModel CurrentRating { get; set; }
         public DateTime LastEdit { get; set; }
+        public DateTime? PublishDate { get; set; }
+        public bool CanEdit => (PublishDate == null) || (PublishDate != null && (DateTime.UtcNow - PublishDate).Value.TotalDays <= 3);
         /// <summary>
         /// Список имен тегов
         /// </summary>
@@ -49,6 +51,7 @@ namespace Mite.Models
         [UIHint("TextArea")]
         [DisplayName("Описание")]
         public string Description { get; set; }
+        public bool IsPublished { get; set; }
         public List<string> Tags { get; set; }
         public string Cover { get; set; }
         public HelperModel Helper { get; set; }
@@ -64,6 +67,7 @@ namespace Mite.Models
         public string Header { get; set; }
         [Required(ErrorMessage = "Вы не загрузили изображение")]
         public string Content { get; set; }
+        public bool IsPublished { get; set; }
         [DisplayName("Описание")]
         [UIHint("TextArea")]
         public string Description { get; set; }
@@ -97,7 +101,7 @@ namespace Mite.Models
         public string Title { get; set; }
         public string Content { get; set; }
         public bool IsImage { get; set; }
-        public DateTime LastEdit { get; set; }
+        public DateTime PublishDate { get; set; }
         public string Description { get; set; }
         public string Cover { get; set; }
         public int Rating { get; set; }
