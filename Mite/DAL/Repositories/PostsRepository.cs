@@ -135,11 +135,11 @@ namespace Mite.DAL.Repositories
                     $"on dbo.Tags.Id=dbo.TagPosts.Tag_Id where {tagNamesStr.ToString()} group by Post_Id";
             var tagsCountRes = await Db.QueryAsync(tagsCountQuery);
             //Чтобы у поста было точное кол-во совпадений с тегами(т.е. написали в запросе 2 тега - должно совпасть 2 тега)
-            var postsIds = tagsCountRes.Where(x => (int)x.TagsCount == tagsNames.Length)
+            var postsIds = tagsCountRes.Where(x => (int)x.TagsCount >= tagsNames.Length)
                 .Select<dynamic, Guid>(x => Guid.Parse(x.Post_Id.ToString()));
 
             var query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId " +
-                "where dbo.Posts.Id in @postsIds and PublishDate is not null and LastEdit > @minDate ";
+                "where dbo.Posts.Id in @postsIds and PublishDate is not null and PublishDate > @minDate ";
 
             IEnumerable<string> followings = new List<string>();
             if (onlyFollowings)
@@ -210,7 +210,7 @@ namespace Mite.DAL.Repositories
                 .Select<dynamic, Guid>(x => Guid.Parse(x.Post_Id.ToString()));
 
             var query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId " +
-                "where dbo.Posts.Id in @postsIds and PublishDate is not null and LastEdit > @minDate ";
+                "where dbo.Posts.Id in @postsIds and PublishDate is not null and PublishDate > @minDate ";
 #if DEBUG
             query += $"and dbo.Posts.Title like N'%{postName}%'";
 #else
@@ -250,7 +250,7 @@ namespace Mite.DAL.Repositories
             bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range)
         {
             var query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.Posts.UserId=dbo.AspNetUsers.Id " +
-                "where dbo.Posts.PublishDate is not null and LastEdit > @minDate and ";
+                "where dbo.Posts.PublishDate is not null and PublishDate > @minDate and ";
 #if DEBUG
             query += $"dbo.Posts.Title like N'%{postName}%'";
 #else
@@ -288,7 +288,7 @@ namespace Mite.DAL.Repositories
             string currentUserId, SortFilter sortType, int offset, int range)
         {
             var query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId" +
-                " where dbo.Posts.PublishDate is not null and LastEdit > @minDate ";
+                " where dbo.Posts.PublishDate is not null and PublishDate > @minDate ";
             IEnumerable<string> followings;
             object queryParams = new { minDate };
             if (onlyFollowings)
