@@ -23,27 +23,64 @@
             </h2>
             @if (Model.SocialLinks.Vk != null)
             {
-                <a href="https://vk.com/@Model.SocialLinks.Vk" class="ui circular vk icon button">
-                    <i class="vk icon"></i>
-                </a>
+                if (Model.SocialLinks.Vk.Contains("https://vk.com"))
+                {
+                    <a href="https://vk.com/@Model.SocialLinks.Vk" class="ui circular vk icon button">
+                        <i class="vk icon"></i>
+                    </a>
+                }
+                else
+                {
+                    <a href="https://vk.com/@Model.SocialLinks.Vk" class="ui circular vk icon button">
+                        <i class="vk icon"></i>
+                    </a>
+                }
             }
             @if (Model.SocialLinks.Twitter != null)
             {
-                <a href="https://twitter.com/@Model.SocialLinks.Twitter" class="ui circular twitter icon button">
-                    <i class="twitter icon"></i>
-                </a>
+                if (Model.SocialLinks.Twitter.Contains("https://twitter.com"))
+                {
+                    <a href="@Model.SocialLinks.Twitter" class="ui circular twitter icon button">
+                        <i class="twitter icon"></i>
+                    </a>
+                }
+                else
+                {
+                    <a href="https://twitter.com/@Model.SocialLinks.Twitter" class="ui circular twitter icon button">
+                        <i class="twitter icon"></i>
+                    </a>
+                }
             }
             @if (Model.SocialLinks.Facebook != null)
             {
-                <a href="https://facebook.com/@Model.SocialLinks.Facebook" class="ui circular facebook icon button">
-                    <i class="facebook icon"></i>
-                </a>
+                if (Model.SocialLinks.Facebook.Contains("https://facebook.com/"))
+                {
+                    <a href="@Model.SocialLinks.Facebook" class="ui circular facebook icon button">
+                        <i class="facebook icon"></i>
+                    </a>
+                }
+                else
+                {
+                    <a href="https://facebook.com/@Model.SocialLinks.Facebook" class="ui circular facebook icon button">
+                        <i class="facebook icon"></i>
+                    </a>
+                }
+
             }
             @if (Model.SocialLinks.Dribbble != null)
             {
-                <a href="https://dribbble.com/@Model.SocialLinks.Dribbble" class="ui circular dribbble icon button">
-                    <i class="dribble icon"></i>
-                </a>
+                if (Model.SocialLinks.Dribbble.Contains("https://dribbble.com"))
+                {
+                    <a href="@Model.SocialLinks.Dribbble" class="ui circular dribbble icon button">
+                        <i class="dribble icon"></i>
+                    </a>
+                }
+                else
+                {
+                    <a href="https://dribbble.com/@Model.SocialLinks.Dribbble" class="ui circular dribbble icon button">
+                        <i class="dribble icon"></i>
+                    </a>
+                }
             }
             @if (Model.SocialLinks.ArtStation != null)
             {
