@@ -234,6 +234,7 @@
 }
 <script>
     var commentsCount = @Model.CommentsCount;
+    document.onselectstart = function(){return false;}
 
     function loadPostTime(){
         var options = {

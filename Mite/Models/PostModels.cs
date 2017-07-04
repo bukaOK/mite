@@ -17,6 +17,7 @@ namespace Mite.Models
         public string Header { get; set; }
         [AllowHtml]
         public string Content { get; set; }
+        [MaxLength(350, ErrorMessage = "Слишком длинное описание")]
         public string Description { get; set; }
         public byte PostType { get; set; }
         public bool IsImage { get; set; }
@@ -50,6 +51,7 @@ namespace Mite.Models
         public string Content { get; set; }
         [UIHint("TextArea")]
         [DisplayName("Описание")]
+        [MaxLength(350, ErrorMessage = "Слишком длинное описание")]
         public string Description { get; set; }
         public bool IsPublished { get; set; }
         public List<string> Tags { get; set; }
@@ -70,6 +72,7 @@ namespace Mite.Models
         public bool IsPublished { get; set; }
         [DisplayName("Описание")]
         [UIHint("TextArea")]
+        [MaxLength(350, ErrorMessage = "Слишком длинное описание")]
         public string Description { get; set; }
         public List<string> Tags { get; set; }
         public List<CommentModel> Comments { get; set; }

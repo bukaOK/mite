@@ -188,7 +188,7 @@
             });
         }
         function goToTag() {
-            location.href = '/posts/top/#input=#' + $('#tagInput').val();
+            location.href = '/posts/top?tags=' + $('#tagInput').val();
         }
         $(function () {
             $('#tagsModal').modal({

@@ -1,4 +1,5 @@
-﻿using Mite.Helpers;
+﻿using Hangfire;
+using Mite.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,6 +37,11 @@ namespace Mite.Controllers
         public ActionResult BadJs()
         {
             return View();
+        }
+        public ActionResult RunHangfire()
+        {
+            BackgroundJob.Enqueue(() => HangfireConfig.LoadAdSenseIncome());
+            return RedirectToAction("Index");
         }
     }
 }

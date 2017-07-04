@@ -7,8 +7,9 @@
 }
 
 <div class="field">
-    <div class="ui toggle checkbox">
-        <input type="checkbox" id="@fieldName" value=@Html.Raw(isChecked) name="@fieldName" @Html.Raw(isChecked == true || isChecked != null ? "checked" : "") />
+    <div class="ui toggle checkbox @Html.Raw(isChecked == true ? "checked" : "")">
+        <input type="checkbox" id="@fieldName" value="true" 
+               name="@fieldName" @Html.Raw(isChecked == true ? "checked" : "") />
         <label>@displayName</label>
     </div>
 </div>

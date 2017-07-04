@@ -86,5 +86,25 @@ namespace Mite.DAL.Repositories
 
             await Db.ExecuteAsync(query, entity);
         }
+        /// <summary>
+        /// Возвращаем рейтинги по оценившему пользователю(асинхронно) 
+        /// </summary>
+        /// <param name="ratedUser">Оценщик</param>
+        /// <returns></returns>
+        public Task<IEnumerable<Rating>> GetAsync(string ratedUser)
+        {
+            var query = "select * from dbo.Ratings where UserId = @ratedUser";
+            return Db.QueryAsync<Rating>(query, new { ratedUser });
+        }
+        /// <summary>
+        /// Возвращаем рейтинги по оценившему пользователю
+        /// </summary>
+        /// <param name="ratedUser">Оценщик</param>
+        /// <returns></returns>
+        public IEnumerable<Rating> Get(string ratedUser)
+        {
+            var query = "select * from dbo.Ratings where UserId = @ratedUser";
+            return Db.Query<Rating>(query, new { ratedUser });
+        }
     }
 }

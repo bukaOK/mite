@@ -316,6 +316,14 @@
                             prompt: $('#Header').data('val-maxlength')
                         }
                     ]
+                },
+                Description: {
+                    rules: [
+                        {
+                            type: 'maxLength[' + $('#Description').data('val-maxlength-max') + ']',
+                            prompt: $('#Description').data('val-maxlength')
+                        }
+                    ]
                 }
             }
         });

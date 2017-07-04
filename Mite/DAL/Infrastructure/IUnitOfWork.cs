@@ -16,7 +16,6 @@ namespace Mite.DAL.Infrastructure
         CashOperationsRepository CashOperationsRepository { get; }
         ExternalServiceRepository ExternalServiceRepository { get; }
         SocialLinksRepository SocialLinksRepository { get; }
-
-        TRepo GetRepository<TRepo, TEntity>() where TRepo : class, IRepository<TEntity> where TEntity : class, IEntity;
+        UserRepository UserRepository { get; }
     }
 }

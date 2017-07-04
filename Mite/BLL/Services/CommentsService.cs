@@ -33,7 +33,7 @@ namespace Mite.BLL.Services
             comment.Rating = 0;
             comment.Id = Guid.NewGuid();
 
-            await Database.GetRepository<CommentsRepository, Comment>().AddAsync(comment);
+            await Database.CommentsRepository.AddAsync(comment);
             comment = await Database.CommentsRepository.GetFullAsync(comment.Id);
             return Mapper.Map<CommentModel>(comment);
         }

@@ -4,6 +4,7 @@ using Mite.BLL.Services;
 using Mite.Constants;
 using Mite.Core;
 using Mite.Models;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -76,6 +77,31 @@ namespace Mite.Controllers
         {
             var referals = await cashService.GetReferalsByUserAsync(User.Identity.GetUserId());
             return JsonResponse(JsonResponseStatuses.Success, referals);
+        }
+        public PartialViewResult Advertising()
+        {
+            var user = userManager.FindById(User.Identity.GetUserId());
+            var operations = cashService.GetByType(User.Identity.GetUserId(), Enums.CashOperationTypes.GoogleAd);
+            return PartialView(new CashAdvertisingModel
+            {
+                AllowShowAd = user.ShowAd,
+                Income = operations.Sum(x => x.Sum),
+                DailyIncome = operations.Where(x => x.Date.AddDays(-1) == DateTime.Now.AddDays(-1)).Sum(x => x.Sum),
+                WeekIncome = operations.Where(x => DateTime.Now.AddDays(-7) <= x.Date && x.Date <= DateTime.Now).Sum(x => x.Sum),
+                MonthIncome = operations.Where(x => DateTime.Now.AddMonths(-1) <= x.Date && x.Date <= DateTime.Now).Sum(x => x.Sum)
+            });
+        }
+        [HttpPost]
+        public async Task<JsonResult> AdConfirm(CashAdvertisingModel model)
+        {
+            var user = await userManager.FindByIdAsync(User.Identity.GetUserId());
+            user.ShowAd = model.AllowShowAd;
+            var result = await userManager.UpdateAsync(user);
+            if (result.Succeeded)
+            {
+                return JsonResponse(JsonResponseStatuses.Success);
+            }
+            return JsonResponse(JsonResponseStatuses.Error);
         }
     }
 }

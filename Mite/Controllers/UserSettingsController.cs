@@ -9,16 +9,15 @@ using Mite.BLL.IdentityManagers;
 using Mite.BLL.Services;
 using Mite.Constants;
 using Mite.Core;
-using Mite.DAL.Entities;
 using Mite.Extensions;
 using Mite.Models;
 using System.Collections.Generic;
-using System;
-using WebGrease;
+using Mite.Attributes.Filters;
 
 namespace Mite.Controllers
 {
     [Authorize]
+    [AjaxOnly("Index")]
     public class UserSettingsController : BaseController
     {
         private readonly IUserService _userService;
@@ -36,7 +35,12 @@ namespace Mite.Controllers
         {
             return View();
         }
+        public PartialViewResult ChangeAvatar()
+        {
+            return PartialView();
+        }
         [HttpPost]
+        [ChildActionOnly]
         public async Task<JsonResult> ChangeAvatar(string base64Str)
         {
             if (string.IsNullOrEmpty(base64Str))
@@ -68,7 +72,6 @@ namespace Mite.Controllers
 
             return PartialView(model);
         }
-
         [HttpPost]
         public async Task<JsonResult> UserProfile(ProfileSettingsModel settings)
         {
@@ -91,6 +94,10 @@ namespace Mite.Controllers
             User.AddUpdateClaim(_authManager, ClaimConstants.AvatarSrc, updatedUser.AvatarSrc);
             return JsonResponse(JsonResponseStatuses.Success, "Сохранено");
 
+        }
+        public PartialViewResult Security()
+        {
+            return PartialView();
         }
         [HttpPost]
         [ValidateAntiForgeryToken]

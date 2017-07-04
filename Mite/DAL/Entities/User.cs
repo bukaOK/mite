@@ -32,26 +32,29 @@ namespace Mite.DAL.Entities
         /// Местоположение(город)
         /// </summary>
         public string Placement { get; set; }
-        public List<Post> Posts { get; set; }
-        public List<Tag> Tags { get; set; }
+        /// <summary>
+        /// Показывать ли рекламу(только для авторов)
+        /// </summary>
+        public bool ShowAd { get; set; }
+        /// <summary>
+        /// Список IP адресов, которые просматривали профиль автора
+        /// </summary>
+        //public IEnumerable<ProfileView> Views { get; set; }
+        public IList<Post> Posts { get; set; }
+        public IList<Tag> Tags { get; set; }
         /// <summary>
         /// Счёт
         /// </summary>
         //public double Cash { get; set; }
         public int Rating { get; set; }
-        public Group Group { get; set; }
         /// <summary>
         /// Подписчики пользователя
         /// </summary>
-        public List<Follower> Followers { get; set; }
-        /// <summary>
-        /// Те, на кого пользователь подписан
-        /// </summary>
-        public string FollowIds { get; set; }
+        public IList<Follower> Followers { get; set; }
         /// <summary>
         /// Комментарии
         /// </summary>
-        public List<Comment> Comments { get; set; }
+        public IList<Comment> Comments { get; set; }
         /// <summary>
         /// Номер Яндекс кошелька
         /// </summary>

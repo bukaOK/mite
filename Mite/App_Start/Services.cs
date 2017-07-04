@@ -19,7 +19,8 @@ namespace Mite
                 Credentials = new NetworkCredential(from, "Evd$utTC"),
                 EnableSsl = true
             };
-            var mail = new MailMessage(from, to)
+            
+            var mail = new MailMessage(new MailAddress(from, "MiteGroup"), new MailAddress(to))
             {
                 Subject = message.Subject,
                 Body = message.Body,

@@ -8,9 +8,9 @@ namespace Mite.Enums
     public enum CashOperationTypes : byte
     {
         /// <summary>
-        /// Реклама
+        /// Реклама Google(перечисление части доходов пользователю)
         /// </summary>
-        Ad,
+        GoogleAd,
         /// <summary>
         /// Перечисление от реферала рефереру (комиссия за вывод денег)
         /// </summary>

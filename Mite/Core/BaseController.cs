@@ -10,17 +10,16 @@ namespace Mite.Core
     {
         protected JsonResult JsonResponse(JsonResponseStatuses status)
         {
-            return Json(new { status = status });
+            return Json(new { status = status }, "application/json");
         }
         protected JsonResult JsonResponse(JsonResponseStatuses status, string message, object data)
         {
-            
             return Json(JsonConvert.SerializeObject(new
             {
                 status = status,
                 message = message,
                 data = data
-            }));
+            }), "application/json");
         }
 
         protected JsonResult JsonResponse(JsonResponseStatuses status, object data)
@@ -29,7 +28,7 @@ namespace Mite.Core
             {
                 status = status,
                 data = data
-            }));
+            }), "application/json");
         }
 
         protected JsonResult JsonResponse(JsonResponseStatuses status, string message)
@@ -40,7 +39,7 @@ namespace Mite.Core
             {
                 status = status,
                 message = message
-            });
+            }, "application/json");
         }
         protected IEnumerable<string> GetErrorsList()
         {

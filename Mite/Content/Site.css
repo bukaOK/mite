@@ -280,6 +280,14 @@ img#post-content{
     cursor: -moz-zoom-in;
     max-height: 800px;
 }
+#post-content{
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
 .responsive.modal{
     display: inline-block !important;
     max-width: 90%;

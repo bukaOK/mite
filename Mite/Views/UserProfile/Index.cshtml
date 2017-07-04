@@ -640,7 +640,7 @@ else
                     }
                     return 'Ошибка';
                 },
-                afterSuccess: function(item, tabContent){
+                afterSuccess: function(item, tabContent) {
                     tabContent.css('display', 'flex');
                     if($(item).data('tab') == 'posts' && currentUser != pageUser){
                         postsGrid.masonry('reloadItems');

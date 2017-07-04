@@ -7,6 +7,6 @@ namespace Mite.Constants
 {
     public static class GooglePlusSettings
     {
-        public const string DefaultAuthType = "Google";
+        public const string DefaultAuthType = "GooglePlus";
     }
 }

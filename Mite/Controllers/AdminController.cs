@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNet.Identity;
+﻿using Hangfire;
+using Microsoft.AspNet.Identity;
+using Mite.Attributes.Filters;
 using Mite.BLL.IdentityManagers;
 using Mite.Core;
 using Mite.ExternalServices.YandexMoney;
@@ -12,6 +14,7 @@ using System.Web.Security;
 namespace Mite.Controllers
 {
     [Authorize(Roles = "admin")]
+    [AjaxOnly("Index")]
     public class AdminController : BaseController
     {
         private readonly AppUserManager userManager;

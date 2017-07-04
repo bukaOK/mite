@@ -23,7 +23,7 @@ namespace Mite.DAL.Repositories
         /// <param name="type"></param>
         /// <param name="withFromUser">Нужно ли присоединять таблицы пользователей-отправителей</param>
         /// <returns></returns>
-        public Task<IEnumerable<CashOperation>> GetByUserAndOperationTypeAsync(string userId, CashOperationTypes type, bool withFromUser = false)
+        public Task<IEnumerable<CashOperation>> GetByOperationTypeAsync(string userId, CashOperationTypes type, bool withFromUser = false)
         {
             var operationType = (byte)type;
             var query = "select * from dbo.CashOperations ";
@@ -42,12 +42,31 @@ namespace Mite.DAL.Repositories
             }
             return Db.QueryAsync<CashOperation>(query, new { operationType, userId });
         }
+        public IEnumerable<CashOperation> GetByOperationType(string userId, CashOperationTypes type, bool withFromUser = false)
+        {
+            var operationType = (byte)type;
+            var query = "select * from dbo.CashOperations ";
+            if (withFromUser)
+            {
+                query += "inner join dbo.AspNetUsers on FromId=dbo.AspNetUsers.Id ";
+            }
+            query += "where ToId=@userId and OperationType=@operationType";
+            if (withFromUser)
+            {
+                return Db.Query<CashOperation, User, CashOperation>(query, (cash, user) =>
+                {
+                    cash.From = user;
+                    return cash;
+                }, new { operationType, userId });
+            }
+            return Db.Query<CashOperation>(query, new { operationType, userId });
+        }
         /// <summary>
         /// Возвращает все денежные операции пользователя(не включая операции ввода-вывода)
         /// </summary>
-        /// <param name="userId"></param>
+        /// <param name="userId">Id пользователя</param>
         /// <returns></returns>
-        public Task<IEnumerable<CashOperation>> GetUserCashOperations(string userId)
+        public Task<IEnumerable<CashOperation>> GetListAsync(string userId)
         {
             var query = "select * from dbo.CashOperations where FromId=@userId or ToId=@userId";
             return Db.QueryAsync<CashOperation>(query, new { userId });

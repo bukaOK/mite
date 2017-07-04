@@ -17,7 +17,8 @@ namespace Mite
                 "~/Scripts/ViewHelpers.js",
                 "~/Scripts/jquery.signalR-2.2.2.min.js",
                 "~/Scripts/MiteUtilities.js",
-                "~/Scripts/password-strength.js"));
+                "~/Scripts/password-strength.js",
+                "~/Scripts/MiteTab.js"));
             bundles.Add(new ScriptBundle("~/bundles/croppie").Include("~/node_modules/croppie/croppie.js"));
             bundles.Add(new ScriptBundle("~/bundles/editor").Include(
                 "~/Scripts/content-tools.js", "~/bower_components/pep/src/jquery.pep.js"));

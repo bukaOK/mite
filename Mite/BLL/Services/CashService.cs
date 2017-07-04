@@ -11,6 +11,7 @@ using Mite.Enums;
 using Mite.Constants;
 using NLog;
 using Mite.DAL.Repositories;
+using Mite.BLL.DTO;
 
 namespace Mite.BLL.Services
 {
@@ -32,14 +33,29 @@ namespace Mite.BLL.Services
         /// Добавляет денежную операцию внутри системы
         /// Если to == null, значит перевод системе(в качестве комиссии например)
         /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <param name="sum"></param>
+        /// <param name="from">Id отправителя</param>
+        /// <param name="to">Id получателя</param>
+        /// <param name="sum">Сумма</param>
         /// <param name="type"></param>
         /// <returns></returns>
         Task AddAsync(string from, string to, double sum, CashOperationTypes type);
+        void Add(string from, string to, double sum, CashOperationTypes type);
         Task<double> GetUserCashAsync(string userId);
+        /// <summary>
+        /// Получить список денежных операций пользователя внутри системы
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        Task<IEnumerable<CashOperation>> GetByTypeAsync(string userId, CashOperationTypes type);
+        IEnumerable<CashOperation> GetByType(string userId, CashOperationTypes type);
         Task<bool> IsYandexAuthorized(string userId);
+        /// <summary>
+        /// Получить авторов, которые разрешили показывать рекламу
+        /// </summary>
+        /// <returns></returns>
+        IEnumerable<UserAdDTO> GetAdUsers();
+        DataServiceResult AdSensePay(string to, double sum, DateTime date);
     }
     public class CashService : DataService, ICashService
     {
@@ -76,7 +92,7 @@ namespace Mite.BLL.Services
         public async Task<IEnumerable<ReferalModel>> GetReferalsByUserAsync(string userId)
         {
             //Получаем список операций с рефералами
-            var operations = await Database.CashOperationsRepository.GetByUserAndOperationTypeAsync(userId, CashOperationTypes.Referal, true);
+            var operations = await Database.CashOperationsRepository.GetByOperationTypeAsync(userId, CashOperationTypes.Referal, true);
 
             var referals = new List<ReferalModel>();
             
@@ -100,9 +116,7 @@ namespace Mite.BLL.Services
 
         public async Task<double> GetUserCashAsync(string userId)
         {
-            var cashOperations = await Database
-                .GetRepository<CashOperationsRepository, CashOperation>()
-                .GetUserCashOperations(userId);
+            var cashOperations = await Database.CashOperationsRepository.GetListAsync(userId);
             var payments = await Database.PaymentsRepository.GetByUserAsync(userId);
 
             var cash = 0.0;
@@ -130,6 +144,60 @@ namespace Mite.BLL.Services
         {
             var service = await Database.ExternalServiceRepository.GetAsync(userId, YaMoneySettings.DefaultAuthType);
             return service != null;
+        }
+
+        public Task<IEnumerable<CashOperation>> GetByTypeAsync(string userId, CashOperationTypes type)
+        {
+            return Database.CashOperationsRepository.GetByOperationTypeAsync(userId, type);
+        }
+
+        public IEnumerable<CashOperation> GetByType(string userId, CashOperationTypes type)
+        {
+            return Database.CashOperationsRepository.GetByOperationType(userId, type);
+        }
+        public IEnumerable<UserAdDTO> GetAdUsers()
+        {
+            return Database.UserRepository.GetAdUsers();
+        }
+
+        public void Add(string from, string to, double sum, CashOperationTypes type)
+        {
+            var operation = new CashOperation
+            {
+                FromId = from,
+                ToId = to,
+                Sum = sum,
+                OperationType = type,
+                Date = DateTime.UtcNow
+            };
+            Database.CashOperationsRepository.Add(operation);
+        }
+
+        public DataServiceResult AdSensePay(string to, double sum, DateTime date)
+        {
+            var userOperations = Database.CashOperationsRepository.GetByOperationType(to, CashOperationTypes.GoogleAd);
+            var existingOperation = userOperations.FirstOrDefault(x => x.Date.DayOfYear == DateTime.Now.DayOfYear);
+            if (existingOperation != null)
+                return DataServiceResult.Success();
+            var operation = new CashOperation
+            {
+                FromId = null,
+                ToId = to,
+                Sum = sum,
+                OperationType = CashOperationTypes.GoogleAd,
+                Date = date
+            };
+            try
+            {
+                Database.CashOperationsRepository.Add(operation);
+                return DataServiceResult.Success();
+            }
+            catch(Exception e)
+            {
+                logger.Error("Ошибка при добавлении платежа AdSense в базу: " + e.Message);
+                return DataServiceResult.Failed();
+            }
+
         }
     }
 }

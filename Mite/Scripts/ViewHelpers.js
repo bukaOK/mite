@@ -64,7 +64,8 @@
         return null;
     },
     disableFormSubmitting: function (formSelector) {
-        $(formSelector).on('submit', function () {
+        var form = document.querySelector(formSelector);
+        form.addEventListener('submit', function () {
             return false;
         });
     },

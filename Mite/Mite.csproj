@@ -87,6 +87,42 @@
       <HintPath>..\packages\Duke.Owin.VkontakteMiddleware.1.2.0.0\lib\net45\Duke.Owin.VkontakteMiddleware.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Google.Apis, Version=1.27.1.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.1.27.1\lib\net45\Google.Apis.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Google.Apis.AdSense.v1_4, Version=1.27.1.888, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.AdSense.v1_4.1.27.1.888\lib\net45\Google.Apis.AdSense.v1_4.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Google.Apis.Auth, Version=1.27.1.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Auth.1.27.1\lib\net45\Google.Apis.Auth.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Google.Apis.Auth.Mvc, Version=1.27.1.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Auth.Mvc.1.27.1\lib\net45\Google.Apis.Auth.Mvc.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Google.Apis.Auth.PlatformServices, Version=1.27.1.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Auth.1.27.1\lib\net45\Google.Apis.Auth.PlatformServices.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Google.Apis.Core, Version=1.27.1.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Core.1.27.1\lib\net45\Google.Apis.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Google.Apis.PlatformServices, Version=1.27.1.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.1.27.1\lib\net45\Google.Apis.PlatformServices.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Hangfire.Core, Version=1.6.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Hangfire.Core.1.6.14\lib\net45\Hangfire.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Hangfire.SqlServer, Version=1.6.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Hangfire.SqlServer.1.6.14\lib\net45\Hangfire.SqlServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.AI.Agent.Intercept, Version=2.0.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.ApplicationInsights.Agent.Intercept.2.0.7\lib\net45\Microsoft.AI.Agent.Intercept.dll</HintPath>
       <Private>True</Private>
@@ -185,8 +221,28 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data.Linq" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Net.Http.4.3.1\lib\net46\System.Net.Http.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Algorithms, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.0\lib\net461\System.Security.Cryptography.Algorithms.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Encoding, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.Encoding.4.3.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Web.DynamicData" />
@@ -216,8 +272,6 @@
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net.Http">
     </Reference>
     <Reference Include="System.Net.Http.WebRequest">
     </Reference>
@@ -284,12 +338,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\DbInitializer.cs" />
+    <Compile Include="App_Start\HangfireConfig.cs" />
+    <Compile Include="Attributes\Filters\AjaxOnlyAttribute.cs" />
     <Compile Include="Attributes\Filters\ValidateReCaptchaAttribute.cs" />
     <Compile Include="Attributes\Filters\MvcAjaxValidateAntiForgeryAttribute.cs" />
     <Compile Include="Attributes\Filters\OnlyGuestsAttribute.cs" />
     <Compile Include="BLL\DTO\ImageDTO.cs" />
     <Compile Include="BLL\DTO\PostDTO.cs" />
     <Compile Include="BLL\DTO\TagDTO.cs" />
+    <Compile Include="BLL\DTO\UserAdDTO.cs" />
     <Compile Include="BLL\IdentityManagers\AppSignInManager.cs" />
     <Compile Include="BLL\IdentityManagers\AppUserManager.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
@@ -310,6 +367,7 @@
     <Compile Include="BLL\Services\TagsService.cs" />
     <Compile Include="Constants\ClaimConstants.cs" />
     <Compile Include="Constants\FacebookSettings.cs" />
+    <Compile Include="Constants\GoogleApiSettings.cs" />
     <Compile Include="Constants\GoogleCaptchaSettings.cs" />
     <Compile Include="Constants\GooglePlusSettings.cs" />
     <Compile Include="Constants\SessionKeys.cs" />
@@ -322,6 +380,7 @@
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\FeedsController.cs" />
     <Compile Include="Controllers\FollowersController.cs" />
+    <Compile Include="Controllers\GoogleController.cs" />
     <Compile Include="Controllers\ModerController.cs" />
     <Compile Include="Controllers\NotificationController.cs" />
     <Compile Include="Controllers\PaymentsController.cs" />
@@ -342,6 +401,7 @@
     <Compile Include="DAL\Entities\Helper.cs" />
     <Compile Include="DAL\Entities\Notification.cs" />
     <Compile Include="DAL\Entities\Payment.cs" />
+    <Compile Include="DAL\Entities\ProfileView.cs" />
     <Compile Include="DAL\Entities\Rating.cs" />
     <Compile Include="DAL\Entities\SocialLinks.cs" />
     <Compile Include="DAL\Entities\Tag.cs" />
@@ -356,6 +416,7 @@
     <Compile Include="DAL\Repositories\RatingRepository.cs" />
     <Compile Include="DAL\Repositories\SocialLinksRepository.cs" />
     <Compile Include="DAL\Repositories\TagsRepository.cs" />
+    <Compile Include="DAL\Repositories\UserRepository.cs" />
     <Compile Include="Enums\CashOperationTypes.cs" />
     <Compile Include="Enums\PaymentType.cs" />
     <Compile Include="Enums\HelperTypes.cs" />
@@ -367,6 +428,14 @@
     <Compile Include="Enums\SortFilter.cs" />
     <Compile Include="Extensions\ClaimsExtensions.cs" />
     <Compile Include="Extensions\ValidationExtensions.cs" />
+    <Compile Include="ExternalServices\Google\AdSense\AdSenseRequestParams.cs" />
+    <Compile Include="ExternalServices\Google\AdSense\AdSenseResult.cs" />
+    <Compile Include="ExternalServices\Google\AppFlowMetadata.cs" />
+    <Compile Include="ExternalServices\Google\Authorize\AuthCodeResponse.cs" />
+    <Compile Include="ExternalServices\Google\Authorize\Authenticator.cs" />
+    <Compile Include="ExternalServices\Google\Core\ApiRequest.cs" />
+    <Compile Include="ExternalServices\Google\Core\RequestParams.cs" />
+    <Compile Include="ExternalServices\Google\Data\DataStore.cs" />
     <Compile Include="ExternalServices\Google\GoogleService.cs" />
     <Compile Include="ExternalServices\YandexMoney\Authenticator.cs" />
     <Compile Include="ExternalServices\YandexMoney\ExternalPayment.cs" />
@@ -467,6 +536,10 @@
     <Compile Include="Migrations\201706241200308_AddPublishDate.cs" />
     <Compile Include="Migrations\201706241200308_AddPublishDate.Designer.cs">
       <DependentUpon>201706241200308_AddPublishDate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707032009172_AuthorShowAd.cs" />
+    <Compile Include="Migrations\201707032009172_AuthorShowAd.Designer.cs">
+      <DependentUpon>201707032009172_AuthorShowAd.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountModels.cs" />
@@ -582,6 +655,8 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\masonry.pkgd.min.js" />
+    <Content Include="Scripts\MiteApi.js" />
+    <Content Include="Scripts\MiteTab.js" />
     <Content Include="Scripts\MiteUtilities.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\password-strength.js" />
@@ -654,6 +729,7 @@
     <Content Include="Views\UserSettings\SocialServices.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\LabeledTextBox.cshtml" />
     <Content Include="Views\Home\BadJs.cshtml" />
+    <Content Include="Views\Cash\Advertising.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -719,6 +795,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201706241200308_AddPublishDate.resx">
       <DependentUpon>201706241200308_AddPublishDate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707032009172_AuthorShowAd.resx">
+      <DependentUpon>201707032009172_AuthorShowAd.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

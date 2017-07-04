@@ -14,13 +14,11 @@ using Microsoft.AspNet.SignalR;
 using Autofac;
 using Autofac.Integration.WebApi;
 using Autofac.Integration.Mvc;
-using Mite.Infrastructure;
 using System.Net.Http;
 using Mite.ExternalServices.YandexMoney;
 using Yandex.Money.Api.Sdk.Interfaces;
 using NLog;
 using Mite.ExternalServices.Google;
-using Microsoft.AspNet.Identity;
 
 namespace Mite
 {
@@ -53,7 +51,7 @@ namespace Mite
             builder.RegisterType<UnitOfWork>().As<IUnitOfWork>().InstancePerRequest();
             builder.Register(c => c.Resolve<IOwinContext>().Authentication).As<IAuthenticationManager>().InstancePerRequest();
             builder.Register(c => new AppUserManager(new UserStore<User>(c.Resolve<AppDbContext>()),
-                dataProtectionProvider));
+                dataProtectionProvider)).InstancePerRequest();
             builder.RegisterType<AppSignInManager>();
             builder.RegisterType<AppRoleManager>();
 

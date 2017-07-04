@@ -12,7 +12,8 @@ using Microsoft.AspNet.Identity;
 using Mite.BLL.DTO;
 using System.Collections.Generic;
 using NLog;
-using Mite.DAL.Repositories;
+using System.Linq;
+using System.Data.Entity;
 
 namespace Mite.BLL.Services
 {

@@ -1,0 +1,47 @@
+﻿@model Mite.Models.CashAdvertisingModel
+
+<form class="ui form" method="post" id="cashAdvertising">
+    @Html.EditorFor(x => x.AllowShowAd)
+    @Html.AntiForgeryToken()
+    <div class="ui error message" hidden id="cashAdMsg"></div>
+</form>
+<div class="ui statistic">
+    <div class="value">
+        @Model.Income
+    </div>
+    <div class="label">
+        Доход за все время
+    </div>
+</div>
+<div class="ui statistic">
+    <div class="value">@Model.DailyIncome</div>
+    <div class="label">Доход за день</div>
+</div>
+<div class="ui statistic">
+    <div class="value">@Model.WeekIncome</div>
+    <div class="label">Доход за неделю</div>
+</div>
+
+<script>
+    ViewHelper.disableFormSubmitting('#cashAdvertising');
+    $(function () {
+        $('#cashAdvertising').checkbox({
+            onChange: function () {
+                var formData = $('#cashAdvertising').serialize();
+                formData += '&AllowShowAd=' + document.getElementById('AllowShowAd').checked.toString();
+                console.log(formData);
+                $.ajax({
+                    type: 'post',
+                    url: '/cash/adconfirm',
+                    data: formData,
+                    success: function (resp) {
+                    },
+                    error: function (resp) {
+                        $('#cashAdMsg').show();
+                    }
+                });
+            }
+        });
+    });
+</script>
+

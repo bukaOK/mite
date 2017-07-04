@@ -24,6 +24,7 @@ namespace Mite.DAL.Infrastructure
         private CashOperationsRepository cashOperationsRepository;
         private ExternalServiceRepository externalServiceRepository;
         private SocialLinksRepository socialLinksRepository;
+        private UserRepository userRepository;
 
         public PostsRepository PostsRepository => postsRepository ?? (postsRepository = new PostsRepository(db));
         public TagsRepository TagsRepository => tagsRepository ?? (tagsRepository = new TagsRepository(db));
@@ -48,17 +49,16 @@ namespace Mite.DAL.Infrastructure
 
         public SocialLinksRepository SocialLinksRepository =>
             socialLinksRepository ?? (socialLinksRepository = new SocialLinksRepository(db));
+        public UserRepository UserRepository => userRepository ?? (userRepository = new UserRepository(db));
 
 
-        public TRepo GetRepository<TRepo, TEntity>() 
-            where TRepo : class, IRepository<TEntity>
-            where TEntity : class, IEntity
-        {
-            return (TRepo)Activator.CreateInstance(typeof(TRepo), db);
-        }
         public UnitOfWork()
         {
             db = new SqlConnection(ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString);
+        }
+        public UnitOfWork(IDbConnection dbConnection)
+        {
+            db = dbConnection;
         }
     }
 }

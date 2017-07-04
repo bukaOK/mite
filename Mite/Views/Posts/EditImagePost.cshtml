@@ -185,6 +185,14 @@
                         }
                     ]
                 },
+                Description: {
+                    rules: [
+                        {
+                            type: 'maxLength[' + $('#Description').data('val-maxlength-max') + ']',
+                            prompt: $('#Description').data('val-maxlength')
+                        }
+                    ]
+                },
                 @Html.IdFor(x => x.Content): {
                     rules: [
                         {

@@ -8,11 +8,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Mite.DAL.Entities
 {
     /// <summary>
-    /// Сущность внешность сервисов(google plus, vk, facebook etc.)
+    /// Сущность внешних сервисов(google plus, vk, facebook etc.)
     /// </summary>
     public class ExternalService : Entity
     {
         public string Name { get; set; }
+        /// <summary>
+        /// Токен для внешнего сервиса(для GoogleApi это может быть RefreshToken)
+        /// </summary>
         public string AccessToken { get; set; }
         [ForeignKey("User")]
         public string UserId { get; set; }

@@ -6,12 +6,12 @@
         Настройки
     </h2>
     <nav class="ui stackable pointing secondary tabs menu" style="border: none">
-        <a class="active item" data-tab="profile">Профиль</a>
+        <a class="item" data-tab="userprofile">Профиль</a>
         <a class="item" data-tab="changeavatar">Изменить аватар</a>
         <a class="item" data-tab="security">Безопасность</a>
-        <a class="item" data-tab="externalservices">Внешние сервисы</a>
+        <a class="item" data-tab="socialservices">Внешние сервисы</a>
     </nav>
-    <div class="ui tab" data-tab="profile">
+    <div class="ui active tab" data-tab="userprofile">
         @Html.Action("UserProfile")
     </div>
     <div class="ui tab" data-tab="changeavatar">
@@ -23,22 +23,18 @@
                 @Html.Partial("_ChangePass", new Mite.Models.ChangePassModel())
             </div>
             <div class="six wide column">
-                @Html.Action("EmailSettings", "UserSettings")
+                @Html.Action("EmailSettings")
             </div>
         </div>
     </div>
-    <div class="ui tab" data-tab="externalservices">
+    <div class="ui tab" data-tab="socialservices">
         @Html.Action("SocialServices")
     </div>
 </div>
 <script>
     $(function () {
             $('#userSettingsItem').addClass('active');
-            $('.ui.tabs.menu .item')
-                .tab({
-                    history: true,
-                    historyType: 'hash'
-                });
+            var tabs = new MiteTab('.ui.tabs.menu .item', '/user/settings/');
             ViewHelper.disableFormSubmitting('form');
         });
 </script>
