@@ -1,7 +1,10 @@
 ﻿using Autofac;
 using Hangfire;
+using Hangfire.Annotations;
+using Hangfire.Dashboard;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.Owin;
 using Microsoft.Owin.Security.DataProtection;
 using Mite.BLL.IdentityManagers;
 using Mite.BLL.Services;
@@ -25,9 +28,11 @@ namespace Mite
         {
             container = diContainer;
             owinApp = app;
-
             GlobalConfiguration.Configuration.UseSqlServerStorage("DefaultConnection");
-            app.UseHangfireDashboard();
+            app.UseHangfireDashboard("/hangfire", new DashboardOptions
+            {
+                Authorization = new [] { new HangfireAuthFilter() }
+            });
             app.UseHangfireServer();
             RecurringJob.AddOrUpdate(() => LoadAdSenseIncome(), Cron.Daily);
         }
@@ -71,6 +76,14 @@ namespace Mite
                     continue;
                 cashService.AdSensePay(author.Id, incomePart * authorsIncome, incomeDay);
             }
+        }
+    }
+    public class HangfireAuthFilter : IDashboardAuthorizationFilter
+    {
+        public bool Authorize([NotNull] DashboardContext context)
+        {
+            var owinContext = new OwinContext(context.GetOwinEnvironment());
+            return owinContext.Authentication.User.IsInRole("admin");
         }
     }
 }

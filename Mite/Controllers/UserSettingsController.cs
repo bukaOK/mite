@@ -40,7 +40,6 @@ namespace Mite.Controllers
             return PartialView();
         }
         [HttpPost]
-        [ChildActionOnly]
         public async Task<JsonResult> ChangeAvatar(string base64Str)
         {
             if (string.IsNullOrEmpty(base64Str))

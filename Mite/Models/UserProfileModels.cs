@@ -23,6 +23,7 @@ namespace Mite.Models
         public bool IsFollowing { get; set; }
         public int PostsCount { get; set; }
         public string YandexWalId { get; set; }
+        public bool ShowAd { get; set; }
         public SocialLinksModel SocialLinks { get; set; }
     }
     /// <summary>

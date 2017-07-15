@@ -1,4 +1,9 @@
-﻿function MiteApi(url, data){
+﻿var MiteApi = {
+    Moder: {
+
+    }
+}
+function MiteRequest(url, data) {
     this.errors = {
         500: 'Ошибка сервера.',
         404: 'URL не найден.'
@@ -15,19 +20,19 @@
     }
     this.jsonResponse = false;
 }
-MiteApi.prototype.getAsync = function () {
+MiteRequest.prototype.getAsync = function () {
     
 }
-MiteApi.prototype.postAsync = function () {
+MiteRequest.prototype.postAsync = function () {
 
 }
-MiteApi.prototype._parseResponse = function(text, contentType) {
+MiteRequest.prototype._parseResponse = function (text, contentType) {
     if (contentType == 'application/json') {
         return JSON.parse(text);
     }
     return text;
 }
-MiteApi.prototype._sendWithUrl = function (method) {
+MiteRequest.prototype._sendWithUrl = function (method) {
     var self = this;
 
     var xhr = new XMLHttpRequest();
@@ -51,7 +56,7 @@ MiteApi.prototype._sendWithUrl = function (method) {
     }
     xhr.send()
 }
-MiteApi.prototype._sendWithBody = function (method) {
+MiteRequest.prototype._sendWithBody = function (method) {
     var self = this;
 
     var xhr = new XMLHttpRequest();
@@ -64,6 +69,7 @@ MiteApi.prototype._sendWithBody = function (method) {
         }
     }
 }
-MiteApi.prototype.onComplete = function (resp) { }
-MiteApi.prototype.onSuccess = function (resp) { }
-MiteApi.prototype.onError = function (resp) { }
+MiteRequest.prototype.onComplete = function (resp) { }
+MiteRequest.prototype.onSuccess = function (resp) { }
+MiteRequest.prototype.onError = function (resp) { }
+MiteRequest.prototype.validate = function(resp) { }

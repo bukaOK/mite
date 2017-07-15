@@ -6,7 +6,7 @@
 
 @{ 
     ViewBag.Title = Model.Header;
-    ViewBag.MetaDescription = string.Format("Публикация {0} | {1}", Model.Header, Model.User.UserName);
+    ViewBag.MetaDescription = string.Format("Публикация пользователя {0} {1} | {2}", Model.User.UserName, Model.Header, Model.Description);
 
     var userId = User.Identity.GetUserId();
     var tagsRow = "";
@@ -36,6 +36,26 @@
             }
         </div>
     </div>
+    @if (Model.Blocked)
+    {
+        <div class="row">
+            <div class="centered ten wide column">
+                <div class="ui yellow message">
+                    <div class="header">Работа заблокирована!</div>
+                    <div class="content">
+                        Причины блокировки могут быть следующими:
+                        <ul>
+                            <li>Низкое качество работы</li>
+                            <li>Недопустимый контент</li>
+                            <li>Нарушение чужих авторских прав</li>
+                            <li>И другие...</li>
+                        </ul>
+                        По всем вопросам обращайтесь службу поддержки: support@mitegroup.ru
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
     <div class="row">
         @if (Model.IsImage)
         {
@@ -98,12 +118,22 @@
                     <div class="field">
                         <button type="button" class="ui primary button" onclick="updateTags()">Обновить</button>
                     </div>
-                    <div class="ui message" id="tagsUpdateMsg" hidden></div>
+                    <div class="field">
+                        @if (Model.Blocked)
+                        {
+                            <button type="button" class="ui green button" onclick="unblockPost()">Разблокировать</button>
+                        }
+                        else
+                        {
+                            <button type="button" class="ui red button" onclick="blockPost()">Заблокировать</button>
+                        }
+                    </div>
+                    <div class="ui message" id="moderActionMsg" hidden></div>
                 </div>
             </div>
             <script>
                 function updateTags(){
-                    var $msg = $('#tagsUpdateMsg');
+                    var $msg = $('#moderActionMsg');
                     $.ajax({
                         url: '@Url.Action("UpdatePostTags", "Moder")',
                         type: 'post',
@@ -118,6 +148,42 @@
                         error: function(){
                             $msg.addClass('red').removeClass('green');
                             $msg.html('Ошибка');
+                        },
+                        complete: function(){
+                            $msg.show();
+                        }
+                    });
+                }
+                function blockPost(){
+                    var $msg = $('#moderActionMsg');
+                    $.ajax({
+                        url: '@Url.Action("BlockPost", "Moder", new { id = Model.Id })',
+                        type: 'get',
+                        success: function(){
+                            $msg.addClass('green').removeClass('red');
+                            $msg.html('Успешно блокировано');
+                        },
+                        error: function(){
+                            $msg.addClass('red').removeClass('green');
+                            $msg.html('Ошибка при блокировании');
+                        },
+                        complete: function(){
+                            $msg.show();
+                        }
+                    });
+                }
+                function unblockPost(){
+                    var $msg = $('#moderActionMsg');
+                    $.ajax({
+                        url: '@Url.Action("UnblockPost", "Moder", new { id = Model.Id })',
+                        type: 'get',
+                        success: function(){
+                            $msg.addClass('green').removeClass('red');
+                            $msg.html('Успешно разблокировано');
+                        },
+                        error: function(){
+                            $msg.addClass('red').removeClass('green');
+                            $msg.html('Ошибка при разблокировании');
                         },
                         complete: function(){
                             $msg.show();

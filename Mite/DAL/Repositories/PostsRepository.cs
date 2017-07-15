@@ -35,14 +35,18 @@ namespace Mite.DAL.Repositories
         public override Task UpdateAsync(Post entity)
         {
             var query = "update dbo.Posts set Title=@Title, Content=@Content, IsImage=@IsImage, LastEdit=@LastEdit, PublishDate=@PublishDate, " +
-                "Cover=@Cover, Description=@Description, Rating=@Rating, Views=@Views where Id=@Id";
+                "Cover=@Cover, Description=@Description, Rating=@Rating, Views=@Views, Blocked=@Blocked where Id=@Id";
             return Db.ExecuteAsync(query, entity);
         }
-        public Task<IEnumerable<Post>> GetByUserAsync(string userId, bool isPublished)
+        public Task<IEnumerable<Post>> GetByUserAsync(string userId, bool isPublished, bool blocked)
         {
             var query = "select * from dbo.Posts where dbo.Posts.UserId=@UserId and PublishDate is ";
             var publishedQuery = isPublished ? "not null" : "null";
             query += publishedQuery;
+            if (blocked)
+                query += " and Blocked=1";
+            else
+                query += " and Blocked=0";
             return Db.QueryAsync<Post>(query, new { UserId = userId });
         }
         /// <summary>
@@ -88,7 +92,7 @@ namespace Mite.DAL.Repositories
         }
         public Task<int> GetPublishedPostsCount(string userId)
         {
-            return Db.QueryFirstAsync<int>("select COUNT(*) from dbo.Posts where UserId=@UserId and PublishDate is not null", new { UserId = userId });
+            return Db.QueryFirstAsync<int>("select COUNT(*) from dbo.Posts where UserId=@UserId and PublishDate is not null and Blocked=0", new { UserId = userId });
         }
         public Task AddView(Guid id)
         {
@@ -210,7 +214,7 @@ namespace Mite.DAL.Repositories
                 .Select<dynamic, Guid>(x => Guid.Parse(x.Post_Id.ToString()));
 
             var query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId " +
-                "where dbo.Posts.Id in @postsIds and PublishDate is not null and PublishDate > @minDate ";
+                "where dbo.Posts.Id in @postsIds and PublishDate is not null and dbo.Posts.Blocked=0 and PublishDate > @minDate ";
 #if DEBUG
             query += $"and dbo.Posts.Title like N'%{postName}%'";
 #else
@@ -250,7 +254,7 @@ namespace Mite.DAL.Repositories
             bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range)
         {
             var query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.Posts.UserId=dbo.AspNetUsers.Id " +
-                "where dbo.Posts.PublishDate is not null and PublishDate > @minDate and ";
+                "where dbo.Posts.PublishDate is not null and dbo.Posts.Blocked=0 and PublishDate > @minDate and ";
 #if DEBUG
             query += $"dbo.Posts.Title like N'%{postName}%'";
 #else
@@ -288,7 +292,7 @@ namespace Mite.DAL.Repositories
             string currentUserId, SortFilter sortType, int offset, int range)
         {
             var query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId" +
-                " where dbo.Posts.PublishDate is not null and PublishDate > @minDate ";
+                " where dbo.Posts.PublishDate is not null and dbo.Posts.Blocked=0 and PublishDate > @minDate ";
             IEnumerable<string> followings;
             object queryParams = new { minDate };
             if (onlyFollowings)
@@ -320,7 +324,7 @@ namespace Mite.DAL.Repositories
         }
         public Task<IEnumerable<Post>> GetGalleryByUserAsync(string userId)
         {
-            var query = "select Id, Content from dbo.Posts where UserId=@userId and PublishDate is not null and IsImage=1";
+            var query = "select Id, Content from dbo.Posts where UserId=@userId and PublishDate is not null and Blocked=0 and IsImage=1";
             return Db.QueryAsync<Post>(query, new { userId });
         }
     }

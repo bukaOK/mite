@@ -4,6 +4,7 @@ using Mite.BLL.Services;
 using Mite.Core;
 using Mite.Models;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 
@@ -21,9 +22,14 @@ namespace Mite.Controllers
             _userManager = userManager;
         }
         [HttpGet]
-        public Task<List<NotificationModel>> GetByUser(bool onlyNew)
+        public async Task<List<NotificationModel>> GetByUser(bool onlyNew, CancellationToken cancellationToken)
         {
-            return _notificationService.GetByUserAsync(User.Identity.GetUserId(), onlyNew);
+            var result = await _notificationService.GetByUserAsync(User.Identity.GetUserId(), onlyNew);
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return null;
+            }
+            return result;
         }
         [HttpPost]
         public async Task<IHttpActionResult> Add(NotificationModel model)

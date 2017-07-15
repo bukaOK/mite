@@ -52,6 +52,7 @@ namespace Mite.ExternalServices.Google
 
         public async Task<string> AuthorizeAsync(string code, string redirectUri, string userId)
         {
+            //Параметры для авторизации
             var reqParams = new Dictionary<string, string>
             {
                 { "code", code },
@@ -66,13 +67,25 @@ namespace Mite.ExternalServices.Google
             {
                 var result = await resp.Content.ReadAsStringAsync();
                 var jResult = JObject.Parse(result);
-                await Database.ExternalServiceRepository.AddAsync(new DAL.Entities.ExternalService
+
+                var repo = Database.ExternalServiceRepository;
+                //Если сервис с токеном уже есть в базе, просто обновляем его
+                var existingService = await repo.GetByServiceNameAsync(GoogleApiSettings.DefaultAuthType);
+                if(existingService == null)
                 {
-                    Name = GoogleApiSettings.DefaultAuthType,
-                    AccessToken = (string)jResult["refresh_token"],
-                    UserId = userId
-                });
-                return (string)jResult["access_token"];
+                    await repo.AddAsync(new DAL.Entities.ExternalService
+                    {
+                        Name = GoogleApiSettings.DefaultAuthType,
+                        AccessToken = jResult["refresh_token"].ToString(),
+                        UserId = userId
+                    });
+                }
+                else
+                {
+                    existingService.AccessToken = jResult["refresh_token"].ToString();
+                    await repo.UpdateAsync(existingService);
+                }
+                return jResult["access_token"].ToString();
             }
             logger.Error("Ошибка при авторизации Google AdSense: " + await resp.Content.ReadAsStringAsync());
             return null;
@@ -133,7 +146,9 @@ namespace Mite.ExternalServices.Google
             {
                 foreach (var row in result.Rows)
                 {
-                    sum += Convert.ToDouble(row);
+                    var rowSum = row[0];
+                    rowSum = rowSum.Replace('.', ',');
+                    sum += Convert.ToDouble(rowSum);
                 }
             }
             return sum;

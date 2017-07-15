@@ -26,7 +26,7 @@ namespace Mite.DAL.Repositories
                 "dbo.AspNetUsers left outer join (select [UserId], COUNT(UserId) as RatingActivity from dbo.Ratings group by UserId) as " +
                 "RatingsActivity on dbo.AspNetUsers.Id=RatingsActivity.UserId left outer join " +
                 "(select UserId as [CommentUserId], COUNT(UserId) as CommentActivity from dbo.Comments group by UserId) as CommentsActivity " +
-                "on dbo.AspNetUsers.Id=CommentsActivity.CommentUserId where not (RatingActivity is null and CommentActivity is null)";
+                "on dbo.AspNetUsers.Id=CommentsActivity.CommentUserId where not (RatingActivity is null and CommentActivity is null) and ShowAd=1";
             return Db.Query<UserAdDTO>(query);
         }
     }

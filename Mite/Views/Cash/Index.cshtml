@@ -71,7 +71,7 @@
         </ol>
     </div>
     <div class="ui fluid action input">
-        <input type="text" value="http://test.mitegroup.ru/?refid=@User.Identity.GetUserId()" readonly 
+        <input type="text" value="http://@Request.Url.Host/?refid=@User.Identity.GetUserId()" readonly 
                style="background-color: #e0e0e0 !important" id="refLink"/>
         <button class="ui green button" data-clipboard-target="#refLink" id="refCopyBtn">
             <i class="copy icon"></i>

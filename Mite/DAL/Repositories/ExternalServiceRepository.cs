@@ -28,6 +28,16 @@ namespace Mite.DAL.Repositories
 
             return await GetAsync(userId, serviceName);
         }
+        /// <summary>
+        /// Получить сервис с токеном по имени внешнего сервиса
+        /// </summary>
+        /// <param name="serviceName"></param>
+        /// <returns></returns>
+        public Task<ExternalService> GetByServiceNameAsync(string serviceName)
+        {
+            var query = "select * from dbo.ExternalServices where Name=@serviceName";
+            return Db.QueryFirstOrDefaultAsync<ExternalService>(query, new { serviceName });
+        }
         public async Task RemoveAsync(string userId, string serviceName)
         {
             var query = "delete from dbo.ExternalServices where UserId=@userId and ServiceName=@serviceName";

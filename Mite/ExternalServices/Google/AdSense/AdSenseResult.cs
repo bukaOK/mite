@@ -15,7 +15,7 @@ namespace Mite.ExternalServices.Google.AdSense
         [JsonProperty("headers")]
         public IEnumerable<Header> Headers { get; set; }
         [JsonProperty("rows")]
-        public IEnumerable<string> Rows { get; set; }
+        public IEnumerable<IList<string>> Rows { get; set; }
         [JsonProperty("totals")]
         public IEnumerable<string> Totals { get; set; }
         [JsonProperty("averages")]

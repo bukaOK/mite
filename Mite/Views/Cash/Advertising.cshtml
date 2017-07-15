@@ -1,5 +1,12 @@
 ﻿@model Mite.Models.CashAdvertisingModel
 
+<div class="ui blue message" role="alert">
+    <div class="ui header" role="heading">Немного информации...</div>
+    <div class="content">
+        При распределении дохода от рекламы мы учитываем как ваш рейтинг, так и активность на сайте, 
+        таким образом недостаточно просто публиковать работы или просто оценивать и комментировать чужие.
+    </div>
+</div>
 <form class="ui form" method="post" id="cashAdvertising">
     @Html.EditorFor(x => x.AllowShowAd)
     @Html.AntiForgeryToken()
@@ -7,18 +14,18 @@
 </form>
 <div class="ui statistic">
     <div class="value">
-        @Model.Income
+        @Math.Round(Model.Income, 2)
     </div>
     <div class="label">
         Доход за все время
     </div>
 </div>
 <div class="ui statistic">
-    <div class="value">@Model.DailyIncome</div>
-    <div class="label">Доход за день</div>
+    <div class="value">@Math.Round(Model.DailyIncome, 2)</div>
+    <div class="label">Доход за вчера</div>
 </div>
 <div class="ui statistic">
-    <div class="value">@Model.WeekIncome</div>
+    <div class="value">@Math.Round(Model.WeekIncome, 2)</div>
     <div class="label">Доход за неделю</div>
 </div>
 

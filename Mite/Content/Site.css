@@ -416,3 +416,10 @@ p.docs{
 .post-item .ui.label{
     margin-top: 5px;
 }
+/*Мини карточка пользователя в топе*/
+.user-card.popup .user-info.column{
+    padding-left: 0
+}
+.user-card.popup .statistics.row{
+    padding-top: 0;
+}

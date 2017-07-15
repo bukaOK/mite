@@ -38,6 +38,7 @@ namespace Mite.Controllers
         {
             return View();
         }
+        [Authorize(Roles = "admin")]
         public ActionResult RunHangfire()
         {
             BackgroundJob.Enqueue(() => HangfireConfig.LoadAdSenseIncome());

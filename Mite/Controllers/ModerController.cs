@@ -2,6 +2,7 @@
 using Mite.Core;
 using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,11 +15,13 @@ namespace Mite.Controllers
     [Authorize(Roles = "moder")]
     public class ModerController : BaseController
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IUnitOfWork unitOfWork;
+        private readonly ILogger logger;
 
-        public ModerController(IUnitOfWork unitOfWork)
+        public ModerController(IUnitOfWork unitOfWork, ILogger logger)
         {
-            _unitOfWork = unitOfWork;
+            this.unitOfWork = unitOfWork;
+            this.logger = logger;
         }
         public ViewResult Index()
         {
@@ -27,7 +30,7 @@ namespace Mite.Controllers
         [HttpPost]
         public async Task<JsonResult> Tags()
         {
-            var tags = await _unitOfWork.TagsRepository.GetAllAsync();
+            var tags = await unitOfWork.TagsRepository.GetAllAsync();
             return JsonResponse(JsonResponseStatuses.Success, new
             {
                 Confirmed = tags.Where(x => x.IsConfirmed),
@@ -38,20 +41,54 @@ namespace Mite.Controllers
         [HttpPost]
         public Task BindTag(Guid fromId, Guid toId)
         {
-            return _unitOfWork.TagsRepository.BindAsync(fromId, toId);
+            return unitOfWork.TagsRepository.BindAsync(fromId, toId);
         }
         [HttpPost]
         public async Task UpdatePostTags(IEnumerable<string> tagsNames, Guid postId)
         {
             var tags = Mapper.Map<List<Tag>>(tagsNames);
-            await _unitOfWork.TagsRepository.AddWithPostAsync(tags, postId);
+            await unitOfWork.TagsRepository.AddWithPostAsync(tags, postId);
         }
         [HttpPost]
         public async Task CheckTag(Guid tagId)
         {
-            var tag = await _unitOfWork.TagsRepository.GetAsync(tagId);
+            var tag = await unitOfWork.TagsRepository.GetAsync(tagId);
             tag.Checked = true;
-            await _unitOfWork.TagsRepository.UpdateAsync(tag);
+            await unitOfWork.TagsRepository.UpdateAsync(tag);
+        }
+        /// <summary>
+        /// Блокируем пост(за нарушения и пр.)
+        /// </summary>
+        /// <returns></returns>
+        public async Task<HttpStatusCodeResult> BlockPost(Guid id)
+        {
+            var post = await unitOfWork.PostsRepository.GetAsync(id);
+            post.Blocked = true;
+            try
+            {
+                await unitOfWork.PostsRepository.UpdateAsync(post);
+                return Ok();
+            }
+            catch(Exception e)
+            {
+                logger.Error("Ошибка при блокировании поста: " + e.Message);
+                return InternalServerError();
+            }
+        }
+        public async Task<HttpStatusCodeResult> UnblockPost(Guid id)
+        {
+            var post = await unitOfWork.PostsRepository.GetAsync(id);
+            post.Blocked = false;
+            try
+            {
+                await unitOfWork.PostsRepository.UpdateAsync(post);
+                return Ok();
+            }
+            catch(Exception e)
+            {
+                logger.Error("Ошибка при разблокировке поста: " + e.Message);
+                return InternalServerError();
+            }
         }
     }
 }

@@ -24,7 +24,7 @@ namespace Mite.BLL.Services
     {
         Task<PostModel> GetPostAsync(Guid postId);
         Task<IdentityResult> AddPostAsync(PostModel postModel, string userId);
-        Task DeletePostAsync(Guid postId);
+        Task<DataServiceResult> DeletePostAsync(Guid postId);
         Task<IdentityResult> UpdatePostAsync(PostModel postModel);
         Task<PostModel> GetWithTagsAsync(Guid postId);
         /// <summary>
@@ -116,7 +116,7 @@ namespace Mite.BLL.Services
             return IdentityResult.Success;
         }
 
-        public async Task DeletePostAsync(Guid postId)
+        public async Task<DataServiceResult> DeletePostAsync(Guid postId)
         {
             var post = await Database.PostsRepository.GetAsync(postId);
             if (post.IsImage)
@@ -133,6 +133,7 @@ namespace Mite.BLL.Services
             }
             FilesHelper.DeleteFile(post.Content);
             await Database.PostsRepository.RemoveAsync(postId);
+            return DataServiceResult.Success();
         }
         /// <summary>
         /// Обновляет пост, PostModel.Content может быть null(когда не было изменений), если это файл
@@ -143,8 +144,14 @@ namespace Mite.BLL.Services
         public async Task<IdentityResult> UpdatePostAsync(PostModel postModel)
         {
             var currentPost = await Database.PostsRepository.GetAsync(postModel.Id);
+            if (currentPost.Blocked)
+            {
+                return IdentityResult.Failed("Заблокированный пост нельзя обновлять");
+            }
             postModel.Tags = postModel.Tags.Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
             var post = Mapper.Map<Post>(postModel);
+            post.Rating = currentPost.Rating;
+            post.Views = currentPost.Views;
 
             if (postModel.IsImage && postModel.Content != currentPost.Content)
             {
@@ -229,17 +236,19 @@ namespace Mite.BLL.Services
         public async Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userId, SortFilter sort, PostTypes type)
         {
             IEnumerable<Post> posts;
-            if (type == PostTypes.Drafts)
+            switch (type)
             {
-                posts = await Database.PostsRepository.GetByUserAsync(userId, false);
-            }
-            else if(type == PostTypes.Published)
-            {
-                posts = await Database.PostsRepository.GetByUserAsync(userId, true);
-            }
-            else
-            {
-                throw new ArgumentException("Не подходящий тип поста");
+                case PostTypes.Drafts:
+                    posts = await Database.PostsRepository.GetByUserAsync(userId, false, false);
+                    break;
+                case PostTypes.Published:
+                    posts = await Database.PostsRepository.GetByUserAsync(userId, true, false);
+                    break;
+                case PostTypes.Blocked:
+                    posts = await Database.PostsRepository.GetByUserAsync(userId, true, true);
+                    break;
+                default:
+                    return null;
             }
             const int minChars = 400;
             foreach (var post in posts)
@@ -263,6 +272,21 @@ namespace Mite.BLL.Services
                     {
                         post.Content = img.CompressedVirtualPath;
                     }
+                }
+                if(!string.IsNullOrEmpty(post.Description) && post.Description.Length > 100)
+                {
+                    var description = post.Description;
+                    //Находим последний пробел, обрезаем до него
+                    description = description.Substring(0, 100);
+                    var lastSpace = description.LastIndexOf(' ');
+                    description = description.Substring(0, lastSpace);
+                    //Убираем последний символ, если это знак препинания
+                    var lastChar = description[description.Length - 1];
+                    if (lastChar == ',' || lastChar == '.' || lastChar == '-')
+                    {
+                        description = description.Substring(0, description.Length - 1);
+                    }
+                    post.Description = description + "...";
                 }
             }
             var postModels = Mapper.Map<IEnumerable<ProfilePostModel>>(posts);

@@ -215,10 +215,10 @@
                 <div class="ui fitted inverted divider" style="margin: 0"></div>
                 <div class="row">
                     <div class="ten wide column">
-                        <div class="ui inverted horizontal link list">
-                            @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "item" })
-                            @Html.ActionLink("Условия пользования", "Terms", "Home", null, new { @class = "item" })
-                            @Html.ActionLink("Политика конфиденциальности", "Privacy", "Home", null, new { @class = "item" })
+                        <div class="ui inverted horizontal link list" role="list">
+                            @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "item", role = "listitem" })
+                            @Html.ActionLink("Условия пользования", "Terms", "Home", null, new { @class = "item", role = "listitem" })
+                            @Html.ActionLink("Политика конфиденциальности", "Privacy", "Home", null, new { @class = "item", role = "listitem" })
                         </div>
                     </div>
                     <div class="six wide right aligned column">
@@ -230,7 +230,7 @@
             </div>
             <div class="ui mobile only grid center aligned container">
                 <div class="ui basic segment" style="padding-top: 0">
-                    <div class="ui inverted divided list">
+                    <div class="ui inverted divided list" role="list">
                         @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "item" })
                         @Html.ActionLink("Условия пользования", "Terms", "Home", null, new { @class = "item" })
                         @Html.ActionLink("Политика конфиденциальности", "Privacy", "Home", null, new { @class = "item" })

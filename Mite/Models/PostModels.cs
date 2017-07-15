@@ -37,6 +37,7 @@ namespace Mite.Models
         /// </summary>
         public List<string> Tags { get; set; }
         public string Cover { get; set; }
+        public bool Blocked { get; set; }
         public UserShortModel User { get; set; }
     }
     public class WritingPostModel
@@ -57,6 +58,7 @@ namespace Mite.Models
         public List<string> Tags { get; set; }
         public string Cover { get; set; }
         public HelperModel Helper { get; set; }
+        public bool Blocked { get; set; }
         public List<CommentModel> Comments { get; set; }
     }
     public class ImagePostModel
@@ -74,6 +76,7 @@ namespace Mite.Models
         [UIHint("TextArea")]
         [MaxLength(350, ErrorMessage = "Слишком длинное описание")]
         public string Description { get; set; }
+        public bool Blocked { get; set; }
         public List<string> Tags { get; set; }
         public List<CommentModel> Comments { get; set; }
     }

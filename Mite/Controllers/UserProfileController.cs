@@ -40,6 +40,30 @@ namespace Mite.Controllers
             profile.SocialLinks = await _userService.GetSocialLinksAsync(profile.UserId.ToString());
             return View(profile);
         }
+        [HttpPost]
+        public async Task<JsonResult> GetUserProfile(string name)
+        {
+            name = name.Replace(" ", string.Empty);
+            var profile = await _userService.GetUserProfileAsync(name, User.Identity.GetUserId());
+            profile.SocialLinks = await _userService.GetSocialLinksAsync(profile.UserId.ToString());
+            //Обрезаем описание(всё для красоты)
+            if(!string.IsNullOrEmpty(profile.About) && profile.About.Length > 50)
+            {
+                var about = profile.About;
+                //Находим последний пробел, обрезаем до него
+                about = about.Substring(0, 50);
+                var lastSpace = about.LastIndexOf(' ');
+                about = about.Substring(0, lastSpace);
+                //Убираем последний символ, если это знак препинания
+                var lastChar = about[about.Length - 1];
+                if (lastChar == ',' || lastChar == '.' || lastChar == '-')
+                {
+                    about = about.Substring(0, about.Length - 1);
+                }
+                profile.About = about + "...";
+            }
+            return JsonResponse(JsonResponseStatuses.Success, profile);
+        }
         public ViewResult Notifications()
         {
             return View();

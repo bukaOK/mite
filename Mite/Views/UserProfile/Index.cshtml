@@ -108,7 +108,7 @@
                     <i class="add user icon"></i>Подписаться
                 </button>
             }
-            else
+            @if (currentUserName == pageUserName)
             {
                 <a href="@Url.RouteUrl("UserSettings")" class="ui blue button"><i class="setting icon"></i>Настройки</a>
             }
@@ -242,20 +242,49 @@
                 <i class="edit icon"></i>
                 Черновики
             </a>
+            <a class="item" data-tab="posts/blocked">
+                <i class="lock icon"></i>
+                Блокированные
+            </a>
         </div>
         <div class="ui tab stackable three column grid basic segment" data-tab="posts/published">Опубликованные</div>
         <div class="ui tab stackable three column basic segment grid" data-tab="posts/drafts">Черновики</div>
+        <div class="ui tab stackable three column basic segment grid" data-tab="posts/blocked">Блокированные</div>
     </div>
 }
 else
 {
-    <div class="ui tab stackable three column basic segment grid" data-tab="posts/published"></div>
+    if (Model.ShowAd)
+    {
+        <div class="ui stackable grid">
+            <div class="three wide column">
+                <div class="ui segment">
+                    <h4 class="ui dividing header">Реклама</h4>
+                    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                    <!-- TopAd -->
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="ca-pub-7675079294669395"
+                         data-ad-slot="2018290469"
+                         data-ad-format="auto"></ins>
+                    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+                </div>
+            </div>
+            <div class="thirteen wide column">
+                <div class="ui tab stackable three column basic segment grid" data-tab="posts/published"></div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="ui tab stackable three column basic segment grid" data-tab="posts/published"></div>
+    }
 }
-<div class="ui stackable tab four column basic segment grid" data-tab="followers">
+<div class="ui stackable tab three column basic segment grid" data-tab="followers">
 </div>
 @if (currentUserName == pageUserName)
 {
-    <div class="ui doubling tab four column basic segment grid" data-tab="followings"></div>
+    <div class="ui doubling tab three column basic segment grid" data-tab="followings"></div>
 }
 <div class="ui basic modal" id="confirmPostDelete">
     <div class="ui icon header">
@@ -324,10 +353,10 @@ else
 <script id="followersTmpl" type="text/x-jsrender">
     <div class="column">
         <div class="ui segment grid" style="margin: 0px;">
-            <div class="six wide column">
-                <img src="{{:AvatarSrc}}" class="ui tiny circular image">
+            <div class="five wide column">
+                <img src="{{:AvatarSrc}}" class="ui small circular image">
             </div>
-            <div class="ten wide column">
+            <div class="eleven wide column">
                 <h3 class="ui header">
                     <span class="content">
                         <a href="/user/profile/{{:UserName}}">{{:UserName}}</a> &bull; <i class="yellow star icon"></i>{{:Rating}}
@@ -591,11 +620,34 @@ else
         var currentUser = '@currentUserName'
         var pageUser = '@pageUserName';
 
+        var grids = [
+            {
+                tabName: 'posts/published',
+                elem: $('.tab[data-tab="posts/published"]').masonry()
+            },
+            {
+                tabName: 'posts/drafts',
+                elem: $('.tab[data-tab="posts/drafts"]').masonry()
+            },
+            {
+                tabName: 'posts/blocked',
+                elem: $('.tab[data-tab="posts/blocked"]').masonry()
+            },
+            {
+                tabName: 'followers',
+                elem: $('.tab[data-tab="followers"]').masonry()
+            },
+            {
+                tabName: 'followings',
+                elem: $('.tab[data-tab="followers"]').masonry()
+            }
+        ];
         if(currentUser != pageUser){
-            var postsGrid = $('.tab[data-tab="posts"]').masonry();
+            grids.push({
+                tabName: 'posts',
+                elem: $('.tab[data-tab="posts"]').masonry()
+            });
         }
-        var publishedPostsGrid = $('.tab[data-tab="posts/published"]').masonry();
-        var draftsPostsGrid = $('.tab[data-tab="posts/drafts"]').masonry();
 
         @if(currentUserName == pageUserName)
         {
@@ -631,7 +683,6 @@ else
                 },
                 beforeSuccess: function (resp) {
                     var jsonResp = JSON.parse(resp);
-                    console.log(jsonResp);
                     var currentTab = getCurrentTab();
                     if(jsonResp.data.length == 0){
                         if(currentTab == 'followers'){
@@ -666,9 +717,6 @@ else
                                 }
                             });
                         }
-                        if(tabName == 'notifications'){
-                            tmplName = 'eventTmpl';
-                        }
                         var tmpl = $.templates('#' + tmplName);
                         if(tabName !== 'followers' && tabName !== 'followings'){
                             return tmpl.render(jsonResp.data) + $('#newPostTmpl').html();
@@ -679,27 +727,16 @@ else
                 },
                 afterSuccess: function(item, tabContent) {
                     tabContent.css('display', 'flex');
-                    if($(item).data('tab') == 'posts' && currentUser != pageUser){
-                        postsGrid.masonry('reloadItems');
-                        postsGrid.imagesLoaded(function(){
-                            postsGrid.masonry('layout');
-                        }).progress(function(){
-                            postsGrid.masonry('layout');
-                        });
-                    } else if($(item).data('tab') == 'posts/published'){
-                        publishedPostsGrid.masonry('reloadItems');
-                        publishedPostsGrid.imagesLoaded(function(){
-                            publishedPostsGrid.masonry('layout');
-                        }).progress(function(){
-                            publishedPostsGrid.masonry('layout');
-                        });
-                    } else if($(item).data('tab') == 'posts/drafts'){
-                        draftsPostsGrid.masonry('reloadItems');
-                        draftsPostsGrid.imagesLoaded(function(){
-                            draftsPostsGrid.masonry('layout');
-                        }).progress(function(){
-                            draftsPostsGrid.masonry('layout');
-                        });
+                    for(var i = 0; i < grids.length; i++){
+                        if($(item).data('tab') == grids[i].tabName){
+                            grids[i].elem.masonry('reloadItems');
+                            grids[i].elem.imagesLoaded(function(){
+                                grids[i].elem.masonry('layout');
+                            }).progress(function(){
+                                grids[i].elem.masonry('layout');
+                            });
+                            break;
+                        }
                     }
                     $('.post-item').dimmer({
                         on: 'hover',

@@ -30,6 +30,7 @@ namespace Mite.DAL.Entities
         /// </summary>
         public DateTime? PublishDate { get; set; }
         public bool IsPublished { get; set; }
+        public bool Blocked { get; set; }
         public List<Tag> Tags { get; set; }
         public List<Comment> Comments { get; set; }
         /// <summary>

@@ -86,7 +86,7 @@ namespace Mite.Controllers
             {
                 AllowShowAd = user.ShowAd,
                 Income = operations.Sum(x => x.Sum),
-                DailyIncome = operations.Where(x => x.Date.AddDays(-1) == DateTime.Now.AddDays(-1)).Sum(x => x.Sum),
+                DailyIncome = operations.Where(x => x.Date <= DateTime.Now.AddDays(-1)).Sum(x => x.Sum),
                 WeekIncome = operations.Where(x => DateTime.Now.AddDays(-7) <= x.Date && x.Date <= DateTime.Now).Sum(x => x.Sum),
                 MonthIncome = operations.Where(x => DateTime.Now.AddMonths(-1) <= x.Date && x.Date <= DateTime.Now).Sum(x => x.Sum)
             });

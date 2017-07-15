@@ -10,6 +10,10 @@ namespace Mite.Enums
         Article,
         //Опубликованные / неопубликованные(черновик)
         Published,
-        Drafts
+        Drafts,
+        /// <summary>
+        /// Заблокированные
+        /// </summary>
+        Blocked
     }
 }
