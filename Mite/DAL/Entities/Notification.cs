@@ -13,6 +13,10 @@ namespace Mite.DAL.Entities
         public Guid Id { get; set; }
         public NotificationTypes NotificationType { get; set; }
         public bool IsNew { get; set; }
+        /// <summary>
+        /// Значение источника(имя пользователя, Id работы, Id комментария и пр.)
+        /// </summary>
+        public string SourceValue { get; set; }
         public DateTime NotifyDate { get; set; }
         [ForeignKey("User")]
         public string UserId { get; set; }

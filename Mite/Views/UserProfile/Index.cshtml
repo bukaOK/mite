@@ -233,7 +233,7 @@
 @if (currentUserName == pageUserName)
 {
     <div class="ui tab" data-tab="posts">
-        <div class="ui center aligned labeled icon secondary tabs menu">
+        <div class="ui stackable center aligned labeled icon secondary tabs menu">
             <a class="active item" data-tab="posts/published">
                 <i class="announcement icon"></i>
                 Публикации
@@ -251,6 +251,8 @@
         <div class="ui tab stackable three column basic segment grid" data-tab="posts/drafts">Черновики</div>
         <div class="ui tab stackable three column basic segment grid" data-tab="posts/blocked">Блокированные</div>
     </div>
+    <div class="ui stackable tab three column basic segment grid" data-tab="followers"></div>
+    <div class="ui stackable tab three column basic segment grid" data-tab="followings"></div>
 }
 else
 {
@@ -272,19 +274,23 @@ else
             </div>
             <div class="thirteen wide column">
                 <div class="ui tab stackable three column basic segment grid" data-tab="posts/published"></div>
+                <div class="ui stackable tab three column basic segment grid" data-tab="followers"></div>
+                @if (currentUserName == pageUserName)
+                {
+                    <div class="ui stackable tab three column basic segment grid" data-tab="followings"></div>
+                }
             </div>
         </div>
     }
     else
     {
         <div class="ui tab stackable three column basic segment grid" data-tab="posts/published"></div>
+        <div class="ui stackable tab three column basic segment grid" data-tab="followers"></div>
+        if (currentUserName == pageUserName)
+        {
+            <div class="ui stackable tab three column basic segment grid" data-tab="followings"></div>
+        }
     }
-}
-<div class="ui stackable tab three column basic segment grid" data-tab="followers">
-</div>
-@if (currentUserName == pageUserName)
-{
-    <div class="ui doubling tab three column basic segment grid" data-tab="followings"></div>
 }
 <div class="ui basic modal" id="confirmPostDelete">
     <div class="ui icon header">

@@ -26,7 +26,9 @@ namespace Mite
             bundles.Add(new ScriptBundle("~/bundles/grid").Include("~/Scripts/masonry.pkgd.min.js", 
                 "~/bower_components/imagesloaded/imagesloaded.pkgd.min.js"));
             bundles.Add(new ScriptBundle("~/bundles/clipboard").Include("~/bower_components/clipboard/dist/clipboard.min.js"));
-            bundles.Add(new ScriptBundle("~/bundles/scroll").Include("~/bower_components/scrollup/dist/jquery.scrollUp.min.js"));
+            bundles.Add(new ScriptBundle("~/bundles/scroll").Include(
+                "~/bower_components/jquery.scrollTo/jquery.scrollTo.js",
+                "~/bower_components/jquery.easing/js/jquery.easing.js"));
 
             bundles.Add(new StyleBundle("~/Content/semantic").Include(
                 "~/bower_components/semantic/src/semantic.css"

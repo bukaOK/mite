@@ -15,7 +15,13 @@ namespace Mite.Hubs
     public class NotifyHub : Hub
     {
         public NotifyHub() { }
-        public void NewNotification(string userId, NotificationTypes notificationType)
+        /// <summary>
+        /// Уведомление пользователя
+        /// </summary>
+        /// <param name="userId">Id пользователя, которому должно прийти уведомление</param>
+        /// <param name="notificationType">Тип уведомления</param>
+        /// <param name="sourceValue">Значение источника(имя пользователя, Id работы, Id комментария и пр.)</param>
+        public void NewNotification(string userId, NotificationTypes notificationType, string sourceValue)
         {
             if (userId == Context.User.Identity.GetUserId())
                 return;
@@ -38,13 +44,17 @@ namespace Mite.Hubs
             switch (notifyModel.NotificationType)
             {
                 case NotificationTypes.CommentRating:
-                    notifyModel.Content += "оценил ваш комментарий.";
+                    notifyModel.Content += $"оценил ваш <a href=\"/posts/showpost/{sourceValue}\">комментарий</a>.";
                     break;
                 case NotificationTypes.PostComment:
-                    notifyModel.Content += "прокомментировал вашу работу.";
+                    //sourceValue like {postId}#com{comId}
+                    notifyModel.Content += $"прокомментировал вашу ";
+                    notifyModel.Content += $"<a href=\"/posts/showpost/{sourceValue}\">работу</a>.";
                     break;
                 case NotificationTypes.PostRating:
-                    notifyModel.Content += "оценил вашу работу.";
+                    //sourceValue is post id
+                    notifyModel.Content += "оценил вашу ";
+                    notifyModel.Content += $"<a href=\"/posts/showpost/{sourceValue}\">работу</a>.";
                     break;
                 case NotificationTypes.Follower:
                     notifyModel.Content += "подписался на вас.";

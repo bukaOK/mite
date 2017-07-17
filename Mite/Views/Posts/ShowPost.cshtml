@@ -20,6 +20,7 @@
     }
 
 }
+@Scripts.Render("~/bundles/scroll")
 <div class="ui segment grid">
     <div class="stackable two column row">
         <div class="column">
@@ -339,6 +340,7 @@
                 var tmpl = $.templates('#commentTmpl');
                 var html = tmpl.render(data);
                 $('#comments-wrapper').html(html);
+                scrollToComment();
             },
             error: function (jqXhr) {
                 alert('Ошибка при инициализации комментариев!');
@@ -365,7 +367,7 @@
             url: '/api/comments/',
             data: model,
             success: function (data) {
-                sendNotification('@NotificationTypes.PostComment', '@Model.User.Id');
+                sendNotification('@NotificationTypes.PostComment', '@Model.User.Id', '@Model.Id#com' + data.Id);
 
                 commentsCount++;
                 loadCommentsCount();
@@ -425,7 +427,7 @@
                     commentRating.innerHTML++;
                 }
                 $(ev).data('isRate', !isRate);
-                sendNotification('@NotificationTypes.CommentRating', userId);
+                sendNotification('@NotificationTypes.CommentRating', userId, '@Model.Id#com' + commentId);
             },
             error: function(jqXhr){
                 alert('Ошибка сервера при оценке!');
@@ -491,7 +493,7 @@
         $('#remove-reply').css('display', 'none');
         $('#CommentContent').removeData('replyComment');
     }
-    function sendNotification(notificType, targetUserId){
+    function sendNotification(notificType, targetUserId, sourceValue){
         $.ajax({
             url: '/api/notification',
             type: 'post',
@@ -499,11 +501,12 @@
                 NotificationType: notificType,
                 User: {
                     Id: targetUserId
-                }
+                },
+                SourceValue: sourceValue
             },
             success: function(data){
                 window.hubReady.done(function(){
-                    $.connection.notifyHub.server.newNotification(targetUserId, notificType);
+                    $.connection.notifyHub.server.newNotification(targetUserId, notificType, sourceValue);
                 });
             },
             error: function(jqXhr){
@@ -530,7 +533,7 @@
                         $("#post-rating").text("(" + newPostRating + ")").data('rating', currentPostRating + newRating);
 
                         lastRateValue = rateValue;
-                        sendNotification('@NotificationTypes.PostRating', '@Model.User.Id');
+                        sendNotification('@NotificationTypes.PostRating', '@Model.User.Id', '@Model.Id');
                     },
                     error: function (jqXhr) {
                         alert('Ошибка инициализации рейтинга.');
@@ -581,6 +584,15 @@
         }, {
             type: 'custom',
             text: '<span class="ui vk small compact button"><i class="vk icon"></i>Поделиться</span>'
+        });
+    }
+    function scrollToComment(){
+        if(location.hash == ''){
+            return;
+        }
+        $(window).scrollTo(location.hash, 2200, {
+            easing: 'easeOutExpo',
+            offset: 20
         });
     }
     $(function () {

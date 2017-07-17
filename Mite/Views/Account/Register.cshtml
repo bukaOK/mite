@@ -45,7 +45,9 @@
                 <div class="ui message" style="display: none" id="pass-strength"></div>
                 @Html.EditorFor(x => x.ConfirmPassword, new { InputIcon = "mail forward" })
                 @Html.AntiForgeryToken()
-                <div class="g-recaptcha" data-sitekey="6LcTGyUUAAAAAJoKAP_S5zSjEtEqdUpY4GiWg2Nx"></div>
+                <div class="field">
+                    <div class="g-recaptcha" data-sitekey="6LcTGyUUAAAAAJoKAP_S5zSjEtEqdUpY4GiWg2Nx"></div>
+                </div>
                 <button type="submit" class="ui animated blue button">
                     <span class="visible content">Зарегистрироваться</span>
                     <span class="hidden content"><i class="checkmark icon"></i></span>

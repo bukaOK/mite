@@ -66,13 +66,31 @@ namespace Mite.BLL.Services
                 switch (notifyModel.NotificationType)
                 {
                     case NotificationTypes.CommentRating:
-                        content.Append("оценил ваш комментарий.");
+                        if (!string.IsNullOrEmpty(notifyModel.SourceValue))
+                            //sourceValue like {postId}#com{commentId}
+                            content.Append($"оценил ваш <a href=\"/posts/showpost/{notifyModel.SourceValue}\">комментарий</a>.");
+                        else
+                            content.Append("оценил ваш комментарий.");
                         break;
                     case NotificationTypes.PostComment:
-                        content.Append("прокомментировал вашу работу.");
+                        if (!string.IsNullOrEmpty(notifyModel.SourceValue))
+                        {
+                            //sourceValue like {postId}#com{commentId}
+                            content.Append("прокомментировал вашу ");
+                            content.Append($"<a href=\"/posts/showpost/{notifyModel.SourceValue}\">работу</a>.");
+                        }
+                        else
+                        {
+                            content.Append("прокомментировал вашу работу.");
+                        }
                         break;
                     case NotificationTypes.PostRating:
-                        content.Append("оценил вашу работу.");
+                        //sourceValue is post id
+                        content.Append("оценил вашу ");
+                        if (!string.IsNullOrEmpty(notifyModel.SourceValue))
+                            content.Append($"<a href=\"/posts/showpost/{notifyModel.SourceValue}\">работу</a>.");
+                        else
+                            content.Append("работу.");
                         break;
                     case NotificationTypes.Follower:
                         content.Append("подписался на вас.");

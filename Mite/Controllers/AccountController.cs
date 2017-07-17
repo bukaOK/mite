@@ -45,11 +45,13 @@ namespace Mite.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Login(LoginModel model, string returnUrl)
         {
+#if !DEBUG
             var recaptchaResult = await googleService.RecaptchaValidateAsync(Request["g-recaptcha-response"]);
             if (!recaptchaResult)
             {
                 ModelState.AddModelError("", "Ошибка ReCaptcha.");
             }
+#endif
 
             if (!ModelState.IsValid)
             {

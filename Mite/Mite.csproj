@@ -523,6 +523,10 @@
     <Compile Include="Migrations\201707051345333_AddBlockPost.Designer.cs">
       <DependentUpon>201707051345333_AddBlockPost.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201707171148112_AddNotificationSourceValue.cs" />
+    <Compile Include="Migrations\201707171148112_AddNotificationSourceValue.Designer.cs">
+      <DependentUpon>201707171148112_AddNotificationSourceValue.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountModels.cs" />
     <Compile Include="Models\CashSettingsModels.cs" />
@@ -648,6 +652,7 @@
     <Content Include="Scripts\respond.min.js" />
     <Content Include="Scripts\semantic.js" />
     <Content Include="Scripts\semantic.min.js" />
+    <Content Include="Scripts\TabFilter.js" />
     <Content Include="Scripts\ViewHelpers.js" />
     <Content Include="Scripts\_references.js" />
     <Content Include="Web.config">
@@ -783,6 +788,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201707051345333_AddBlockPost.resx">
       <DependentUpon>201707051345333_AddBlockPost.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707171148112_AddNotificationSourceValue.resx">
+      <DependentUpon>201707171148112_AddNotificationSourceValue.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

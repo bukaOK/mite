@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using NLog;
 using System.Linq;
 using System.Data.Entity;
+using System.Text.RegularExpressions;
 
 namespace Mite.BLL.Services
 {
@@ -54,9 +55,16 @@ namespace Mite.BLL.Services
             this.logger = logger;
         }
 
-        public Task<SignInStatus> LoginAsync(LoginModel model)
+        public async Task<SignInStatus> LoginAsync(LoginModel model)
         {
-            return signInManager.PasswordSignInAsync(model.UserName, model.Password, model.Remember,
+            var emailRegexPattern = @"^(?("")("".+?(?<!\\)""@)|(([0-9a-z]((\.(?!\.))|[-!#\$%&'\*\+/=\?\^`\{\}\|~\w])*)(?<=[0-9a-z])@))" +
+                @"(?(\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9a-z][-\w]*[0-9a-z]*\.)+[a-z0-9][\-a-z0-9]{0,22}[a-z0-9]))$";
+            if (Regex.IsMatch(model.UserName, emailRegexPattern, RegexOptions.IgnoreCase))
+            {
+                var user = await userManager.FindByEmailAsync(model.UserName);
+                model.UserName = user.UserName;
+            }
+            return await signInManager.PasswordSignInAsync(model.UserName, model.Password, model.Remember,
                     shouldLockout: true);
         }
         public Task<SignInStatus> LoginAsync(ExternalLoginInfo loginInfo, bool remember)
