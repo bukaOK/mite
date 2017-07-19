@@ -158,10 +158,10 @@ namespace Mite.DAL.Repositories
                     query += "order by dbo.Posts.Rating desc";
                     break;
                 case SortFilter.New:
-                    query += "order by dbo.Posts.LastEdit desc";
+                    query += "order by dbo.Posts.PublishDate desc";
                     break;
                 case SortFilter.Old:
-                    query += "order by dbo.Posts.LastEdit asc";
+                    query += "order by dbo.Posts.PublishDate asc";
                     break;
             }
             query += $" offset {offset} rows fetch next {range} rows only";
@@ -234,10 +234,10 @@ namespace Mite.DAL.Repositories
                     query += "order by dbo.Posts.Rating desc";
                     break;
                 case SortFilter.New:
-                    query += "order by dbo.Posts.LastEdit desc";
+                    query += "order by dbo.Posts.PublishDate desc";
                     break;
                 case SortFilter.Old:
-                    query += "order by dbo.Posts.LastEdit asc";
+                    query += "order by dbo.Posts.PublishDate asc";
                     break;
             }
             //Получаем по диапазону
@@ -274,10 +274,10 @@ namespace Mite.DAL.Repositories
                     query += "order by dbo.Posts.Rating desc";
                     break;
                 case SortFilter.New:
-                    query += "order by dbo.Posts.LastEdit desc";
+                    query += "order by dbo.Posts.PublishDate desc";
                     break;
                 case SortFilter.Old:
-                    query += "order by dbo.Posts.LastEdit asc";
+                    query += "order by dbo.Posts.PublishDate asc";
                     break;
             }
             query += $" offset {offset} rows fetch next {range} rows only";
@@ -308,10 +308,10 @@ namespace Mite.DAL.Repositories
                     query += "order by dbo.Posts.Rating desc";
                     break;
                 case SortFilter.New:
-                    query += "order by dbo.Posts.LastEdit desc";
+                    query += "order by dbo.Posts.PublishDate desc";
                     break;
                 case SortFilter.Old:
-                    query += "order by dbo.Posts.LastEdit asc";
+                    query += "order by dbo.Posts.PublishDate asc";
                     break;
             }
             query += $" offset {offset} rows fetch next {range} rows only";

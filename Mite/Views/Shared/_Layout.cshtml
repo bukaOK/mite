@@ -264,7 +264,6 @@
         }
         function initNotifications() {
             var $popup = $('#notify-popup');
-
             $.ajax({
                 url: '/api/notification/',
                 type: 'get',
@@ -274,7 +273,9 @@
                         //Ставим счетчик
                         $('#notifications-item .label').html(resp.length).show();
                         resp.forEach(function (item) {
-                            item.DateStr = ViewHelper.getPastTense(new Date(item.NotifyDate).getTime());
+                            var dateIso = item.NotifyDate;
+                            dateIso += dateIso[dateIso.length - 1] == 'Z' ? '' : 'Z';
+                            item.DateStr = ViewHelper.getPastTense(new Date(dateIso).getTime());
                         });
                         //Рендерим уведомления
                         var html = '<div class="ui feed">' + $.templates('{{for tmpl="#eventTmpl" /}}').render(resp) + '</div>';
@@ -289,7 +290,10 @@
             }).then(function () {
                 $popup.addClass('initialized');
             });
-
+            if ($(window).width() < 900) {
+                $('#notifications-item').attr('href', '/user/notifications');
+                return;
+            }
             $('#notifications-item').popup({
                 position: 'left center',
                 on: 'click',
@@ -307,11 +311,6 @@
                     this.html(emptyMsg);
                     //Обнуляем и скрываем счетчик уведомлений
                     $(item).children('.label').html(0).hide();
-                },
-                onUnplaceable: function ($module) {
-                    if (!location.href.includes('notifications')) {
-                        location.href = '/user/notifications';
-                    }
                 }
             });
         }

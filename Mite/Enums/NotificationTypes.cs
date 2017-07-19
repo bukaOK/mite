@@ -22,6 +22,10 @@ namespace Mite.Enums
         /// <summary>
         /// Оценка коммента
         /// </summary>
-        CommentRating
+        CommentRating,
+        /// <summary>
+        /// Ответ на комментарий
+        /// </summary>
+        CommentReply
     }
 }

@@ -4,6 +4,7 @@
         display: none !important;
     }
 }
+
 html, body{
     height: 100% !important;
 }
@@ -57,6 +58,10 @@ footer{
 /*Вход и регистрация*/
 form.login>.segment, form.register>.segment{
     box-shadow: 0px 0px 20px rgba(34, 36, 38, 0.15) !important;
+}
+.g-recaptcha {
+    transform:scale(0.77);
+    transform-origin:0 0;
 }
 /*"Затемнители" постов*/
 .segment .ui.dimmer{

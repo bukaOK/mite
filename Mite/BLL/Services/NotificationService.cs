@@ -95,6 +95,9 @@ namespace Mite.BLL.Services
                     case NotificationTypes.Follower:
                         content.Append("подписался на вас.");
                         break;
+                    case NotificationTypes.CommentReply:
+                        content.Append($"ответил на ваш <a href=\"/posts/showpost/{notifyModel.SourceValue}\">комментарий</a>.");
+                        break;
                     default:
                         throw new NotImplementedException("Неизвестный тип уведомления");
                 }

@@ -82,13 +82,17 @@ namespace Mite.Controllers
         {
             var user = userManager.FindById(User.Identity.GetUserId());
             var operations = cashService.GetByType(User.Identity.GetUserId(), Enums.CashOperationTypes.GoogleAd);
+            var dateTimeNow = DateTime.Now;
             return PartialView(new CashAdvertisingModel
             {
                 AllowShowAd = user.ShowAd,
                 Income = operations.Sum(x => x.Sum),
-                DailyIncome = operations.Where(x => x.Date <= DateTime.Now.AddDays(-1)).Sum(x => x.Sum),
+                DailyIncome = operations.
+                    Where(x => new DateTime(dateTimeNow.Year, dateTimeNow.Month, dateTimeNow.AddDays(-1).Day, 0, 0, 0) <= x.Date &&
+                    x.Date <= new DateTime(dateTimeNow.Year, dateTimeNow.Month, dateTimeNow.AddDays(-1).Day, 23, 59, 59)).Sum(x => x.Sum),
                 WeekIncome = operations.Where(x => DateTime.Now.AddDays(-7) <= x.Date && x.Date <= DateTime.Now).Sum(x => x.Sum),
-                MonthIncome = operations.Where(x => DateTime.Now.AddMonths(-1) <= x.Date && x.Date <= DateTime.Now).Sum(x => x.Sum)
+                MonthIncome = operations.Where(x => DateTime.Now.AddMonths(-1) <= x.Date && 
+                    x.Date <= new DateTime(dateTimeNow.Year, dateTimeNow.Month, dateTimeNow.AddDays(-1).Day, 23, 59, 59)).Sum(x => x.Sum)
             });
         }
         [HttpPost]

@@ -44,7 +44,8 @@
                     item.DateStr = ViewHelper.getPastTense(new Date(dateIso).getTime());
                 });
                 var commentsArr = resp.filter(function (item) {
-                    return item.NotificationType === @((byte)NotificationTypes.PostComment);
+                    return item.NotificationType === @((byte)NotificationTypes.PostComment)
+                        || item.NotificationType === @((byte)NotificationTypes.CommentReply);
                 });
                 var ratingsArr = resp.filter(function(item){
                     return item.NotificationType === @((byte)NotificationTypes.CommentRating)

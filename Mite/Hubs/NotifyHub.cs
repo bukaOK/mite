@@ -59,6 +59,9 @@ namespace Mite.Hubs
                 case NotificationTypes.Follower:
                     notifyModel.Content += "подписался на вас.";
                     break;
+                case NotificationTypes.CommentReply:
+                    notifyModel.Content += $"ответил на ваш <a href=\"{sourceValue}\">комментарий</a>.";
+                    break;
                 default:
                     throw new NotImplementedException("Неизвестный тип уведомления");
             }

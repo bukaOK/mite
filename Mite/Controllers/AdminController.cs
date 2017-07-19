@@ -48,5 +48,10 @@ namespace Mite.Controllers
             await userManager.AddToRoleAsync(user.Id, "moder");
             return JsonResponse(JsonResponseStatuses.Success, null);
         }
+        //public PartialViewResult Statistic()
+        //{
+        //    var users = userManager.Users.OrderBy(x => x.RegisterDate).ToList();
+
+        //}
     }
 }

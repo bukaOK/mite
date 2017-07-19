@@ -232,7 +232,7 @@
                 {
                     <form class="ui form" id="comments-form">
                         <div class="field">
-                            <textarea name="CommentContent" id="CommentContent" rows="3" data-reply-comment></textarea>
+                            <textarea name="CommentContent" id="CommentContent" rows="3" data-reply-user-id data-reply-comment></textarea>
                         </div>
                         <button type="button" class="ui primary small right labeled icon button" onclick="sendComment('@Model.Id')">
                             Комментировать<i class="icon write"></i>
@@ -253,7 +253,7 @@
     </div>
 </div>
 <template id="commentTmpl">
-    <div class="comment" id="com{{:Id}}">
+    <div class="comment" id="com{{:Id}}" data-reply-user-id="{{:User.Id}}">
         <a class="ui circular avatar image">
             <img src="{{:User.AvatarSrc}}" />
         </a>
@@ -269,7 +269,7 @@
             @if (User.Identity.IsAuthenticated)
             {
                 <div class="actions">
-                    <a data-reply-user="" onclick="addReply('{{:User.UserName}}', '{{:Id}}')">Ответить</a>
+                    <a onclick="addReply('{{:User.UserName}}', '{{:Id}}', '{{:User.Id}}')">Ответить</a>
                     {{if User.Id == '@User.Identity.GetUserId()'}}
                     <a data-comment-id="{{:Id}}" onclick="deleteComment(this)">Удалить</a>
                     {{/if}}
@@ -359,7 +359,10 @@
         var replyCommentId = $('#CommentContent').data('replyComment');
         if(replyCommentId != null && replyCommentId != '') {
             model.ParentComment = {
-                Id: replyCommentId
+                Id: replyCommentId,
+                User: {
+                    Id: $('#CommentContent').data('replyUserId')
+                }
             };
         }
         $.ajax({
@@ -368,7 +371,9 @@
             data: model,
             success: function (data) {
                 sendNotification('@NotificationTypes.PostComment', '@Model.User.Id', '@Model.Id#com' + data.Id);
-
+                if(replyCommentId != null && replyCommentId != '') {
+                    sendNotification('@NotificationTypes.CommentReply', model.ParentComment.User.Id, '@Model.Id#com' + data.Id);
+                }
                 commentsCount++;
                 loadCommentsCount();
                 var tmpl = $.templates('#commentTmpl');
@@ -482,16 +487,18 @@
             }
         });
     }
-    function addReply(userName, replyCommentId){
+    function addReply(userName, replyCommentId, replyUserId){
         $('#reply-user').html('<i class="reply icon"></i>' + userName);
         $('#reply-user').attr('href', '/User/Profile/' + userName);
         $('#remove-reply').css('display', 'inline');
         $('#CommentContent').data('replyComment', replyCommentId);
+        $('#CommentContent').data('replyUserId', replyUserId);
     }
     function removeReply(){
         $('#reply-user').html('');
         $('#remove-reply').css('display', 'none');
         $('#CommentContent').removeData('replyComment');
+        $('#CommentContent').removeData('replyUserId');
     }
     function sendNotification(notificType, targetUserId, sourceValue){
         $.ajax({
