@@ -16,9 +16,19 @@ namespace Mite.DAL.Repositories
         {
         }
 
-        public Task<int> GetPostCommentsCount(string postId)
+        public Task<int> GetPostCommentsCountAsync(Guid postId)
         {
-            return Db.QueryFirstAsync<int>($"select COUNT(Id) from dbo.Comments where PostId=@PostId", new { PostId = postId });
+            return Db.QueryFirstAsync<int>("select COUNT(Id) from dbo.Comments where PostId=@PostId", new { PostId = postId });
+        }
+        public async Task<IDictionary<Guid, int>> GetPostsCommentsCountAsync(IEnumerable<Guid> postIds)
+        {
+            var result = await Db.QueryAsync("select COUNT(Id) as CommentsCount, PostId from dbo.Comments where PostId in @postIds group by PostId", new { postIds });
+            var dict = new Dictionary<Guid, int>();
+            foreach(var item in result)
+            {
+                dict.Add((Guid)item.PostId, (int)item.CommentsCount);
+            }
+            return dict;
         }
         /// <summary>
         /// Возвращает отсортированные комментарии к посту

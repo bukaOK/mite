@@ -229,7 +229,7 @@ namespace Mite.BLL.Services
             var userModel = Mapper.Map<UserShortModel>(user);
 
             postModel.User = userModel;
-            postModel.CommentsCount = await Database.CommentsRepository.GetPostCommentsCount(postId.ToString());
+            postModel.CommentsCount = await Database.CommentsRepository.GetPostCommentsCountAsync(postId);
 
             return postModel;
         }
@@ -396,7 +396,16 @@ namespace Mite.BLL.Services
                 }
                 post.Tags = postTags.Where(x => x.Posts.Any(y => y.Id == post.Id)).ToList();
             }
-            return Mapper.Map<List<TopPostModel>>(posts);
+            var postModels = Mapper.Map<IEnumerable<TopPostModel>>(posts);
+            var postsWithCommentsCount = await Database.CommentsRepository.GetPostsCommentsCountAsync(postModels.Select(x => x.Id));
+
+            int commentsCount;
+            foreach (var postModel in postModels)
+            {
+                var hasComments = postsWithCommentsCount.TryGetValue(postModel.Id, out commentsCount);
+                postModel.CommentsCount = hasComments ? commentsCount : 0;
+            }
+            return postModels;
         }
         /// <summary>
         /// Объединяем посты с тегами, на основе Id поста

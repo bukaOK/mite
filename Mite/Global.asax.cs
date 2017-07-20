@@ -79,8 +79,7 @@ namespace Mite
                     .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString("N")))
                     .ForMember(dest => dest.Header, opt => opt.MapFrom(src => src.Title))
                     .ForMember(dest => dest.IsPublished, opt => opt.MapFrom(src => src.PublishDate != null));
-                cfg.CreateMap<Post, TopPostModel>()
-                    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString("N")));
+                cfg.CreateMap<Post, TopPostModel>();
 
                 cfg.CreateMap<User, ProfileModel>()
                     .ForMember(dest => dest.FollowersCount,

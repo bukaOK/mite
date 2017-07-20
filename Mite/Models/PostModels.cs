@@ -103,7 +103,7 @@ namespace Mite.Models
     }
     public class TopPostModel
     {
-        public string Id { get; set; }
+        public Guid Id { get; set; }
         public string Title { get; set; }
         public string Content { get; set; }
         public bool IsImage { get; set; }
@@ -112,6 +112,7 @@ namespace Mite.Models
         public string Cover { get; set; }
         public int Rating { get; set; }
         public int Views { get; set; }
+        public int CommentsCount { get; set; }
         public List<string> Tags { get; set; }
         public UserShortModel User { get; set; }
     }
