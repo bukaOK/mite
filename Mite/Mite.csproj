@@ -529,6 +529,7 @@
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountModels.cs" />
+    <Compile Include="Models\AdminModels.cs" />
     <Compile Include="Models\CashSettingsModels.cs" />
     <Compile Include="Models\CommentModel.cs" />
     <Compile Include="Models\CommentRatingModel.cs" />
@@ -717,6 +718,7 @@
     <Content Include="Views\Shared\EditorTemplates\LabeledTextBox.cshtml" />
     <Content Include="Views\Home\BadJs.cshtml" />
     <Content Include="Views\Cash\Advertising.cshtml" />
+    <Content Include="Views\Admin\Statistic.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

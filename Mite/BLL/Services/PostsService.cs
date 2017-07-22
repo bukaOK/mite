@@ -367,6 +367,7 @@ namespace Mite.BLL.Services
 
             var postTags = await Database.TagsRepository.GetByPostsAsync(posts.Select(x => x.Id));
             const int minChars = 400;
+
             foreach (var post in posts)
             {
                 if (!post.IsImage)
@@ -400,10 +401,16 @@ namespace Mite.BLL.Services
             var postsWithCommentsCount = await Database.CommentsRepository.GetPostsCommentsCountAsync(postModels.Select(x => x.Id));
 
             int commentsCount;
+            var currentUser = string.IsNullOrEmpty(currentUserId) ? null : await _userManager.FindByIdAsync(currentUserId);
+
             foreach (var postModel in postModels)
             {
                 var hasComments = postsWithCommentsCount.TryGetValue(postModel.Id, out commentsCount);
                 postModel.CommentsCount = hasComments ? commentsCount : 0;
+                if (currentUser != null && currentUser.Age >= 18 && !postModel.Tags.Any(tag => tag == "18+"))
+                {
+                    postModel.ShowAdultContent = true;
+                }
             }
             return postModels;
         }

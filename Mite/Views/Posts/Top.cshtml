@@ -50,7 +50,7 @@
     </div>
     <div class="right item">
         <div class="ui transparent icon input">
-            <input type="text" placeholder="Поиск..." id="postsSearch" autofocus/>
+            <input type="text" placeholder="Поиск..." id="postsSearch" role="search" autofocus/>
             <i class="search link icon" onclick="SearchFilters.changeFilter()"></i>
         </div>
     </div>
@@ -81,10 +81,9 @@
 
 <script id="topPostTmpl" type="text/x-jsrender">
     <div class="column">
-        <div class="ui segment {{if Cover != null}}invert{{/if}} post-item" {{if Cover != null}}
-             style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})" {{/if}}>
+        <div class="ui segment {{if Cover != null}}invert{{/if}}{{if !ShowAdultContent}} hide-adult-content{{/if}} post-item"
+             {{if Cover != null}} style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})" {{/if}} >
             <div class="extra content">
-                
                 <a href="/user/profile/{{:User.UserName}}" class="username" data-username="{{:User.UserName}}">
                     <img src="{{:User.AvatarSrc}}" class="ui avatar image" />
                     {{:User.ShowName}}
@@ -133,6 +132,16 @@
                     <i class="green comments outline icon"></i>{{:CommentsCount}}
                 </div>
             </div>
+            {{if !ShowAdultContent}}
+            <div class="ui dimmer">
+                <div class="content">
+                    <div class="center">
+                        <h2 class="ui inverted header">Взрослый контент(18+)</h2>
+                        <button class="ui primary button" onclick="$(this).parents('.post-item').dimmer('hide')">Показать</button>
+                    </div>
+                </div>
+            </div>
+            {{/if}}
         </div>
     </div>
 </script>
@@ -264,8 +273,9 @@
                     }
                 }
                 else if (SearchFilters._page <= 1) {
-                    $('#postsGrid').html($('#emptyResultTmpl').html());
+                    grid.html($('#emptyResultTmpl').html());
                 }
+                $('.post-item.hide-adult-content:not(.dimmed,.dimmable)').dimmer('show');
                 grid.masonry('reloadItems')
                 grid.imagesLoaded(function () {
                     $('.loader-wrapper').removeClass('active');

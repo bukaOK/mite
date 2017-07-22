@@ -1,0 +1,21 @@
+﻿@using Mite.Helpers
+@model Mite.Models.AdminStatisticModel
+
+<div class="ui statistics" role="group">
+    <div class="statistic" aria-labelledby="postsStat">
+        <div class="value">
+            @Model.PostsCount
+        </div>
+        <div class="label" id="postsStat">
+            @ViewHelper.GetWordCase(Model.PostsCount, "Работа", "Работы", "Работ")
+        </div>
+    </div>
+    <div class="statistic" aria-labelledby="usersStat">
+        <div class="value">
+            @Model.UsersCount
+        </div>
+        <div class="label" id="usersStat">
+            @ViewHelper.GetWordCase(Model.UsersCount, "Пользователь", "Пользователя", "Пользователей")
+        </div>
+    </div>
+</div>

@@ -31,5 +31,7 @@ namespace Mite.DAL.Core
         Task RemoveAsync(Guid id);
         void Remove(Guid id);
         Task UpdateAsync(T entity);
+        int GetCount();
+        Task<int> GetCountAsync();
     }
 }

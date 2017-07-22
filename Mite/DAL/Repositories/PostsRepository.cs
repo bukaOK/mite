@@ -143,7 +143,7 @@ namespace Mite.DAL.Repositories
                 .Select<dynamic, Guid>(x => Guid.Parse(x.Post_Id.ToString()));
 
             var query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId " +
-                "where dbo.Posts.Id in @postsIds and PublishDate is not null and PublishDate > @minDate ";
+                "where dbo.Posts.Id in @postsIds and PublishDate is not null and dbo.Posts.Blocked=0 and PublishDate > @minDate ";
 
             IEnumerable<string> followings = new List<string>();
             if (onlyFollowings)

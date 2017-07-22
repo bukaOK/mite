@@ -126,5 +126,17 @@ namespace Mite.DAL.Core
             var query = $"delete from dbo.{TableName} where Id=@Id";
             Db.Execute(query, new { Id = id });
         }
+
+        public int GetCount()
+        {
+            var query = $"select COUNT(*) from dbo.{TableName}";
+            return Db.QueryFirst<int>(query);
+        }
+
+        public Task<int> GetCountAsync()
+        {
+            var query = $"select COUNT(*) from dbo.{TableName}";
+            return Db.QueryFirstAsync<int>(query);
+        }
     }
 }

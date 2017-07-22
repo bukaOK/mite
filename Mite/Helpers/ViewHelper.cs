@@ -49,6 +49,7 @@ namespace Mite.Helpers
             {
                 return word0;
             }
+            //получаем последнюю цифру
             num = num % 10;
 
             switch (num)
@@ -58,11 +59,9 @@ namespace Mite.Helpers
                 case 1:
                     return word1;
                 case 2:
-                    return word2;
                 case 3:
-                    goto case 2;
                 case 4:
-                    goto case 2;
+                    return word2;
                 default:
                     goto case 0;
             }

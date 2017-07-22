@@ -2,8 +2,11 @@
 using Microsoft.AspNet.Identity;
 using Mite.Attributes.Filters;
 using Mite.BLL.IdentityManagers;
+using Mite.BLL.Services;
 using Mite.Core;
+using Mite.DAL.Infrastructure;
 using Mite.ExternalServices.YandexMoney;
+using Mite.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,12 +23,15 @@ namespace Mite.Controllers
         private readonly AppUserManager userManager;
         private readonly IYandexService yandexService;
         private readonly AppRoleManager roleManager;
+        private readonly IUnitOfWork unitOfWork;
 
-        public AdminController(AppUserManager userManager, IYandexService yandexService, AppRoleManager roleManager)
+        public AdminController(AppUserManager userManager, IYandexService yandexService, AppRoleManager roleManager, 
+            IUnitOfWork unitOfWork)
         {
             this.userManager = userManager;
             this.yandexService = yandexService;
             this.roleManager = roleManager;
+            this.unitOfWork = unitOfWork;
         }
         public ActionResult Index()
         {
@@ -48,10 +54,12 @@ namespace Mite.Controllers
             await userManager.AddToRoleAsync(user.Id, "moder");
             return JsonResponse(JsonResponseStatuses.Success, null);
         }
-        //public PartialViewResult Statistic()
-        //{
-        //    var users = userManager.Users.OrderBy(x => x.RegisterDate).ToList();
-
-        //}
+        public PartialViewResult Statistic()
+        {
+            var model = new AdminStatisticModel();
+            model.UsersCount = userManager.Users.Count();
+            model.PostsCount = unitOfWork.PostsRepository.GetCount();
+            return PartialView(model);
+        }
     }
 }

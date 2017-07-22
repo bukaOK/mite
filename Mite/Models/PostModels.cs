@@ -113,6 +113,10 @@ namespace Mite.Models
         public int Rating { get; set; }
         public int Views { get; set; }
         public int CommentsCount { get; set; }
+        /// <summary>
+        /// Показывать ли взрослый контент.
+        /// </summary>
+        public bool ShowAdultContent { get; set; }
         public List<string> Tags { get; set; }
         public UserShortModel User { get; set; }
     }

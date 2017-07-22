@@ -39,7 +39,8 @@ namespace Mite.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> ShowPost(string id)
         {
-            if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out Guid postId))
+            Guid postId;
+            if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out postId))
                 return NotFound();
 
             var post = await postsService.GetWithTagsUserAsync(postId);

@@ -48,6 +48,10 @@ namespace Mite.Models
         public string Cover { get; set; }
         public int Views { get; set; }
         public bool IsImage { get; set; }
+        /// <summary>
+        /// Показывать ли взрослый контент
+        /// </summary>
+        public bool ShowAdultContent { get; set; }
         public string PostTypeName { get; set; }
         public int Rating { get; set; }
     }
