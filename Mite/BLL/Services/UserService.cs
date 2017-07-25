@@ -137,9 +137,11 @@ namespace Mite.BLL.Services
             try
             {
                 imagePath = FilesHelper.CreateImage(imagesFolder, imageBase64);
-                //Создаем сжатую копию аватарки
-                var img = new ImageDTO(imagePath, imagesFolder);
-                img.Compress();
+                using (var img = new ImageDTO(imagePath, imagesFolder, true))
+                {
+                    //Создаем сжатую копию аватарки
+                    img.Compress();
+                }
             }
             catch (FormatException)
             {
@@ -153,9 +155,9 @@ namespace Mite.BLL.Services
             if(existingAvatarSrc != null && existingAvatarFolders[1] == "Public")
                 FilesHelper.DeleteFile(existingAvatarSrc);
 
-            //Создаем объект изображения и удаляем сжатую копию старой аватарки
             var existingImg = new ImageDTO(existingAvatarSrc, imagesFolder);
-            if (existingImg.IsCompressedExists)
+            //Создаем объект изображения и удаляем сжатую копию старой аватарки    
+            if (existingImg.CompressedExists)
             {
                 FilesHelper.DeleteFile(existingImg.CompressedVirtualPath);
             }

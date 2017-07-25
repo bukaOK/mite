@@ -4,8 +4,6 @@
 
 [![Join the chat at https://gitter.im/Semantic-Org/Semantic-UI](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Semantic-Org/Semantic-UI?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-[![ProjectTalk Messageboard](http://www.projecttalk.io/images/gh_badge-3e578a9f437f841de7446bab9a49d103.svg?vsn=d)](http://www.projecttalk.io/boards/Semantic-Org%2FSemantic-UI?utm_campaign=gh-badge&utm_medium=badge&utm_source=github)
-
 [![CDNJS](https://img.shields.io/cdnjs/v/semantic-ui.svg)](https://cdnjs.com/libraries/semantic-ui/)
 
 Semantic is a UI framework designed for theming.
@@ -27,7 +25,7 @@ Migration info from `1.x` can be found in the [2.0 release notes](https://github
 
 ## User Support
 
-Please help us keep the issue tracker organized. For all questions that do not include a specific [jsfiddle test case](http://jsfiddle.net/efp8z6Ln/) (bug reports), or feature request please use our user forums at [http://forums.semantic-ui.com](http://forums.semantic-ui.com) to discuss. 
+Please help us keep the issue tracker organized. For all questions that do not include a specific [JSFiddle test case](https://jsfiddle.net/ca0rovs3/) (bug reports), or feature request please use our user forums at [http://forums.semantic-ui.com](http://forums.semantic-ui.com) to discuss.
 
 Visit our [contributing guide](https://github.com/Semantic-Org/Semantic-UI/blob/master/CONTRIBUTING.md) for more on what should be posted to GitHub Issues.
 
@@ -64,24 +62,24 @@ Check out our [integration wiki](https://github.com/Semantic-Org/Semantic-UI/wik
 * IE 11+
 * Android 4.4+, Chrome for Android 44+
 * iOS Safari 7+
-* Microsoft Edge 12 & 13
+* Microsoft Edge 12+
 
 Although some components will work in IE9, [grids](http://semantic-ui.com/collections/grid.html) and other [flexbox](https://developer.mozilla.org/en-US/docs/Web/Guide/CSS/Flexible_boxes) components are not supported by IE9 and may not appear correctly.
 
 ## Community
 
 #### Getting Help
-Please **do not post** usage questions to GitHub Issues. For these types of questions use [StackOverflow](http://stackoverflow.com/questions/tagged/semantic-ui), [ProjectTalk](http://www.projecttalk.io/boards/Semantic-Org%2FSemantic-UI) or join our [Gitter chatroom](https://gitter.im/Semantic-Org/Semantic-UI).
+Please **do not post** usage questions to GitHub Issues. For these types of questions use our [Gitter chatroom](https://gitter.im/Semantic-Org/Semantic-UI), [Semantic UI forums](http://forums.semantic-ui.com) or [StackOverflow](http://stackoverflow.com/questions/tagged/semantic-ui).
 
 #### Submitting Bugs and Enhancements
 [GitHub Issues](https://github.com/Semantic-Org/Semantic-UI/issues) is for suggesting enhancements and reporting bugs. Before submiting a bug make sure you do the following:
 * Check out our [contributing guide](https://github.com/Semantic-Org/Semantic-UI/blob/master/CONTRIBUTING.md) for info on our release cycle.
-* [Fork this boilerplate JSFiddle](http://jsfiddle.net/efp8z6Ln/) to create a test case for your bug. If a bug is apparent in the docs, that's ok as a test case, just make it clear exactly how to reproduce the issue. Only bugs that include a test case can be triaged.
+* [Fork this boilerplate JSFiddle](https://jsfiddle.net/ca0rovs3/) to create a test case for your bug. If a bug is apparent in the docs, that's ok as a test case, just make it clear exactly how to reproduce the issue. Only bugs that include a test case can be triaged.
 
 
 #### Pull Requests
 
-When adding pull requests, be sure to merge into the [next](https://github.com/Semantic-Org/Semantic-UI/tree/next) branch. If you need to demonstrate a fix in ``next`` release, you can use [this jsfiddle](http://jsfiddle.net/rduvhn8u/1/)
+When adding pull requests, be sure to merge into the [next](https://github.com/Semantic-Org/Semantic-UI/tree/next) branch. If you need to demonstrate a fix in ``next`` release, you can use [this JSFiddle](https://jsfiddle.net/ca0rovs3/)
 
 
 #### International
@@ -94,7 +92,7 @@ When adding pull requests, be sure to merge into the [next](https://github.com/S
 
 Resource | Description
 --- | --- |
-Bugs & Feature Requests |  All bug submission **require** a link to a test case, and a set of steps to reproduce the issue. You can make a test case by forking this [jsfiddle](http://jsfiddle.net/efp8z6Ln/), then submit your [bug report on GitHub Issues](https://github.com/Semantic-Org/Semantic-UI/issues)
+Bugs & Feature Requests |  All bug submission **require** a link to a test case, and a set of steps to reproduce the issue. You can make a test case by forking this [JSFiddle](https://jsfiddle.net/ca0rovs3/), then submit your [bug report on GitHub Issues](https://github.com/Semantic-Org/Semantic-UI/issues)
 Live Chat | Join our [Gitter.im Room](https://gitter.im/Semantic-Org/Semantic-UI)
 Message Board | [ProjectTalk Board](http://www.projecttalk.io/boards/Semantic-Org%2FSemantic-UI)
 Newsletter Updates | Sign up for updates at [semantic-ui.com](http://www.semantic-ui.com)

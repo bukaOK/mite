@@ -36,16 +36,11 @@ namespace Mite.DAL.Entities
         /// Показывать ли рекламу(только для авторов)
         /// </summary>
         public bool ShowAd { get; set; }
-        /// <summary>
-        /// Список IP адресов, которые просматривали профиль автора
-        /// </summary>
-        //public IEnumerable<ProfileView> Views { get; set; }
         public IList<Post> Posts { get; set; }
         public IList<Tag> Tags { get; set; }
         /// <summary>
-        /// Счёт
+        /// Рейтинг(только для авторов)
         /// </summary>
-        //public double Cash { get; set; }
         public int Rating { get; set; }
         /// <summary>
         /// Подписчики пользователя

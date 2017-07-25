@@ -6,6 +6,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Mite.DAL.Infrastructure;
 using AutoMapper;
+using Mite.Helpers;
+using System.Web.Hosting;
+using Mite.BLL.DTO;
 
 namespace Mite.BLL.Services
 {
@@ -26,6 +29,8 @@ namespace Mite.BLL.Services
     }
     public class FollowersService : DataService, IFollowersService
     {
+        private readonly string imagesFolder = HostingEnvironment.ApplicationVirtualPath + "Public/images/";
+
         public FollowersService(IUnitOfWork database) : base(database)
         {
         }
@@ -41,6 +46,14 @@ namespace Mite.BLL.Services
         {
             var followings = await Database.FollowersRepository.GetFollowingsByUserAsync(userId);
             var fModels = Mapper.Map<List<UserShortModel>>(followings.Select(x => x.FollowingUser));
+            foreach(var following in fModels)
+            {
+                var img = new ImageDTO(following.AvatarSrc, imagesFolder);
+                if (img.CompressedExists)
+                {
+                    following.AvatarSrc = img.CompressedVirtualPath;
+                }
+            }
             return fModels;
         }
     }

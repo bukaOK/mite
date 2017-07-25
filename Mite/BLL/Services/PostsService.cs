@@ -10,11 +10,8 @@ using Mite.Models;
 using Mite.BLL.IdentityManagers;
 using Mite.Enums;
 using System.Collections.Generic;
-using System.Web;
 using Microsoft.AspNet.Identity;
 using System.Web.Hosting;
-using System.Net;
-using System.IO;
 using Mite.BLL.DTO;
 using NLog;
 
@@ -81,9 +78,11 @@ namespace Mite.BLL.Services
                 }
                 
                 postModel.Content = FilesHelper.CreateImage(imagesFolder, postModel.Content);
-                //Создаем сжатую копию изображения
-                var img = new ImageDTO(postModel.Content, imagesFolder);
-                img.Compress();
+                using(var img = new ImageDTO(postModel.Content, imagesFolder, true))
+                {
+                    //Создаем сжатую копию изображения
+                    img.Compress();
+                }
             }
             else
             {
@@ -122,7 +121,7 @@ namespace Mite.BLL.Services
             if (post.IsImage)
             {
                 var img = new ImageDTO(post.Content, imagesFolder);
-                if (img.IsCompressedExists)
+                if (img.CompressedExists)
                 {
                     FilesHelper.DeleteFile(img.CompressedVirtualPath);
                 }
@@ -268,7 +267,7 @@ namespace Mite.BLL.Services
                 else
                 {
                     var img = new ImageDTO(post.Content, imagesFolder);
-                    if (img.IsCompressedExists)
+                    if (img.CompressedExists)
                     {
                         post.Content = img.CompressedVirtualPath;
                     }
@@ -385,13 +384,13 @@ namespace Mite.BLL.Services
                 else
                 {
                     var img = new ImageDTO(post.Content, imagesFolder);
-                    if (img.IsCompressedExists)
+                    if (img.CompressedExists)
                     {
                         post.Content = img.CompressedVirtualPath;
                     }
                 }
                 var avatarImg = new ImageDTO(post.User.AvatarSrc, imagesFolder);
-                if (avatarImg.IsCompressedExists)
+                if (avatarImg.CompressedExists)
                 {
                     post.User.AvatarSrc = avatarImg.CompressedVirtualPath;
                 }
@@ -407,7 +406,7 @@ namespace Mite.BLL.Services
             {
                 var hasComments = postsWithCommentsCount.TryGetValue(postModel.Id, out commentsCount);
                 postModel.CommentsCount = hasComments ? commentsCount : 0;
-                if (currentUser != null && currentUser.Age >= 18 && !postModel.Tags.Any(tag => tag == "18+"))
+                if ((currentUser != null && currentUser.Age >= 18) || !postModel.Tags.Any(tag => tag == "18+"))
                 {
                     postModel.ShowAdultContent = true;
                 }
