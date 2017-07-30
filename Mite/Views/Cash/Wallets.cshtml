@@ -24,7 +24,7 @@
                 data: $form.serialize(),
                 url: '@Url.Action("UpdateWallets", "UserSettings")',
                 success: function (resp) {
-                    var validationError = @((byte)Mite.Core.JsonResponseStatuses.ValidationError);
+                    var validationError = @((byte)Mite.Core.JsonStatuses.ValidationError);
 
                     var $yaWalletMsg = $('#yaWalletMsg');
                     if(resp.status == validationError){

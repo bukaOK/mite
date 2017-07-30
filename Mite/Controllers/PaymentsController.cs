@@ -66,17 +66,17 @@ namespace Mite.Controllers
                             //Сохраняем операцию в базу
                             var operationId = (string)result.ResultData;
                             await paymentService.AddAsync(sum, operationId, userId, (PaymentType)model.PaymentType);
-                            return JsonResponse(JsonResponseStatuses.Success);
+                            return Json(JsonStatuses.Success);
                         }
                         else
                         {
-                            return JsonResponse(JsonResponseStatuses.ValidationError, result.Errors);
+                            return Json(JsonStatuses.ValidationError, result.Errors);
                         }
                     }
                     catch (InvalidTokenException e)
                     {
                         logger.Error(e, "Истек срок Яндекс токена.");
-                        return JsonResponse(JsonResponseStatuses.ValidationError, new string[] { "Истек срок токена, перезагрузите страницу и попробуйте снова авторизовать приложение" });
+                        return Json(JsonStatuses.ValidationError, new string[] { "Истек срок токена, перезагрузите страницу и попробуйте снова авторизовать приложение" });
                     }
                 case PaymentType.BankCard:
                     var sessionPayment = new ExternalPayment
@@ -93,14 +93,14 @@ namespace Mite.Controllers
                             var getParams = DictionaryToParams(procResult.AcsParams);
 
                             Session[SessionKeys.YaMoneyExternal] = sessionPayment;
-                            return JsonResponse(JsonResponseStatuses.Success, procResult.AcsUri + "?" + getParams);
+                            return Json(JsonStatuses.Success, procResult.AcsUri + "?" + getParams);
                         }
                         logger.Error("Ошибка приведения типов: ProcessExternalPaymentResult.");
-                        return JsonResponse(JsonResponseStatuses.ValidationError, new string[] { "Техническая ошибка" });
+                        return Json(JsonStatuses.ValidationError, new string[] { "Техническая ошибка" });
                     }
-                    return JsonResponse(JsonResponseStatuses.ValidationError, new string[] { "Техническая ошибка" });
+                    return Json(JsonStatuses.ValidationError, new string[] { "Техническая ошибка" });
                 default:
-                    return JsonResponse(JsonResponseStatuses.Error);
+                    return Json(JsonStatuses.Error);
             }
         }
         public PartialViewResult PayOut()
@@ -113,18 +113,18 @@ namespace Mite.Controllers
         {
             if(model.PayOutSum == 0 || model.PayOutSum == null)
             {
-                return JsonResponse(JsonResponseStatuses.ValidationError, new[] { "Сумма не может быть 0." });
+                return Json(JsonStatuses.ValidationError, new[] { "Сумма не может быть 0." });
             }
             if(model.PayOutSum < 500)
             {
-                return JsonResponse(JsonResponseStatuses.ValidationError, new[] { "Минимальная сумма для вывода - 500 руб." });
+                return Json(JsonStatuses.ValidationError, new[] { "Минимальная сумма для вывода - 500 руб." });
             }
             var sum = (double)model.PayOutSum;
             var userCash = await cashService.GetUserCashAsync(User.Identity.GetUserId());
 
             if (sum > userCash)
             {
-                return JsonResponse(JsonResponseStatuses.ValidationError, new string[] { "Требуемая сумма больше вашего баланса." });
+                return Json(JsonStatuses.ValidationError, new string[] { "Требуемая сумма больше вашего баланса." });
             }
             var user = await userManager.FindByIdAsync(User.Identity.GetUserId());
 
@@ -154,11 +154,11 @@ namespace Mite.Controllers
                         //Перечисляем только системе
                         await cashService.AddAsync(user.Id, null, comissionSum, CashOperationTypes.Comission);
                     }
-                    return JsonResponse(JsonResponseStatuses.Success);
+                    return Json(JsonStatuses.Success);
                 }
                 else
                 {
-                    return JsonResponse(JsonResponseStatuses.ValidationError, result.Errors);
+                    return Json(JsonStatuses.ValidationError, result.Errors);
                 }
             }
             catch(InvalidTokenException e)
@@ -168,7 +168,7 @@ namespace Mite.Controllers
                 logger.Error(e, "Истек срок Яндекс токена.");
                 await externalServices.RemoveAsync(user.Id, YaMoneySettings.DefaultAuthType);
 
-                return JsonResponse(JsonResponseStatuses.ValidationError, new string[] { "Истек срок токена, перезагрузите страницу и попробуйте снова авторизовать приложение" });
+                return Json(JsonStatuses.ValidationError, new string[] { "Истек срок токена, перезагрузите страницу и попробуйте снова авторизовать приложение" });
             }
         }
         private string DictionaryToParams(IDictionary<string, string> dict)

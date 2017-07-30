@@ -38,7 +38,16 @@ namespace Mite.DAL.Repositories
                 "Cover=@Cover, Description=@Description, Rating=@Rating, Views=@Views, Blocked=@Blocked where Id=@Id";
             return Db.ExecuteAsync(query, entity);
         }
-        public Task<IEnumerable<Post>> GetByUserAsync(string userId, bool isPublished, bool blocked)
+        /// <summary>
+        /// Получить посты по пользователю
+        /// </summary>
+        /// <param name="userId">Id пользователя</param>
+        /// <param name="isPublished">Опубликованные или нет</param>
+        /// <param name="blocked">Заблокированные или нет</param>
+        /// <param name="offset">Сколько строк пропустить</param>
+        /// <param name="range">Сколько достать</param>
+        /// <returns></returns>
+        public Task<IEnumerable<Post>> GetByUserAsync(string userId, bool isPublished, bool blocked, int offset, int range, SortFilter sort)
         {
             var query = "select * from dbo.Posts where dbo.Posts.UserId=@UserId and PublishDate is ";
             var publishedQuery = isPublished ? "not null" : "null";
@@ -47,6 +56,22 @@ namespace Mite.DAL.Repositories
                 query += " and Blocked=1";
             else
                 query += " and Blocked=0";
+
+            switch (sort)
+            {
+                case SortFilter.Popular:
+                    query += " order by dbo.Posts.Rating desc";
+                    break;
+                case SortFilter.New:
+                    query += " order by dbo.Posts.PublishDate desc";
+                    break;
+                case SortFilter.Old:
+                    query += " order by dbo.Posts.PublishDate asc";
+                    break;
+                default:
+                    throw new ArgumentException("Неизвестный тип сортировки");
+            }
+            query += $" offset {offset} rows fetch next {range} rows only";
             return Db.QueryAsync<Post>(query, new { UserId = userId });
         }
         /// <summary>
@@ -305,7 +330,7 @@ namespace Mite.DAL.Repositories
             switch (sortType)
             {
                 case SortFilter.Popular:
-                    query += "order by dbo.Posts.Rating desc";
+                    query += "order by dbo.Posts.Rating desc, dbo.Posts.PusblishDate desc";
                     break;
                 case SortFilter.New:
                     query += "order by dbo.Posts.PublishDate desc";

@@ -10,10 +10,16 @@ namespace Mite.Attributes.Filters
     public class AjaxOnlyAttribute : FilterAttribute, IAuthorizationFilter
     {
         private string IndexPage { get; }
+        public Type ControllerType { get; }
 
         public AjaxOnlyAttribute(string indexPage)
         {
             IndexPage = indexPage;
+        }
+        public AjaxOnlyAttribute(string indexPage, Type controllerType)
+        {
+            IndexPage = indexPage;
+            ControllerType = controllerType;
         }
         public void OnAuthorization(AuthorizationContext filterContext)
         {

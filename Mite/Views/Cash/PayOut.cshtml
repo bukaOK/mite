@@ -22,7 +22,7 @@
                 if (resp.status == undefined) {
                     resp = JSON.parse(resp);
                 }
-                var errorStatus = @((byte)JsonResponseStatuses.ValidationError);
+                var errorStatus = @((byte)JsonStatuses.ValidationError);
                 if(resp.status == errorStatus){
                     var errorsStr = '<ul class="list">';
                     resp.data.forEach(function(error){

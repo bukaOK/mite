@@ -98,7 +98,7 @@
             type: 'post',
             dataType: 'json',
             success: function (resp) {
-                var validErrorStatus = @((byte)Mite.Core.JsonResponseStatuses.ValidationError);
+                var validErrorStatus = @((byte)Mite.Core.JsonStatuses.ValidationError);
                 if(resp.status == validErrorStatus){
                     $resultMsg.addClass('red').removeClass('green');
                     var errorStr = 'Ошибка при сохранении: ' + resp.message;

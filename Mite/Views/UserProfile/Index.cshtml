@@ -5,10 +5,11 @@
 
 @{
     ViewBag.Title = "Профиль " + Model.UserName;
-    var pageUserName = Model.UserName;
-    var currentUserName = User.Identity.Name;
+    var pageUserName = Model.UserName.ToLower();
+    var currentUserName = User.Identity.Name.ToLower();
 }
 @Scripts.Render("~/bundles/grid")
+<script src="~/Scripts/TabFilter.js"></script>
 <div class="ui profile center aligned three column stackable grid segment">
     <div class="computer tablet only row">
         <div class="right aligned column">
@@ -234,22 +235,22 @@
 {
     <div class="ui tab" data-tab="posts">
         <div class="ui stackable center aligned labeled icon secondary tabs menu">
-            <a class="active item" data-tab="posts/published">
+            <a class="active item" data-tab="published">
                 <i class="announcement icon"></i>
                 Публикации
             </a>
-            <a class="item" data-tab="posts/drafts">
+            <a class="item" data-tab="drafts">
                 <i class="edit icon"></i>
                 Черновики
             </a>
-            <a class="item" data-tab="posts/blocked">
+            <a class="item" data-tab="blocked">
                 <i class="lock icon"></i>
                 Блокированные
             </a>
         </div>
-        <div class="ui tab stackable three column grid basic segment" data-tab="posts/published">Опубликованные</div>
-        <div class="ui tab stackable three column basic segment grid" data-tab="posts/drafts">Черновики</div>
-        <div class="ui tab stackable three column basic segment grid" data-tab="posts/blocked">Блокированные</div>
+        <div class="ui tab stackable three column grid basic segment" data-tab="published"></div>
+        <div class="ui tab stackable three column basic segment grid" data-tab="drafts"></div>
+        <div class="ui tab stackable three column basic segment grid" data-tab="blocked"></div>
     </div>
     <div class="ui stackable tab three column basic segment grid" data-tab="followers"></div>
     <div class="ui stackable tab three column basic segment grid" data-tab="followings"></div>
@@ -275,10 +276,6 @@ else
             <div class="thirteen wide column">
                 <div class="ui tab stackable three column basic segment grid" data-tab="posts/published"></div>
                 <div class="ui stackable tab three column basic segment grid" data-tab="followers"></div>
-                @if (currentUserName == pageUserName)
-                {
-                    <div class="ui stackable tab three column basic segment grid" data-tab="followings"></div>
-                }
             </div>
         </div>
     }
@@ -286,12 +283,15 @@ else
     {
         <div class="ui tab stackable three column basic segment grid" data-tab="posts/published"></div>
         <div class="ui stackable tab three column basic segment grid" data-tab="followers"></div>
-        if (currentUserName == pageUserName)
-        {
-            <div class="ui stackable tab three column basic segment grid" data-tab="followings"></div>
-        }
     }
 }
+<div class="dot-loader-wrapper">
+    <div class="dot-loader">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+    </div>
+</div>
 <div class="ui basic modal" id="confirmPostDelete">
     <div class="ui icon header">
         <i class="remove circle icon"></i>
@@ -377,13 +377,52 @@ else
     <div class="column" data-post-id="{{:Id}}">
         <div class="ui segment {{if Cover != null}}invert{{/if}} post-item" {{if Cover != null}}
              style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})"{{/if}}>
+            @if (currentUserName == pageUserName)
+            {
+                <div class="extra content">
+                    <div class="ui floating user-actions dropdown compact button">
+                        <div class="text">Действия</div><i class="dropdown icon"></i>
+                        <div class="menu" role="menu"> 
+                            {{if IsPublished && CanEdit}}
+                            <a class="item" href="@Url.Action("EditPost", "Posts")/{{:Id}}" role="menuitem"><i class="edit icon"></i>Редактировать</a>
+                            {{/if}}
+                            {{if !IsPublished}}
+                            <div class="item" onclick="publishPost('{{:Id}}')" role="menuitem"><i class="announcement icon"></i>Опубликовать</div>
+                            {{/if}}
+                            <div class="item" onclick="showDeletePostModal('{{:Id}}')" role="menuitem"><i class="remove icon"></i>Удалить</div>
+                        </div>
+                    </div>
+                    <div class="right">
+                        {{if !IsPublished}}
+                        <a class="ui blue compact button" href="@Url.Action("EditPost", "Posts")/{{:Id}}">Редактировать</a>
+                        {{else}}
+                        <a class="ui primary compact button" href="@Url.Action("ShowPost", "Posts")/{{:Id}}">Смотреть</a>
+                        {{/if}}
+                    </div>
+                </div>
+                <div class="ui {{if Cover != null}}inverted {{/if}} divider"></div>
+            }
             {{if IsImage}}
-            <img src="{{:Content}}" class="ui image" />
+            <a href="@Url.Action("ShowPost", "Posts")/{{:Id}}">
+                <img src="{{:Content}}" class="ui image" />
+            </a>
             {{else}}
-            <div class="post-content content">
+            <a class="post-content content" href="@Url.Action("ShowPost", "Posts")/{{:Id}}">
                 {{:Content}}
-            </div>
+            </a>
             {{/if}}
+            <div class="ui {{if Cover != null}}inverted{{/if}} divider"></div>
+            <div class="extra content">
+                <a class="ui {{if Cover != null}}inverted {{/if}}header" style="margin-bottom: 5px" href="/posts/showpost/{{:Id}}">
+                    {{:Header}}
+                    <span class="sub header">
+                        {{:Description}}
+                    </span>
+                </a>
+                {{for Tags ~Cover=Cover}}
+                <a class="ui{{if ~Cover != null}} invert{{/if}} label" onclick="loadTag('#{{>#data}}')">{{>#data}}</a>
+                {{/for}}
+            </div>
             <div class="ui {{if Cover != null}}inverted{{/if}} divider"></div>
             <div class="extra content">
                 {{:PublicTimeStr}}
@@ -394,65 +433,6 @@ else
                 </div>
                 {{/if}}
             </div>
-            <div class="ui dimmer">
-                <div class="content">
-                    {{if !IsPublished}}
-                    <div class="meta">
-                        <button class="ui circular blue icon button" data-inverted data-tooltip="Опубликовать"
-                                data-position="right center" onclick="publishPost('{{:Id}}')">
-                            <i class="announcement icon"></i>
-                        </button>
-                    </div>
-                    {{/if}}
-                    @if (currentUserName == pageUserName)
-                    {
-                        <text>
-                        {{if IsPublished && CanEdit}}
-                        <div class="meta">
-                            <a class="ui circular blue icon button" data-inverted data-tooltip="Редактировать"
-                                data-position="right center" href="/posts/editpost/{{:Id}}">
-                                <i class="edit icon"></i>
-                            </a>
-                        </div>
-                        {{/if}}
-                        </text>
-                    }
-                    <div class="center">
-                        <h2 class="ui inverted header">
-                            {{:Header}}
-                            <span class="sub header">{{:Description}}</span>
-                        </h2>
-                        {{if IsPublished}}
-                        <a href="/posts/showpost/{{:Id}}" class="ui primary button">Смотреть</a>
-                        {{/if}}
-                        @if (currentUserName == pageUserName)
-                        {
-                            <text>
-                        {{if IsPublished && !CanEdit}}
-                        <button class="ui red post-del button" onclick="showDeletePostModal('{{:Id}}')">Удалить</button>
-                        {{else}}
-                        {{if !IsPublished}}
-                        <a class="ui primary button" href="/posts/editpost/{{:Id}}">Редактировать</a>
-                        {{/if}}
-                        {{/if}}
-                            </text>
-                        }
-                    </div>
-                    @if(currentUserName == pageUserName)
-                    {
-                        <text>
-                    {{if !IsPublished || (IsPublished && CanEdit)}}
-                    <div class="right meta">
-                        <button data-inverted data-tooltip="Удалить" onclick="showDeletePostModal('{{:Id}}')"
-                                data-position="left center" class="ui circular icon red post-del button">
-                            <i class="remove icon"></i>
-                        </button>
-                    </div>
-                    {{/if}}
-                    </text>
-                    }
-                </div>
-            </div>
         </div>
     </div>
 </script>
@@ -461,56 +441,48 @@ else
     <div class="column">
         <h2 class="ui center aligned icon header" style="color: #6D6788; margin-top: 20px;">
             <i class="frown icon"></i>
-            <span class="content">
-                У пользователя пока нет работ
-            </span>
+            @if (currentUserName != pageUserName)
+            {
+                <span class="content">
+                    У пользователя пока нет работ.
+                </span>
+            }
+            else
+            {
+                <span class="content">
+                    У вас пока нет работ.
+                </span>
+            }
         </h2>
     </div>
 </script>
-<template id="newPostTmpl">
-    @if (currentUserName == pageUserName)
-    {
-        <div class="column">
-            <div class="ui segment">
-                <h2 class="ui center aligned icon header" style="color: #6D6788; margin-top: 20px;">
-                    <i class="smile icon"></i>
-                    <span class="content">
-                        Добавить ещё
-                        <span class="sub header">
-                            @Html.RouteLink("изображение", "AddPost", new { postType = PostTypes.Image.ToString().ToLower() })
-                            или @Html.RouteLink("документ", "AddPost", new { postType = PostTypes.Document.ToString().ToLower() })
-                        </span>
-                    </span>
-                </h2>
-            </div>
-        </div>
-    }
-</template>
 <script id="emptyFollowersTmpl" type="text/x-jsrender">
+    <div class="column"></div>
     <div class="column">
         <h3 class="ui header" style="color: #6D6788">
             <i class="users icon"></i>
             @if (currentUserName == pageUserName)
             {
                 <span class="content">
-                    У вас пока нет подписчиков
+                    У вас пока нет подписчиков.
                 </span>
             }
             else
             {
                 <span class="content">
-                    У пользователя пока нет подписчиков
+                    У пользователя пока нет подписчиков.
                 </span>
             }
         </h3>
     </div>
 </script>
 <script id="emptyFollowingsTmpl" type="text/x-jsrender">
+    <div class="column"></div>
     <div class="column">
         <h3 class="ui header" style="color: #6D6788">
             <i class="users icon"></i>
             <span class="content">
-                Вы пока ни на кого не подписались
+                Вы пока ни на кого не подписались.
             </span>
         </h3>
     </div>
@@ -518,6 +490,7 @@ else
 @Scripts.Render("~/bundles/jsrender", "~/bundles/grid")
 <script>
     var delPostId;
+    var isOwner = @((currentUserName == pageUserName).ToString().ToLower());
     function getCurrentTab(){
         var tab = window.location.hash.replace('#/', '').replace('#', '');
         if(tab == ''){
@@ -631,12 +604,16 @@ else
                 elem: $('.tab[data-tab="posts/published"]').masonry()
             },
             {
-                tabName: 'posts/drafts',
-                elem: $('.tab[data-tab="posts/drafts"]').masonry()
+                tabName: 'published',
+                elem: $('.tab[data-tab="published"]').masonry()
             },
             {
-                tabName: 'posts/blocked',
-                elem: $('.tab[data-tab="posts/blocked"]').masonry()
+                tabName: 'drafts',
+                elem: $('.tab[data-tab="drafts"]').masonry()
+            },
+            {
+                tabName: 'blocked',
+                elem: $('.tab[data-tab="blocked"]').masonry()
             },
             {
                 tabName: 'followers',
@@ -644,19 +621,11 @@ else
             },
             {
                 tabName: 'followings',
-                elem: $('.tab[data-tab="followers"]').masonry()
+                elem: $('.tab[data-tab="followings"]').masonry()
             }
         ];
-        if(currentUser != pageUser){
-            grids.push({
-                tabName: 'posts',
-                elem: $('.tab[data-tab="posts"]').masonry()
-            });
-        }
-
-        @if(currentUserName == pageUserName)
-        {
-            <text>ViewHelper.activateSidebarItem('#userProfileItem')</text>
+        if(isOwner){
+            ViewHelper.activateSidebarItem('#userProfileItem');
         }
         var deletePostModal = $('#confirmPostDelete').modal({
             onApprove: function() {
@@ -666,95 +635,161 @@ else
                     url: '/posts/deletepost/' + postId,
                     type: 'post',
                     success: function (data) {
-                        //deleteElem.remove();
-                        var tab = getCurrentTab();
-                        $('.tab[data-tab="' + tab + '"]').masonry('remove', deleteElem).masonry('layout');
+                        var tab = TabFilter.Tabs.getLastActiveTab();
+                        $('.tab[data-tab="' + tab.name + '"]').masonry('remove', deleteElem).masonry('layout');
                     },
                     error: function (jqXhr) {
                     }
                 });
             }
         });
-        var tabs = Tabs.initTabs({
-            selector: '.ui.tabs .item',
-            ajaxSettings: {
-                type: 'post',
-                dynamicData: function () {
-                    return {
-                        userId: '@Model.UserId',
-                        sort: $('#sortDropDown').dropdown('get value') == ''
-                            ? '0' : $('#sortDropDown').dropdown('get value')
+        if(isOwner){
+            var postsTab = new Tab({
+                $content: $('.tab[data-tab="posts"]'),
+                $item: $('.item[data-tab="posts"]'),
+                parentTab: null,
+                name: 'posts',
+                isActive: true
+            });
+            var publishedTab = new Tab({
+                $content: $('.tab[data-tab="published"]'),
+                $item: $('.item[data-tab="published"]'),
+                parentTab: postsTab,
+                name: 'published',
+                isActive: true
+            });
+            var blockedTab = new Tab({
+                $content: $('.tab[data-tab="blocked"]'),
+                $item: $('.item[data-tab="blocked"]'),
+                parentTab: postsTab,
+                name: 'blocked',
+                isActive: false
+            });
+            var draftsTab = new Tab({
+                $content: $('.tab[data-tab="drafts"]'),
+                $item: $('.item[data-tab="drafts"]'),
+                parentTab: postsTab,
+                name: 'drafts',
+                isActive: false
+            });
+            var followingsTab = new Tab({
+                $content: $('.tab[data-tab="followings"]'),
+                $item: $('.item[data-tab="followings"'),
+                parentTab: null,
+                name: 'followings',
+                isActive: false
+            });
+            var followersTab = new Tab({
+                $content: $('.tab[data-tab="followers"]'),
+                $item: $('.item[data-tab="followers"'),
+                parentTab: null,
+                name: 'followers',
+                isActive: false
+            });
+            TabFilter.Tabs.items = [postsTab, publishedTab, draftsTab, blockedTab, followingsTab, followersTab];
+        } else{
+            var postsTab = new Tab({
+                $content: $('.tab[data-tab="posts/published"]'),
+                $item: $('.item[data-tab="posts/published"]'),
+                parentTab: null,
+                name: 'posts/published',
+                isActive: true
+            });
+            var followersTab = new Tab({
+                $content: $('.tab[data-tab="followers"]'),
+                $item: $('.item[data-tab="followers"'),
+                parentTab: null,
+                name: 'followers',
+                isActive: false
+            });
+            TabFilter.Tabs.items = [postsTab, followersTab];
+        }
+        TabFilter.Filters.add({
+            name: 'sort',
+            elem: $('#sortDropDown'),
+            getVal: function(){
+                return this.elem.dropdown('get value') == ''
+                    ? '@SortFilter.Popular' 
+                    : this.elem.dropdown('get value');
+            },
+            updateState: function(){
+                this.elem.dropdown('set selected', newVal);
+            }
+        });
+        TabFilter.init('/user/profile/@Model.UserName', {
+            beforeLoad: function(){
+                $('.dot-loader-wrapper').addClass('active');
+            },
+            onSuccess: function(resp, tab){
+                var html;
+                if(resp.data.length == 0 && TabFilter.page == 1){
+                    if(tab.name == 'followers'){
+                        html = $('#emptyFollowersTmpl').html();
+                    } else if(tab.name == 'followings'){
+                        html = $('#emptyFollowingsTmpl').html();
+                    } else {
+                        html = $('#emptyPostTmpl').html();
                     }
-                },
-                beforeSuccess: function (resp) {
-                    var jsonResp = JSON.parse(resp);
-                    var currentTab = getCurrentTab();
-                    if(jsonResp.data.length == 0){
-                        if(currentTab == 'followers'){
-                            return $('#emptyFollowersTmpl').html();
-                        } else if(currentTab == 'followings'){
-                            return $('#emptyFollowingsTmpl').html();
-                        }
-                        @if(currentUserName != pageUserName)
-                        {
-                            <text>
-                        return $('#emptyPostTmpl').html();
-                        </text>
-                        }
+                    tab.content.html(html);
+                } else if(resp.data.length > 0) {
+                    var tmplSelector;
+                    if((tab.parentTab != undefined && tab.parentTab != null && tab.parentTab.name == 'posts') || tab.name == 'posts/published'){
+                        tmplSelector = '#postsTmpl';
+
+                        resp.data.forEach(function(elem){
+                            elem.LastEdit += elem.LastEdit[elem.LastEdit - 1] == 'Z' ? '' : 'Z';
+                            if(elem.PublishDate != null){
+                                elem.PublishDate += elem.PublishDate[elem.PublishDate - 1] == 'Z' ? '' : 'Z';
+                                elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.PublishDate).getTime());
+                            } else{
+                                elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.LastEdit).getTime());
+                            }
+                        });
+                    } else if(tab.name == 'followings' || tab.name == 'followers'){
+                        tmplSelector = '#followersTmpl';
                     }
-                    var status = @((byte)JsonResponseStatuses.Success);
-                    if (jsonResp.status == status) {
-                        var tabName = currentTab.split('/')[0];
-                        var tmplName = tabName + 'Tmpl';
-                        //У подписчиков, и тех, на кого подписан одинаковые шаблоны
-                        if(tmplName == 'followingsTmpl'){
-                            tmplName = 'followersTmpl';
-                        }
-                        //Для постов делаем красивенькое время(словами)
-                        if(tmplName == 'postsTmpl'){
-                            jsonResp.data.forEach(function(elem){
-                                elem.LastEdit += elem.LastEdit[elem.LastEdit - 1] == 'Z' ? '' : 'Z';
-                                if(elem.PublishDate != null){
-                                    elem.PublishDate += elem.PublishDate[elem.PublishDate - 1] == 'Z' ? '' : 'Z';
-                                    elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.PublishDate).getTime());
-                                } else{
-                                    elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.LastEdit).getTime());
-                                }
+                    var tmpl = $.templates(tmplSelector);
+                    html = tmpl.render(resp.data);
+
+                    if(TabFilter.loadNextPage) {
+                        tab.content.append(html);
+                    } else{
+                        tab.content.html(html);
+                    }
+                }
+                for(var i = 0; i < grids.length; i++){
+                    if(tab.name == grids[i].tabName){
+                        grids[i].elem.masonry('reloadItems');
+                        grids[i].elem.imagesLoaded(function(){
+                            grids[i].elem.masonry('layout');
+                            $('.dot-loader-wrapper').removeClass('active');
+                            resp.data.forEach(function(elem){
+                                $('.column[data-post-id="' + elem.Id + '"] .user-actions.dropdown').dropdown({
+                                    action: 'hide'
+                                });
                             });
-                        }
-                        var tmpl = $.templates('#' + tmplName);
-                        if(tabName !== 'followers' && tabName !== 'followings'){
-                            return tmpl.render(jsonResp.data) + $('#newPostTmpl').html();
-                        }
-                        return tmpl.render(jsonResp.data);
+                        }).progress(function(){
+                            grids[i].elem.masonry('layout');
+                        });
+                        break;
                     }
-                    return 'Ошибка';
-                },
-                afterSuccess: function(item, tabContent) {
-                    tabContent.css('display', 'flex');
-                    for(var i = 0; i < grids.length; i++){
-                        if($(item).data('tab') == grids[i].tabName){
-                            grids[i].elem.masonry('reloadItems');
-                            grids[i].elem.imagesLoaded(function(){
-                                grids[i].elem.masonry('layout');
-                            }).progress(function(){
-                                grids[i].elem.masonry('layout');
-                            });
-                            break;
-                        }
-                    }
-                    $('.post-item').dimmer({
-                        on: 'hover',
-                        opacity: 0.5
-                    });
+                }
+            },
+            ajax: {
+                type: 'post'
+            }
+        });
+        Scrolling.init('footer', function () {
+            if (!TabFilter.loading) {
+                var lastTab = TabFilter.Tabs.getLastActiveTab();
+                if(lastTab.name != 'followings' && lastTab.name != 'followers'){
+                    return TabFilter.loadNext();
                 }
             }
         });
         $('#sortDropDown').dropdown({
             onChange: function(){
-                var tab = getCurrentTab();
-                var item = $('.item[data-tab="' + tab + '"]');
-                Tabs.loadTab(item);
+                TabFilter.refresh();
             }
         });
         $('.social.dropdown').dropdown();

@@ -55,12 +55,12 @@ namespace Mite.Controllers
             {
                 await paymentService.AddAsync(sessionPayment.Sum, sessionPayment.RequestID, User.Identity.GetUserId(), Enums.PaymentType.BankCard);
                 Session[SessionKeys.YaMoneyExternal] = null;
-                return JsonResponse(JsonResponseStatuses.Success);
+                return Json(JsonStatuses.Success);
             }
             else
             {
                 Session[SessionKeys.YaMoneyExternal] = null;
-                return JsonResponse(JsonResponseStatuses.ValidationError, result.Errors);
+                return Json(JsonStatuses.ValidationError, result.Errors);
             }
         }
     }

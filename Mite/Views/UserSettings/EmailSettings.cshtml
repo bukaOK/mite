@@ -64,7 +64,7 @@ else
             type: 'post',
             data: $form.serialize(),
             success: function (resp) {
-                var validErrorStatus = @((byte)JsonResponseStatuses.ValidationError);
+                var validErrorStatus = @((byte)JsonStatuses.ValidationError);
                 if (resp.status == undefined) {
                     resp = JSON.parse(resp);
                 }

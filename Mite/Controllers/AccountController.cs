@@ -194,11 +194,13 @@ namespace Mite.Controllers
                     return View(model);
                 }
             }
+#if !DEBUG
             var recaptchaResult = await googleService.RecaptchaValidateAsync(Request["g-recaptcha-response"]);
             if (!recaptchaResult)
             {
                 ModelState.AddModelError("", "Ошибка ReCaptcha.");
             }
+#endif
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -269,20 +271,20 @@ namespace Mite.Controllers
         public async Task<ActionResult> ForgotPassword(ForgotPassModel model)
         {
             if (!ModelState.IsValid)
-                return JsonResponse(JsonResponseStatuses.ValidationError, "Неправильный e-mail");
+                return Json(JsonStatuses.ValidationError, "Неправильный e-mail");
 
             var user = await userManager.FindByEmailAsync(model.Email);
             if(user == null)
-                return JsonResponse(JsonResponseStatuses.ValidationError, "Пользователя с таким e-mail не существует");
+                return Json(JsonStatuses.ValidationError, "Пользователя с таким e-mail не существует");
 
             if (!userManager.IsEmailConfirmed(user.Id))
-                return JsonResponse(JsonResponseStatuses.ValidationError, "Ваш e-mail не подтвержден");
+                return Json(JsonStatuses.ValidationError, "Ваш e-mail не подтвержден");
 
             var code = await userManager.GeneratePasswordResetTokenAsync(user.Id);
             var callbackUrl = Url.Action("ResetPassword", "Account", new { email = user.Email, code = code }, Request.Url.Scheme);
             var msg = $"Для восстановления пароля перейдите по ссылке -> <a href=\"{callbackUrl}\">жмак</a>";
             await userManager.SendEmailAsync(user.Id, "Восстановление пароля", msg);
-            return JsonResponse(JsonResponseStatuses.Success, "На ваш почтовый ящик отправлено сообщение с ссылкой для восстановления");
+            return Json(JsonStatuses.Success, "На ваш почтовый ящик отправлено сообщение с ссылкой для восстановления");
         }
         [Authorize]
         public ActionResult LogOff()

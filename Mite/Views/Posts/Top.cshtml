@@ -82,7 +82,7 @@
 <script id="topPostTmpl" type="text/x-jsrender">
     <div class="column">
         <div class="ui segment {{if Cover != null}}invert{{/if}}{{if !ShowAdultContent}} hide-adult-content{{/if}} post-item"
-             {{if Cover != null}} style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})" {{/if}} >
+             {{if Cover != null}} style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})" {{/if}}>
             <div class="extra content">
                 <a href="/user/profile/{{:User.UserName}}" class="username" data-username="{{:User.UserName}}">
                     <img src="{{:User.AvatarSrc}}" class="ui avatar image" />

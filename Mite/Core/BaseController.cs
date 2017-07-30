@@ -8,38 +8,38 @@ namespace Mite.Core
 {
     public abstract class BaseController : Controller
     {
-        protected JsonResult JsonResponse(JsonResponseStatuses status)
+        protected JsonResult Json(JsonStatuses status)
         {
             return Json(new { status = status }, "application/json");
         }
-        protected JsonResult JsonResponse(JsonResponseStatuses status, string message, object data)
+        protected JsonResult Json(JsonStatuses status, string message, object data, JsonRequestBehavior behavior = JsonRequestBehavior.DenyGet)
         {
             return Json(JsonConvert.SerializeObject(new
             {
                 status = status,
                 message = message,
                 data = data
-            }), "application/json");
+            }), "application/json", behavior);
         }
 
-        protected JsonResult JsonResponse(JsonResponseStatuses status, object data)
+        protected JsonResult Json(JsonStatuses status, object data, JsonRequestBehavior behavior = JsonRequestBehavior.DenyGet)
         {
             return Json(JsonConvert.SerializeObject(new
             {
                 status = status,
                 data = data
-            }), "application/json");
+            }), "application/json", behavior);
         }
 
-        protected JsonResult JsonResponse(JsonResponseStatuses status, string message)
+        protected JsonResult Json(JsonStatuses status, string message, JsonRequestBehavior behavior = JsonRequestBehavior.DenyGet)
         {
-            if (status == JsonResponseStatuses.Error)
+            if (status == JsonStatuses.Error)
                 Response.StatusCode = 500;
             return Json(new
             {
                 status = status,
                 message = message
-            }, "application/json");
+            }, "application/json", behavior);
         }
         protected IEnumerable<string> GetErrorsList()
         {
@@ -92,7 +92,7 @@ namespace Mite.Core
             }
         }
     }
-    public enum JsonResponseStatuses
+    public enum JsonStatuses
     {
         Success, Error, ValidationError
     }

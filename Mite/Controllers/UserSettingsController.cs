@@ -44,17 +44,17 @@ namespace Mite.Controllers
         {
             if (string.IsNullOrEmpty(base64Str))
             {
-                return JsonResponse(JsonResponseStatuses.Error, "Изображение не загружено");
+                return Json(JsonStatuses.Error, "Изображение не загружено");
             }
             var imagesFolder = HostingEnvironment.ApplicationVirtualPath + "Public/images/";
 
             var result = await _userService.UpdateUserAvatarAsync(imagesFolder, base64Str, User.Identity.GetUserId());
             var updatedUser = await _userManager.FindByIdAsync(User.Identity.GetUserId());
 
-            if (!result.Succeeded) return JsonResponse(JsonResponseStatuses.Error, "Неудача при сохранении");
+            if (!result.Succeeded) return Json(JsonStatuses.Error, "Неудача при сохранении");
 
             User.AddUpdateClaim(_authManager, ClaimConstants.AvatarSrc, updatedUser.AvatarSrc);
-            return JsonResponse(JsonResponseStatuses.Success, "Аватарка обновлена");
+            return Json(JsonStatuses.Success, "Аватарка обновлена");
         }
         public ActionResult UserProfile()
         {
@@ -79,19 +79,19 @@ namespace Mite.Controllers
                 var errorList =
                     ModelState.Values.Select(modelState => modelState.Errors.Select(error => error.ErrorMessage))
                         .ToList();
-                return JsonResponse(JsonResponseStatuses.ValidationError, errorList);
+                return Json(JsonStatuses.ValidationError, errorList);
             }
 
             var result = await _userService.UpdateUserAsync(settings, User.Identity.GetUserId());
             if (!result.Succeeded)
             {
-                return JsonResponse(JsonResponseStatuses.Error, result.Errors);
+                return Json(JsonStatuses.Error, result.Errors);
             }
             var updatedUser = await _userManager.FindByIdAsync(User.Identity.GetUserId());
 
             User.AddUpdateClaim(_authManager, ClaimTypes.Name, updatedUser.UserName);
             User.AddUpdateClaim(_authManager, ClaimConstants.AvatarSrc, updatedUser.AvatarSrc);
-            return JsonResponse(JsonResponseStatuses.Success, "Сохранено");
+            return Json(JsonStatuses.Success, "Сохранено");
 
         }
         public PartialViewResult Security()
@@ -104,15 +104,15 @@ namespace Mite.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return JsonResponse(JsonResponseStatuses.ValidationError, "Ошибка валидации");
+                return Json(JsonStatuses.ValidationError, "Ошибка валидации");
             }
             var result = await _userManager.ChangePasswordAsync(User.Identity.GetUserId(), model.OldPass, model.NewPass);
 
             if (result.Succeeded)
             {
-                return JsonResponse(JsonResponseStatuses.Success);
+                return Json(JsonStatuses.Success);
             }
-            return JsonResponse(JsonResponseStatuses.ValidationError, "Ошибка при проверке пароля");
+            return Json(JsonStatuses.ValidationError, "Ошибка при проверке пароля");
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -147,7 +147,7 @@ namespace Mite.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return JsonResponse(JsonResponseStatuses.ValidationError, GetModelErrors());
+                return Json(JsonStatuses.ValidationError, GetModelErrors());
             }
             var errors = new List<string>();
             var user = await _userManager.FindByIdAsync(User.Identity.GetUserId());
@@ -165,12 +165,12 @@ namespace Mite.Controllers
             //    errors.Add("Ваш e-mail уже подтвержден");
 
             if (errors.Count > 0)
-                return JsonResponse(JsonResponseStatuses.ValidationError, errors);
+                return Json(JsonStatuses.ValidationError, errors);
 
             user.EmailConfirmed = false;
             user.Email = model.NewEmail;
             await _userManager.UpdateAsync(user);
-            return JsonResponse(JsonResponseStatuses.Success, "E-mail успешно обновлен");
+            return Json(JsonStatuses.Success, "E-mail успешно обновлен");
         }
         public PartialViewResult SocialServices()
         {

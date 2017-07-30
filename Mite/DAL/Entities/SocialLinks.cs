@@ -8,6 +8,7 @@ using System.Web;
 
 namespace Mite.DAL.Entities
 {
+    [Obsolete("Заменено SocialServices, после обновления надо удалить")]
     public class SocialLinks : Entity
     {
         public string Vk { get; set; }

@@ -47,12 +47,12 @@ namespace Mite.Controllers
         public async Task<ActionResult> AddModer(string userName)
         {
             if(string.IsNullOrEmpty(userName))
-                return JsonResponse(JsonResponseStatuses.ValidationError, "Заполни поле с именем модератора");
+                return Json(JsonStatuses.ValidationError, "Заполни поле с именем модератора");
             var user = await userManager.FindByNameAsync(userName);
             if (user == null)
-                return JsonResponse(JsonResponseStatuses.ValidationError, "Не найден пользователь с таким именем.");
+                return Json(JsonStatuses.ValidationError, "Не найден пользователь с таким именем.");
             await userManager.AddToRoleAsync(user.Id, "moder");
-            return JsonResponse(JsonResponseStatuses.Success, null);
+            return Json(JsonStatuses.Success, null);
         }
         public PartialViewResult Statistic()
         {

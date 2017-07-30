@@ -46,7 +46,7 @@ namespace Mite.Controllers
         public async Task<JsonResult> GetHelper()
         {
             var result = await helpersService.GetByUserAsync(User.Identity.GetUserId());
-            return JsonResponse(JsonResponseStatuses.Success, result);
+            return Json(JsonStatuses.Success, result);
         }
     }
 }

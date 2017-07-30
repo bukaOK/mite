@@ -292,7 +292,10 @@
         }
         $(function () {
             $('article').css('margin-bottom', $('footer').height() + 50 + 'px');
-            initPostsBtnHelper();
+            @if (Request.IsAuthenticated)
+            {
+                <text>initPostsBtnHelper();</text>
+            }
             $('#addPostMenu').dropdown({
                 action: 'nothing'
             });

@@ -404,6 +404,7 @@
     <Compile Include="DAL\Repositories\PostsRepository.cs" />
     <Compile Include="DAL\Repositories\RatingRepository.cs" />
     <Compile Include="DAL\Repositories\SocialLinksRepository.cs" />
+    <Compile Include="DAL\Entities\SocialService.cs" />
     <Compile Include="DAL\Repositories\TagsRepository.cs" />
     <Compile Include="DAL\Repositories\UserRepository.cs" />
     <Compile Include="Enums\CashOperationTypes.cs" />
@@ -414,6 +415,7 @@
     <Compile Include="Enums\PostTimeFilter.cs" />
     <Compile Include="Enums\PostTypes.cs" />
     <Compile Include="Enums\PostUserFilter.cs" />
+    <Compile Include="Enums\SocialServiceTypes.cs" />
     <Compile Include="Enums\SortFilter.cs" />
     <Compile Include="Extensions\ClaimsExtensions.cs" />
     <Compile Include="Extensions\ValidationExtensions.cs" />
@@ -617,10 +619,6 @@
     </Content>
     <Content Include="bower.json" />
     <Content Include=".bowercc" />
-    <None Include="compilerconfig.json" />
-    <None Include="compilerconfig.json.defaults">
-      <DependentUpon>compilerconfig.json</DependentUpon>
-    </None>
     <Content Include="gulpfile.js" />
     <Content Include="package.json" />
     <Content Include="Content\icons.woff" />
@@ -658,6 +656,7 @@
     <Content Include="Scripts\MiteTab.js" />
     <Content Include="Scripts\MiteUtilities.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
+    <Content Include="Scripts\PageScripts.js" />
     <Content Include="Scripts\password-strength.js" />
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\respond.matchmedia.addListener.js" />
@@ -668,6 +667,7 @@
     <Content Include="Scripts\TabFilter.js" />
     <Content Include="Scripts\ViewHelpers.js" />
     <Content Include="Scripts\_references.js" />
+    <Content Include="Views\UserProfile\Index.cshtml" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -698,7 +698,6 @@
     <Content Include="Views\Shared\EditorTemplates\Toggle.cshtml" />
     <Content Include="Views\UserSettings\ChangeAvatar.cshtml" />
     <Content Include="Views\UserSettings\Security.cshtml" />
-    <Content Include="Views\UserProfile\Index.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\TextArea.cshtml" />
     <Content Include="Views\Posts\EditImagePost.cshtml" />
     <Content Include="Views\Posts\EditWritePost.cshtml" />

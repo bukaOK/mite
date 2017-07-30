@@ -45,7 +45,7 @@
             type: 'post',
             data: 'userName=' + value,
             success: function(resp){
-                var validationError = @((byte)JsonResponseStatuses.ValidationError);
+                var validationError = @((byte)JsonStatuses.ValidationError);
                 if(resp.status == validationError){
                     $('#update-state-msg').addClass('red').removeClass('hidden').html(resp.message);
                 } else{

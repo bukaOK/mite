@@ -9,6 +9,7 @@ using System.Linq;
 using System;
 using System.Collections.Generic;
 using Mite.Models;
+using Mite.Attributes.Filters;
 
 namespace Mite.Controllers
 {
@@ -38,9 +39,8 @@ namespace Mite.Controllers
                 return NotFound();
 
             profile.SocialLinks = await _userService.GetSocialLinksAsync(profile.UserId.ToString());
-            return View(profile);
+            return View("Index", profile);
         }
-        [HttpPost]
         public async Task<JsonResult> GetUserProfile(string name)
         {
             name = name.Replace(" ", string.Empty);
@@ -62,15 +62,20 @@ namespace Mite.Controllers
                 }
                 profile.About = about + "...";
             }
-            return JsonResponse(JsonResponseStatuses.Success, profile);
+            return Json(JsonStatuses.Success, profile, JsonRequestBehavior.AllowGet);
         }
         public ViewResult Notifications()
         {
             return View();
         }
-        public async Task<JsonResult> Followers(string userId, SortFilter sort)
+        public Task<ActionResult> Followers(string name)
         {
-            var userModels = await _followersService.GetFollowersByUserAsync(userId);
+            return Index(name);
+        }
+        [HttpPost]
+        public async Task<JsonResult> Followers(string name, SortFilter sort)
+        {
+            var userModels = await _followersService.GetFollowersByUserAsync(name);
 
             switch (sort)
             {
@@ -89,21 +94,31 @@ namespace Mite.Controllers
                 default:
                     throw new NotImplementedException("Неизвестный тип сортировки");
             }
-            return JsonResponse(JsonResponseStatuses.Success, userModels);
+            return Json(JsonStatuses.Success, userModels, JsonRequestBehavior.AllowGet);
         }
-        public async Task<JsonResult> Posts(string userId, SortFilter sort, PostTypes? type)
+        public Task<ActionResult> Posts(string name)
+        {
+            return Index(name);
+        }
+        [HttpPost]
+        public async Task<ActionResult> Posts(string name, SortFilter sort, PostTypes? type, int page)
         {
             IEnumerable<ProfilePostModel> posts;
-            if (userId != User.Identity.GetUserId() && type == PostTypes.Drafts)
-                return null;
+            if (!string.Equals(name, User.Identity.Name, StringComparison.OrdinalIgnoreCase) && type == PostTypes.Drafts)
+                return Forbidden();
             if (type == null)
                 type = PostTypes.Published;
-            posts = await _postsService.GetByUserAsync(userId, sort, (PostTypes)type);
-            return JsonResponse(JsonResponseStatuses.Success, posts);
+            posts = await _postsService.GetByUserAsync(name, sort, (PostTypes)type, page);
+            return Json(JsonStatuses.Success, posts);
         }
-        public async Task<JsonResult> Followings(string userId, SortFilter sort)
+        public Task<ActionResult> Followings(string name)
         {
-            var userModels = await _followersService.GetFollowingsByUserAsync(userId);
+            return Index(name);
+        }
+        [HttpPost]
+        public async Task<JsonResult> Followings(string name, SortFilter sort)
+        {
+            var userModels = await _followersService.GetFollowingsByUserAsync(name);
 
             switch (sort)
             {
@@ -123,7 +138,7 @@ namespace Mite.Controllers
                     throw new NotImplementedException("Неизвестный тип сортировки");
             }
 
-            return JsonResponse(JsonResponseStatuses.Success, userModels);
+            return Json(JsonStatuses.Success, userModels, JsonRequestBehavior.AllowGet);
         }
     }
 }

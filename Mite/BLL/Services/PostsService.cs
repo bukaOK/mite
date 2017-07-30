@@ -30,7 +30,7 @@ namespace Mite.BLL.Services
         /// <param name="postId"></param>
         /// <returns></returns>
         Task<PostModel> GetWithTagsUserAsync(Guid postId);
-        Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userId, SortFilter sort, PostTypes type);
+        Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userName, SortFilter sort, PostTypes type, int page);
         Task<IEnumerable<GalleryPostModel>> GetGalleryByUserAsync(string userId);
         /// <summary>
         /// Добавляем к посту один просмотр
@@ -232,23 +232,30 @@ namespace Mite.BLL.Services
 
             return postModel;
         }
-        public async Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userId, SortFilter sort, PostTypes type)
+        public async Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userName, SortFilter sort, PostTypes type, int page)
         {
             IEnumerable<Post> posts;
+
+            var user = await _userManager.FindByNameAsync(userName);
+
+            const int range = 9;
+            var offset = (page - 1) * range;
             switch (type)
             {
                 case PostTypes.Drafts:
-                    posts = await Database.PostsRepository.GetByUserAsync(userId, false, false);
+                    posts = await Database.PostsRepository.GetByUserAsync(user.Id, false, false, offset, range, sort);
                     break;
                 case PostTypes.Published:
-                    posts = await Database.PostsRepository.GetByUserAsync(userId, true, false);
+                    posts = await Database.PostsRepository.GetByUserAsync(user.Id, true, false, offset, range, sort);
                     break;
                 case PostTypes.Blocked:
-                    posts = await Database.PostsRepository.GetByUserAsync(userId, true, true);
+                    posts = await Database.PostsRepository.GetByUserAsync(user.Id, true, true, offset, range, sort);
                     break;
                 default:
                     return null;
             }
+            var postTags = await Database.TagsRepository.GetByPostsAsync(posts.Select(x => x.Id));
+
             const int minChars = 400;
             foreach (var post in posts)
             {
@@ -287,22 +294,10 @@ namespace Mite.BLL.Services
                     }
                     post.Description = description + "...";
                 }
+                post.Tags = postTags.Where(x => x.Posts.Any(y => y.Id == post.Id)).ToList();
             }
             var postModels = Mapper.Map<IEnumerable<ProfilePostModel>>(posts);
-            switch (sort)
-            {
-                case SortFilter.New:
-                    return postModels.OrderByDescending(x => x.LastEdit)
-                        .ThenByDescending(x => x.Rating);
-                case SortFilter.Old:
-                    return postModels.OrderBy(x => x.LastEdit)
-                        .ThenByDescending(x => x.Rating);
-                case SortFilter.Popular:
-                    return postModels.OrderByDescending(x => x.Rating)
-                        .ThenBy(x => x.LastEdit);
-                default:
-                    throw new ArgumentException("Неизвестный тип сортировки");
-            }
+            return postModels;
         }
 
         public Task AddViews(Guid postId)

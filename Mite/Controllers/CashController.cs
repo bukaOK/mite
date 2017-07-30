@@ -60,23 +60,23 @@ namespace Mite.Controllers
             var user = await userManager.FindByIdAsync(User.Identity.GetUserId());
             var isPasswordValid = await userManager.CheckPasswordAsync(user, model.Password);
             if (!isPasswordValid)
-                return JsonResponse(JsonResponseStatuses.ValidationError, "Неверный пароль");
+                return Json(JsonStatuses.ValidationError, "Неверный пароль");
 
             user.YandexWalId = model.YandexWalId;
             await userManager.UpdateAsync(user);
-            return JsonResponse(JsonResponseStatuses.Success, "Яндекс кошелек успешно добавлен/обновлен");
+            return Json(JsonStatuses.Success, "Яндекс кошелек успешно добавлен/обновлен");
         }
         [HttpPost]
         public async Task<JsonResult> PaymentsHistory()
         {
             var payments = await cashService.GetPaymentsHistoryAsync(User.Identity.GetUserId());
-            return JsonResponse(JsonResponseStatuses.Success, payments);
+            return Json(JsonStatuses.Success, payments);
         }
         [HttpPost]
         public async Task<JsonResult> Referals()
         {
             var referals = await cashService.GetReferalsByUserAsync(User.Identity.GetUserId());
-            return JsonResponse(JsonResponseStatuses.Success, referals);
+            return Json(JsonStatuses.Success, referals);
         }
         public PartialViewResult Advertising()
         {
@@ -103,9 +103,9 @@ namespace Mite.Controllers
             var result = await userManager.UpdateAsync(user);
             if (result.Succeeded)
             {
-                return JsonResponse(JsonResponseStatuses.Success);
+                return Json(JsonStatuses.Success);
             }
-            return JsonResponse(JsonResponseStatuses.Error);
+            return Json(JsonStatuses.Error);
         }
     }
 }

@@ -112,22 +112,22 @@ namespace Mite.Controllers
         public async Task<JsonResult> AddPost(PostModel model)
         {
             if (!ModelState.IsValid)
-                return JsonResponse(JsonResponseStatuses.ValidationError, "Проверьте правильность заполнения полей");
+                return Json(JsonStatuses.ValidationError, "Проверьте правильность заполнения полей");
             if (!string.IsNullOrEmpty(model.Description) && (model.Description.Contains(">") || model.Description.Contains("<")))
-                return JsonResponse(JsonResponseStatuses.ValidationError, "Обнаружены опасные символы в описании");
+                return Json(JsonStatuses.ValidationError, "Обнаружены опасные символы в описании");
             
             //Если изображение, сохраняем на сервере, в контент ставим путь к папке
             if (Regex.IsMatch(model.Content, @"<\s*(script|a)") || (!string.IsNullOrEmpty(model.Description) && Regex.IsMatch(model.Description, @"<\s(script)")))
             {
-                return JsonResponse(JsonResponseStatuses.ValidationError, "Обнаружены опасные данные внутри запроса");
+                return Json(JsonStatuses.ValidationError, "Обнаружены опасные данные внутри запроса");
             }
             var result = await postsService.AddPostAsync(model, User.Identity.GetUserId());
             if (!result.Succeeded)
             {
-                return JsonResponse(JsonResponseStatuses.ValidationError, result.Errors.ToList()[0]);
+                return Json(JsonStatuses.ValidationError, result.Errors.ToList()[0]);
             }
 
-            return JsonResponse(JsonResponseStatuses.Success, "Пост успешно добавлен");
+            return Json(JsonStatuses.Success, "Пост успешно добавлен");
         }
         [HttpPost]
         public async Task<JsonResult> UpdatePost(PostModel model)
@@ -135,18 +135,18 @@ namespace Mite.Controllers
             //Здесь не применяется ModelState, потому что Content может быть null
             if (model.Header == null)
             {
-                return JsonResponse(JsonResponseStatuses.ValidationError, "Заголовок не может быть пустым");
+                return Json(JsonStatuses.ValidationError, "Заголовок не может быть пустым");
             }
             if (model.Content != null && Regex.IsMatch(model.Content, @"<\s*(script|a)"))
-                return JsonResponse(JsonResponseStatuses.ValidationError, "Обнаружены опасные данные внутри запроса");
+                return Json(JsonStatuses.ValidationError, "Обнаружены опасные данные внутри запроса");
 
 
             var result = await postsService.UpdatePostAsync(model);
             if (!result.Succeeded)
             {
-                return JsonResponse(JsonResponseStatuses.ValidationError, result.Errors);
+                return Json(JsonStatuses.ValidationError, result.Errors);
             }
-            return JsonResponse(JsonResponseStatuses.Success, "Успешно отредактировано");
+            return Json(JsonStatuses.Success, "Успешно отредактировано");
         }
         [HttpPost]
         public async Task<HttpStatusCodeResult> DeletePost(Guid id)
@@ -196,7 +196,7 @@ namespace Mite.Controllers
         public async Task<JsonResult> UserGallery(string userId)
         {
             var result = await postsService.GetGalleryByUserAsync(userId);
-            return JsonResponse(JsonResponseStatuses.Success, result);
+            return Json(JsonStatuses.Success, result);
         }
         [AllowAnonymous]
         public ViewResult Top()
@@ -211,7 +211,7 @@ namespace Mite.Controllers
             var tagsNames = string.IsNullOrEmpty(tags) ? new string[0] : tags.Split(',');
             var posts = await postsService.GetTopAsync(tagsNames, postName, sortFilter, postTimeFilter, postUserFilter,
                 User.Identity.GetUserId(), page);
-            return JsonResponse(JsonResponseStatuses.Success, posts);
+            return Json(JsonStatuses.Success, posts);
         }
     }
 }

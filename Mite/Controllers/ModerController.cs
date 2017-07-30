@@ -31,7 +31,7 @@ namespace Mite.Controllers
         public async Task<JsonResult> Tags()
         {
             var tags = await unitOfWork.TagsRepository.GetAllAsync();
-            return JsonResponse(JsonResponseStatuses.Success, new
+            return Json(JsonStatuses.Success, new
             {
                 Confirmed = tags.Where(x => x.IsConfirmed),
                 Unchecked = tags.Where(x => !x.Checked),

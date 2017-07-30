@@ -185,7 +185,7 @@
                 if(resp.status == undefined){
                     resp = JSON.parse(resp);
                 }
-                var validErrorStatus = @((byte)Mite.Core.JsonResponseStatuses.ValidationError);
+                var validErrorStatus = @((byte)Mite.Core.JsonStatuses.ValidationError);
                 if(resp.status == validErrorStatus){
                     var errorStr = 'Ошибка при сохранении: ' + resp.message;
                     alert(errorStr);

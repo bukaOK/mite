@@ -54,5 +54,6 @@ namespace Mite.Models
         public bool ShowAdultContent { get; set; }
         public string PostTypeName { get; set; }
         public int Rating { get; set; }
+        IEnumerable<string> Tags { get; set; }
     }
 }

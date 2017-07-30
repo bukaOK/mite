@@ -56,8 +56,8 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="GoogleServiceTest.cs" />
-    <Compile Include="RepositoriesTest.cs" />
+    <Compile Include="BLL\Services\PostsService.cs" />
+    <Compile Include="DAL\Repositories\PostsRepoTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
