@@ -15,6 +15,7 @@ using NLog;
 using System.Linq;
 using System.Data.Entity;
 using System.Text.RegularExpressions;
+using Mite.DAL.Repositories;
 
 namespace Mite.BLL.Services
 {
@@ -167,24 +168,28 @@ namespace Mite.BLL.Services
 
         public async Task<ProfileModel> GetUserProfileAsync(string name, string currentUserId)
         {
+            var postsRepo = Database.GetRepo<PostsRepository, Post>();
+            var followersRepo = Database.GetRepo<FollowersRepository, Follower>();
+
             var user = await userManager.FindByNameAsync(name);
             if (user == null)
                 return null;
             var userModel = Mapper.Map<ProfileModel>(user);
 
-            userModel.PostsCount = await Database.PostsRepository.GetPublishedPostsCount(user.Id);
-            userModel.FollowersCount = await Database.FollowersRepository.GetFollowersCount(user.Id);
+            userModel.PostsCount = await postsRepo.GetPublishedPostsCount(user.Id);
+            userModel.FollowersCount = await followersRepo.GetFollowersCount(user.Id);
 
             if(user.Id != currentUserId)
             {
-                userModel.IsFollowing = await Database.FollowersRepository.IsFollower(currentUserId, user.Id);
+                userModel.IsFollowing = await followersRepo.IsFollower(currentUserId, user.Id);
             }
             return userModel;
         }
 
         public SocialLinksModel GetSocialLinks(string userId)
         {
-            var socialLinks = Database.SocialLinksRepository.Get(userId);
+            var repo = Database.GetRepo<SocialLinksRepository, SocialLinks>();
+            var socialLinks = repo.Get(userId);
             if(socialLinks == null)
             {
                 socialLinks = new SocialLinks
@@ -197,7 +202,9 @@ namespace Mite.BLL.Services
 
         public async Task<SocialLinksModel> GetSocialLinksAsync(string userId)
         {
-            var socialLinks = await Database.SocialLinksRepository.GetAsync(userId);
+            var repo = Database.GetRepo<SocialLinksRepository, SocialLinks>();
+
+            var socialLinks = await repo.GetAsync(userId);
             if (socialLinks == null)
             {
                 socialLinks = new SocialLinks
@@ -210,19 +217,21 @@ namespace Mite.BLL.Services
 
         public async Task UpdateSocialLinksAsync(SocialLinksModel model, string userId)
         {
-            var socialLinks = await Database.SocialLinksRepository.GetAsync(userId);
+            var repo = Database.GetRepo<SocialLinksRepository, SocialLinks>();
+
+            var socialLinks = await repo.GetAsync(userId);
             if(socialLinks == null)
             {
                 socialLinks = Mapper.Map<SocialLinks>(model);
                 socialLinks.UserId = userId;
-                await Database.SocialLinksRepository.AddAsync(socialLinks);
+                await repo.AddAsync(socialLinks);
             }
             else
             {
                 var newSocialLinks = Mapper.Map<SocialLinks>(model);
                 newSocialLinks.Id = socialLinks.Id;
                 newSocialLinks.UserId = socialLinks.UserId;
-                await Database.SocialLinksRepository.UpdateAsync(newSocialLinks);
+                await repo.UpdateAsync(newSocialLinks);
             }
         }
     }

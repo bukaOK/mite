@@ -1,5 +1,8 @@
 ﻿using Dapper;
 using Mite.BLL.DTO;
+using Mite.DAL.Core;
+using Mite.DAL.Entities;
+using Mite.DAL.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -8,12 +11,10 @@ using System.Web;
 
 namespace Mite.DAL.Repositories
 {
-    public class UserRepository
+    public class UserRepository : Repository<User>
     {
-        private IDbConnection Db { get; }
-        public UserRepository(IDbConnection db)
+        public UserRepository(AppDbContext db) : base(db)
         {
-            Db = db;
         }
         /// <summary>
         /// Получить пользователей, у которых показывается реклама

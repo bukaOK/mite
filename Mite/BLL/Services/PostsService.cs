@@ -14,6 +14,7 @@ using Microsoft.AspNet.Identity;
 using System.Web.Hosting;
 using Mite.BLL.DTO;
 using NLog;
+using Mite.DAL.Repositories;
 
 namespace Mite.BLL.Services
 {
@@ -57,7 +58,9 @@ namespace Mite.BLL.Services
 
         public async Task<PostModel> GetPostAsync(Guid postId)
         {
-            var post = await Database.PostsRepository.GetAsync(postId);
+            var repo = Database.GetRepo<PostsRepository, Post>();
+
+            var post = await repo.GetAsync(postId);
             var postModel = Mapper.Map<PostModel>(post);
 
             postModel.IsImage = FilesHelper.IsPath(postModel.Content);
@@ -70,6 +73,9 @@ namespace Mite.BLL.Services
 
         public async Task<IdentityResult> AddPostAsync(PostModel postModel, string userId)
         {
+            var repo = Database.GetRepo<PostsRepository, Post>();
+            var tagsRepo = Database.GetRepo<TagsRepository, Tag>();
+
             if (postModel.IsImage)
             {
                 if(postModel.Content == null)
@@ -108,16 +114,17 @@ namespace Mite.BLL.Services
                 post.PublishDate = DateTime.UtcNow;
             }
 
-            await Database.PostsRepository.AddAsync(post);
+            await repo.AddAsync(post);
             foreach (var tag in post.Tags)
                 tag.Name = tag.Name.ToLower();
-            await Database.TagsRepository.AddWithPostAsync(post.Tags, post.Id);
+            await tagsRepo.AddWithPostAsync(post.Tags, post.Id);
             return IdentityResult.Success;
         }
 
         public async Task<DataServiceResult> DeletePostAsync(Guid postId)
         {
-            var post = await Database.PostsRepository.GetAsync(postId);
+            var repo = Database.GetRepo<PostsRepository, Post>();
+            var post = await repo.GetAsync(postId);
             if (post.IsImage)
             {
                 var img = new ImageDTO(post.Content, imagesFolder);
@@ -131,7 +138,7 @@ namespace Mite.BLL.Services
                 FilesHelper.DeleteFile(post.Cover);
             }
             FilesHelper.DeleteFile(post.Content);
-            await Database.PostsRepository.RemoveAsync(postId);
+            await repo.RemoveAsync(postId);
             return DataServiceResult.Success();
         }
         /// <summary>
@@ -142,7 +149,9 @@ namespace Mite.BLL.Services
         /// <returns></returns>
         public async Task<IdentityResult> UpdatePostAsync(PostModel postModel)
         {
-            var currentPost = await Database.PostsRepository.GetAsync(postModel.Id);
+            var repo = Database.GetRepo<PostsRepository, Post>();
+
+            var currentPost = await repo.GetAsync(postModel.Id);
             if (currentPost.Blocked)
             {
                 return IdentityResult.Failed("Заблокированный пост нельзя обновлять");
@@ -192,8 +201,8 @@ namespace Mite.BLL.Services
             }
             foreach (var tag in post.Tags)
                 tag.Name = tag.Name.ToLower();
-            await Database.TagsRepository.AddWithPostAsync(post.Tags, post.Id);
-            await Database.PostsRepository.UpdateAsync(post);
+            await Database.GetRepo<TagsRepository, Tag>().AddWithPostAsync(post.Tags, post.Id);
+            await repo.UpdateAsync(post);
 
             return IdentityResult.Success;
         }
@@ -204,7 +213,8 @@ namespace Mite.BLL.Services
         /// <returns></returns>
         public async Task<PostModel> GetWithTagsAsync(Guid postId)
         {
-            var post = await Database.PostsRepository.GetWithTagsAsync(postId);
+            var repo = Database.GetRepo<PostsRepository, Post>();
+            var post = await repo.GetWithTagsAsync(postId);
             //post.Tags = post.Tags.Where(x => x.IsConfirmed).ToList();
             
             var postModel = Mapper.Map<PostModel>(post);
@@ -222,19 +232,23 @@ namespace Mite.BLL.Services
         /// <returns></returns>
         public async Task<PostModel> GetWithTagsUserAsync(Guid postId)
         {
-            var post = await Database.PostsRepository.GetWithTagsAsync(postId);
+            var repo = Database.GetRepo<PostsRepository, Post>();
+
+            var post = await repo.GetWithTagsAsync(postId);
             var user = await _userManager.FindByIdAsync(post.UserId);
             var postModel = Mapper.Map<PostModel>(post);
             var userModel = Mapper.Map<UserShortModel>(user);
 
             postModel.User = userModel;
-            postModel.CommentsCount = await Database.CommentsRepository.GetPostCommentsCountAsync(postId);
+            postModel.CommentsCount = await Database.GetRepo<CommentsRepository, Comment>().GetPostCommentsCountAsync(postId);
 
             return postModel;
         }
         public async Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userName, SortFilter sort, PostTypes type, int page)
         {
             IEnumerable<Post> posts;
+            var repo = Database.GetRepo<PostsRepository, Post>();
+            var tagsRepo = Database.GetRepo<TagsRepository, Tag>();
 
             var user = await _userManager.FindByNameAsync(userName);
 
@@ -243,18 +257,18 @@ namespace Mite.BLL.Services
             switch (type)
             {
                 case PostTypes.Drafts:
-                    posts = await Database.PostsRepository.GetByUserAsync(user.Id, false, false, offset, range, sort);
+                    posts = await repo.GetByUserAsync(user.Id, false, false, offset, range, sort);
                     break;
                 case PostTypes.Published:
-                    posts = await Database.PostsRepository.GetByUserAsync(user.Id, true, false, offset, range, sort);
+                    posts = await repo.GetByUserAsync(user.Id, true, false, offset, range, sort);
                     break;
                 case PostTypes.Blocked:
-                    posts = await Database.PostsRepository.GetByUserAsync(user.Id, true, true, offset, range, sort);
+                    posts = await repo.GetByUserAsync(user.Id, true, true, offset, range, sort);
                     break;
                 default:
                     return null;
             }
-            var postTags = await Database.TagsRepository.GetByPostsAsync(posts.Select(x => x.Id));
+            var postTags = await tagsRepo.GetByPostsAsync(posts.Select(x => x.Id));
 
             const int minChars = 400;
             foreach (var post in posts)
@@ -302,16 +316,20 @@ namespace Mite.BLL.Services
 
         public Task AddViews(Guid postId)
         {
-            return Database.PostsRepository.AddView(postId);
+            return Database.GetRepo<PostsRepository, Post>().AddView(postId);
         }
         public Task PublishPost(Guid postId)
         {
-            return Database.PostsRepository.PublishPost(postId, DateTime.UtcNow);
+            return Database.GetRepo<PostsRepository, Post>().PublishPost(postId, DateTime.UtcNow);
         }
 
         public async Task<IEnumerable<TopPostModel>> GetTopAsync(string[] tagsNames, string postName, SortFilter sortFilter, 
             PostTimeFilter postTimeFilter, PostUserFilter postUserFilter, string currentUserId, int page)
         {
+            var repo = Database.GetRepo<PostsRepository, Post>();
+            var tagsRepo = Database.GetRepo<TagsRepository, Tag>();
+            var commentsRepo = Database.GetRepo<CommentsRepository, Comment>();
+
             var currentDate = DateTime.Now;
             DateTime minDate;
             var onlyFollowings = PostUserFilter.OnlyFollowings == postUserFilter;
@@ -340,26 +358,26 @@ namespace Mite.BLL.Services
             if (!string.IsNullOrWhiteSpace(postName) && tagsNames.Length > 0)
             {
                 //Находим посты по тегам и имени работы
-                posts = await Database.PostsRepository.GetByPostNameAndTagsAsync(postName, tagsNames, minDate, 
+                posts = await Database.GetRepo<PostsRepository, Post>().GetByPostNameAndTagsAsync(postName, tagsNames, minDate, 
                     onlyFollowings, currentUserId, sortFilter, offset, range);
             }
             else if (!string.IsNullOrEmpty(postName))
             {
-                posts = await Database.PostsRepository.GetByPostNameAsync(postName, minDate,
+                posts = await repo.GetByPostNameAsync(postName, minDate,
                     onlyFollowings, currentUserId, sortFilter, offset, range);
             }
             else if(tagsNames.Length > 0)
             {
-                posts = await Database.PostsRepository.GetByTagsAsync(tagsNames, minDate,
+                posts = await repo.GetByTagsAsync(tagsNames, minDate,
                     onlyFollowings, currentUserId, sortFilter, offset, range);
             }
             else
             {
-                posts = await Database.PostsRepository.GetByFilterAsync(minDate, onlyFollowings, currentUserId,
+                posts = await repo.GetByFilterAsync(minDate, onlyFollowings, currentUserId,
                     sortFilter, offset, range);
             }
 
-            var postTags = await Database.TagsRepository.GetByPostsAsync(posts.Select(x => x.Id));
+            var postTags = await tagsRepo.GetByPostsAsync(posts.Select(x => x.Id));
             const int minChars = 400;
 
             foreach (var post in posts)
@@ -392,7 +410,7 @@ namespace Mite.BLL.Services
                 post.Tags = postTags.Where(x => x.Posts.Any(y => y.Id == post.Id)).ToList();
             }
             var postModels = Mapper.Map<IEnumerable<TopPostModel>>(posts);
-            var postsWithCommentsCount = await Database.CommentsRepository.GetPostsCommentsCountAsync(postModels.Select(x => x.Id));
+            var postsWithCommentsCount = await commentsRepo.GetPostsCommentsCountAsync(postModels.Select(x => x.Id));
 
             int commentsCount;
             var currentUser = string.IsNullOrEmpty(currentUserId) ? null : await _userManager.FindByIdAsync(currentUserId);
@@ -425,7 +443,8 @@ namespace Mite.BLL.Services
 
         public async Task<IEnumerable<GalleryPostModel>> GetGalleryByUserAsync(string userId)
         {
-            var posts = await Database.PostsRepository.GetGalleryByUserAsync(userId);
+            var repo = Database.GetRepo<PostsRepository, Post>();
+            var posts = await repo.GetGalleryByUserAsync(userId);
             return Mapper.Map<IEnumerable<GalleryPostModel>>(posts);
         }
     }

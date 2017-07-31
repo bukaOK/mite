@@ -7,12 +7,13 @@ using System.Web;
 using System.Data;
 using System.Threading.Tasks;
 using Dapper;
+using Mite.DAL.Infrastructure;
 
 namespace Mite.DAL.Repositories
 {
     public class HelpersRepository : Repository<Helper>
     {
-        public HelpersRepository(IDbConnection db) : base(db)
+        public HelpersRepository(AppDbContext db) : base(db)
         {
         }
         public Task<Helper> GetByUserAsync(string userId)

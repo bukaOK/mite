@@ -7,12 +7,13 @@ using System.Collections.Generic;
 using Mite.Enums;
 using System;
 using System.Linq;
+using Mite.DAL.Infrastructure;
 
 namespace Mite.DAL.Repositories
 {
     public class CommentsRepository : Repository<Comment>
     {
-        public CommentsRepository(IDbConnection db) : base(db)
+        public CommentsRepository(AppDbContext db) : base(db)
         {
         }
 

@@ -8,7 +8,7 @@ using System.Web;
 
 namespace Mite.DAL.Entities
 {
-    public class Notification : IEntity
+    public class Notification : IGuidEntity
     {
         public Guid Id { get; set; }
         public NotificationTypes NotificationType { get; set; }

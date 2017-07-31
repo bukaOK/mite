@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
 using Dapper;
+using Mite.DAL.Infrastructure;
 
 namespace Mite.DAL.Repositories
 {
     public class NotificationRepository : Repository<Notification>
     {
-        public NotificationRepository(IDbConnection db) : base(db)
+        public NotificationRepository(AppDbContext db) : base(db)
         {
         }
         public Task<IEnumerable<Notification>> GetByUserAsync(string userId, bool onlyNew)

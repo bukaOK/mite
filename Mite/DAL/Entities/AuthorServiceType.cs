@@ -6,7 +6,7 @@ using System.Web;
 
 namespace Mite.DAL.Entities
 {
-    public class AuthorServiceType : Entity
+    public class AuthorServiceType : GuidEntity
     {
         /// <summary>
         /// Название типа услуги(портрерт, фотосессия и пр.)

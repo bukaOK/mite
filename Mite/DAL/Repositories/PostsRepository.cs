@@ -8,13 +8,14 @@ using Mite.DAL.Core;
 using Mite.DAL.Entities;
 using Mite.Enums;
 using System.Text;
+using Mite.DAL.Infrastructure;
 
 namespace Mite.DAL.Repositories
 {
     public sealed class PostsRepository : Repository<Post>
     {
 
-        public PostsRepository(IDbConnection db) : base(db)
+        public PostsRepository(AppDbContext db) : base(db)
         {
         }
         public async override Task RemoveAsync(Guid id)
@@ -31,12 +32,6 @@ namespace Mite.DAL.Repositories
             var newRating = (await Db.QueryFirstAsync<int?>(query, queryParams)) ?? 0;
             query = "update dbo.AspNetUsers set Rating=@newRating where Id=@userId";
             await Db.ExecuteAsync(query, new { Id = id, userId = currentUserId, newRating = newRating });
-        }
-        public override Task UpdateAsync(Post entity)
-        {
-            var query = "update dbo.Posts set Title=@Title, Content=@Content, IsImage=@IsImage, LastEdit=@LastEdit, PublishDate=@PublishDate, " +
-                "Cover=@Cover, Description=@Description, Rating=@Rating, Views=@Views, Blocked=@Blocked where Id=@Id";
-            return Db.ExecuteAsync(query, entity);
         }
         /// <summary>
         /// Получить посты по пользователю

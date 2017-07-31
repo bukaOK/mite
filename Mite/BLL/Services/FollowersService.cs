@@ -10,6 +10,8 @@ using Mite.Helpers;
 using System.Web.Hosting;
 using Mite.BLL.DTO;
 using Mite.BLL.IdentityManagers;
+using Mite.DAL.Repositories;
+using Mite.DAL.Entities;
 
 namespace Mite.BLL.Services
 {
@@ -41,8 +43,9 @@ namespace Mite.BLL.Services
         public async Task<List<UserShortModel>> GetFollowersByUserAsync(string userName)
         {
             var user = await userManager.FindByNameAsync(userName);
+            var repo = Database.GetRepo<FollowersRepository, Follower>();
 
-            var followers = await Database.FollowersRepository.GetFollowersByUserAsync(user.Id);
+            var followers = await repo.GetFollowersByUserAsync(user.Id);
             var fModels = Mapper.Map<List<UserShortModel>>(followers.Select(x => x.User));
             foreach(var follower in fModels)
             {
@@ -58,8 +61,9 @@ namespace Mite.BLL.Services
         public async Task<List<UserShortModel>> GetFollowingsByUserAsync(string userName)
         {
             var user = await userManager.FindByNameAsync(userName);
+            var repo = Database.GetRepo<FollowersRepository, Follower>();
 
-            var followings = await Database.FollowersRepository.GetFollowingsByUserAsync(user.Id);
+            var followings = await repo.GetFollowingsByUserAsync(user.Id);
             var fModels = Mapper.Map<List<UserShortModel>>(followings.Select(x => x.FollowingUser));
             foreach(var following in fModels)
             {

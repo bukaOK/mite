@@ -13,7 +13,7 @@ namespace Mite.DAL.Entities
     /// Денежные операции между пользователями внутри системы
     /// (клик по рекламе, перечисление процента от вывода реферала и т.д.)
     /// </summary>
-    public class CashOperation : Entity
+    public class CashOperation : GuidEntity
     {
         [ForeignKey("From")]
         public string FromId { get; set; }

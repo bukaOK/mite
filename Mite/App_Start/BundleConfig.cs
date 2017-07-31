@@ -41,7 +41,8 @@ namespace Mite
                 "~/Content/Site.css",
                 "~/Content/ident.css",
                 "~/Content/content-tools.min.css",
-                "~/bower_components/perfect-scrollbar/css/perfect-scrollbar.css"));
+                "~/bower_components/perfect-scrollbar/css/perfect-scrollbar.css",
+                "~/Content/UserMenu.css"));
             bundles.Add(new LessBundle("~/Content/less").Include(
                 "~/Content/DotLoader.less"
             ));

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Mite.DAL.Core
 {
-    public interface IRepository<T> where T : class
+    public interface IRepository<TEntity> where TEntity : class
     {
         /// <summary>
         /// Возвращает сущность по ID
@@ -13,24 +13,28 @@ namespace Mite.DAL.Core
         /// <param name="id">Id сущности</param>
         /// <param name="allowDefault">Разрешить ли возвращать нулевые значения</param>
         /// <returns></returns>
-        Task<T> GetAsync(Guid id);
-        T Get(Guid id);
+        Task<TEntity> GetAsync(Guid id);
+        TEntity Get(Guid id);
+        Task<TEntity> GetAsync(params object[] keyValues);
+        TEntity Get(params object[] keyValues);
         /// <summary>
         /// Возвращает список всех сущностей данного типа
         /// </summary>
         /// <returns></returns>
-        Task<IEnumerable<T>> GetAllAsync();
-        IEnumerable<T> GetAll();
+        Task<IEnumerable<TEntity>> GetAllAsync();
+        IEnumerable<TEntity> GetAll();
         /// <summary>
         /// Добавляет сущность
         /// </summary>
         /// <param name="entity"></param>
         /// <returns></returns>
-        Task AddAsync(T entity);
-        void Add(T entity);
+        Task AddAsync(TEntity entity);
+        void Add(TEntity entity);
         Task RemoveAsync(Guid id);
+        Task RemoveAsync(TEntity entity);
         void Remove(Guid id);
-        Task UpdateAsync(T entity);
+        void Remove(TEntity entity);
+        Task UpdateAsync(TEntity entity);
         int GetCount();
         Task<int> GetCountAsync();
     }

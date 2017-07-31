@@ -10,6 +10,7 @@ using Mite.DAL.Entities;
 using AutoMapper;
 using Mite.Enums;
 using Microsoft.AspNet.Identity;
+using Mite.DAL.Repositories;
 
 namespace Mite.BLL.Services
 {
@@ -27,35 +28,38 @@ namespace Mite.BLL.Services
 
         public HelperModel GetByUser(string userId)
         {
-            var helper = Database.HelpersRepository.GetByUser(userId);
+            var repo = Database.GetRepo<HelpersRepository, Helper>();
+            var helper = repo.GetByUser(userId);
             if (helper == null)
             {
                 helper = new Helper
                 {
                     UserId = userId
                 };
-                Database.HelpersRepository.Add(helper);
+                repo.Add(helper);
             }
             return Mapper.Map<HelperModel>(helper);
         }
 
         public async Task<HelperModel> GetByUserAsync(string userId)
         {
-            var helper = await Database.HelpersRepository.GetByUserAsync(userId);
+            var repo = Database.GetRepo<HelpersRepository, Helper>();
+            var helper = await repo.GetByUserAsync(userId);
             if (helper == null)
             {
                 helper = new Helper
                 {
                     UserId = userId
                 };
-                await Database.HelpersRepository.AddAsync(helper);
+                await repo.AddAsync(helper);
             }
             return Mapper.Map<HelperModel>(helper);
         }
 
         public async Task<IdentityResult> InitHelperAsync(HelperTypes helperType, string userId)
         {
-            var helper = await Database.HelpersRepository.GetByUserAsync(userId);
+            var repo = Database.GetRepo<HelpersRepository, Helper>();
+            var helper = await repo.GetByUserAsync(userId);
             switch (helperType)
             {
                 case HelperTypes.EditDocBtn:
@@ -67,7 +71,7 @@ namespace Mite.BLL.Services
                 default:
                     return IdentityResult.Failed("Неизвестный тип помощника");
             }
-            await Database.HelpersRepository.UpdateAsync(helper);
+            await repo.UpdateAsync(helper);
             return IdentityResult.Success;
         }
     }

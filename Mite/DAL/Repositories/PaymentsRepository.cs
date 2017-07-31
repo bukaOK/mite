@@ -5,12 +5,13 @@ using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
 using Dapper;
+using Mite.DAL.Infrastructure;
 
 namespace Mite.DAL.Repositories
 {
     public class PaymentsRepository : Repository<Payment>
     {
-        public PaymentsRepository(IDbConnection db) : base(db)
+        public PaymentsRepository(AppDbContext db) : base(db)
         {
         }
         public Task<IEnumerable<Payment>> GetByUserAsync(string userId)

@@ -4,7 +4,9 @@ using Mite.Attributes.Filters;
 using Mite.BLL.IdentityManagers;
 using Mite.BLL.Services;
 using Mite.Core;
+using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
+using Mite.DAL.Repositories;
 using Mite.ExternalServices.YandexMoney;
 using Mite.Models;
 using System;
@@ -58,7 +60,9 @@ namespace Mite.Controllers
         {
             var model = new AdminStatisticModel();
             model.UsersCount = userManager.Users.Count();
-            model.PostsCount = unitOfWork.PostsRepository.GetCount();
+
+            var repo = unitOfWork.GetRepo<PostsRepository, Post>();
+            model.PostsCount = repo.GetCount();
             return PartialView(model);
         }
     }

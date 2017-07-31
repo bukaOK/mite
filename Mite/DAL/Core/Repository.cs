@@ -6,119 +6,64 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Dapper;
+using Mite.DAL.Infrastructure;
+using System.Data.Entity;
 
 namespace Mite.DAL.Core
 {
     //TODO: проверка Guid на уникальность
-    public abstract class Repository<T> : IRepository<T> where T : class, IEntity
+    public abstract class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     {
-        protected IDbConnection Db { get; }
-        protected string TableName { get; set; }
+        protected readonly IDbConnection Db;
+        protected readonly AppDbContext DbContext;
+        protected readonly DbSet<TEntity> Table;
+        protected string TableName;
 
-        protected Repository(IDbConnection db)
+        protected Repository(AppDbContext dbContext)
         {
-            Db = db;
+            Db = dbContext.Database.Connection;
+            DbContext = dbContext;
             if(TableName == null)
-                TableName = typeof(T).Name + "s";
+                TableName = typeof(TEntity).Name + "s";
         }
         
-        public virtual Task<IEnumerable<T>> GetAllAsync()
+        public virtual Task<IEnumerable<TEntity>> GetAllAsync()
         {
-            return Db.QueryAsync<T>($"select * from dbo.{TableName}");
+            return Db.QueryAsync<TEntity>($"select * from dbo.{TableName}");
         }
 
-        public virtual Task<T> GetAsync(Guid id)
-        {
-            return Db.QueryFirstAsync<T>($"select top 1 * from dbo.{TableName} where Id=@Id", new { Id = id });
-        }
         public virtual Task RemoveAsync(Guid id)
         {
+            
             var query = $"delete from dbo.{TableName} where Id=@Id";
             return Db.ExecuteAsync(query, new { Id = id });
         }
-        public virtual Task AddAsync(T entity)
+        public virtual Task AddAsync(TEntity entity)
         {
-            //Если Id пустой, генерим новый
-            entity.Id = entity.Id == Guid.Empty ? Guid.NewGuid() : entity.Id;
-            //Составляем список свойств для вставки
-            var propsNames = typeof(T).GetProperties().Where(IsSqlType).Select(x => x.Name).ToArray();
-            var query = new StringBuilder($"insert into dbo.{TableName} (");
-            for (int i = 0; i < propsNames.Length; i++)
-            {
-                query.Append(propsNames[i]);
-                if (i < propsNames.Length - 1)
-                    query.Append(",");
-            }
-            query.Append(") values(");
-            for (int i = 0; i < propsNames.Length; i++)
-            {
-                query.Append("@").Append(propsNames[i]);
-                if (i != propsNames.Length - 1)
-                    query.Append(",");
-            }
-            query.Append(")");
-            return Db.ExecuteAsync(query.ToString(), entity);
+            DbContext.Entry(entity).State = EntityState.Added;
+            return SaveAsync();
         }
 
-        public virtual Task UpdateAsync(T entity)
+        public virtual Task UpdateAsync(TEntity entity)
         {
-            var propsNames =
-                typeof(T).GetProperties()
-                    .Where(x => IsSqlType(x) && x.Name != "Id" && x.GetValue(entity) != null)
-                    .Select(x => x.Name)
-                    .ToArray();
-            var query = new StringBuilder($"update dbo.{TableName} set ");
-            for (int i = 0; i < propsNames.Length; i++)
-            {
-                query.AppendFormat("{0}=@{0}", propsNames[i]);
-                if (i < propsNames.Length - 1)
-                    query.Append(",");
-            }
-            query.Append(" where Id=@Id");
-            return Db.ExecuteAsync(query.ToString(), entity);
+            DbContext.Entry(entity).State = EntityState.Modified;
+            return SaveAsync();
         }
 
-        /// <summary>
-        /// не все типы проверены
-        /// </summary>
-        /// <param name="prop"></param>
-        /// <returns></returns>
-        private static bool IsSqlType(PropertyInfo prop)
+        public IEnumerable<TEntity> GetAll()
         {
-            var propType = prop.PropertyType;
-            return propType == typeof(string) || propType.IsPrimitive || propType.IsValueType;
+            return Db.Query<TEntity>($"select * from dbo.{TableName}");
         }
 
-        public IEnumerable<T> GetAll()
+        public void Add(TEntity entity)
         {
-            return Db.Query<T>($"select * from dbo.{TableName}");
+            DbContext.Entry(entity).State = EntityState.Added;
+            Save();
         }
 
-        public void Add(T entity)
+        public TEntity Get(Guid id)
         {
-            //Составляем список свойств для вставки
-            var propsNames = typeof(T).GetProperties().Where(IsSqlType).Select(x => x.Name).ToArray();
-            var query = new StringBuilder($"insert into dbo.{TableName} (");
-            for (int i = 0; i < propsNames.Length; i++)
-            {
-                query.Append(propsNames[i]);
-                if (i < propsNames.Length - 1)
-                    query.Append(",");
-            }
-            query.Append(") values(");
-            for (int i = 0; i < propsNames.Length; i++)
-            {
-                query.Append("@").Append(propsNames[i]);
-                if (i != propsNames.Length - 1)
-                    query.Append(",");
-            }
-            query.Append(")");
-            Db.Execute(query.ToString(), entity);
-        }
-
-        public T Get(Guid id)
-        {
-            return Db.QueryFirst<T>($"select top 1 * from dbo.{TableName} where Id=@Id", new { Id = id });
+            return Db.QueryFirst<TEntity>($"select top 1 * from dbo.{TableName} where Id=@Id", new { Id = id });
         }
 
         public void Remove(Guid id)
@@ -137,6 +82,41 @@ namespace Mite.DAL.Core
         {
             var query = $"select COUNT(*) from dbo.{TableName}";
             return Db.QueryFirstAsync<int>(query);
+        }
+        protected Task SaveAsync()
+        {
+            return DbContext.SaveChangesAsync();
+        }
+        protected void Save()
+        {
+            DbContext.SaveChanges();
+        }
+
+        public Task<TEntity> GetAsync(Guid id)
+        {
+            return Db.QueryFirstAsync<TEntity>($"select * from dbo.{TableName} where Id=@id", new { id });
+        }
+
+        public TEntity Get(params object[] keyValues)
+        {
+            return Table.Find(keyValues);
+        }
+
+        public Task RemoveAsync(TEntity entity)
+        {
+            Table.Remove(entity);
+            return SaveAsync();
+        }
+
+        public void Remove(TEntity entity)
+        {
+            Table.Remove(entity);
+            Save();
+        }
+
+        public Task<TEntity> GetAsync(params object[] keyValues)
+        {
+            return Table.FindAsync(keyValues);
         }
     }
 }

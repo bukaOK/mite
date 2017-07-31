@@ -10,6 +10,8 @@ using Newtonsoft.Json.Linq;
 using Mite.ExternalServices.Google.AdSense;
 using Mite.ExternalServices.Google.Core;
 using NLog;
+using Mite.DAL.Repositories;
+using Mite.DAL.Entities;
 
 namespace Mite.ExternalServices.Google
 {
@@ -68,12 +70,12 @@ namespace Mite.ExternalServices.Google
                 var result = await resp.Content.ReadAsStringAsync();
                 var jResult = JObject.Parse(result);
 
-                var repo = Database.ExternalServiceRepository;
+                var repo = Database.GetRepo<ExternalServiceRepository, ExternalService>();
                 //Если сервис с токеном уже есть в базе, просто обновляем его
                 var existingService = await repo.GetByServiceNameAsync(GoogleApiSettings.DefaultAuthType);
                 if(existingService == null)
                 {
-                    await repo.AddAsync(new DAL.Entities.ExternalService
+                    await repo.AddAsync(new ExternalService
                     {
                         Name = GoogleApiSettings.DefaultAuthType,
                         AccessToken = jResult["refresh_token"].ToString(),
@@ -106,7 +108,8 @@ namespace Mite.ExternalServices.Google
         }
         public async Task<string> GetRefreshTokenAsync(string userId)
         {
-            var extService = await Database.ExternalServiceRepository.GetAsync(userId, GoogleApiSettings.DefaultAuthType);
+            var extService = await Database.GetRepo<ExternalServiceRepository, ExternalService>()
+                .GetAsync(userId, GoogleApiSettings.DefaultAuthType);
             return extService.AccessToken;
         }
         public async Task<bool> RecaptchaValidateAsync(string captchaResponse)

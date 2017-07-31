@@ -12,7 +12,7 @@ namespace Mite.DAL.Entities
     /// Сущность "помощника" для пользователя(для непонятливых)
     /// Если true, значит помощник использован, и больше не нужен
     /// </summary>
-    public class Helper : Entity
+    public class Helper : GuidEntity
     {
         /// <summary>
         /// Нажата ли была кнопка для редактирования документа

@@ -7,12 +7,13 @@ using System.Web;
 using System.Data;
 using System.Threading.Tasks;
 using Dapper;
+using Mite.DAL.Infrastructure;
 
 namespace Mite.DAL.Repositories
 {
     public class SocialLinksRepository : Repository<SocialLinks>
     {
-        public SocialLinksRepository(IDbConnection db) : base(db)
+        public SocialLinksRepository(AppDbContext db) : base(db)
         {
             TableName = "SocialLinks";
         }

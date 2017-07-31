@@ -6,7 +6,7 @@ using System.Web;
 
 namespace Mite.DAL.Entities
 {
-    public class PostGroup : Entity
+    public class PostGroup : GuidEntity
     {
         public string Name { get; set; }
         public IEnumerable<Post> Posts { get; set; }

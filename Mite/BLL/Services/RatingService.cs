@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Mite.DAL.Infrastructure;
 using AutoMapper;
+using Mite.DAL.Repositories;
 
 namespace Mite.BLL.Services
 {
@@ -35,7 +36,9 @@ namespace Mite.BLL.Services
 
         public async Task<CommentRatingModel> GetByCommentAndUserAsync(Guid commentId, string userId)
         {
-            var rating = await Database.RatingRepository.GetByUserAndCommentAsync(commentId.ToString(), userId);
+            var repo = Database.GetRepo<RatingRepository, Rating>();
+
+            var rating = await repo.GetByUserAndCommentAsync(commentId.ToString(), userId);
             if (rating == default(Rating))
                 return null;
 
@@ -44,7 +47,8 @@ namespace Mite.BLL.Services
 
         public async Task<PostRatingModel> GetByPostAndUserAsync(Guid postId, string userId)
         {
-            var rating = await Database.RatingRepository.GetByUserAndPostAsync(postId.ToString(), userId);
+            var repo = Database.GetRepo<RatingRepository, Rating>();
+            var rating = await repo.GetByUserAndPostAsync(postId.ToString(), userId);
             if (rating == default(Rating))
                 return null;
 
@@ -53,30 +57,31 @@ namespace Mite.BLL.Services
 
         public async Task RateCommentAsync(CommentRatingModel model)
         {
+            var repo = Database.GetRepo<RatingRepository, Rating>();
             var rating = Mapper.Map<Rating>(model);
             rating.RateDate = DateTime.UtcNow;
 
             if (rating.Id != Guid.Empty)
             {
-                await Database.RatingRepository.UpdateAsync(rating);
+                await repo.UpdateAsync(rating);
             }
             else
             {
                 var existingRating =
-                    await Database.RatingRepository.GetByUserAndCommentAsync(rating.CommentId.ToString(), rating.UserId);
+                    await repo.GetByUserAndCommentAsync(rating.CommentId.ToString(), rating.UserId);
 
                 //Если существует, обновляем рейтинг, иначе добавляем новый
                 if (existingRating != default(Rating))
                 {
                     rating.Id = existingRating.Id;
                     rating.OwnerId = existingRating.OwnerId;
-                    await Database.RatingRepository.UpdateAsync(rating);
+                    await repo.UpdateAsync(rating);
                 }
                 else
                 {
-                    var comment = await Database.CommentsRepository.GetAsync((Guid)rating.CommentId);
+                    var comment = await Database.GetRepo<CommentsRepository, Comment>().GetAsync((Guid)rating.CommentId);
                     rating.OwnerId = comment.UserId;
-                    await Database.RatingRepository.AddAsync(rating);
+                    await repo.AddAsync(rating);
                 }
             }
         }
@@ -85,30 +90,31 @@ namespace Mite.BLL.Services
         {
             var rating = Mapper.Map<Rating>(ratingModel);
             rating.RateDate = DateTime.UtcNow;
+            var repo = Database.GetRepo<RatingRepository, Rating>();
 
             if (rating.Id != Guid.Empty)
             {
-                var existingRating = await Database.RatingRepository.GetAsync(rating.Id);
+                var existingRating = await repo.GetAsync(rating.Id);
                 rating.OwnerId = existingRating.OwnerId;
-                await Database.RatingRepository.UpdateAsync(rating);
+                await repo.UpdateAsync(rating);
             }
             else
             {
                 var existingRating =
-                    await Database.RatingRepository.GetByUserAndPostAsync(rating.PostId.ToString(), rating.UserId);
+                    await repo.GetByUserAndPostAsync(rating.PostId.ToString(), rating.UserId);
 
                 //Если существует, обновляем рейтинг, иначе добавляем новый
                 if (existingRating != default(Rating))
                 {
                     rating.Id = existingRating.Id;
                     rating.OwnerId = existingRating.OwnerId;
-                    await Database.RatingRepository.UpdateAsync(rating);
+                    await repo.UpdateAsync(rating);
                 }
                 else
                 {
-                    var post = await Database.PostsRepository.GetAsync((Guid)rating.PostId);
+                    var post = await Database.GetRepo<PostsRepository, Post>().GetAsync((Guid)rating.PostId);
                     rating.OwnerId = post.UserId;
-                    await Database.RatingRepository.AddAsync(rating);
+                    await repo.AddAsync(rating);
                 }
                     
             }

@@ -8,6 +8,7 @@ using System.Web.Http;
 using Mite.Models;
 using Mite.DAL.Entities;
 using Mite.BLL.DTO;
+using Mite.DAL.Repositories;
 
 namespace Mite.Controllers
 {
@@ -24,14 +25,14 @@ namespace Mite.Controllers
         [AllowAnonymous]
         public async Task<IEnumerable<TagModel>> GetForUser()
         {
-            var tags = await _unitOfWork.TagsRepository.GetAllWithPopularityAsync(true);
+            var tags = await _unitOfWork.GetRepo<TagsRepository, Tag>().GetAllWithPopularityAsync(true);
             return Mapper.Map<IEnumerable<TagModel>>(tags);
         }
         [HttpGet]
         [AllowAnonymous]
         public async Task<IEnumerable<string>> GetByName(string name)
         {
-            var tags = await _unitOfWork.TagsRepository.GetByNameAsync(name);
+            var tags = await _unitOfWork.GetRepo<TagsRepository, Tag>().GetByNameAsync(name);
             return Mapper.Map<IEnumerable<string>>(tags);
         }
         [HttpPost]
@@ -40,18 +41,18 @@ namespace Mite.Controllers
             tag.Id = Guid.NewGuid();
             tag.IsConfirmed = true;
             tag.Checked = true;
-            await _unitOfWork.TagsRepository.AddAsync(tag);
+            await _unitOfWork.GetRepo<TagsRepository, Tag>().AddAsync(tag);
             return tag;
         }
         [HttpPut]
         public Task Update(Tag tag)
         {
-            return _unitOfWork.TagsRepository.UpdateAsync(tag);
+            return _unitOfWork.GetRepo<TagsRepository, Tag>().UpdateAsync(tag);
         }
         [HttpDelete]
         public Task Delete(Guid id)
         {
-            return _unitOfWork.TagsRepository.RemoveAsync(id);
+            return _unitOfWork.GetRepo<TagsRepository, Tag>().RemoveAsync(id);
         }
     }
 }

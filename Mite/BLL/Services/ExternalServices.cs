@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Mite.DAL.Infrastructure;
 using NLog;
+using Mite.DAL.Repositories;
 
 namespace Mite.BLL.Services
 {
@@ -42,7 +43,8 @@ namespace Mite.BLL.Services
 
         public async Task Add(string userId, string serviceType, string accessToken)
         {
-            var existingService = await Database.ExternalServiceRepository.GetAsync(userId, serviceType);
+            var repo = Database.GetRepo<ExternalServiceRepository, ExternalService>();
+            var existingService = await repo.GetAsync(userId, serviceType);
             if (existingService == null)
             {
                 var service = new ExternalService
@@ -51,35 +53,38 @@ namespace Mite.BLL.Services
                     Name = serviceType,
                     UserId = userId
                 };
-                await Database.ExternalServiceRepository.AddAsync(service);
+                await repo.AddAsync(service);
             }
             else
             {
                 existingService.AccessToken = accessToken;
-                await Database.ExternalServiceRepository.UpdateAsync(existingService);
+                await repo.UpdateAsync(existingService);
             }
         }
 
         public Task<ExternalService> Get(string userId, string serviceName)
         {
-            return Database.ExternalServiceRepository.GetAsync(userId, serviceName);
+            var repo = Database.GetRepo<ExternalServiceRepository, ExternalService>();
+            return repo.GetAsync(userId, serviceName);
         }
 
         public Task RemoveAsync(string userId, string serviceName)
         {
-            return Database.ExternalServiceRepository.RemoveAsync(userId, serviceName);
+            var repo = Database.GetRepo<ExternalServiceRepository, ExternalService>();
+            return repo.RemoveAsync(userId, serviceName);
         }
 
         public async Task<DataServiceResult> Update(string providerKey, string serviceType, string accessToken)
         {
-            var existingService = await Database.ExternalServiceRepository.GetByProviderAsync(providerKey, serviceType);
+            var repo = Database.GetRepo<ExternalServiceRepository, ExternalService>();
+            var existingService = await repo.GetByProviderAsync(providerKey, serviceType);
             if(existingService == null)
             {
                 logger.Error("Не найден внешний сервис");
                 return DataServiceResult.Failed("Не найден внешний сервис");
             }
             existingService.AccessToken = accessToken;
-            await Database.ExternalServiceRepository.UpdateAsync(existingService);
+            await repo.UpdateAsync(existingService);
             return DataServiceResult.Success();
         }
     }

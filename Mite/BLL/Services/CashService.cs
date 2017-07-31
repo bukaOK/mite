@@ -68,7 +68,8 @@ namespace Mite.BLL.Services
 
         public async Task<IEnumerable<OperationModel>> GetPaymentsHistoryAsync(string userId)
         {
-            var payments = await Database.PaymentsRepository.GetByUserAsync(userId);
+            var repo = Database.GetRepo<PaymentsRepository, Payment>();
+            var payments = await repo.GetByUserAsync(userId);
             
             return Mapper.Map<IEnumerable<OperationModel>>(payments);
         }
@@ -82,7 +83,8 @@ namespace Mite.BLL.Services
                 OperationType = type,
                 Date = DateTime.UtcNow
             };
-            return Database.CashOperationsRepository.AddAsync(operation);
+            var repo = Database.GetRepo<CashOperationsRepository, CashOperation>();
+            return repo.AddAsync(operation);
         }
         /// <summary>
         /// Список рефералов пользователя
@@ -91,8 +93,9 @@ namespace Mite.BLL.Services
         /// <returns></returns>
         public async Task<IEnumerable<ReferalModel>> GetReferalsByUserAsync(string userId)
         {
+            var repo = Database.GetRepo<CashOperationsRepository, CashOperation>();
             //Получаем список операций с рефералами
-            var operations = await Database.CashOperationsRepository.GetByOperationTypeAsync(userId, CashOperationTypes.Referal, true);
+            var operations = await repo.GetByOperationTypeAsync(userId, CashOperationTypes.Referal, true);
 
             var referals = new List<ReferalModel>();
             
@@ -116,8 +119,11 @@ namespace Mite.BLL.Services
 
         public async Task<double> GetUserCashAsync(string userId)
         {
-            var cashOperations = await Database.CashOperationsRepository.GetListAsync(userId);
-            var payments = await Database.PaymentsRepository.GetByUserAsync(userId);
+            var repo = Database.GetRepo<CashOperationsRepository, CashOperation>();
+            var paymentsRepo = Database.GetRepo<PaymentsRepository, Payment>();
+
+            var cashOperations = await repo.GetListAsync(userId);
+            var payments = await paymentsRepo.GetByUserAsync(userId);
 
             var cash = 0.0;
             foreach (var payment in payments)
@@ -142,22 +148,26 @@ namespace Mite.BLL.Services
 
         public async Task<bool> IsYandexAuthorized(string userId)
         {
-            var service = await Database.ExternalServiceRepository.GetAsync(userId, YaMoneySettings.DefaultAuthType);
+            var repo = Database.GetRepo<ExternalServiceRepository, ExternalService>();
+            var service = await repo.GetAsync(userId, YaMoneySettings.DefaultAuthType);
             return service != null;
         }
 
         public Task<IEnumerable<CashOperation>> GetByTypeAsync(string userId, CashOperationTypes type)
         {
-            return Database.CashOperationsRepository.GetByOperationTypeAsync(userId, type);
+            var repo = Database.GetRepo<CashOperationsRepository, CashOperation>();
+            return repo.GetByOperationTypeAsync(userId, type);
         }
 
         public IEnumerable<CashOperation> GetByType(string userId, CashOperationTypes type)
         {
-            return Database.CashOperationsRepository.GetByOperationType(userId, type);
+            var repo = Database.GetRepo<CashOperationsRepository, CashOperation>();
+            return repo.GetByOperationType(userId, type);
         }
         public IEnumerable<UserAdDTO> GetAdUsers()
         {
-            return Database.UserRepository.GetAdUsers();
+            var repo = Database.GetRepo<UserRepository, User>();
+            return repo.GetAdUsers();
         }
 
         public void Add(string from, string to, double sum, CashOperationTypes type)
@@ -170,12 +180,14 @@ namespace Mite.BLL.Services
                 OperationType = type,
                 Date = DateTime.UtcNow
             };
-            Database.CashOperationsRepository.Add(operation);
+            var repo = Database.GetRepo<CashOperationsRepository, CashOperation>();
+            repo.Add(operation);
         }
 
         public DataServiceResult AdSensePay(string to, double sum, DateTime date)
         {
-            var userOperations = Database.CashOperationsRepository.GetByOperationType(to, CashOperationTypes.GoogleAd);
+            var repo = Database.GetRepo<CashOperationsRepository, CashOperation>();
+            var userOperations = repo.GetByOperationType(to, CashOperationTypes.GoogleAd);
             var existingOperation = userOperations.FirstOrDefault(x => x.Date.DayOfYear == DateTime.Now.DayOfYear);
             if (existingOperation != null)
                 return DataServiceResult.Success();
@@ -189,7 +201,7 @@ namespace Mite.BLL.Services
             };
             try
             {
-                Database.CashOperationsRepository.Add(operation);
+                repo.Add(operation);
                 return DataServiceResult.Success();
             }
             catch(Exception e)

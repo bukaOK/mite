@@ -1,0 +1,30 @@
+﻿@media(max-width: 1170px){
+    .ui.vertical.icon.fixed.user-menu.menu{
+        display: none;
+    }
+}
+@media (min-width: 1171px){
+    .item.menu-btn{
+        display: none !important;
+    }
+    .fixed.user-menu.menu{
+        top: 50%;
+        border-radius: 20px 0 0 20px !important;
+        height: auto;
+        display: block;
+        transform: translate(0, -50%);
+    }
+    .fixed.user-menu.menu>.item:first-child{
+        border-radius: 20px 0 0 0 !important;
+    }
+    .fixed.user-menu.menu>.item:last-child{
+        border-radius: 0 0 0 20px !important;
+    }
+    .fixed.user-menu.menu>.item>.label{
+        left: 0;
+    }
+    .fixed.user-menu.menu>.button{
+        margin-top: 5px;
+        margin-left: 15%;
+    }
+}

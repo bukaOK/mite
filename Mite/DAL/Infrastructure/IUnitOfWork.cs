@@ -5,17 +5,7 @@ namespace Mite.DAL.Infrastructure
 {
     public interface IUnitOfWork
     {
-        PostsRepository PostsRepository { get; }
-        TagsRepository TagsRepository { get; }
-        CommentsRepository CommentsRepository { get; }
-        RatingRepository RatingRepository { get; }
-        FollowersRepository FollowersRepository { get; }
-        NotificationRepository NotificationRepository { get; }
-        HelpersRepository HelpersRepository { get; }
-        PaymentsRepository PaymentsRepository { get; }
-        CashOperationsRepository CashOperationsRepository { get; }
-        ExternalServiceRepository ExternalServiceRepository { get; }
-        SocialLinksRepository SocialLinksRepository { get; }
-        UserRepository UserRepository { get; }
+        TRepo GetRepo<TRepo, TEntity>() where TRepo : Repository<TEntity> where TEntity : class, new();
+        TRepo GetRepo<TRepo, TEntity>(params object[] additionalParams) where TRepo : Repository<TEntity> where TEntity : class, new();
     }
 }

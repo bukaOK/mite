@@ -42,7 +42,7 @@
         <script>
             var notifyHub = $.connection.notifyHub;
             notifyHub.client.notifyUser = function (notification) {
-                var $popup = $('#notify-popup');
+                var $popup = $('.notify.popup');
 
                 if ($popup.hasClass('initialized')) {
                     var data = JSON.parse(notification);
@@ -57,7 +57,7 @@
                         $popup.html('<div class="ui feed">' + html + '</div>');
                         $popup.removeClass('empty');
                     } else {
-                        $('#notify-popup > .feed').prepend(html);
+                        $('.notify.popup > .feed').prepend(html);
                     }
                     $('#notifications-item').popup('reposition');
                     label.show();
@@ -110,7 +110,7 @@
             {
                 @Html.ActionLink("Панель администратора", "Index", "Admin", null, new { id = "adminPanelItem", @class = "item" })
             }
-            <a href="/user/profile/@User.Identity.Name" class="violet item" id="userProfileItem">
+            <a href="/user/profile/@User.Identity.Name" class="violet user-profile item">
                 <i class="user icon"></i>Моя страница
             </a>
             <a href="@Url.RouteUrl("AddPost", new { postType = PostTypes.Image.ToString().ToLower() })" class="violet item" id="editImageItem">
@@ -119,17 +119,17 @@
             <a href="@Url.RouteUrl("AddPost", new { postType = PostTypes.Document.ToString().ToLower() })" class="violet item" id="editDocItem">
                 <i class="newspaper icon"></i>Добавить документ
             </a>
-            <a class="violet item" id="notifications-item">
+            <a class="viole notifications item">
                 <i class="feed icon"></i>
                 Уведомления
                 <div class="ui right violet label" style="display: none">
                     0
                 </div>
             </a>
-            <div class="ui popup" id="notify-popup" style="width: 400px; min-height: 50px;">
-                <div class="ui active loader" id="notify-loader"></div>
+            <div class="ui notify popup" style="min-width: 400px; min-height: 50px;">
+                <div class="ui active loader"></div>
             </div>
-            <a href="@Url.Action("Index", "UserSettings")" class="violet item" id="userSettingsItem">
+            <a href="@Url.Action("Index", "UserSettings")" class="violet user-settings item">
                 <i class="settings icon"></i>
                 Настройки
             </a>
@@ -187,6 +187,32 @@
         <article class="ui container">
             @RenderBody()
         </article>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <div class="ui right fixed vertical icon user-menu menu">
+                <a href="/user/profile/@User.Identity.Name" class="violet user-profile item" data-content="Моя страница">
+                    <i class="user icon"></i>
+                </a>
+                <a class="violet notifications item">
+                    <i class="feed icon"></i>
+                    <div class="ui right violet label" style="display: none">
+                        0
+                    </div>
+                </a>
+                <div class="ui notify popup" style="min-width: 400px; min-height: 50px;">
+                    <div class="ui active loader"></div>
+                </div>
+                <a href="@Url.Action("Index", "UserSettings")" class="violet user-settings item" data-content="Настройки">
+                    <i class="settings icon"></i>
+                </a>
+                <a href="@Url.Action("Index", "Cash")" class="violet cash item" data-content="Счёт">
+                    <i class="ruble icon"></i>
+                </a>
+                <a class="red logof item" href="@Url.Action("LogOff", "Account")" data-content="Выйти">
+                    <i class="sign out icon"></i>
+                </a>
+            </div>
+        }
         <footer>
             <div class="ui computer tablet only grid container">
                 <div class="row">
@@ -239,7 +265,7 @@
             });
         }
         function initNotifications() {
-            var $popup = $('#notify-popup');
+            var $popup = $('.notify.popup');
             $.ajax({
                 url: '/api/notification/',
                 type: 'get',
@@ -247,7 +273,7 @@
                 success: function (resp) {
                     if (resp.length > 0) {
                         //Ставим счетчик
-                        $('#notifications-item .label').html(resp.length).show();
+                        $('.notifications.item .label').html(resp.length).show();
                         resp.forEach(function (item) {
                             var dateIso = item.NotifyDate;
                             dateIso += dateIso[dateIso.length - 1] == 'Z' ? '' : 'Z';
@@ -256,7 +282,7 @@
                         //Рендерим уведомления
                         var html = '<div class="ui feed">' + $.templates('{{for tmpl="#eventTmpl" /}}').render(resp) + '</div>';
                         $popup.html(html);
-                        $('#notifications-item').popup('reposition');
+                        $('.notifications.item').popup('reposition');
                     } else {
                         $popup.addClass('empty');
                         var emptyMsg = 'У вас пока нет новых уведомлений. <a href="@Url.Action("Notifications", "UserProfile")">Посмотреть все.</a>';
@@ -267,13 +293,13 @@
                 $popup.addClass('initialized');
             });
             if ($(window).width() < 900) {
-                $('#notifications-item').attr('href', '/user/notifications');
+                $('.notifications.item').attr('href', '/user/notifications');
                 return;
             }
-            $('#notifications-item').popup({
+            $('.notifications.item').popup({
                 position: 'left center',
                 on: 'click',
-                popup: '#notify-popup',
+                popup: '.notify.popup',
                 inline: true,
                 variation: 'basic',
                 onShow: function (item) {
@@ -309,8 +335,16 @@
             });
             $(".ui.sidebar").sidebar("attach events", ".menu-btn");
             $(".ui.accordion").accordion();
+            $('.user-menu.menu>.item').popup({
+                variation: 'small',
+                position: 'left center',
+                delay: {
+                    show: 0,
+                    hide: 0
+                }
+            });
             initNotifications();
-            $('#notify-popup').perfectScrollbar();
+            $('.notify.popup').perfectScrollbar();
         });
     </script>
 </body>

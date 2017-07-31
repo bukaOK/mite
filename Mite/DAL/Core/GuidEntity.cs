@@ -6,9 +6,9 @@ using System.Web;
 
 namespace Mite.DAL.Core
 {
-    public abstract class Entity : IEntity
+    public abstract class GuidEntity : IGuidEntity
     {
-        public Entity()
+        public GuidEntity()
         {
             Id = Guid.NewGuid();
         }

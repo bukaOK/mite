@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Net;
 using NLog;
+using Mite.DAL.Repositories;
 
 namespace Mite.Controllers
 {
@@ -32,14 +33,17 @@ namespace Mite.Controllers
                 FollowingUserId = followingId,
                 UserId = User.Identity.GetUserId()
             };
+
+            var repo = unitOfWork.GetRepo<FollowersRepository, Follower>();
+
             follower.UserId = User.Identity.GetUserId();
             follower.FollowTime = DateTime.UtcNow;
             try
             {
-                var alreadyFollowed = await unitOfWork.FollowersRepository.IsFollower(follower.UserId, follower.FollowingUserId);
+                var alreadyFollowed = await repo.IsFollower(follower.UserId, follower.FollowingUserId);
                 if (alreadyFollowed)
                     return Ok();
-                await unitOfWork.FollowersRepository.AddAsync(follower);
+                await repo.AddAsync(follower);
                 return Ok();
             }
             catch (Exception e)
@@ -58,7 +62,9 @@ namespace Mite.Controllers
             var followerId = User.Identity.GetUserId();
             try
             {
-                await unitOfWork.FollowersRepository.RemoveAsync(followerId, followingId);
+                var repo = unitOfWork.GetRepo<FollowersRepository, Follower>();
+
+                await repo.RemoveAsync(followerId, followingId);
                 return new HttpResponseMessage(HttpStatusCode.OK);
             }
             catch (Exception e)

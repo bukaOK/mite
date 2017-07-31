@@ -2,7 +2,9 @@
 using Mite.BLL.Core;
 using Mite.BLL.IdentityManagers;
 using Mite.Constants;
+using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
+using Mite.DAL.Repositories;
 using NLog;
 using System;
 using System.Globalization;
@@ -63,11 +65,12 @@ namespace Mite.ExternalServices.YandexMoney
 
             var token = await tr.Perform();
 
+            var repo = Database.GetRepo<ExternalServiceRepository, ExternalService>();
             //Добавляем или обновляем токен в базе
-            var existingService = await Database.ExternalServiceRepository.GetAsync(userId, YaMoneySettings.DefaultAuthType);
+            var existingService = await repo.GetAsync(userId, YaMoneySettings.DefaultAuthType);
             if(existingService == null)
             {
-                await Database.ExternalServiceRepository.AddAsync(new DAL.Entities.ExternalService
+                await repo.AddAsync(new DAL.Entities.ExternalService
                 {
                     Name = YaMoneySettings.DefaultAuthType,
                     AccessToken = token.Token,
@@ -77,7 +80,7 @@ namespace Mite.ExternalServices.YandexMoney
             else
             {
                 existingService.AccessToken = token.Token;
-                await Database.ExternalServiceRepository.UpdateAsync(existingService);
+                await repo.UpdateAsync(existingService);
             }
             var accountInfoReq = new AccountInfoRequest<AccountInfoResult>(httpClient, new JsonSerializer<AccountInfoResult>());
             var accountInfoRes = await accountInfoReq.Perform();
@@ -305,7 +308,8 @@ namespace Mite.ExternalServices.YandexMoney
         }
         public async Task<string> GetTokenAsync(string userId)
         {
-            var senderService = await Database.ExternalServiceRepository.GetAsync(userId, YaMoneySettings.DefaultAuthType);
+            var senderService = await Database.GetRepo<ExternalServiceRepository, ExternalService>()
+                .GetAsync(userId, YaMoneySettings.DefaultAuthType);
             return senderService.AccessToken;
         }
         private string ParseError(Error errorCode)

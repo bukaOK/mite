@@ -6,7 +6,7 @@ using Mite.DAL.Core;
 
 namespace Mite.DAL.Entities
 {
-    public class Tag : IEntity
+    public class Tag : IGuidEntity
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }

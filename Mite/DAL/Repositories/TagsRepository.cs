@@ -7,12 +7,13 @@ using Dapper;
 using Mite.DAL.Core;
 using Mite.DAL.Entities;
 using Mite.BLL.DTO;
+using Mite.DAL.Infrastructure;
 
 namespace Mite.DAL.Repositories
 {
     public sealed class TagsRepository : Repository<Tag>
     {
-        public TagsRepository(IDbConnection db) : base(db)
+        public TagsRepository(AppDbContext db) : base(db)
         {
         }
         public Task<IEnumerable<Tag>> GetAllAsync(bool isConfirmed)

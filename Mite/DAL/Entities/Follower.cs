@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Mite.DAL.Entities
 {
-    public class Follower : Entity
+    public class Follower : GuidEntity
     {
         /// <summary>
         /// Id пользователя на кого подписан

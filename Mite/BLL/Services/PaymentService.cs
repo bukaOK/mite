@@ -6,6 +6,7 @@ using Mite.BLL.IdentityManagers;
 using Mite.DAL.Entities;
 using Mite.Infrastructure;
 using Mite.Enums;
+using Mite.DAL.Repositories;
 
 namespace Mite.BLL.Services
 {
@@ -29,6 +30,7 @@ namespace Mite.BLL.Services
 
         public async Task<DataServiceResult> AddAsync(double sum, string operationId, string userId, PaymentType paymentType)
         {
+            var repo = Database.GetRepo<PaymentsRepository, Payment>();
             var payment = new Payment
             {
                 OperationId = operationId,
@@ -37,7 +39,7 @@ namespace Mite.BLL.Services
                 Date = DateTime.UtcNow,
                 PaymentType = paymentType
             };
-            await Database.PaymentsRepository.AddAsync(payment);
+            await repo.AddAsync(payment);
             return DataServiceResult.Success(payment);
         }
     }

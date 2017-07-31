@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Mite.DAL.Entities
 {
-    public class Advertising : IEntity
+    public class Advertising : IGuidEntity
     {
         [Key]
         public Guid Id { get; set; }

@@ -9,7 +9,7 @@ namespace Mite.DAL.Entities
     /// <summary>
     /// Рисунок, фотография, урок и т.п.
     /// </summary>
-    public class Post : IEntity
+    public class Post : IGuidEntity
     {
 
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]

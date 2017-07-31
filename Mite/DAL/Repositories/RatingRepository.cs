@@ -5,12 +5,13 @@ using System.Threading.Tasks;
 using Dapper;
 using System;
 using System.Collections.Generic;
+using Mite.DAL.Infrastructure;
 
 namespace Mite.DAL.Repositories
 {
     public sealed class RatingRepository : Repository<Rating>
     {
-        public RatingRepository(IDbConnection db) : base(db)
+        public RatingRepository(AppDbContext db) : base(db)
         {
         }
         /// <summary>

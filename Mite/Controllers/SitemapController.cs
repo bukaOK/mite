@@ -1,6 +1,8 @@
 ﻿using Mite.BLL.IdentityManagers;
 using Mite.Core;
+using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
+using Mite.DAL.Repositories;
 using Mite.Models;
 using System;
 using System.Collections.Generic;
@@ -58,6 +60,8 @@ namespace Mite.Controllers
         }
         private async Task<IEnumerable<SitemapNode>> GetNodes()
         {
+            var postsRepo = unitOfWork.GetRepo<PostsRepository, Post>();
+
             var nodes = new List<SitemapNode>
             {
                 new SitemapNode
@@ -83,7 +87,7 @@ namespace Mite.Controllers
             };
 
             var users = await dbContext.Users.ToListAsync();
-            var posts = await unitOfWork.PostsRepository.GetAllAsync();
+            var posts = await postsRepo.GetAllAsync();
             foreach(var user in users)
             {
                 nodes.Add(new SitemapNode

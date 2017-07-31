@@ -8,12 +8,13 @@ using System.Data;
 using System.Threading.Tasks;
 using Mite.Enums;
 using Dapper;
+using Mite.DAL.Infrastructure;
 
 namespace Mite.DAL.Repositories
 {
     public class CashOperationsRepository : Repository<CashOperation>
     {
-        public CashOperationsRepository(IDbConnection db) : base(db)
+        public CashOperationsRepository(AppDbContext db) : base(db)
         {
         }
         /// <summary>

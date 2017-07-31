@@ -377,7 +377,7 @@
     <Compile Include="Controllers\UserProfileController.cs" />
     <Compile Include="Controllers\VkController.cs" />
     <Compile Include="Controllers\YandexController.cs" />
-    <Compile Include="DAL\Core\Entity.cs" />
+    <Compile Include="DAL\Core\GuidEntity.cs" />
     <Compile Include="DAL\Core\Repository.cs" />
     <Compile Include="DAL\Entities\Advertising.cs" />
     <Compile Include="DAL\Entities\Author.cs" />
@@ -443,7 +443,7 @@
     <Compile Include="Core\BaseController.cs" />
     <Compile Include="BLL\Core\DataService.cs" />
     <Compile Include="Core\DataSource.cs" />
-    <Compile Include="DAL\Core\IEntity.cs" />
+    <Compile Include="DAL\Core\IGuidEntity.cs" />
     <Compile Include="DAL\Core\IRepository.cs" />
     <Compile Include="DAL\Entities\Comment.cs" />
     <Compile Include="DAL\Entities\Group.cs" />
@@ -611,6 +611,7 @@
     <Content Include="Content\images\some-logo.png" />
     <Content Include="Content\images\video.svg" />
     <Content Include="Content\landing.css" />
+    <Content Include="Content\UserMenu.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />

@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Mite.DAL.Core;
 using Mite.DAL.Entities;
+using Mite.DAL.Infrastructure;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace Mite.DAL.Repositories
 {
     public sealed class FollowersRepository : Repository<Follower>
     {
-        public FollowersRepository(IDbConnection db) : base(db)
+        public FollowersRepository(AppDbContext db) : base(db)
         {
         }
 

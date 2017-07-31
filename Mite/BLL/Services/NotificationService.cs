@@ -9,6 +9,7 @@ using Mite.DAL.Entities;
 using Mite.Enums;
 using System.Text;
 using System.Linq;
+using Mite.DAL.Repositories;
 
 namespace Mite.BLL.Services
 {
@@ -43,21 +44,26 @@ namespace Mite.BLL.Services
 
         public Task AddAsync(NotificationModel notifyModel)
         {
+            var repo = Database.GetRepo<NotificationRepository, Notification>();
+
             notifyModel.IsNew = true;
             notifyModel.NotifyDate = DateTime.UtcNow;
             notifyModel.Id = Guid.NewGuid();
 
             var notify = Mapper.Map<Notification>(notifyModel);
-            return Database.NotificationRepository.AddAsync(notify);
+            return repo.AddAsync(notify);
         }
 
         public Task Clean(string userId)
         {
-            return Database.NotificationRepository.RemoveByUserAsync(userId);
+            var repo = Database.GetRepo<NotificationRepository, Notification>();
+            return repo.RemoveByUserAsync(userId);
         }
         public async Task<List<NotificationModel>> GetByUserAsync(string userId, bool onlyNew)
         {
-            var notifications = await Database.NotificationRepository.GetByUserAsync(userId, onlyNew);
+            var repo = Database.GetRepo<NotificationRepository, Notification>();
+
+            var notifications = await repo.GetByUserAsync(userId, onlyNew);
             var notificationModels = Mapper.Map<List<NotificationModel>>(notifications);
             var content = new StringBuilder();
             foreach(var notifyModel in notificationModels)
@@ -109,7 +115,8 @@ namespace Mite.BLL.Services
         
         public Task ReadAsync(string userId)
         {
-            return Database.NotificationRepository.ReadByUserAsync(userId);
+            var repo = Database.GetRepo<NotificationRepository, Notification>();
+            return repo.ReadByUserAsync(userId);
         }
     }
 }

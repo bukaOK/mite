@@ -8,6 +8,7 @@ using System.Linq;
 using Mite.BLL.Core;
 using System;
 using Mite.BLL.DTO;
+using Mite.DAL.Repositories;
 
 namespace Mite.BLL.Services
 {
@@ -30,25 +31,26 @@ namespace Mite.BLL.Services
 
         public async Task<IEnumerable<string>> GetTagsByNameAsync(string name)
         {
-            var tags = await Database.TagsRepository.GetByNameAsync(name);
+            var repo = Database.GetRepo<TagsRepository, Tag>();
+            var tags = await repo.GetByNameAsync(name);
 
             return Mapper.Map<IEnumerable<string>>(tags);
         }
         public async Task<IEnumerable<string>> GetForUser()
         {
-            var tags = await Database.TagsRepository.GetAllAsync(true);
+            var tags = await Database.GetRepo<TagsRepository, Tag>().GetAllAsync(true);
             return Mapper.Map<IEnumerable<string>>(tags);
         }
 
         public async Task<IEnumerable<Tag>> GetForModer()
         {
-            var tags = await Database.TagsRepository.GetAllAsync();
+            var tags = await Database.GetRepo<TagsRepository, Tag>().GetAllAsync();
             return tags;
         }
 
         public Task<IEnumerable<TagDTO>> GetWithPopularity(bool isConfirmed)
         {
-            return Database.TagsRepository.GetAllWithPopularityAsync(isConfirmed);
+            return Database.GetRepo<TagsRepository, Tag>().GetAllWithPopularityAsync(isConfirmed);
         }
     }
 }

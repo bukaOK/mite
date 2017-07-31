@@ -2,6 +2,8 @@
 using Mite.BLL.IdentityManagers;
 using Mite.Constants;
 using Mite.DAL.Infrastructure;
+using Mite.DAL.Repositories;
+using Mite.DAL.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -87,7 +89,8 @@ namespace Mite.ExternalServices.YandexMoney
                 return authenticator.Token;
             var userId = HttpContext.Current.User.Identity.GetUserId();
 
-            var service = await unitOfWork.ExternalServiceRepository.GetAsync(userId, YaMoneySettings.DefaultAuthType);
+            var repo = unitOfWork.GetRepo<ExternalServiceRepository, ExternalService>();
+            var service = await repo.GetAsync(userId, YaMoneySettings.DefaultAuthType);
             if (service == null)
                 return string.Empty;
             return service.AccessToken;
@@ -98,11 +101,13 @@ namespace Mite.ExternalServices.YandexMoney
         /// <returns></returns>
         private async Task RemoveTokenFromDatabase()
         {
+            var repo = unitOfWork.GetRepo<ExternalServiceRepository, ExternalService>();
+
             var userId = FromUserId;
-            var service = await unitOfWork.ExternalServiceRepository.GetAsync(userId, YaMoneySettings.DefaultAuthType);
+            var service = await repo.GetAsync(userId, YaMoneySettings.DefaultAuthType);
             if (service != null)
             {
-                await unitOfWork.ExternalServiceRepository.RemoveAsync(service.Id);
+                await repo.RemoveAsync(service.Id);
             }
         }
     }

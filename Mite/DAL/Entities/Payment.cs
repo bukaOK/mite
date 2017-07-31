@@ -11,7 +11,7 @@ namespace Mite.DAL.Entities
     /// <summary>
     /// Представляет собой сущность операции ввода-вывода денег
     /// </summary>
-    public class Payment : Entity
+    public class Payment : GuidEntity
     {
         /// <summary>
         /// Сумма(может быть отрицательной, если пользователь вывел деньги)

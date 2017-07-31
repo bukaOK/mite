@@ -205,7 +205,7 @@
         loadPayments();
         initYaForm();
         $('.ui.checkbox').checkbox();
-        $('#cashItem').addClass('active');
+        $('.cash.item').addClass('active');
         $('select').dropdown({
             onChange: function (value) {
                 var yaAuthVal = '@((byte)Mite.Enums.PaymentType.YandexWallet)';

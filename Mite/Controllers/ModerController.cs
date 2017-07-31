@@ -2,6 +2,7 @@
 using Mite.Core;
 using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
+using Mite.DAL.Repositories;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -30,7 +31,8 @@ namespace Mite.Controllers
         [HttpPost]
         public async Task<JsonResult> Tags()
         {
-            var tags = await unitOfWork.TagsRepository.GetAllAsync();
+            var repo = unitOfWork.GetRepo<TagsRepository, Tag>();
+            var tags = await repo.GetAllAsync();
             return Json(JsonStatuses.Success, new
             {
                 Confirmed = tags.Where(x => x.IsConfirmed),
@@ -41,20 +43,23 @@ namespace Mite.Controllers
         [HttpPost]
         public Task BindTag(Guid fromId, Guid toId)
         {
-            return unitOfWork.TagsRepository.BindAsync(fromId, toId);
+            var repo = unitOfWork.GetRepo<TagsRepository, Tag>();
+            return repo.BindAsync(fromId, toId);
         }
         [HttpPost]
         public async Task UpdatePostTags(IEnumerable<string> tagsNames, Guid postId)
         {
+            var repo = unitOfWork.GetRepo<TagsRepository, Tag>();
             var tags = Mapper.Map<List<Tag>>(tagsNames);
-            await unitOfWork.TagsRepository.AddWithPostAsync(tags, postId);
+            await repo.AddWithPostAsync(tags, postId);
         }
         [HttpPost]
         public async Task CheckTag(Guid tagId)
         {
-            var tag = await unitOfWork.TagsRepository.GetAsync(tagId);
+            var repo = unitOfWork.GetRepo<TagsRepository, Tag>();
+            var tag = await repo.GetAsync(tagId);
             tag.Checked = true;
-            await unitOfWork.TagsRepository.UpdateAsync(tag);
+            await repo.UpdateAsync(tag);
         }
         /// <summary>
         /// Блокируем пост(за нарушения и пр.)
@@ -62,11 +67,12 @@ namespace Mite.Controllers
         /// <returns></returns>
         public async Task<HttpStatusCodeResult> BlockPost(Guid id)
         {
-            var post = await unitOfWork.PostsRepository.GetAsync(id);
+            var repo = unitOfWork.GetRepo<PostsRepository, Post>();
+            var post = await repo.GetAsync(id);
             post.Blocked = true;
             try
             {
-                await unitOfWork.PostsRepository.UpdateAsync(post);
+                await repo.UpdateAsync(post);
                 return Ok();
             }
             catch(Exception e)
@@ -77,11 +83,13 @@ namespace Mite.Controllers
         }
         public async Task<HttpStatusCodeResult> UnblockPost(Guid id)
         {
-            var post = await unitOfWork.PostsRepository.GetAsync(id);
+            var repo = unitOfWork.GetRepo<PostsRepository, Post>();
+
+            var post = await repo.GetAsync(id);
             post.Blocked = false;
             try
             {
-                await unitOfWork.PostsRepository.UpdateAsync(post);
+                await repo.UpdateAsync(post);
                 return Ok();
             }
             catch(Exception e)

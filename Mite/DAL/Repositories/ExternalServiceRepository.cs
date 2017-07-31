@@ -7,12 +7,13 @@ using System.Web;
 using System.Data;
 using Dapper;
 using System.Threading.Tasks;
+using Mite.DAL.Infrastructure;
 
 namespace Mite.DAL.Repositories
 {
     public class ExternalServiceRepository : Repository<ExternalService>
     {
-        public ExternalServiceRepository(IDbConnection db) : base(db)
+        public ExternalServiceRepository(AppDbContext db) : base(db)
         {
         }
         public Task<ExternalService> GetAsync(string userId, string serviceName)

@@ -10,7 +10,7 @@ namespace Mite.DAL.Entities
     /// <summary>
     /// Сущность внешних сервисов(google plus, vk, facebook etc.)
     /// </summary>
-    public class ExternalService : Entity
+    public class ExternalService : GuidEntity
     {
         public string Name { get; set; }
         /// <summary>

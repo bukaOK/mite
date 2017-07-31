@@ -7,7 +7,7 @@ using Dapper.Contrib.Extensions;
 
 namespace Mite.DAL.Entities
 {
-    public class Comment : IEntity
+    public class Comment : IGuidEntity
     {
         [System.ComponentModel.DataAnnotations.Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }

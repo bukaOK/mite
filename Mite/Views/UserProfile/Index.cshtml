@@ -13,6 +13,13 @@
 <div class="ui profile center aligned three column stackable grid segment">
     <div class="computer tablet only row">
         <div class="right aligned column">
+            @if (Model.YandexWalId != null)
+            {
+                <button class="ui primary icon button" onclick="$('#donateModal').modal('show')">
+                    <i class="heart icon"></i>
+                    Поддержать
+                </button>
+            }
         </div>
         <div class="column">
             <img class="ui centered circular image" src="@Model.AvatarSrc" width="150" />
@@ -112,21 +119,6 @@
             @if (currentUserName == pageUserName)
             {
                 <a href="@Url.RouteUrl("UserSettings")" class="ui blue button"><i class="setting icon"></i>Настройки</a>
-            }
-            @if(Model.YandexWalId != null)
-            {
-                <div class="ui left dropdown pointing icon button" id="userActionsDrop">
-                    <i class="options icon"></i>
-                    <div class="menu">
-                        @if (Model.YandexWalId != null)
-                        {
-                            <a class="item" onclick="$('#donateModal').modal('show')">
-                                <i class="heart icon"></i>
-                                Поддержать
-                            </a>
-                        }
-                    </div>
-                </div>
             }
         </div>
     </div>
@@ -433,6 +425,16 @@ else
                 </div>
                 {{/if}}
             </div>
+            {{if !ShowAdultContent}}
+            <div class="ui dimmer">
+                <div class="content">
+                    <div class="center">
+                        <h2 class="ui inverted header">Взрослый контент(18+)</h2>
+                        <button class="ui primary button" onclick="$(this).parents('.post-item').dimmer('hide')">Показать</button>
+                    </div>
+                </div>
+            </div>
+            {{/if}}
         </div>
     </div>
 </script>
@@ -456,10 +458,19 @@ else
         </h2>
     </div>
 </script>
+<template id="emptyBlockedTmpl">
+    <div class="column"></div>
+    <div class="column">
+        <h2 class="ui center aligned icon header" style="color: #6D6788">
+            <i class="smile icon"></i>
+            <span class="content">У вас нет заблокированных работ.</span>
+        </h2>
+    </div>
+</template>
 <script id="emptyFollowersTmpl" type="text/x-jsrender">
     <div class="column"></div>
     <div class="column">
-        <h3 class="ui header" style="color: #6D6788">
+        <h3 class="ui center aligned icon header" style="color: #6D6788">
             <i class="users icon"></i>
             @if (currentUserName == pageUserName)
             {
@@ -479,7 +490,7 @@ else
 <script id="emptyFollowingsTmpl" type="text/x-jsrender">
     <div class="column"></div>
     <div class="column">
-        <h3 class="ui header" style="color: #6D6788">
+        <h3 class="ui center aligned icon header" style="color: #6D6788">
             <i class="users icon"></i>
             <span class="content">
                 Вы пока ни на кого не подписались.
@@ -625,7 +636,7 @@ else
             }
         ];
         if(isOwner){
-            ViewHelper.activateSidebarItem('#userProfileItem');
+            ViewHelper.activateSidebarItem('.user-profile.item');
         }
         var deletePostModal = $('#confirmPostDelete').modal({
             onApprove: function() {
@@ -727,7 +738,10 @@ else
                         html = $('#emptyFollowersTmpl').html();
                     } else if(tab.name == 'followings'){
                         html = $('#emptyFollowingsTmpl').html();
-                    } else {
+                    } else if(tab.name == 'blocked'){
+                        html = $('#emptyBlockedTmpl').html();
+                    }
+                    else {
                         html = $('#emptyPostTmpl').html();
                     }
                     tab.content.html(html);

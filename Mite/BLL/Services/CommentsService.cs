@@ -33,22 +33,25 @@ namespace Mite.BLL.Services
             comment.Rating = 0;
             comment.Id = Guid.NewGuid();
 
-            await Database.CommentsRepository.AddAsync(comment);
-            comment = await Database.CommentsRepository.GetFullAsync(comment.Id);
+            var repo = Database.GetRepo<CommentsRepository, Comment>();
+            await repo.AddAsync(comment);
+            comment = await repo.GetFullAsync(comment.Id);
             return Mapper.Map<CommentModel>(comment);
         }
 
         public Task DeleteCommentAsync(Guid id)
         {
-            return Database.CommentsRepository.RemoveAsync(id);
+            var repo = Database.GetRepo<CommentsRepository, Comment>();
+            return repo.RemoveAsync(id);
         }
         public async Task<IEnumerable<CommentModel>> GetCommentsByPostAsync(Guid postId, string currentUserId)
         {
+            var repo = Database.GetRepo<CommentsRepository, Comment>();
+            var ratingRepo = Database.GetRepo<RatingRepository, Rating>();
             //Получаем комментарии
-            var comments = await Database.CommentsRepository.GetListByPostAsync(postId.ToString());
+            var comments = await repo.GetListByPostAsync(postId.ToString());
             //Получаем рейтинги текущего пользователя
-            var currentUserRatings = await Database.RatingRepository
-                .GetCommentsRatings(comments.Select(x => x.Id), currentUserId);
+            var currentUserRatings = await ratingRepo.GetCommentsRatings(comments.Select(x => x.Id), currentUserId);
 
             foreach(var comment in comments)
             {
@@ -68,16 +71,18 @@ namespace Mite.BLL.Services
 
         public async Task<string> GetCommentUserIdAsync(Guid id)
         {
-            var comment = await Database.CommentsRepository.GetAsync(id);
+            var repo = Database.GetRepo<CommentsRepository, Comment>();
+            var comment = await repo.GetAsync(id);
             return comment.UserId;
         }
 
         public Task UpdateCommentAsync(CommentModel model)
         {
+            var repo = Database.GetRepo<CommentsRepository, Comment>();
             var comment = Mapper.Map<Comment>(model);
             comment.PublicTime = DateTime.UtcNow;
 
-            return Database.CommentsRepository.UpdateAsync(comment);
+            return repo.UpdateAsync(comment);
         }
     }
 }
