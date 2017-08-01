@@ -21,6 +21,15 @@ namespace Mite.DAL.Repositories
         {
             return Db.QueryFirstAsync<int>("select COUNT(Id) from dbo.Comments where PostId=@PostId", new { PostId = postId });
         }
+        public override Task AddAsync(Comment entity)
+        {
+            if(entity.ParentCommentId != null)
+            {
+                entity.ParentComment = Table.Find(entity.ParentCommentId);
+            }
+            Table.Add(entity);
+            return SaveAsync();
+        }
         public async Task<IDictionary<Guid, int>> GetPostsCommentsCountAsync(IEnumerable<Guid> postIds)
         {
             var result = await Db.QueryAsync("select COUNT(Id) as CommentsCount, PostId from dbo.Comments where PostId in @postIds group by PostId", new { postIds });

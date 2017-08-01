@@ -7,14 +7,6 @@ namespace Mite.DAL.Core
 {
     public interface IRepository<TEntity> where TEntity : class
     {
-        /// <summary>
-        /// Возвращает сущность по ID
-        /// </summary>
-        /// <param name="id">Id сущности</param>
-        /// <param name="allowDefault">Разрешить ли возвращать нулевые значения</param>
-        /// <returns></returns>
-        Task<TEntity> GetAsync(Guid id);
-        TEntity Get(Guid id);
         Task<TEntity> GetAsync(params object[] keyValues);
         TEntity Get(params object[] keyValues);
         /// <summary>

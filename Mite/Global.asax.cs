@@ -35,7 +35,7 @@ namespace Mite
                 cfg.CreateMap<string, Tag>()
                     .ConvertUsing(x => new Tag
                     {
-                        Name = x
+                        Name = x.ToLower()
                     });
                 cfg.CreateMap<Tag, string>()
                     .ConvertUsing(x => x.Name);

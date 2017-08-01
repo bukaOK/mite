@@ -97,7 +97,7 @@
                         <div class="extra">
                             @foreach (var tag in Model.Tags)
                             {
-                                <a class="ui label" href="/posts/top#input=#@tag">@tag</a>
+                                @Html.ActionLink(tag, "Top", "Posts", new { tags = tag }, new { @class = "ui label" })
                             }
                         </div>
                     </div>

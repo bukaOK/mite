@@ -235,7 +235,7 @@ var SearchFilters = {
         this.ajax.checkResponseLength = settings.ajax.checkResponseLength;
 
         this.filters = settings.filters;
-        this._updateFiltersState(decodeURI(location.search.substr(1)));
+        this._updateFiltersState(decodeURIComponent(location.search.substr(1)));
         this.initialized = true;
 
         var self = this;

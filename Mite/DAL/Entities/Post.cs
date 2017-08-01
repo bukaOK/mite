@@ -11,7 +11,6 @@ namespace Mite.DAL.Entities
     /// </summary>
     public class Post : IGuidEntity
     {
-
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
         public string Title { get; set; }

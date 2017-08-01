@@ -190,6 +190,18 @@
         @if (User.Identity.IsAuthenticated)
         {
             <div class="ui right fixed vertical icon user-menu menu">
+                @if (User.IsInRole("admin"))
+                {
+                    <a href="@Url.Action("Index", "Admin")" class="violet admin-panel item" data-content="Панель администратора">
+                        <i class="spy icon"></i>
+                    </a>
+                }
+                @if (User.IsInRole("moder"))
+                {
+                    <a href="@Url.Action("Index", "Moder")" class="violet moder-panel item" data-content="Панель модератора">
+                        <i class="user circle outline icon"></i>
+                    </a>
+                }
                 <a href="/user/profile/@User.Identity.Name" class="violet user-profile item" data-content="Моя страница">
                     <i class="user icon"></i>
                 </a>

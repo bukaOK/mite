@@ -103,6 +103,9 @@ namespace Mite.BLL.Services
                 postModel.Content = FilesHelper.CreateDocument(documentsFolder, postModel.Content);
             }
             postModel.Tags = postModel.Tags.Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+            var tags = Mapper.Map<IEnumerable<Tag>>(postModel.Tags);
+
+            postModel.Tags = null;
             var post = Mapper.Map<Post>(postModel);
 
             post.Id = Guid.NewGuid();
@@ -156,53 +159,52 @@ namespace Mite.BLL.Services
             {
                 return IdentityResult.Failed("Заблокированный пост нельзя обновлять");
             }
-            postModel.Tags = postModel.Tags.Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
-            var post = Mapper.Map<Post>(postModel);
-            post.Rating = currentPost.Rating;
-            post.Views = currentPost.Views;
+            currentPost.Description = postModel.Description;
+            currentPost.Title = postModel.Header;
 
             if (postModel.IsImage && postModel.Content != currentPost.Content)
             {
                 if (postModel.Content == null)
                     return IdentityResult.Failed("Изображение не может быть пустым");
                 FilesHelper.DeleteFile(currentPost.Content);
-                post.Content = FilesHelper.CreateImage(imagesFolder, postModel.Content);
+                currentPost.Content = FilesHelper.CreateImage(imagesFolder, postModel.Content);
             }
             else if(!postModel.IsImage)
             {
                 if(!string.IsNullOrWhiteSpace(postModel.Content))
                     FilesHelper.UpdateDocument(currentPost.Content, postModel.Content);
 
-                post.Content = currentPost.Content;
                 if(!string.IsNullOrWhiteSpace(postModel.Cover) && postModel.Cover != currentPost.Cover &&
                     currentPost.Cover != null)
                 {
                     FilesHelper.DeleteFile(currentPost.Cover);
-                    post.Cover = FilesHelper.CreateImage(imagesFolder, postModel.Cover);
+                    currentPost.Cover = FilesHelper.CreateImage(imagesFolder, postModel.Cover);
                 }
                 else if(string.IsNullOrEmpty(postModel.Cover) && !string.IsNullOrEmpty(currentPost.Cover))
                 {
                     FilesHelper.DeleteFile(currentPost.Cover);
-                    post.Cover = null;
+                    currentPost.Cover = null;
                 }
                 else if(!string.IsNullOrEmpty(postModel.Cover) && string.IsNullOrEmpty(currentPost.Cover))
                 {
-                    post.Cover = FilesHelper.CreateImage(imagesFolder, postModel.Cover);
+                    currentPost.Cover = FilesHelper.CreateImage(imagesFolder, postModel.Cover);
                 }
             }
-            post.LastEdit = DateTime.UtcNow;
+            currentPost.LastEdit = DateTime.UtcNow;
             if(currentPost.PublishDate == null && postModel.IsPublished)
             {
-                post.PublishDate = DateTime.UtcNow;
+                currentPost.PublishDate = DateTime.UtcNow;
             }
             else
             {
-                post.PublishDate = currentPost.PublishDate;
+                currentPost.PublishDate = currentPost.PublishDate;
             }
-            foreach (var tag in post.Tags)
-                tag.Name = tag.Name.ToLower();
-            await Database.GetRepo<TagsRepository, Tag>().AddWithPostAsync(post.Tags, post.Id);
-            await repo.UpdateAsync(post);
+            var tags = postModel.Tags.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => new Tag
+            {
+                Name = x.ToLower()
+            }).ToList();
+            await Database.GetRepo<TagsRepository, Tag>().AddWithPostAsync(tags, currentPost.Id);
+            await repo.UpdateAsync(currentPost);
 
             return IdentityResult.Success;
         }

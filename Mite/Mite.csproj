@@ -540,6 +540,10 @@
     <Compile Include="Migrations\201707171148112_AddNotificationSourceValue.Designer.cs">
       <DependentUpon>201707171148112_AddNotificationSourceValue.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201707312034403_TagUniqIndex.cs" />
+    <Compile Include="Migrations\201707312034403_TagUniqIndex.Designer.cs">
+      <DependentUpon>201707312034403_TagUniqIndex.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountModels.cs" />
     <Compile Include="Models\AdminModels.cs" />
@@ -805,6 +809,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201707171148112_AddNotificationSourceValue.resx">
       <DependentUpon>201707171148112_AddNotificationSourceValue.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707312034403_TagUniqIndex.resx">
+      <DependentUpon>201707312034403_TagUniqIndex.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

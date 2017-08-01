@@ -10,6 +10,8 @@ namespace Mite.DAL.Entities
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
+        [Index(IsUnique = true)]
+        [MaxLength(150)]
         public string Name { get; set; }
         /// <summary>
         /// Подтвержден ли тег

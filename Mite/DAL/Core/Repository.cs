@@ -23,6 +23,7 @@ namespace Mite.DAL.Core
         {
             Db = dbContext.Database.Connection;
             DbContext = dbContext;
+            Table = dbContext.Set<TEntity>();
             if(TableName == null)
                 TableName = typeof(TEntity).Name + "s";
         }
