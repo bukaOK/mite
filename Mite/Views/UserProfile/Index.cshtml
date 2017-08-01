@@ -367,7 +367,7 @@ else
 </script>
 <script id="postsTmpl" type="text/x-jsrender">
     <div class="column" data-post-id="{{:Id}}">
-        <div class="ui segment {{if Cover != null}}invert{{/if}} post-item" {{if Cover != null}}
+        <div class="ui segment {{if Cover != null}}invert{{/if}} post-item" {{if Cover != null}} data-show-adult-content="{{:ShowAdultContent}}"
              style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})"{{/if}}>
             @if (currentUserName == pageUserName)
             {
@@ -771,6 +771,7 @@ else
                         tab.content.html(html);
                     }
                 }
+                $('.post-item[data-show-adult-content="false"]:not(.dimmed,.dimmable)').dimmer('show');
                 for(var i = 0; i < grids.length; i++){
                     if(tab.name == grids[i].tabName){
                         grids[i].elem.masonry('reloadItems');
