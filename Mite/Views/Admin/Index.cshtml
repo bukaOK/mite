@@ -9,15 +9,15 @@
     </style>
 }
 
-<nav class="ui stackable pointing secondary tabs menu" style="border: none" role="menu">
-    <a class="active item" data-tab="moderregister" role="menuitem">Добавление модератора</a>
-    <a class="item" data-tab="extapps" role="menuitem">Авторизовать приложения</a>
-    <a class="item" data-tab="statistic" role="menuitem">Статистика</a>
+<nav class="ui stackable pointing secondary tabs menu" style="border: none" role="tablist">
+    <a class="active item" data-tab="moderregister" role="tab">Добавление модератора</a>
+    <a class="item" data-tab="extapps" role="tab">Авторизовать приложения</a>
+    <a class="item" data-tab="statistic" role="tab">Статистика</a>
 </nav>
-<div class="ui active tab" data-tab="moderregister">
-    @Html.Action("ModerRegister")
+<div class="ui active tab" data-tab="moderregister" role="tabpanel">
+    @{ Html.RenderAction("ModerRegister"); }
 </div>
-<div class="ui tab" data-tab="extapps">
+<div class="ui tab" data-tab="extapps" role="tabpanel">
     <form action="https://money.yandex.ru/oauth/authorize" method="post">
         <input type="hidden" name="client_id" value="@Mite.Constants.YaMoneySettings.ClientId" />
         <input type="hidden" name="response_type" value="code" />
@@ -29,8 +29,8 @@
         Авторизовать GoogleAdSense
     </a>
 </div>
-<div class="ui tab" data-tab="statistic">
-    @Html.Action("Statistic")
+<div class="ui tab" data-tab="statistic" role="tabpanel">
+    @{Html.RenderAction("Statistic");}
 </div>
 <script>
     $(function () {

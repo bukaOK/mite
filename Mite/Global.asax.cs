@@ -82,8 +82,6 @@ namespace Mite
                 cfg.CreateMap<Post, TopPostModel>();
 
                 cfg.CreateMap<User, ProfileModel>()
-                    .ForMember(dest => dest.FollowersCount,
-                        opt => opt.MapFrom(src => src.Followers.Count))
                     .ForMember(dest => dest.About, opt => opt.MapFrom(src => src.Description))
                     .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => Guid.Parse(src.Id)));
 
@@ -115,8 +113,10 @@ namespace Mite
                                 throw new ArgumentException("Неизвестный тип платежа");
                         }
                     }));
+
                 cfg.CreateMap<SocialLinks, SocialLinksModel>();
-                cfg.CreateMap<SocialLinksModel, SocialLinks>();
+                cfg.CreateMap<SocialLinksModel, SocialLinks>()
+                    .ForMember(dest => dest.UserId, opt => opt.Ignore());
             });
         }
     }

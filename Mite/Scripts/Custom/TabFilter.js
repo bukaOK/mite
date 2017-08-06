@@ -91,7 +91,7 @@ var TabFilter = {
             TabFilter.refresh(false);
         },
         updateState: function (basePath) {
-            var tabsPath = location.pathname.replace(basePath, '');
+            var tabsPath = location.pathname.toLowerCase().replace(basePath, '');
             tabsPath = tabsPath.substr(1, tabsPath.length - 1);
 
             if (tabsPath != '' && tabsPath != null) {
@@ -186,7 +186,7 @@ var TabFilter = {
 
     init: function(basePath, settings){
         var self = this;
-        this.basePath = basePath;
+        this.basePath = basePath.toLowerCase();
 
         if (settings.beforeLoad != undefined) {
             this.ajaxCallbacks.beforeLoad = settings.beforeLoad;

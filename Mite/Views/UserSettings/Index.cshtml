@@ -12,23 +12,23 @@
         <a class="item" data-tab="socialservices">Внешние сервисы</a>
     </nav>
     <div class="ui active tab" data-tab="userprofile">
-        @Html.Action("UserProfile")
+        @{Html.RenderAction("UserProfile");}
     </div>
     <div class="ui tab" data-tab="changeavatar">
-        @Html.Partial("ChangeAvatar")
+        @{Html.RenderPartial("ChangeAvatar");}
     </div>
     <div class="ui tab" data-tab="security">
         <div class="ui stackable basic segment grid">
             <div class="six wide column">
-                @Html.Partial("_ChangePass", new Mite.Models.ChangePassModel())
+                @{Html.RenderPartial("_ChangePass", new Mite.Models.ChangePassModel());}
             </div>
             <div class="six wide column">
-                @Html.Action("EmailSettings")
+                @{Html.RenderAction("EmailSettings");}
             </div>
         </div>
     </div>
     <div class="ui tab" data-tab="socialservices">
-        @Html.Action("SocialServices")
+        @{Html.RenderAction("SocialServices");}
     </div>
 </div>
 <script>

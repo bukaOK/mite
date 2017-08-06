@@ -4,6 +4,7 @@ using Mite.DAL.Repositories;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
+using Mite.DAL.Infrastructure;
 
 namespace Mite.Tests.DAL.Repositories
 {
@@ -11,7 +12,7 @@ namespace Mite.Tests.DAL.Repositories
     public class PostsRepoTest
     {
         private const string ConnectionString = @"Data Source=194.87.103.114\SQLEXPRESS,1433;Initial Catalog=MiteDb;User ID=Buka;Password=Evd$utTC";
-        private readonly PostsRepository repo = new PostsRepository(new SqlConnection(ConnectionString));
+        private readonly PostsRepository repo = new PostsRepository(new AppDbContext());
 
         [TestMethod]
         public async Task GetByFilterTest()

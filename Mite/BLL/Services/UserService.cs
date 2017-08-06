@@ -16,6 +16,7 @@ using System.Linq;
 using System.Data.Entity;
 using System.Text.RegularExpressions;
 using Mite.DAL.Repositories;
+using System.Web.Hosting;
 
 namespace Mite.BLL.Services
 {
@@ -135,14 +136,12 @@ namespace Mite.BLL.Services
         public async Task<IdentityResult> UpdateUserAvatarAsync(string imagesFolder, string imageBase64, string userId)
         {
             string imagePath;
+            string fullPath;
             try
             {
                 imagePath = FilesHelper.CreateImage(imagesFolder, imageBase64);
-                using (var img = new ImageDTO(imagePath, imagesFolder, true))
-                {
-                    //Создаем сжатую копию аватарки
-                    img.Compress();
-                }
+                fullPath = HostingEnvironment.MapPath(imagePath);
+                ImagesHelper.Compressed.Compress(fullPath);
             }
             catch (FormatException)
             {
@@ -156,11 +155,11 @@ namespace Mite.BLL.Services
             if(existingAvatarSrc != null && existingAvatarFolders[1] == "Public")
                 FilesHelper.DeleteFile(existingAvatarSrc);
 
-            var existingImg = new ImageDTO(existingAvatarSrc, imagesFolder);
-            //Создаем объект изображения и удаляем сжатую копию старой аватарки    
-            if (existingImg.CompressedExists)
+            //удаляем сжатую копию старой аватарки
+            var fullAvatarSrc = HostingEnvironment.MapPath(existingAvatarSrc);
+            if (ImagesHelper.Compressed.CompressedExists(fullAvatarSrc))
             {
-                FilesHelper.DeleteFile(existingImg.CompressedVirtualPath);
+                FilesHelper.DeleteFileFull(ImagesHelper.Compressed.CompressedPath(fullAvatarSrc, "jpg"));
             }
             var result = await userManager.UpdateAsync(existingUser);
             return result;
@@ -190,7 +189,7 @@ namespace Mite.BLL.Services
         {
             var repo = Database.GetRepo<SocialLinksRepository, SocialLinks>();
             var socialLinks = repo.Get(userId);
-            if(socialLinks == null)
+            if (socialLinks == null)
             {
                 socialLinks = new SocialLinks
                 {
@@ -228,10 +227,13 @@ namespace Mite.BLL.Services
             }
             else
             {
-                var newSocialLinks = Mapper.Map<SocialLinks>(model);
-                newSocialLinks.Id = socialLinks.Id;
-                newSocialLinks.UserId = socialLinks.UserId;
-                await repo.UpdateAsync(newSocialLinks);
+                socialLinks.ArtStation = model.ArtStation;
+                socialLinks.Dribbble = model.Dribbble;
+                socialLinks.Vk = model.Vk;
+                socialLinks.Instagram = model.Instagram;
+                socialLinks.Twitter = model.Twitter;
+                socialLinks.Facebook = model.Facebook;
+                await repo.UpdateAsync(socialLinks);
             }
         }
     }

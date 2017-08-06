@@ -96,12 +96,23 @@ namespace Mite.Helpers
 
             File.WriteAllText(filePath, content);
         }
-
-        public static void DeleteFile(string virtualFilePath)
+        /// <summary>
+        /// Удаляем файл по относительному пути
+        /// </summary>
+        /// <param name="virtualPath"></param>
+        public static void DeleteFile(string virtualPath)
         {
-            var filePath = HostingEnvironment.MapPath(virtualFilePath);
-            if(File.Exists(filePath))
-                File.Delete(filePath);
+            var path = HostingEnvironment.MapPath(virtualPath);
+            DeleteFileFull(path);
+        }
+        /// <summary>
+        /// Удаляем файл по полному пути
+        /// </summary>
+        /// <param name="path"></param>
+        public static void DeleteFileFull(string path)
+        {
+            if (File.Exists(path))
+                File.Delete(path);
         }
         /// <summary>
         /// Проверяет, путь ли это

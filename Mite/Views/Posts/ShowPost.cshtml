@@ -203,7 +203,7 @@
                             }
                             tagsMenu.children('.menu').html(tagsItems);
                             tagsMenu.dropdown({
-                                allowAdditions: false,
+                                allowAdditions: true,
                                 fullTextSearch: true,
                                 keys: {
                                     delimiter: false
@@ -258,7 +258,7 @@
             <img src="{{:User.AvatarSrc}}" />
         </a>
         <div class="content">
-            <a href="/User/Profile/{{:User.UserName}}" class="author">{{:User.UserName}}</a>
+            <a href="/user/profile/{{:User.UserName}}" class="author">{{:User.UserName}}</a>
             <div class="metadata">
                 {{if ParentComment != null}}
                 <i class="violet share icon"></i>{{:ParentComment.User.UserName}} |

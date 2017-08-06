@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNet.Identity;
 using Mite.BLL.Core;
-using nQuant;
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -9,6 +8,7 @@ using System.Web.Hosting;
 
 namespace Mite.BLL.DTO
 {
+    [Obsolete("Заменено ImagesHelper")]
     public class ImageDTO : IDisposable
     {
         private const string CompressedPostfix = "compressed";
@@ -82,6 +82,12 @@ namespace Mite.BLL.DTO
                 return path + fullName;
             }
         }
+        /// <summary>
+        /// Конструктор
+        /// </summary>
+        /// <param name="virtualPath">Относительный путь к файлу</param>
+        /// <param name="imagesFolder">Папка изображений</param>
+        /// <param name="createBmp">Создавать ли Bitmap объект(обычно создается только при сжатии)</param>
         public ImageDTO(string virtualPath, string imagesFolder, bool createBmp = false)
         {
             VirtualPath = virtualPath;
@@ -106,11 +112,8 @@ namespace Mite.BLL.DTO
         }
         public DataServiceResult Compress()
         {
-            //Поток понадобится, чтобы записать туда переформатированный png файл
-
             if (SourceBmp.RawFormat.Guid != ImageFormat.Jpeg.Guid && SourceBmp.RawFormat.Guid != ImageFormat.Png.Guid)
             {
-                SourceBmp.Dispose();
                 return DataServiceResult.Failed("Изображение не подходит по формату");
             }
             if(SourceBmp.RawFormat.Guid == ImageFormat.Png.Guid)
@@ -126,6 +129,10 @@ namespace Mite.BLL.DTO
             {
                 return CompressJpg();
             }
+            else if(SourceBmp.RawFormat.Guid == ImageFormat.Gif.Guid)
+            {
+                return CompressGif();
+            }
             return DataServiceResult.Failed();
         }
         /// <summary>
@@ -134,19 +141,20 @@ namespace Mite.BLL.DTO
         /// <returns></returns>
         private DataServiceResult CompressPng()
         {
-            try
-            {
-                var quantizer = new WuQuantizer();
-                using(var quantized = quantizer.QuantizeImage(SourceBmp))
-                {
-                    quantized.Save(HostingEnvironment.MapPath(CompressedVirtualPath));
-                }
-                return DataServiceResult.Success();
-            }
-            catch (Exception)
-            {
-                return DataServiceResult.Failed();
-            }
+            return DataServiceResult.Success();
+            //try
+            //{
+            //    var quantizer = new WuQuantizer();
+            //    using(var quantized = quantizer.QuantizeImage(SourceBmp))
+            //    {
+            //        quantized.Save(HostingEnvironment.MapPath(CompressedVirtualPath));
+            //    }
+            //    return DataServiceResult.Success();
+            //}
+            //catch (Exception)
+            //{
+            //    return DataServiceResult.Failed();
+            //}
         }
         /// <summary>
         /// Сжимаем в Jpeg
@@ -165,6 +173,24 @@ namespace Mite.BLL.DTO
             catch (Exception e)
             {
                 return DataServiceResult.Failed($"Не удалось сжать изображение {e.Message}");
+            }
+        }
+        /// <summary>
+        /// Сохраняет один кадр из gifa
+        /// </summary>
+        /// <returns></returns>
+        private DataServiceResult CompressGif()
+        {
+            try
+            {
+                var frameDimension = new FrameDimension(SourceBmp.FrameDimensionsList[0]);
+                SourceBmp.SelectActiveFrame(frameDimension, 0);
+                SourceBmp.Save(HostingEnvironment.MapPath(CompressedVirtualPath));
+                return DataServiceResult.Success();
+            }
+            catch(Exception e)
+            {
+                return DataServiceResult.Failed($"Не удалось получить кадр из gif: {e.Message}");
             }
         }
 

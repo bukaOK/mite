@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Dapper;
 using Mite.DAL.Infrastructure;
@@ -16,7 +13,7 @@ namespace Mite.DAL.Core
     {
         protected readonly IDbConnection Db;
         protected readonly AppDbContext DbContext;
-        protected readonly DbSet<TEntity> Table;
+        protected readonly IDbSet<TEntity> Table;
         protected string TableName;
 
         protected Repository(AppDbContext dbContext)
@@ -117,7 +114,7 @@ namespace Mite.DAL.Core
 
         public Task<TEntity> GetAsync(params object[] keyValues)
         {
-            return Table.FindAsync(keyValues);
+            return ((DbSet<TEntity>)Table).FindAsync(keyValues);
         }
     }
 }

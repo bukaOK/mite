@@ -31,13 +31,21 @@ namespace Mite.Models
     /// </summary>
     public class ProfilePostModel
     {
-        public string Id { get; set; }
+        public Guid Id { get; set; }
         public string Header { get; set; }
         public string Description { get; set; }
         public string Content { get; set; }
         public DateTime LastEdit { get; set; }
         public DateTime? PublishDate { get; set; }
         public string PublicTimeStr { get; set; }
+        /// <summary>
+        /// Только для изображений, gif ли это
+        /// </summary>
+        public bool IsGif { get; set; }
+        /// <summary>
+        /// Только для изображений, полный путь к изображению
+        /// </summary>
+        public string FullPath { get; set; }
         public int CommentsCount { get; set; }
         public byte PostType { get; set; }
         public bool IsPublished => PublishDate != null;

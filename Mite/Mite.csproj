@@ -189,10 +189,6 @@
       <HintPath>..\packages\NLog.Web.4.5.0\lib\net35\NLog.Web.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="nQuant.Core, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\nQuant.1.0.3\lib\net40\nQuant.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -372,6 +368,7 @@
     <Compile Include="Controllers\PostsController.cs" />
     <Compile Include="Controllers\RatingController.cs" />
     <Compile Include="Controllers\SitemapController.cs" />
+    <Compile Include="Controllers\SocialServiceController.cs" />
     <Compile Include="Controllers\TagsController.cs" />
     <Compile Include="Controllers\UserHelpersController.cs" />
     <Compile Include="Controllers\UserProfileController.cs" />
@@ -394,6 +391,7 @@
     <Compile Include="DAL\Entities\Rating.cs" />
     <Compile Include="DAL\Entities\SocialLinks.cs" />
     <Compile Include="DAL\Entities\Tag.cs" />
+    <Compile Include="DAL\Entities\UserSocialService.cs" />
     <Compile Include="DAL\Repositories\CashOperationsRepository.cs" />
     <Compile Include="DAL\Repositories\ExternalServiceRepository.cs" />
     <Compile Include="DAL\Repositories\PaymentsRepository.cs" />
@@ -405,6 +403,7 @@
     <Compile Include="DAL\Repositories\RatingRepository.cs" />
     <Compile Include="DAL\Repositories\SocialLinksRepository.cs" />
     <Compile Include="DAL\Entities\SocialService.cs" />
+    <Compile Include="DAL\Repositories\SocialServicesRepository.cs" />
     <Compile Include="DAL\Repositories\TagsRepository.cs" />
     <Compile Include="DAL\Repositories\UserRepository.cs" />
     <Compile Include="Enums\CashOperationTypes.cs" />
@@ -454,6 +453,8 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\ImagesHelper.cs" />
+    <Compile Include="Helpers\SocialServicesHelper.cs" />
     <Compile Include="Infrastructure\Logger.cs" />
     <Compile Include="Helpers\ViewHelper.cs" />
     <Compile Include="DAL\Infrastructure\AppDbContext.cs" />
@@ -544,6 +545,10 @@
     <Compile Include="Migrations\201707312034403_TagUniqIndex.Designer.cs">
       <DependentUpon>201707312034403_TagUniqIndex.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201708061045016_SocialLinksUpdate.cs" />
+    <Compile Include="Migrations\201708061045016_SocialLinksUpdate.Designer.cs">
+      <DependentUpon>201708061045016_SocialLinksUpdate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountModels.cs" />
     <Compile Include="Models\AdminModels.cs" />
@@ -566,7 +571,6 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\bundle.txt" />
     <Content Include="Content\content-tools.min.css" />
     <Content Include="Content\icons\android-icon-144x144.png" />
     <Content Include="Content\icons\android-icon-192x192.png" />
@@ -615,6 +619,7 @@
     <Content Include="Content\images\some-logo.png" />
     <Content Include="Content\images\video.svg" />
     <Content Include="Content\landing.css" />
+    <Content Include="Content\Top.css" />
     <Content Include="Content\UserMenu.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
@@ -657,20 +662,19 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\masonry.pkgd.min.js" />
-    <Content Include="Scripts\MiteApi.js" />
-    <Content Include="Scripts\MiteTab.js" />
-    <Content Include="Scripts\MiteUtilities.js" />
+    <Content Include="Scripts\Custom\MiteApi.js" />
+    <Content Include="Scripts\Custom\MiteTab.js" />
+    <Content Include="Scripts\Custom\MiteUtilities.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
-    <Content Include="Scripts\PageScripts.js" />
-    <Content Include="Scripts\password-strength.js" />
+    <Content Include="Scripts\Custom\password-strength.js" />
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\respond.matchmedia.addListener.js" />
     <Content Include="Scripts\respond.matchmedia.addListener.min.js" />
     <Content Include="Scripts\respond.min.js" />
     <Content Include="Scripts\semantic.js" />
     <Content Include="Scripts\semantic.min.js" />
-    <Content Include="Scripts\TabFilter.js" />
-    <Content Include="Scripts\ViewHelpers.js" />
+    <Content Include="Scripts\Custom\TabFilter.js" />
+    <Content Include="Scripts\Custom\ViewHelpers.js" />
     <Content Include="Scripts\_references.js" />
     <Content Include="Views\UserProfile\Index.cshtml" />
     <Content Include="Web.config">
@@ -812,6 +816,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201707312034403_TagUniqIndex.resx">
       <DependentUpon>201707312034403_TagUniqIndex.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201708061045016_SocialLinksUpdate.resx">
+      <DependentUpon>201708061045016_SocialLinksUpdate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

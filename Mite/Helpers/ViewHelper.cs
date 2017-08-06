@@ -24,16 +24,6 @@ namespace Mite.Helpers
             return months[month - 1];
         }
 
-        public static ProfileModel GetUser(string userId)
-        {
-            var userManager = AutofacDependencyResolver.Current.GetService<AppUserManager>();
-            var user = userManager.FindById(userId);
-            Mapper.Initialize(cfg => cfg.CreateMap<User, ProfileModel>()
-                .ForMember(dest => dest.FollowersCount, opt => opt.MapFrom(src => src.Followers.Count())));
-
-            return Mapper.Map<ProfileModel>(user);
-        }
-
         /// <summary>
         /// Возвращает падеж слова по числу, последнее слово в массиве должно соответствовать всем остальным до цифры 9
         /// </summary>

@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Web;
+﻿using System.Net;
 using System.Web.Mvc;
 using System.Web.Mvc.Filters;
 using System.Web.Routing;
 
 namespace Mite.Attributes.Filters
 {
+    /// <summary>
+    /// Пропускает только незарегистрированных пользователей
+    /// </summary>
     public class OnlyGuestsAttribute : FilterAttribute, IAuthenticationFilter
     {
         public void OnAuthentication(AuthenticationContext filterContext)

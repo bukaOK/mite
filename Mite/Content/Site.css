@@ -8,6 +8,9 @@
 html, body{
     height: 100% !important;
 }
+.ui.margined.button{
+    margin-bottom: 4px;
+}
 .ui.tab:not(.active){
     display: none;
 }
@@ -125,7 +128,7 @@ div.center.aligned{
 }
 article.ui.container{
     margin-top: 60px;
-    width: 90%;
+    /*width: 90%;*/
 }
 .list.layout.icon{
     margin-top: 1px !important;
@@ -405,6 +408,34 @@ p.docs{
 }
 .posts.grid.basic.segment{
     margin: -1rem;
+}
+.post-item .img-content{
+    position: relative;
+}
+.post-item .img-content .gif-wrapper{
+    display: none;
+}
+.post-item .img-content .gif-wrapper.active{
+    display: block;
+}
+
+.post-item .img-content .gif-wrapper>.button{
+    position: absolute !important;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.1s ease-in-out;
+}
+.post-item .img-content .gif-wrapper>.button:hover{
+    transform: translate(-50%, -50%) scale(1.1, 1.1);
+}
+.post-item .img-content .gif-wrapper>.label{
+    position: absolute;
+    right: 5px;
+    top: 0;
+}
+.segment.post-item .dimmer{
+    z-index: 10;
 }
 .post-content.content{
     min-height: 100px;

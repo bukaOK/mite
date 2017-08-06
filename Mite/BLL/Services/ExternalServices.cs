@@ -30,6 +30,7 @@ namespace Mite.BLL.Services
         /// <param name="accessToken"></param>
         /// <returns></returns>
         Task<DataServiceResult> Update(string providerKey, string serviceType, string accessToken);
+        void Remove(string userId, string serviceName);
         Task RemoveAsync(string userId, string serviceName);
     }
     public class ExternalServices : DataService, IExternalServices
@@ -67,7 +68,11 @@ namespace Mite.BLL.Services
             var repo = Database.GetRepo<ExternalServiceRepository, ExternalService>();
             return repo.GetAsync(userId, serviceName);
         }
-
+        public void Remove(string userId, string serviceName)
+        {
+            var repo = Database.GetRepo<ExternalServiceRepository, ExternalService>();
+            repo.Remove(userId, serviceName);
+        }
         public Task RemoveAsync(string userId, string serviceName)
         {
             var repo = Database.GetRepo<ExternalServiceRepository, ExternalService>();

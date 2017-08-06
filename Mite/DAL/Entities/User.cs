@@ -36,20 +36,18 @@ namespace Mite.DAL.Entities
         /// Показывать ли рекламу(только для авторов)
         /// </summary>
         public bool ShowAd { get; set; }
-        public IList<Post> Posts { get; set; }
-        public IList<Tag> Tags { get; set; }
         /// <summary>
         /// Рейтинг(только для авторов)
         /// </summary>
         public int Rating { get; set; }
         /// <summary>
-        /// Подписчики пользователя
+        /// Теги пользователя
         /// </summary>
-        public IList<Follower> Followers { get; set; }
+        public IList<Tag> Tags { get; set; }
         /// <summary>
-        /// Комментарии
+        /// Работы пользователя(только для авторов)
         /// </summary>
-        public IList<Comment> Comments { get; set; }
+        public IList<Post> Posts { get; set; }
         /// <summary>
         /// Номер Яндекс кошелька
         /// </summary>

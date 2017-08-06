@@ -25,7 +25,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="@ViewBag.MetaDescription" />
     <meta charset="utf-8" />
-    <noscript><meta http-equiv="refresh" content="0;URL=/home/badjs" /></noscript>
+    @if (Request.Path.ToLower() != Url.Action("BadJs", "Home"))
+    {
+        <noscript><meta http-equiv="refresh" content="0;URL=/home/badjs" /></noscript>
+    }
     @Styles.Render("~/Content/semantic", "~/Content/css", "~/Content/less")
     @RenderSection("styles", false)
     <title>@ViewBag.Title</title>
@@ -207,7 +210,7 @@
                 </a>
                 <a class="violet notifications item">
                     <i class="feed icon"></i>
-                    <div class="ui right violet label" style="display: none">
+                    <div class="ui floating right violet  label" style="display: none">
                         0
                     </div>
                 </a>

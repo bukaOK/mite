@@ -90,5 +90,8 @@ namespace Mite.Models
         [DisplayName("ArtStation")]
         [UIHint("LabeledTextBox")]
         public string ArtStation { get; set; }
+        [DisplayName("Instagram")]
+        [UIHint("LabeledTextBox")]
+        public string Instagram { get; set; }
     }
 }

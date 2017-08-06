@@ -105,10 +105,21 @@ namespace Mite.Models
     {
         public Guid Id { get; set; }
         public string Title { get; set; }
+        /// <summary>
+        /// Здесь может храниться или отрывок из документа, или путь к сжатой картинке
+        /// </summary>
         public string Content { get; set; }
+        /// <summary>
+        /// Только для изображений, полный путь к изображению
+        /// </summary>
+        public string FullPath { get; set; }
         public bool IsImage { get; set; }
         public DateTime PublishDate { get; set; }
         public string Description { get; set; }
+        /// <summary>
+        /// Только для изображений, gif ли это
+        /// </summary>
+        public bool IsGif { get; set; }
         public string Cover { get; set; }
         public int Rating { get; set; }
         public int Views { get; set; }
@@ -117,7 +128,7 @@ namespace Mite.Models
         /// Показывать ли взрослый контент.
         /// </summary>
         public bool ShowAdultContent { get; set; }
-        public List<string> Tags { get; set; }
+        public IEnumerable<string> Tags { get; set; }
         public UserShortModel User { get; set; }
     }
 }

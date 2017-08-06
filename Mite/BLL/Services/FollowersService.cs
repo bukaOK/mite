@@ -49,10 +49,10 @@ namespace Mite.BLL.Services
             var fModels = Mapper.Map<List<UserShortModel>>(followers.Select(x => x.User));
             foreach(var follower in fModels)
             {
-                var img = new ImageDTO(follower.AvatarSrc, imagesFolder);
-                if (img.CompressedExists)
+                var fullPath = HostingEnvironment.MapPath(follower.AvatarSrc);
+                if (ImagesHelper.Compressed.CompressedExists(fullPath))
                 {
-                    follower.AvatarSrc = img.CompressedVirtualPath;
+                    follower.AvatarSrc = ImagesHelper.Compressed.CompressedVirtualPath(fullPath);
                 }
             }
             return fModels;
@@ -67,10 +67,10 @@ namespace Mite.BLL.Services
             var fModels = Mapper.Map<List<UserShortModel>>(followings.Select(x => x.FollowingUser));
             foreach(var following in fModels)
             {
-                var img = new ImageDTO(following.AvatarSrc, imagesFolder);
-                if (img.CompressedExists)
+                var fullPath = HostingEnvironment.MapPath(following.AvatarSrc);
+                if (ImagesHelper.Compressed.CompressedExists(fullPath))
                 {
-                    following.AvatarSrc = img.CompressedVirtualPath;
+                    following.AvatarSrc = ImagesHelper.Compressed.CompressedVirtualPath(fullPath);
                 }
             }
             return fModels;

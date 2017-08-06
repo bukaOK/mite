@@ -270,8 +270,11 @@ namespace Mite.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ForgotPassword(ForgotPassModel model)
         {
+            if (string.IsNullOrEmpty(model.Email))
+                ModelState.AddModelError("Email", "Email не может быть пустым");
+
             if (!ModelState.IsValid)
-                return Json(JsonStatuses.ValidationError, "Неправильный e-mail");
+                return Json(JsonStatuses.ValidationError, GetErrorsList());
 
             var user = await userManager.FindByEmailAsync(model.Email);
             if(user == null)

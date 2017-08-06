@@ -31,7 +31,16 @@ namespace Mite.BLL.Services
         /// <param name="postId"></param>
         /// <returns></returns>
         Task<PostModel> GetWithTagsUserAsync(Guid postId);
-        Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userName, SortFilter sort, PostTypes type, int page);
+        /// <summary>
+        /// Получить работы по пользователю
+        /// </summary>
+        /// <param name="userName">Id автора</param>
+        /// <param name="currentUserId">Id текущего пользователя(nullable)</param>
+        /// <param name="sort">Сортировка</param>
+        /// <param name="type">Тип работы</param>
+        /// <param name="page">Пагинация</param>
+        /// <returns></returns>
+        Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userName, string currentUserId, SortFilter sort, PostTypes type, int page);
         Task<IEnumerable<GalleryPostModel>> GetGalleryByUserAsync(string userId);
         /// <summary>
         /// Добавляем к посту один просмотр
@@ -84,11 +93,7 @@ namespace Mite.BLL.Services
                 }
                 
                 postModel.Content = FilesHelper.CreateImage(imagesFolder, postModel.Content);
-                using(var img = new ImageDTO(postModel.Content, imagesFolder, true))
-                {
-                    //Создаем сжатую копию изображения
-                    img.Compress();
-                }
+                ImagesHelper.Compressed.Compress(HostingEnvironment.MapPath(postModel.Content));
             }
             else
             {
@@ -103,7 +108,7 @@ namespace Mite.BLL.Services
                 postModel.Content = FilesHelper.CreateDocument(documentsFolder, postModel.Content);
             }
             postModel.Tags = postModel.Tags.Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
-            var tags = Mapper.Map<IEnumerable<Tag>>(postModel.Tags);
+            var tags = Mapper.Map<List<Tag>>(postModel.Tags);
 
             postModel.Tags = null;
             var post = Mapper.Map<Post>(postModel);
@@ -118,9 +123,7 @@ namespace Mite.BLL.Services
             }
 
             await repo.AddAsync(post);
-            foreach (var tag in post.Tags)
-                tag.Name = tag.Name.ToLower();
-            await tagsRepo.AddWithPostAsync(post.Tags, post.Id);
+            await tagsRepo.AddWithPostAsync(tags, post.Id);
             return IdentityResult.Success;
         }
 
@@ -130,10 +133,10 @@ namespace Mite.BLL.Services
             var post = await repo.GetAsync(postId);
             if (post.IsImage)
             {
-                var img = new ImageDTO(post.Content, imagesFolder);
-                if (img.CompressedExists)
+                var fullImgPath = HostingEnvironment.MapPath(post.Content);
+                if (ImagesHelper.Compressed.CompressedExists(fullImgPath))
                 {
-                    FilesHelper.DeleteFile(img.CompressedVirtualPath);
+                    FilesHelper.DeleteFile(ImagesHelper.Compressed.CompressedVirtualPath(fullImgPath));
                 }
             }
             else if (!string.IsNullOrEmpty(post.Cover))
@@ -246,13 +249,15 @@ namespace Mite.BLL.Services
 
             return postModel;
         }
-        public async Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userName, SortFilter sort, PostTypes type, int page)
+        public async Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userName, string currentUserId, SortFilter sort, PostTypes type, int page)
         {
             IEnumerable<Post> posts;
             var repo = Database.GetRepo<PostsRepository, Post>();
             var tagsRepo = Database.GetRepo<TagsRepository, Tag>();
+            var commentsRepo = Database.GetRepo<CommentsRepository, Comment>();
 
             var user = await _userManager.FindByNameAsync(userName);
+            var currentUser = string.IsNullOrEmpty(currentUserId) ? null : await _userManager.FindByIdAsync(currentUserId);
 
             const int range = 9;
             var offset = (page - 1) * range;
@@ -270,49 +275,49 @@ namespace Mite.BLL.Services
                 default:
                     return null;
             }
+            var postModels = Mapper.Map<IEnumerable<ProfilePostModel>>(posts);
+            var postsWithCommentsCount = await commentsRepo.GetPostsCommentsCountAsync(postModels.Select(x => x.Id));
             var postTags = await tagsRepo.GetByPostsAsync(posts.Select(x => x.Id));
 
             const int minChars = 400;
-            foreach (var post in posts)
+            int commentsCount;
+            foreach (var postModel in postModels)
             {
-                if (!post.IsImage)
+                if (!postModel.IsImage)
                 {
                     try
                     {
-                        post.Content = await FilesHelper.ReadDocumentAsync(post.Content, minChars);
+                        postModel.Content = await FilesHelper.ReadDocumentAsync(postModel.Content, minChars);
                     }
                     catch(Exception e)
                     {
-                        logger.Error($"Ошибка при чтении файла в топе, имя файла: {post.Content}, Ошибка : {e.Message}");
-                        post.Content = "Ошибка при чтении файла.";
+                        logger.Error($"Ошибка при чтении файла в топе, имя файла: {postModel.Content}, Ошибка : {e.Message}");
+                        postModel.Content = "Ошибка при чтении файла.";
                     }
                 }
                 else
                 {
-                    var img = new ImageDTO(post.Content, imagesFolder);
-                    if (img.CompressedExists)
+                    var fullPath = HostingEnvironment.MapPath(postModel.Content);
+                    if (ImagesHelper.GetFormat(fullPath) == "gif")
                     {
-                        post.Content = img.CompressedVirtualPath;
+                        postModel.IsGif = true;
+                        postModel.FullPath = postModel.Content;
+                    }
+                    if (ImagesHelper.Compressed.CompressedExists(fullPath))
+                    {
+                        postModel.Content = ImagesHelper.Compressed.CompressedVirtualPath(fullPath);
                     }
                 }
-                if(!string.IsNullOrEmpty(post.Description) && post.Description.Length > 100)
+                postModel.Tags = postTags.Where(x => x.Posts.Any(y => y.Id == postModel.Id)).Select(x => x.Name);
+
+                var hasComments = postsWithCommentsCount.TryGetValue(postModel.Id, out commentsCount);
+                postModel.CommentsCount = hasComments ? commentsCount : 0;
+
+                if ((currentUser != null && currentUser.Age >= 18) || !postModel.Tags.Any(tag => tag == "18+"))
                 {
-                    var description = post.Description;
-                    //Находим последний пробел, обрезаем до него
-                    description = description.Substring(0, 100);
-                    var lastSpace = description.LastIndexOf(' ');
-                    description = description.Substring(0, lastSpace);
-                    //Убираем последний символ, если это знак препинания
-                    var lastChar = description[description.Length - 1];
-                    if (lastChar == ',' || lastChar == '.' || lastChar == '-')
-                    {
-                        description = description.Substring(0, description.Length - 1);
-                    }
-                    post.Description = description + "...";
+                    postModel.ShowAdultContent = true;
                 }
-                post.Tags = postTags.Where(x => x.Posts.Any(y => y.Id == post.Id)).ToList();
             }
-            var postModels = Mapper.Map<IEnumerable<ProfilePostModel>>(posts);
             return postModels;
         }
 
@@ -379,46 +384,50 @@ namespace Mite.BLL.Services
                     sortFilter, offset, range);
             }
 
+            var postModels = Mapper.Map<IEnumerable<TopPostModel>>(posts);
             var postTags = await tagsRepo.GetByPostsAsync(posts.Select(x => x.Id));
-            const int minChars = 400;
+            var postsWithCommentsCount = await commentsRepo.GetPostsCommentsCountAsync(postModels.Select(x => x.Id));
+            var currentUser = string.IsNullOrEmpty(currentUserId) ? null : await _userManager.FindByIdAsync(currentUserId);
 
-            foreach (var post in posts)
+            const int minChars = 400;
+            int commentsCount;
+            string fullImgPath;
+
+            foreach (var postModel in postModels)
             {
-                if (!post.IsImage)
+                if (!postModel.IsImage)
                 {
                     try
                     {
-                        post.Content = await FilesHelper.ReadDocumentAsync(post.Content, minChars);
+                        postModel.Content = await FilesHelper.ReadDocumentAsync(postModel.Content, minChars);
                     }
                     catch(Exception e)
                     {
-                        logger.Error($"Ошибка при чтении файла в топе, имя файла: {post.Content}, Ошибка : {e.Message}");
-                        post.Content = "Ошибка при чтении файла.";
+                        logger.Error($"Ошибка при чтении файла в топе, имя файла: {postModel.Content}, Ошибка : {e.Message}");
+                        postModel.Content = "Ошибка при чтении файла.";
                     }
                 }
                 else
                 {
-                    var img = new ImageDTO(post.Content, imagesFolder);
-                    if (img.CompressedExists)
+                    fullImgPath = HostingEnvironment.MapPath(postModel.Content);
+                    if (ImagesHelper.GetFormat(fullImgPath) == "gif")
                     {
-                        post.Content = img.CompressedVirtualPath;
+                        postModel.IsGif = true;
+                        postModel.FullPath = postModel.Content;
+                    }
+
+                    if (ImagesHelper.Compressed.CompressedExists(fullImgPath))
+                    {
+                        postModel.Content = ImagesHelper.Compressed.CompressedVirtualPath(fullImgPath);
                     }
                 }
-                var avatarImg = new ImageDTO(post.User.AvatarSrc, imagesFolder);
-                if (avatarImg.CompressedExists)
+                fullImgPath = HostingEnvironment.MapPath(postModel.User.AvatarSrc);
+                if (ImagesHelper.Compressed.CompressedExists(fullImgPath))
                 {
-                    post.User.AvatarSrc = avatarImg.CompressedVirtualPath;
+                    postModel.User.AvatarSrc = ImagesHelper.Compressed.CompressedVirtualPath(fullImgPath);
                 }
-                post.Tags = postTags.Where(x => x.Posts.Any(y => y.Id == post.Id)).ToList();
-            }
-            var postModels = Mapper.Map<IEnumerable<TopPostModel>>(posts);
-            var postsWithCommentsCount = await commentsRepo.GetPostsCommentsCountAsync(postModels.Select(x => x.Id));
+                postModel.Tags = postTags.Where(x => x.Posts.Any(y => y.Id == postModel.Id)).Select(x => x.Name);
 
-            int commentsCount;
-            var currentUser = string.IsNullOrEmpty(currentUserId) ? null : await _userManager.FindByIdAsync(currentUserId);
-
-            foreach (var postModel in postModels)
-            {
                 var hasComments = postsWithCommentsCount.TryGetValue(postModel.Id, out commentsCount);
                 postModel.CommentsCount = hasComments ? commentsCount : 0;
                 if ((currentUser != null && currentUser.Age >= 18) || !postModel.Tags.Any(tag => tag == "18+"))
@@ -427,20 +436,6 @@ namespace Mite.BLL.Services
                 }
             }
             return postModels;
-        }
-        /// <summary>
-        /// Объединяем посты с тегами, на основе Id поста
-        /// </summary>
-        /// <param name="posts"></param>
-        /// <param name="tags"></param>
-        /// <returns></returns>
-        private IEnumerable<Post> ConcatTagWithPosts(IEnumerable<Post> posts, IEnumerable<Tag> tags)
-        {
-            foreach(var post in posts)
-            {
-                post.Tags = tags.Where(x => x.Posts.Any(y => y.Id == post.Id)).ToList();
-            }
-            return posts;
         }
 
         public async Task<IEnumerable<GalleryPostModel>> GetGalleryByUserAsync(string userId)

@@ -75,7 +75,10 @@ namespace Mite.Controllers
                     }
                     catch (InvalidTokenException e)
                     {
+                        var userLogins = userManager.GetLogins(userId);
+                        var yaLogin = userLogins.FirstOrDefault(x => x.LoginProvider == YaMoneySettings.DefaultAuthType);
                         logger.Error(e, "Истек срок Яндекс токена.");
+                        externalServices.Remove(userId, YaMoneySettings.DefaultAuthType);
                         return Json(JsonStatuses.ValidationError, new string[] { "Истек срок токена, перезагрузите страницу и попробуйте снова авторизовать приложение" });
                     }
                 case PaymentType.BankCard:
@@ -166,7 +169,7 @@ namespace Mite.Controllers
                 var userLogins = userManager.GetLogins(user.Id);
                 var yaLogin = userLogins.FirstOrDefault(x => x.LoginProvider == YaMoneySettings.DefaultAuthType);
                 logger.Error(e, "Истек срок Яндекс токена.");
-                await externalServices.RemoveAsync(user.Id, YaMoneySettings.DefaultAuthType);
+                externalServices.Remove(user.Id, YaMoneySettings.DefaultAuthType);
 
                 return Json(JsonStatuses.ValidationError, new string[] { "Истек срок токена, перезагрузите страницу и попробуйте снова авторизовать приложение" });
             }

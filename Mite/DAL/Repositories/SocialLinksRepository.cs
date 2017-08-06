@@ -17,20 +17,5 @@ namespace Mite.DAL.Repositories
         {
             TableName = "SocialLinks";
         }
-        public SocialLinks Get(string userId)
-        {
-            var query = "select * from dbo.SocialLinks where UserId=@userId";
-            return Db.QueryFirstOrDefault<SocialLinks>(query, new { userId });
-        }
-        public Task<SocialLinks> GetAsync(string userId)
-        {
-            var query = "select * from dbo.SocialLinks where UserId=@userId";
-            return Db.QueryFirstOrDefaultAsync<SocialLinks>(query, new { userId });
-        }
-        public override Task UpdateAsync(SocialLinks entity)
-        {
-            var query = $"update dbo.{TableName} set Vk=@Vk, Twitter=@Twitter, Facebook=@Facebook, Dribbble=@Dribbble, ArtStation=@ArtStation where Id=@Id";
-            return Db.ExecuteAsync(query, entity);
-        }
     }
 }

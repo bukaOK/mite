@@ -27,3 +27,6 @@ article.ui.grid{
 input[type="text"],input[type="email"],input[type="password"]{
     font-weight: bold;
 }
+.land.button{
+    margin-bottom: 7px;
+}

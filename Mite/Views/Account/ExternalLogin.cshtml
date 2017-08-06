@@ -43,7 +43,7 @@
         Восстановление пароля
     </div>
     <div class="content">
-        @Html.Partial("ForgotPassword", new Mite.Models.ForgotPassModel())
+        @{Html.RenderPartial("ForgotPassword", new Mite.Models.ForgotPassModel());}
     </div>
 </div>
 <script>

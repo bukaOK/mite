@@ -208,6 +208,8 @@ namespace Mite.Controllers
         public async Task<JsonResult> Top(string tags, string postName, SortFilter sortFilter,
             PostTimeFilter postTimeFilter, PostUserFilter postUserFilter, int page)
         {
+            //Плюс зарезервированный символ url, поэтому заменяется пробелом
+            tags = tags.Replace("18 ", "18+");
             var tagsNames = string.IsNullOrEmpty(tags) ? new string[0] : tags.Split(',');
             var posts = await postsService.GetTopAsync(tagsNames, postName, sortFilter, postTimeFilter, postUserFilter,
                 User.Identity.GetUserId(), page);

@@ -39,6 +39,7 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <Choose>
@@ -56,8 +57,10 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="BLL\ImageDTOTest.cs" />
     <Compile Include="BLL\Services\PostsService.cs" />
     <Compile Include="DAL\Repositories\PostsRepoTest.cs" />
+    <Compile Include="Helpers\ImageHelperTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

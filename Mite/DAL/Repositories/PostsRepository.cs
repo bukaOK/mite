@@ -9,6 +9,7 @@ using Mite.DAL.Entities;
 using Mite.Enums;
 using System.Text;
 using Mite.DAL.Infrastructure;
+using System.Data.Entity;
 
 namespace Mite.DAL.Repositories
 {
@@ -137,22 +138,11 @@ namespace Mite.DAL.Repositories
             bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range)
         {
             var tagNamesStr = new StringBuilder();
-#if !DEBUG
-            tagNamesStr.Append("CONTAINS(dbo.Tags.Name,"); 
-#endif
             for (var i = 0; i < tagsNames.Length; i++)
             {
-#if DEBUG
                 tagNamesStr.AppendFormat("dbo.Tags.Name like N'%{0}%' ", tagsNames[i]);
                 if (i < tagsNames.Length - 1)
                     tagNamesStr.Append("or ");
-#else
-                tagNamesStr.AppendFormat("'\"{0}*\"", tagsNames[i]);
-                if (i < tagsNames.Length - 1)
-                    tagNamesStr.Append(" or ");
-                else
-                    tagNamesStr.Append("')");
-#endif
             }
             //Запрос для получения кол-ва совпадений тегов для каждого поста
             var tagsCountQuery = "select COUNT(Tag_Id) as TagsCount, Post_Id from dbo.Tags inner join dbo.TagPosts " +
@@ -208,22 +198,11 @@ namespace Mite.DAL.Repositories
             bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range)
         {
             var tagNamesStr = new StringBuilder();
-#if !DEBUG
-            tagNamesStr.Append("CONTAINS(dbo.Tags.Name, ");
-#endif
             for (var i = 0; i < tagsNames.Length; i++)
             {
-#if DEBUG
                 tagNamesStr.AppendFormat("dbo.Tags.Name like N'%{0}%' ", tagsNames[i]);
                 if (i < tagsNames.Length - 1)
                     tagNamesStr.Append("or ");
-#else
-                tagNamesStr.AppendFormat("'\"{0}*\"", tagsNames[i]);
-                if (i < tagsNames.Length - 1)
-                    tagNamesStr.Append(" or ");
-                else
-                    tagNamesStr.Append("')");
-#endif
             }
             //Запрос для получения кол-ва совпадений тегов для каждого поста
             var tagsCountQuery = "select COUNT(Tag_Id) as TagsCount, Post_Id from dbo.Tags inner join dbo.TagPosts " +
@@ -325,7 +304,7 @@ namespace Mite.DAL.Repositories
             switch (sortType)
             {
                 case SortFilter.Popular:
-                    query += "order by dbo.Posts.Rating desc, dbo.Posts.PusblishDate desc";
+                    query += "order by dbo.Posts.Rating desc, dbo.Posts.PublishDate desc";
                     break;
                 case SortFilter.New:
                     query += "order by dbo.Posts.PublishDate desc";

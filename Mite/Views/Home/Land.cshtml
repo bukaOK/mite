@@ -109,8 +109,8 @@
                 <div class="center aligned column">
                     <div class="ui basic segment">
                         <h2 class="ui header">Теперь дело за вами</h2>
-                        <button class="ui active large violet inverted basic button" onclick="scrollToTop()">Начинаем</button>
-                        <button class="ui large blue button" onclick="$('#tagsModal').modal('show')">Хочу ещё посмотреть</button>
+                        <button class="ui active large violet inverted basic land button" onclick="scrollToTop()">Начинаем</button>
+                        <button class="ui large blue land button" onclick="$('#tagsModal').modal('show')">Хочу ещё посмотреть</button>
                     </div>
                 </div>
             </div>
@@ -148,11 +148,11 @@
     <div class="ui small modal" id="tagsModal">
         <div class="header">Ваши предпочтения</div>
         <div class="content">
-            <div class="ui fluid buttons">
-                <a href="/posts/top?tags=арт" class="ui button">Арт</a>
-                <a href="/posts/top?tags=литература" class="ui button">Литература</a>
-                <a href="/posts/top?tags=фотография" class="ui button">Фотография</a>
-                <a href="/posts/top?tags=анимация" class="ui button">Анимация</a>
+            <div class="ui fluid four item stackable menu">
+                @Html.ActionLink("Арт", "Top", "Posts", new { tags = "арт" }, new { @class = "item"})
+                @Html.ActionLink("Литература", "Top", "Posts", new { tags = "литература" }, new { @class = "item" })
+                @Html.ActionLink("Фото", "Top", "Posts", new { tags = "фотография" }, new { @class = "item" })
+                @Html.ActionLink("Анимация", "Top", "Posts", new { tags = "анимация" }, new { @class = "item" })
             </div>
             <div class="ui horizontal divider">Или</div>
             <div class="ui action fluid input">
@@ -163,7 +163,9 @@
     </div>
     <script>
         function scrollToTop() {
-            yaCounter45009220.reachGoal('BeginUse');
+            if (yaCounter45009220 != undefined) {
+                yaCounter45009220.reachGoal('BeginUse');
+            }
             $(window).scrollTo('.main.grid', 1800, {
                 easing: 'easeOutExpo',
                 offset: -10

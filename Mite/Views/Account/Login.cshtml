@@ -15,7 +15,7 @@
             <span class="content">Вход</span>
         </h2>
         <div class="ui left aligned raised segment">
-            @using (Html.BeginForm("InitExternalAuth", "Account", new { returnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "ui form", id = "externalLoginForm"}))
+            @using (Html.BeginForm("InitExternalAuth", "Account", new { returnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "ui form", id = "externalLoginForm" }))
             {
                 <div class="fields">
                     <div class="centered field">
@@ -61,7 +61,7 @@
         Восстановление пароля
     </div>
     <div class="content">
-        @Html.Partial("ForgotPassword", new Mite.Models.ForgotPassModel())
+        @{Html.RenderPartial("ForgotPassword", new Mite.Models.ForgotPassModel());}
     </div>
 </div>
 <script>
@@ -82,6 +82,24 @@
                         {
                             type: "empty",
                             prompt: $("#Password").data("valRequired")
+                        }
+                    ]
+                }
+            }
+        });
+        $('#forgotPassForm').form({
+            on: 'change',
+            inline: false,
+            fields: {
+                Email: {
+                    rules: [
+                        {
+                            type: "empty",
+                            prompt: $("#Email").data("valRequired")
+                        },
+                        {
+                            type: "email",
+                            prompt: "Введите правильный e-mail"
                         }
                     ]
                 }

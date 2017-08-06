@@ -9,7 +9,6 @@
     var currentUserName = User.Identity.Name.ToLower();
 }
 @Scripts.Render("~/bundles/grid")
-<script src="~/Scripts/TabFilter.js"></script>
 <div class="ui profile center aligned three column stackable grid segment">
     <div class="computer tablet only row">
         <div class="right aligned column">
@@ -29,73 +28,7 @@
                     @Model.About
                 </span>
             </h2>
-            @if (Model.SocialLinks.Vk != null)
-            {
-                if (Model.SocialLinks.Vk.Contains("https://vk.com"))
-                {
-                    <a href="https://vk.com/@Model.SocialLinks.Vk" class="ui circular vk icon button" target="_blank">
-                        <i class="vk icon"></i>
-                    </a>
-                }
-                else
-                {
-                    <a href="https://vk.com/@Model.SocialLinks.Vk" class="ui circular vk icon button" target="_blank">
-                        <i class="vk icon"></i>
-                    </a>
-                }
-            }
-            @if (Model.SocialLinks.Twitter != null)
-            {
-                if (Model.SocialLinks.Twitter.Contains("https://twitter.com"))
-                {
-                    <a href="@Model.SocialLinks.Twitter" class="ui circular twitter icon button" target="_blank">
-                        <i class="twitter icon"></i>
-                    </a>
-                }
-                else
-                {
-                    <a href="https://twitter.com/@Model.SocialLinks.Twitter" class="ui circular twitter icon button" target="_blank">
-                        <i class="twitter icon"></i>
-                    </a>
-                }
-            }
-            @if (Model.SocialLinks.Facebook != null)
-            {
-                if (Model.SocialLinks.Facebook.Contains("https://facebook.com/"))
-                {
-                    <a href="@Model.SocialLinks.Facebook" class="ui circular facebook icon button" target="_blank">
-                        <i class="facebook icon"></i>
-                    </a>
-                }
-                else
-                {
-                    <a href="https://facebook.com/@Model.SocialLinks.Facebook" class="ui circular facebook icon button" target="_blank">
-                        <i class="facebook icon"></i>
-                    </a>
-                }
-
-            }
-            @if (Model.SocialLinks.Dribbble != null)
-            {
-                if (Model.SocialLinks.Dribbble.Contains("https://dribbble.com"))
-                {
-                    <a href="@Model.SocialLinks.Dribbble" class="ui circular dribbble icon button" target="_blank">
-                        <i class="dribble icon"></i>
-                    </a>
-                }
-                else
-                {
-                    <a href="https://dribbble.com/@Model.SocialLinks.Dribbble" class="ui circular dribbble icon button" target="_blank">
-                        <i class="dribble icon"></i>
-                    </a>
-                }
-            }
-            @if (Model.SocialLinks.ArtStation != null)
-            {
-                <a href="https://www.artstation.com/artist/@Model.SocialLinks.ArtStation" class="ui circular artstation icon button" target="_blank">
-                    <img src="http://www.wekoworks.com/images/FotterIcons/artstation_logo.png" />
-                </a>
-            }
+            @SocialServicesHelper.RenderSocialLinksForProfile(Model.SocialLinks)
         </div>
         <div class="left aligned column">
             @if (currentUserName != pageUserName && !Model.IsFollowing && User.Identity.IsAuthenticated)
@@ -118,7 +51,7 @@
             }
             @if (currentUserName == pageUserName)
             {
-                <a href="@Url.RouteUrl("UserSettings")" class="ui blue button"><i class="setting icon"></i>Настройки</a>
+                <a href="/user/settings" class="ui blue button"><i class="setting icon"></i>Настройки</a>
             }
         </div>
     </div>
@@ -213,11 +146,11 @@
         <i class="filter icon"></i>
         Сначала&nbsp;
         <div class="ui inline dropdown" id="sortDropDown">
-            <div class="text">высший рейтинг</div>
+            <div class="text">новые</div>
             <i class="dropdown icon"></i>
             <div class="menu">
-                <div class="active item" data-text="высший рейтинг" data-value="@((byte)SortFilter.Popular)">Высший рейтинг</div>
-                <div class="item" data-text="новые" data-value="@((byte)SortFilter.New)">Новые</div>
+                <div class="active item" data-text="новые" data-value="@((byte)SortFilter.New)">Новые</div>
+                <div class="item" data-text="высший рейтинг" data-value="@((byte)SortFilter.Popular)">Высший рейтинг</div>
                 <div class="item" data-text="старые" data-value="@((byte)SortFilter.Old)">Старые</div>
             </div>
         </div>
@@ -367,8 +300,8 @@ else
 </script>
 <script id="postsTmpl" type="text/x-jsrender">
     <div class="column" data-post-id="{{:Id}}">
-        <div class="ui segment {{if Cover != null}}invert{{/if}} post-item" {{if Cover != null}} data-show-adult-content="{{:ShowAdultContent}}"
-             style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})"{{/if}}>
+        <div class="ui segment {{if Cover != null}}invert{{/if}}{{if !ShowAdultContent}} hide-adult-content{{/if}} post-item" {{if Cover != null}}
+             style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})"{{/if}} id="post{{:Id}}">
             @if (currentUserName == pageUserName)
             {
                 <div class="extra content">
@@ -385,23 +318,43 @@ else
                         </div>
                     </div>
                     <div class="right">
-                        {{if !IsPublished}}
-                        <a class="ui blue compact button" href="@Url.Action("EditPost", "Posts")/{{:Id}}">Редактировать</a>
-                        {{else}}
+                        {{if IsPublished}}
                         <a class="ui primary compact button" href="@Url.Action("ShowPost", "Posts")/{{:Id}}">Смотреть</a>
+                        {{else}}
+                        <a class="ui blue compact button" href="@Url.Action("EditPost", "Posts")/{{:Id}}">Редактировать</a>
                         {{/if}}
                     </div>
                 </div>
                 <div class="ui {{if Cover != null}}inverted {{/if}} divider"></div>
             }
             {{if IsImage}}
-            <a href="@Url.Action("ShowPost", "Posts")/{{:Id}}">
-                <img src="{{:Content}}" class="ui image" />
-            </a>
+            <div class="img-content">
+                {{if IsPublished}}
+                <a href="@Url.Action("ShowPost", "Posts")/{{:Id}}">
+                    <img src="{{:Content}}" class="ui image" />
+                </a>
+                {{else}}
+                <a href="@Url.Action("EditPost", "Posts")/{{:Id}}">
+                    <img src="{{:Content}}" class="ui image" />
+                </a>
+                {{/if}}
+                {{if IsGif}}
+                <div class="active gif-wrapper">
+                    <button class="ui large primary circular icon button" onclick="loadFullGif('{{:FullPath}}', '{{:Id}}', $(this))"><i class="fire icon"></i></button>
+                    <span class="ui violet label">gif</span>
+                </div>
+                {{/if}}
+            </div>
             {{else}}
+            {{if IsPublished}}
             <a class="post-content content" href="@Url.Action("ShowPost", "Posts")/{{:Id}}">
                 {{:Content}}
             </a>
+            {{else}}
+            <a class="post-content content" href="@Url.Action("EditPost", "Posts")/{{:Id}}">
+                {{:Content}}
+            </a>
+            {{/if}}
             {{/if}}
             <div class="ui {{if Cover != null}}inverted{{/if}} divider"></div>
             <div class="extra content">
@@ -412,7 +365,7 @@ else
                     </span>
                 </a>
                 {{for Tags ~Cover=Cover}}
-                <a class="ui{{if ~Cover != null}} invert{{/if}} label" onclick="loadTag('#{{>#data}}')">{{>#data}}</a>
+                <a class="ui{{if ~Cover != null}} invert{{/if}} label" href="/posts/top?tags={{>#data}}">{{>#data}}</a>
                 {{/for}}
             </div>
             <div class="ui {{if Cover != null}}inverted{{/if}} divider"></div>
@@ -422,6 +375,7 @@ else
                 <div class="right floated" style="float: right">
                     <i class="yellow star icon"></i>{{:Rating}}
                     <i class="{{if Cover == null}}blue{{else}}black{{/if}} unhide icon"></i>{{:Views}}
+                    <i class="green comments outline icon"></i>{{:CommentsCount}}
                 </div>
                 {{/if}}
             </div>
@@ -579,6 +533,17 @@ else
         delPostId = postId;
         $('#confirmPostDelete').modal('show');
     }
+    function loadFullGif(newPath, postId, $button) {
+        $button.addClass('loading');
+
+        var postSelector = '#post' + postId;
+        var $img = $(postSelector + ' .img-content .image');
+        $img.attr('src', newPath);
+        $img.on('load', function () {
+            $(postSelector + ' .gif-wrapper').removeClass('active');
+            $button.removeClass('loading');
+        });
+    }
     $(function () {
         $('#donateForm').form({
             on: 'submit',
@@ -720,14 +685,14 @@ else
             elem: $('#sortDropDown'),
             getVal: function(){
                 return this.elem.dropdown('get value') == ''
-                    ? '@SortFilter.Popular' 
+                    ? '@((byte)SortFilter.New)' 
                     : this.elem.dropdown('get value');
             },
-            updateState: function(){
+            updateState: function(newVal){
                 this.elem.dropdown('set selected', newVal);
             }
         });
-        TabFilter.init('/user/profile/@Model.UserName', {
+        TabFilter.init('@Url.Action("Index", "UserProfile", new{ name = Model.UserName })', {
             beforeLoad: function(){
                 $('.dot-loader-wrapper').addClass('active');
             },
@@ -771,7 +736,11 @@ else
                         tab.content.html(html);
                     }
                 }
-                $('.post-item[data-show-adult-content="false"]:not(.dimmed,.dimmable)').dimmer('show');
+                var $dimm = $('.post-item.hide-adult-content:not(.dimmed,.dimmable)');
+                $dimm.dimmer({
+                    closable: false
+                });
+                $dimm.dimmer('show');
                 for(var i = 0; i < grids.length; i++){
                     if(tab.name == grids[i].tabName){
                         grids[i].elem.masonry('reloadItems');

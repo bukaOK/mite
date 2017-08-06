@@ -75,13 +75,13 @@
     </div>
     <div class="thirteen wide computer twelve wide tablet column">
         <div class="ui posts stackable three column computer mobile only basic segment grid"></div>
-        <div class="ui posts stackable two column tablet mobile only basic segment grid"></div>
+        <div class="ui posts stackable two column tablet only basic segment grid"></div>
     </div>
 </div>
 
 <script id="topPostTmpl" type="text/x-jsrender">
     <div class="column">
-        <div class="ui segment {{if Cover != null}}invert{{/if}}{{if !ShowAdultContent}} hide-adult-content{{/if}} post-item"
+        <div class="ui segment {{if Cover != null}}invert{{/if}}{{if !ShowAdultContent}} hide-adult-content{{/if}} post-item" id="post{{:Id}}"
              {{if Cover != null}} style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})" {{/if}}>
             <div class="extra content">
                 <a href="/user/profile/{{:User.UserName}}" class="username" data-username="{{:User.UserName}}">
@@ -107,9 +107,17 @@
             </div>
             <div class="ui {{if Cover != null}}inverted {{/if}}divider"></div>
             {{if IsImage}}
-            <a href="/posts/showpost/{{:Id}}">
-                <img src="{{:Content}}" class="ui image" />
-            </a>
+            <div class="img-content">
+                <a href="/posts/showpost/{{:Id}}">
+                    <img src="{{:Content}}" class="ui image" />
+                </a>
+                {{if IsGif}}
+                <div class="active gif-wrapper">
+                    <button class="ui large circular icon primary button" onclick="loadFullGif('{{:FullPath}}', '{{:Id}}', $(this))"><i class="fire icon"></i></button>
+                    <span class="ui violet label">gif</span>
+                </div>
+                {{/if}}
+            </div>
             {{else}}
             <a class="content" href="/posts/showpost/{{:Id}}">
                 {{:Content}}
@@ -230,6 +238,17 @@
             }
         });
     }
+    function loadFullGif(newPath, postId, $button) {
+        $button.addClass('loading');
+
+        var postSelector = '#post' + postId;
+        var $img = $(postSelector + ' .img-content .image');
+        $img.attr('src', newPath);
+        $img.on('load', function () {
+            $(postSelector + ' .gif-wrapper').removeClass('active');
+            $button.removeClass('loading');
+        });
+    }
     $(function () {
         initTags();
         var grid = $('.posts.grid:visible').masonry({
@@ -279,7 +298,11 @@
                 else if (SearchFilters._page <= 1) {
                     grid.html($('#emptyResultTmpl').html());
                 }
-                $('.post-item.hide-adult-content:not(.dimmed,.dimmable)').dimmer('show');
+                var $dimm = $('.post-item.hide-adult-content:not(.dimmed,.dimmable)');
+                $dimm.dimmer({
+                    closable: false
+                });
+                $dimm.dimmer('show');
                 grid.masonry('reloadItems')
                 grid.imagesLoaded(function () {
                     $('.loader-wrapper').removeClass('active');

@@ -11,14 +11,12 @@ namespace Mite
                 "~/Scripts/jquery-3.1.1.js",
                 "~/Scripts/semantic.js"
             ));
-            bundles.Add(new ScriptBundle("~/bundles/site").Include(
-                "~/Scripts/jquery.address.js",
+            bundles.Add(new ScriptBundle("~/bundles/site")
+                .Include("~/Scripts/jquery.address.js",
                 "~/bower_components/perfect-scrollbar/js/perfect-scrollbar.jquery.js",
-                "~/Scripts/ViewHelpers.js",
-                "~/Scripts/jquery.signalR-2.2.2.min.js",
-                "~/Scripts/MiteUtilities.js",
-                "~/Scripts/password-strength.js",
-                "~/Scripts/MiteTab.js"));
+                "~/Scripts/jquery.signalR-2.2.2.min.js")
+                .IncludeDirectory("~/Scripts/Custom/", "*.js"));
+
             bundles.Add(new ScriptBundle("~/bundles/croppie").Include("~/node_modules/croppie/croppie.js"));
             bundles.Add(new ScriptBundle("~/bundles/editor").Include(
                 "~/Scripts/content-tools.js", "~/bower_components/pep/src/jquery.pep.js"));

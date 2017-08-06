@@ -1,20 +1,11 @@
-﻿@model Mite.Models.SocialLinksModel
+﻿@using Mite.Helpers
+@model Mite.Models.SocialLinksModel
 
 <div class="ui grid">
     <div class="centered sixteen wide mobile ten wide tablet ten wide computer column" >
         @using (Html.BeginForm("", "", FormMethod.Post, new { @class = "ui form", id = "socialServicesForm" }))
         {
-            <div class="two fields">
-                @Html.EditorFor(x => x.Vk, new { label = "https://vk.com/"})
-                @Html.EditorFor(x => x.Facebook, new { label = "https://facebook.com/"})
-            </div>
-            <div class="two fields">
-                @Html.EditorFor(x => x.Twitter, new { label = "https://twitter.com/"})
-                @Html.EditorFor(x => x.Dribbble, new { label = "https://dribbble.com/"})
-            </div>
-            <div class="field">
-                @Html.EditorFor(x => x.ArtStation, new { label = "https://www.artstation.com/artist/" })
-            </div>
+            @SocialServicesHelper.RenderSocialServiceInputs(Html, Model)
             <button type="button" class="ui primary button" onclick="updateSocialLinks()">Обновить</button>
             <div class="ui message" id="socialServicesMsg" hidden></div>
         }

@@ -108,7 +108,7 @@ namespace Mite.Controllers
                 return Forbidden();
             if (type == null)
                 type = PostTypes.Published;
-            posts = await _postsService.GetByUserAsync(name, sort, (PostTypes)type, page);
+            posts = await _postsService.GetByUserAsync(name, User.Identity.GetUserId(), sort, (PostTypes)type, page);
             return Json(JsonStatuses.Success, posts);
         }
         public Task<ActionResult> Followings(string name)

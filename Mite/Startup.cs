@@ -12,6 +12,7 @@ using Mite.BLL.IdentityManagers;
 using Mite.Constants;
 using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
+using Mite.Migrations;
 using Owin;
 using System;
 using System.Data.Entity;
@@ -26,7 +27,8 @@ namespace Mite
     {
         public void Configuration(IAppBuilder app)
         {
-            Database.SetInitializer(new DbInitializer(app.GetDataProtectionProvider()));
+            //Database.SetInitializer(new DbInitializer(app.GetDataProtectionProvider()));
+            Database.SetInitializer(new MigrateDatabaseToLatestVersion<AppDbContext, Configuration>());
             var dbContext = new AppDbContext();
             dbContext.Database.Initialize(false);
             var apiConfig = ConfigureWebApi();
