@@ -47,13 +47,13 @@
         <td>
             <div class="ui buttons">
                 {{if !IsConfirmed}}
-                <button class="ui tag-confirm primary button" onclick="confirmTag(this)">Подтвердить</button>
-                <button class="ui blue button" onclick="showTagBindModal('{{:Id}}')">Привязать к другому</button>
+                <button class="ui margined compact tag-confirm primary button" onclick="confirmTag(this)">Подтвердить</button>
+                <button class="ui margined compact blue button" onclick="showTagBindModal('{{:Id}}')">Привязать к другому</button>
                 {{/if}}
-                <button class="ui tag-change button" onclick="showTagChangeModal(this)">Изменить</button>
-                <button class="ui tag-del red button" onclick="delTag(this)">Удалить</button>
+                <button class="ui margined compact tag-change button" onclick="showTagChangeModal(this)">Изменить</button>
+                <button class="ui margined compact tag-del red button" onclick="delTag(this)">Удалить</button>
                 {{if !Checked}}
-                <button class="ui teal button" onclick="checkTag(this)">Проверить</button>
+                <button class="ui margined compact teal button" onclick="checkTag(this)">Проверить</button>
                 {{/if}}
             </div>
             

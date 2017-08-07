@@ -475,15 +475,20 @@ else
             }
         });
     }
-    function sendNotification(){
+    function sendNotification(notificType, targetUserId){
         $.ajax({
             url: '/api/notification',
             type: 'post',
             data: {
-                NotificationType: @((byte)NotificationTypes.Follower),
+                NotificationType: notificType,
                 User: {
-                    Id: '@Model.UserId'
+                    Id: targetUserId
                 }
+            },
+            success: function(){
+                window.hubReady.done(function(){
+                    $.connection.notifyHub.server.newNotification(targetUserId, notificType, null);
+                });
             }
         });
     }
@@ -498,7 +503,7 @@ else
             success: function (resp) {
                 $btn.hide();
                 $btn.siblings().show();
-                sendNotification();
+                sendNotification('@NotificationTypes.Follower', '@Model.UserId');
             },
             error: function (jqXhr) {
                 alert('Ошибка сервера');

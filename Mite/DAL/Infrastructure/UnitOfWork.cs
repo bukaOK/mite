@@ -16,15 +16,15 @@ namespace Mite.DAL.Infrastructure
         {
             this.dbContext = dbContext;
         }
-        public TRepo GetRepo<TRepo, TEntity>() where TRepo : Repository<TEntity>
+        public TRepo GetRepo<TRepo, TEntity>() where TRepo : IRepository<TEntity>
             where TEntity: class, new()
         {
-            return Activator.CreateInstance(typeof(TRepo), dbContext) as TRepo;
+            return (TRepo)Activator.CreateInstance(typeof(TRepo), dbContext);
         }
-        public TRepo GetRepo<TRepo, TEntity>(params object[] additionalParams) where TRepo : Repository<TEntity>
+        public TRepo GetRepo<TRepo, TEntity>(params object[] additionalParams) where TRepo : IRepository<TEntity>
             where TEntity : class, new()
         {
-            return Activator.CreateInstance(typeof(TRepo), dbContext, additionalParams) as TRepo;
+            return (TRepo)Activator.CreateInstance(typeof(TRepo), dbContext, additionalParams);
         }
     }
 }
