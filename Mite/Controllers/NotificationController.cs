@@ -3,6 +3,8 @@ using Mite.BLL.IdentityManagers;
 using Mite.BLL.Services;
 using Mite.Core;
 using Mite.Models;
+using NLog;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,18 +15,18 @@ namespace Mite.Controllers
     [Authorize]
     public class NotificationController : ApiController
     {
-        private readonly INotificationService _notificationService;
-        private readonly AppUserManager _userManager;
+        private readonly INotificationService notificationService;
+        private readonly ILogger logger;
 
-        public NotificationController(INotificationService notificationService, AppUserManager userManager)
+        public NotificationController(INotificationService notificationService, ILogger logger)
         {
-            _notificationService = notificationService;
-            _userManager = userManager;
+            this.notificationService = notificationService;
+            this.logger = logger;
         }
         [HttpGet]
         public async Task<List<NotificationModel>> GetByUser(bool onlyNew, CancellationToken cancellationToken)
         {
-            var result = await _notificationService.GetByUserAsync(User.Identity.GetUserId(), onlyNew);
+            var result = await notificationService.GetByUserAsync(User.Identity.GetUserId(), onlyNew);
             if (cancellationToken.IsCancellationRequested)
             {
                 return null;
@@ -42,19 +44,27 @@ namespace Mite.Controllers
             {
                 Id = User.Identity.GetUserId()
             };
-            await _notificationService.AddAsync(model);
+            await notificationService.AddAsync(model);
             return Ok();
         }
         [HttpPut]
         public Task Read()
         {
-            return _notificationService.ReadAsync(User.Identity.GetUserId());
+            return notificationService.ReadAsync(User.Identity.GetUserId());
         }
         [HttpDelete]
         public async Task<IHttpActionResult> Clean()
         {
-            await _notificationService.Clean(User.Identity.GetUserId());
-            return Ok();
+            try
+            {
+                await notificationService.Clean(User.Identity.GetUserId());
+                return Ok();
+            }
+            catch(Exception e)
+            {
+                logger.Error($"Ошибка при очистке уведомлений: {e.Message}");
+                return InternalServerError();
+            }
         }
     }
 }

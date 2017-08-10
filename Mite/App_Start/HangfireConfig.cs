@@ -2,6 +2,7 @@
 using Hangfire;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
+using Hangfire.PostgreSql;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Owin;
@@ -28,7 +29,7 @@ namespace Mite
         {
             container = diContainer;
             owinApp = app;
-            GlobalConfiguration.Configuration.UseSqlServerStorage("DefaultConnection");
+            GlobalConfiguration.Configuration.UsePostgreSqlStorage("DefaultConnection");
             app.UseHangfireDashboard("/hangfire", new DashboardOptions
             {
                 Authorization = new [] { new HangfireAuthFilter() }

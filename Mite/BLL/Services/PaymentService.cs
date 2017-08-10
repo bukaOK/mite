@@ -10,7 +10,7 @@ using Mite.DAL.Repositories;
 
 namespace Mite.BLL.Services
 {
-    public interface IPaymentService
+    public interface IPaymentService : IDataService
     {
         Task<DataServiceResult> AddAsync(double sum, string operationId, string userId, PaymentType paymentType);
         /// <summary>

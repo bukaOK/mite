@@ -18,7 +18,7 @@ using Yandex.Money.Api.Sdk.Utils;
 
 namespace Mite.ExternalServices.YandexMoney
 {
-    public interface IYandexService
+    public interface IYandexService : IDataService
     {
         Task AuthorizeAsync(string userId, string code);
         Task<string> GetTokenAsync(string userId);

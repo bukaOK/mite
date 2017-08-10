@@ -3,7 +3,6 @@ using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.DataProtection;
 using Mite.BLL.IdentityManagers;
-using Mite.BLL.Services;
 using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
 using Owin;
@@ -18,7 +17,8 @@ using System.Net.Http;
 using Mite.ExternalServices.YandexMoney;
 using Yandex.Money.Api.Sdk.Interfaces;
 using NLog;
-using Mite.ExternalServices.Google;
+using Mite.BLL.Core;
+using Mite.BLL.Infrastructure;
 
 namespace Mite
 {
@@ -55,19 +55,10 @@ namespace Mite
             builder.RegisterType<AppSignInManager>();
             builder.RegisterType<AppRoleManager>();
 
-            builder.RegisterType<UserService>().As<IUserService>();
-            builder.RegisterType<PostsService>().As<IPostsService>();
-            builder.RegisterType<TagsService>().As<ITagsService>();
-            builder.RegisterType<CommentsService>().As<ICommentsService>();
-            builder.RegisterType<RatingService>().As<IRatingService>();
-            builder.RegisterType<FollowersService>().As<IFollowersService>();
-            builder.RegisterType<NotificationService>().As<INotificationService>();
-            builder.RegisterType<HelpersService>().As<IHelpersService>();
-            builder.RegisterType<CashService>().As<ICashService>();
-            builder.RegisterType<YandexService>().As<IYandexService>();
-            builder.RegisterType<PaymentService>().As<IPaymentService>();
-            builder.RegisterType<BLL.Services.ExternalServices>().As<IExternalServices>();
-            builder.RegisterType<GoogleService>().As<IGoogleService>();
+            builder.RegisterType<ServiceBuilder>().As<IServiceBuilder>();
+            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+                .AssignableTo<IDataService>()
+                .AsImplementedInterfaces();
 
             builder.RegisterType<HttpClient>().SingleInstance();
             builder.RegisterType<YaHttpClient>().As<IHttpClient>();

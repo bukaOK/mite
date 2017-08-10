@@ -2,14 +2,12 @@
 using System.Web.Mvc;
 using Mite.BLL.Services;
 using Mite.Core;
-using System.Net;
 using Microsoft.AspNet.Identity;
 using Mite.Enums;
 using System.Linq;
 using System;
 using System.Collections.Generic;
 using Mite.Models;
-using Mite.Attributes.Filters;
 
 namespace Mite.Controllers
 {

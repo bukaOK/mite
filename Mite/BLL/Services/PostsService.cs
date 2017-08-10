@@ -12,13 +12,12 @@ using Mite.Enums;
 using System.Collections.Generic;
 using Microsoft.AspNet.Identity;
 using System.Web.Hosting;
-using Mite.BLL.DTO;
 using NLog;
 using Mite.DAL.Repositories;
 
 namespace Mite.BLL.Services
 {
-    public interface IPostsService
+    public interface IPostsService : IDataService
     {
         Task<PostModel> GetPostAsync(Guid postId);
         Task<IdentityResult> AddPostAsync(PostModel postModel, string userId);
@@ -277,7 +276,7 @@ namespace Mite.BLL.Services
             }
             var postModels = Mapper.Map<IEnumerable<ProfilePostModel>>(posts);
             var postsWithCommentsCount = await commentsRepo.GetPostsCommentsCountAsync(postModels.Select(x => x.Id));
-            var postTags = await tagsRepo.GetByPostsAsync(posts.Select(x => x.Id));
+            var postTags = await tagsRepo.GetByPostsAsync(posts.Select(x => x.Id).ToList());
 
             const int minChars = 400;
             int commentsCount;
@@ -385,7 +384,7 @@ namespace Mite.BLL.Services
             }
 
             var postModels = Mapper.Map<IEnumerable<TopPostModel>>(posts);
-            var postTags = await tagsRepo.GetByPostsAsync(posts.Select(x => x.Id));
+            var postTags = await tagsRepo.GetByPostsAsync(posts.Select(x => x.Id).ToList());
             var postsWithCommentsCount = await commentsRepo.GetPostsCommentsCountAsync(postModels.Select(x => x.Id));
             var currentUser = string.IsNullOrEmpty(currentUserId) ? null : await _userManager.FindByIdAsync(currentUserId);
 

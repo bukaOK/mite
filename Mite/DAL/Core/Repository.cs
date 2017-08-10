@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Dapper;
 using Mite.DAL.Infrastructure;
 using System.Data.Entity;
+using System.Linq;
 
 namespace Mite.DAL.Core
 {
@@ -18,22 +19,24 @@ namespace Mite.DAL.Core
 
         protected Repository(AppDbContext dbContext)
         {
+            dbContext.Configuration.LazyLoadingEnabled = false;
+
             Db = dbContext.Database.Connection;
             DbContext = dbContext;
             Table = dbContext.Set<TEntity>();
+
             if(TableName == null)
                 TableName = typeof(TEntity).Name + "s";
         }
         
         public virtual Task<IEnumerable<TEntity>> GetAllAsync()
         {
-            return Db.QueryAsync<TEntity>($"select * from dbo.{TableName}");
+            return Db.QueryAsync<TEntity>($"select * from dbo.\"{TableName}\";");
         }
 
         public virtual Task RemoveAsync(Guid id)
         {
-            
-            var query = $"delete from dbo.{TableName} where Id=@Id";
+            var query = $"delete from dbo.\"{TableName}\" where \"Id\"=@Id;";
             return Db.ExecuteAsync(query, new { Id = id });
         }
         public virtual Task AddAsync(TEntity entity)
@@ -50,7 +53,7 @@ namespace Mite.DAL.Core
 
         public IEnumerable<TEntity> GetAll()
         {
-            return Db.Query<TEntity>($"select * from dbo.{TableName}");
+            return Db.Query<TEntity>($"select * from dbo.\"{TableName}\";");
         }
 
         public void Add(TEntity entity)
@@ -61,25 +64,23 @@ namespace Mite.DAL.Core
 
         public TEntity Get(Guid id)
         {
-            return Db.QueryFirst<TEntity>($"select top 1 * from dbo.{TableName} where Id=@Id", new { Id = id });
+            return Table.Find(id);
         }
 
         public void Remove(Guid id)
         {
-            var query = $"delete from dbo.{TableName} where Id=@Id";
-            Db.Execute(query, new { Id = id });
+            var entity = Table.Find(id);
+            Table.Remove(entity);
         }
 
         public int GetCount()
         {
-            var query = $"select COUNT(*) from dbo.{TableName}";
-            return Db.QueryFirst<int>(query);
+            return Table.Count();
         }
 
         public Task<int> GetCountAsync()
         {
-            var query = $"select COUNT(*) from dbo.{TableName}";
-            return Db.QueryFirstAsync<int>(query);
+            return Table.CountAsync();
         }
         protected Task SaveAsync()
         {
@@ -92,7 +93,7 @@ namespace Mite.DAL.Core
 
         public Task<TEntity> GetAsync(Guid id)
         {
-            return Db.QueryFirstAsync<TEntity>($"select * from dbo.{TableName} where Id=@id", new { id });
+            return Db.QueryFirstAsync<TEntity>($"select * from dbo.\"{TableName}\" where \"Id\"=@id;", new { id });
         }
 
         public TEntity Get(params object[] keyValues)

@@ -1,6 +1,5 @@
 ﻿@using Mite.Enums
 @using Mite.Helpers
-@using Mite.Core
 @model Mite.Models.ProfileModel
 
 @{
@@ -21,7 +20,16 @@
             }
         </div>
         <div class="column">
-            <img class="ui centered circular image" src="@Model.AvatarSrc" width="150" />
+            <div class="ui centered circular image" id="avatar-img">
+                <div class="ui dimmer">
+                    <div class="content">
+                        <div class="center">
+                            <a class="ui huge black circular avatar icon button" href="@Url.Action("ChangeAvatar", "UserSettings")"><i class="photo icon"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <img src="@Model.AvatarSrc" width="150" />
+            </div>
             <h2 class="ui header">
                 @Model.UserName
                 <span class="sub header">
@@ -570,6 +578,10 @@ else
                     ]
                 }
             }
+        });
+        $('#avatar-img').dimmer({
+            opacity: 0.3,
+            on: 'hover'
         });
         $('#userActionsDrop').dropdown({
             action: 'nothing',

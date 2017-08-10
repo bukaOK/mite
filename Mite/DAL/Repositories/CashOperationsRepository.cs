@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Mite.Enums;
 using Dapper;
 using Mite.DAL.Infrastructure;
+using System.Data.Entity;
 
 namespace Mite.DAL.Repositories
 {
@@ -24,53 +25,33 @@ namespace Mite.DAL.Repositories
         /// <param name="type"></param>
         /// <param name="withFromUser">Нужно ли присоединять таблицы пользователей-отправителей</param>
         /// <returns></returns>
-        public Task<IEnumerable<CashOperation>> GetByOperationTypeAsync(string userId, CashOperationTypes type, bool withFromUser = false)
+        public async Task<IEnumerable<CashOperation>> GetByOperationTypeAsync(string userId, CashOperationTypes type, bool withFromUser = false)
         {
-            var operationType = (byte)type;
-            var query = "select * from dbo.CashOperations ";
+            var operations = Table.Where(x => x.ToId == userId && x.OperationType == type);
             if (withFromUser)
             {
-                query += "inner join dbo.AspNetUsers on FromId=dbo.AspNetUsers.Id ";
+                operations = operations.Include(x => x.From);
             }
-            query += "where ToId=@userId and OperationType=@operationType";
-            if (withFromUser)
-            {
-                return Db.QueryAsync<CashOperation, User, CashOperation>(query, (cash, user) =>
-                {
-                    cash.From = user;
-                    return cash;
-                }, new { operationType, userId });
-            }
-            return Db.QueryAsync<CashOperation>(query, new { operationType, userId });
+            return await operations.ToListAsync();
         }
         public IEnumerable<CashOperation> GetByOperationType(string userId, CashOperationTypes type, bool withFromUser = false)
         {
-            var operationType = (byte)type;
-            var query = "select * from dbo.CashOperations ";
+            var operations = Table.Where(x => x.ToId == userId && x.OperationType == type);
             if (withFromUser)
             {
-                query += "inner join dbo.AspNetUsers on FromId=dbo.AspNetUsers.Id ";
+                operations = operations.Include(x => x.From);
             }
-            query += "where ToId=@userId and OperationType=@operationType";
-            if (withFromUser)
-            {
-                return Db.Query<CashOperation, User, CashOperation>(query, (cash, user) =>
-                {
-                    cash.From = user;
-                    return cash;
-                }, new { operationType, userId });
-            }
-            return Db.Query<CashOperation>(query, new { operationType, userId });
+            return operations.ToList();
         }
         /// <summary>
         /// Возвращает все денежные операции пользователя(не включая операции ввода-вывода)
         /// </summary>
         /// <param name="userId">Id пользователя</param>
         /// <returns></returns>
-        public Task<IEnumerable<CashOperation>> GetListAsync(string userId)
+        public async Task<IEnumerable<CashOperation>> GetListAsync(string userId)
         {
-            var query = "select * from dbo.CashOperations where FromId=@userId or ToId=@userId";
-            return Db.QueryAsync<CashOperation>(query, new { userId });
+            var operations = await Table.Where(x => x.FromId == userId || x.ToId == userId).ToListAsync();
+            return operations;
         }
     }
 }

@@ -163,10 +163,12 @@ article.ui.container{
     cursor: default;
 }
 /*Страница пользователя*/
-/*.post-item>.dimmer>.content>.center{
-    display: block;
-    margin-top: 25px;
-}*/
+.ui.avatar.button{
+    transition: all 0.1s ease-in-out;
+}
+.ui.avatar.button:hover{
+    transform: scale(1.1, 1.1);
+}
 .ui.tab.basic.segment{
     margin: -1rem !important;
 }
@@ -467,4 +469,14 @@ p.docs{
 }
 .user-card.popup .statistics.row{
     padding-top: 0;
+}
+
+/*Кнопка скроллинга*/
+.ui.button.scroll{
+    position: fixed;
+    display: none;
+    transition: display ease-in-out 0.1s;
+}
+.ui.button.scroll.active{
+    display: block;
 }

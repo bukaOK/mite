@@ -31,7 +31,9 @@ namespace Mite.DAL.Entities
         /// <summary>
         /// Местоположение(город)
         /// </summary>
-        public string Placement { get; set; }
+        public City City { get; set; }
+        [ForeignKey("City")]
+        public Guid? CityId { get; set; }
         /// <summary>
         /// Показывать ли рекламу(только для авторов)
         /// </summary>

@@ -33,8 +33,12 @@
 </div>
 <script>
     $(function () {
-            $('.user-settings.item').addClass('active');
-            var tabs = new MiteTab('.ui.tabs.menu .item', '/user/settings/');
-            ViewHelper.disableFormSubmitting('form');
+        $('.user-settings.item').addClass('active');
+        $('.ui.tabs.menu .item').tab({
+            history: true,
+            historyType: 'state',
+            path: '/user/settings'
         });
+        ViewHelper.disableFormSubmitting('form');
+    });
 </script>

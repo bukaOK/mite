@@ -24,7 +24,7 @@ namespace Mite.Migrations
             if (!context.Roles.Any(r => r.Name == "admin") || !context.Users.Any(u => u.UserName == "landenor"))
             {
                 var userManager = new UserManager<User>(new UserStore<User>(context));
-                var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>());
+                var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(context));
 
                 var adminRole = new IdentityRole { Name = "admin" };
                 var moderRole = new IdentityRole { Name = "moder" };

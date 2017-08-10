@@ -4,7 +4,9 @@ using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Entity;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Mite.DAL.Repositories
 {
@@ -16,40 +18,28 @@ namespace Mite.DAL.Repositories
 
         public async Task<IEnumerable<Follower>> GetFollowersByUserAsync(string userId)
         {
-            var query = "select * from dbo.Followers inner join dbo.AspNetUsers on"
-                + " dbo.AspNetUsers.Id=dbo.Followers.UserId where FollowingUserId=@UserId";
-            var followers = await Db.QueryAsync<Follower, User, Follower>(query, (follower, user) =>
-            {
-                follower.User = user;
-                return follower;
-            }, new { UserId = userId });
+            var followers = await Table.Where(x => x.FollowingUserId == userId).Include(x => x.User).ToListAsync();
             return followers;
         }
         public async Task<bool> IsFollower(string followerId, string followingId)
         {
-            var query = "select COUNT(*) from dbo.Followers where UserId=@Id and FollowingUserId=@FlId";
-            var count = await Db.QueryFirstAsync<int>(query, new { Id = followerId, FlId = followingId });
+            var count = await Table.CountAsync(x => x.UserId == followerId && x.FollowingUserId == followingId);
             return count > 0;
         }
-        public Task RemoveAsync(string followerId, string followingId)
+        public async Task RemoveAsync(string followerId, string followingId)
         {
-            var query = "delete from dbo.Followers where UserId=@Id and FollowingUserId=@FollowingUserId";
-            return Db.ExecuteAsync(query, new { Id = followerId, FollowingUserId = followingId });
+            var follower = await Table.FirstOrDefaultAsync(x => x.UserId == followerId && x.FollowingUserId == followingId);
+            Table.Remove(follower);
+            await SaveAsync();
         }
-        public Task<IEnumerable<Follower>> GetFollowingsByUserAsync(string userId)
+        public async Task<IEnumerable<Follower>> GetFollowingsByUserAsync(string userId)
         {
-            var query = "select * from dbo.Followers inner join dbo.AspNetUsers on " +
-                "dbo.AspNetUsers.Id = dbo.Followers.FollowingUserId where dbo.Followers.UserId=@userId";
-            return Db.QueryAsync<Follower, User, Follower>(query, (follower, user) =>
-            {
-                follower.FollowingUser = user;
-                return follower;
-            }, new { userId });
+            var followings = await Table.Where(x => x.UserId == userId).Include(x => x.FollowingUser).ToListAsync();
+            return followings;
         }
-        public Task<int> GetFollowersCount(string followingId)
+        public async Task<int> GetFollowersCount(string followingId)
         {
-            var query = "select COUNT(*) from dbo.Followers where FollowingUserId=@FollowingUserId";
-            return Db.QueryFirstAsync<int>(query, new { FollowingUserId = followingId });
+            return await Table.CountAsync(x => x.FollowingUserId == followingId);
         }
     }
 }

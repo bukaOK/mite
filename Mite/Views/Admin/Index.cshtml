@@ -15,7 +15,7 @@
     <a class="item" data-tab="statistic" role="tab">Статистика</a>
 </nav>
 <div class="ui active tab" data-tab="moderregister" role="tabpanel">
-    @{ Html.RenderAction("ModerRegister"); }
+    @{Html.RenderAction("ModerRegister");}
 </div>
 <div class="ui tab" data-tab="extapps" role="tabpanel">
     <form action="https://money.yandex.ru/oauth/authorize" method="post">
@@ -35,6 +35,11 @@
 <script>
     $(function () {
         $('.admin-panel.item').addClass('active');
+        $('.ui.tabs .item').tab({
+            history: true,
+            historyType: 'state',
+            path: '/user/settings'
+        });
         var tabs = new MiteTab('.ui.tabs .item', '/admin/');
     });
 </script>

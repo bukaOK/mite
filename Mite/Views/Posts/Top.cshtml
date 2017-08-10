@@ -1,4 +1,5 @@
 ﻿@using Mite.Enums
+@model Mite.Models.TopModel
 @{
     ViewBag.Title = "Публикации";
     ViewBag.MetaDescription = "Топ работ";
@@ -57,8 +58,9 @@
 </div>
 <div class="ui stackable grid">
     <div class="three wide computer four wide tablet column">
-        <div class="ui top-tags loading segment">
+        <div class="ui top-tags segment">
             <h3 class="ui dividing header">Теги</h3>
+            @foreach(var tag in Model.Tags) {<a class="ui label" onclick="loadTag('@tag.Name')">@tag.Name</a>}
         </div>
         <div id="vk_groups" style="width: 100%"></div>
         <div class="ui segment">
@@ -77,8 +79,8 @@
         <div class="ui posts stackable three column computer mobile only basic segment grid"></div>
         <div class="ui posts stackable two column tablet only basic segment grid"></div>
     </div>
+    <button class="ui scroll circular primary icon big button" onclick="Scrolling.scrollTo('#sortType', 1800, 'easeOutExpo', -10)"><i class="angle up icon"></i></button>
 </div>
-
 <script id="topPostTmpl" type="text/x-jsrender">
     <div class="column">
         <div class="ui segment {{if Cover != null}}invert{{/if}}{{if !ShowAdultContent}} hide-adult-content{{/if}} post-item" id="post{{:Id}}"
@@ -198,13 +200,6 @@
         </div>
     </div>
 </script>
-<template id="topTagsTmpl">
-    <div class="ui column">
-        <div class="ui top-tags loading segment">
-            <h3 class="ui dividing header">Теги</h3>
-        </div>
-    </div>
-</template>
 <template id="emptyResultTmpl">
     <div class="column"></div>
     <div class="column">
@@ -216,7 +211,7 @@
         </h2>
     </div>
 </template>
-@Scripts.Render("~/bundles/grid")
+@Scripts.Render("~/bundles/grid", "~/bundles/scroll")
 <script>
     var tagsInitialized = false;
     var userCardTmpl = $.templates('#miniUserCardTmpl');
@@ -250,7 +245,7 @@
         });
     }
     $(function () {
-        initTags();
+        //initTags();
         var grid = $('.posts.grid:visible').masonry({
             itemSelector: '.column'
         });

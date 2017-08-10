@@ -23,11 +23,11 @@ namespace Mite.DAL.Repositories
         /// <returns></returns>
         public IEnumerable<UserAdDTO> GetAdUsers()
         {
-            var query = "select [Id], [Rating], RatingsActivity.RatingActivity, CommentsActivity.CommentActivity from " +
-                "dbo.AspNetUsers left outer join (select [UserId], COUNT(UserId) as RatingActivity from dbo.Ratings group by UserId) as " +
-                "RatingsActivity on dbo.AspNetUsers.Id=RatingsActivity.UserId left outer join " +
-                "(select UserId as [CommentUserId], COUNT(UserId) as CommentActivity from dbo.Comments group by UserId) as CommentsActivity " +
-                "on dbo.AspNetUsers.Id=CommentsActivity.CommentUserId where not (RatingActivity is null and CommentActivity is null) and ShowAd=1";
+            var query = "select \"Id\", \"Rating\", \"RatingsActivity\".\"RatingActivity\", \"CommentsActivity\".\"CommentActivity\" from " +
+                "dbo.\"Users\" left outer join (select \"UserId\", COUNT(\"UserId\") as \"RatingActivity\" from dbo.\"Ratings\" group by \"UserId\") as " +
+                "\"RatingsActivity\" on dbo.\"Users\".\"Id\"=\"RatingsActivity\".\"UserId\" left outer join " +
+                "(select \"UserId\" as \"CommentUserId\", COUNT(\"UserId\") as \"CommentActivity\" from dbo.\"Comments\" group by \"UserId\") as \"CommentsActivity\" " +
+                "on dbo.\"Users\".\"Id\"=\"CommentsActivity\".\"CommentUserId\" where not (\"RatingActivity\" is null and \"CommentActivity\" is null) and \"ShowAd\"=true;";
             return Db.Query<UserAdDTO>(query);
         }
     }

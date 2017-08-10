@@ -5,7 +5,8 @@ using System.Linq;
 
 namespace Mite.BLL.Core
 {
-    public abstract class DataService
+    public interface IDataService { }
+    public abstract class DataService : IDataService
     {
         protected readonly IUnitOfWork Database;
 

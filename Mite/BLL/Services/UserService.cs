@@ -9,18 +9,15 @@ using Mite.DAL.Infrastructure;
 using Mite.Helpers;
 using Mite.Models;
 using Microsoft.AspNet.Identity;
-using Mite.BLL.DTO;
 using System.Collections.Generic;
 using NLog;
-using System.Linq;
-using System.Data.Entity;
 using System.Text.RegularExpressions;
 using Mite.DAL.Repositories;
 using System.Web.Hosting;
 
 namespace Mite.BLL.Services
 {
-    public interface IUserService
+    public interface IUserService : IDataService
     {
         Task<IdentityResult> RegisterAsync(RegisterModel registerModel, ExternalLoginInfo loginInfo = null);
 

@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Duke.Owin.VkontakteMiddleware;
 using Duke.Owin.VkontakteMiddleware.Provider;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
@@ -37,6 +38,8 @@ namespace Mite
             app.UseWebApi(apiConfig);
             app.MapSignalR();
 
+            CitiesInitializer.Initialize();
+            TelemetryConfiguration.Active.DisableTelemetry = true;
             HangfireConfig.Initialize(app, container);
         }
         private void ConfigureAuth(IAppBuilder app, IContainer diContainer)
@@ -122,6 +125,7 @@ namespace Mite
             var config = new HttpConfiguration();
             config.MapHttpAttributeRoutes();
 
+            config.Routes.MapHttpRoute("DefaultNameApi", "api/{controller}/{name}", new { name = RouteParameter.Optional });
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
                 routeTemplate: "api/{controller}/{id}",

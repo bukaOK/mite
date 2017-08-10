@@ -13,7 +13,7 @@ using Mite.DAL.Repositories;
 
 namespace Mite.BLL.Services
 {
-    public interface INotificationService
+    public interface INotificationService : IDataService
     {
         Task AddAsync(NotificationModel notifyModel);
         /// <summary>

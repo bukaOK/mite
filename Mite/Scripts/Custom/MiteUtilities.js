@@ -336,6 +336,22 @@ var Scrolling = {
             lastX = e.touches[0].clientX;
         })
         
+    },
+    scrollTo: function scrollTo(settings) {
+        $(window).scrollTo(settings.selector, settings.time, {
+            easing: settings.easing,
+            offset: settings.offset
+        });
+        var btnScrollSettings = settings.btnScroll;
+        if (btnScrollSettings != undefined && btnScrollSettings != null) {
+            var btnSelector = btnScrollSettings.btnSelector;
+            window.addEventListener('scroll', function () {
+                if (document.body.scrollTop > btnScrollSettings.btnShowScroll
+                    || document.documentElement.scrollTop > btnScrollSettings.btnShowScroll) {
+                    $(btnSelec)
+                }
+            })
+        }
     }
 }
 var PostGallery = {

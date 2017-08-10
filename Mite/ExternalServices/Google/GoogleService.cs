@@ -15,7 +15,7 @@ using Mite.DAL.Entities;
 
 namespace Mite.ExternalServices.Google
 {
-    public interface IGoogleService
+    public interface IGoogleService : IDataService
     {
         Task<bool> RecaptchaValidateAsync(string captchaResponse);
         /// <summary>

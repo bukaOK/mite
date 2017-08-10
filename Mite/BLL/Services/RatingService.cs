@@ -9,7 +9,7 @@ using Mite.DAL.Repositories;
 
 namespace Mite.BLL.Services
 {
-    public interface IRatingService
+    public interface IRatingService : IDataService
     {
         /// <summary>
         /// Возвращает оценку пользователя к посту
@@ -48,7 +48,7 @@ namespace Mite.BLL.Services
         public async Task<PostRatingModel> GetByPostAndUserAsync(Guid postId, string userId)
         {
             var repo = Database.GetRepo<RatingRepository, Rating>();
-            var rating = await repo.GetByUserAndPostAsync(postId.ToString(), userId);
+            var rating = await repo.GetByUserAndPostAsync(postId, userId);
             if (rating == default(Rating))
                 return null;
 
@@ -101,7 +101,7 @@ namespace Mite.BLL.Services
             else
             {
                 var existingRating =
-                    await repo.GetByUserAndPostAsync(rating.PostId.ToString(), rating.UserId);
+                    await repo.GetByUserAndPostAsync((Guid)rating.PostId, rating.UserId);
 
                 //Если существует, обновляем рейтинг, иначе добавляем новый
                 if (existingRating != default(Rating))

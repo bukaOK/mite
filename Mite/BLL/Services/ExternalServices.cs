@@ -1,17 +1,13 @@
 ﻿using Mite.BLL.Core;
 using Mite.DAL.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using Mite.DAL.Infrastructure;
 using NLog;
 using Mite.DAL.Repositories;
 
 namespace Mite.BLL.Services
 {
-    public interface IExternalServices
+    public interface IExternalServices : IDataService
     {
         /// <summary>
         /// Добавляет внешний сервис пользователя

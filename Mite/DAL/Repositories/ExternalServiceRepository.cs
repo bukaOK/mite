@@ -19,7 +19,7 @@ namespace Mite.DAL.Repositories
         }
         public async Task<ExternalService> GetByProviderAsync(string providerKey, string serviceName)
         {
-            var query = "select * from dbo.AspNetUserLogins where LoginProvider=@serviceName and ProviderKey=@providerKey";
+            var query = "select * from dbo.\"UserLogins\" where \"LoginProvider\"=@serviceName and \"ProviderKey\"=@providerKey;";
             var login = await Db.QueryFirstOrDefaultAsync<dynamic>(query, new { serviceName, providerKey });
             var userId = login.UserId;
 

@@ -15,7 +15,7 @@ using Mite.DAL.Entities;
 
 namespace Mite.BLL.Services
 {
-    public interface IFollowersService
+    public interface IFollowersService : IDataService
     {
         /// <summary>
         /// Получить подписчиков пользователя

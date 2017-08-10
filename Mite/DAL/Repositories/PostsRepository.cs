@@ -21,17 +21,18 @@ namespace Mite.DAL.Repositories
         }
         public async override Task RemoveAsync(Guid id)
         {
-            var query = "select top 1 UserId from dbo.Posts where Id=@id";
+            var query = "select \"UserId\" from dbo.\"Posts\" where \"Id\"=@id;";
             var currentUserId = await Db.QueryFirstAsync<string>(query, new { id });
             var queryParams = new { Id = id, userId = currentUserId };
             //Удаляем пост
             //Удаляем с комментариев ссылку на пост, чтобы комменты не потеряли рейтинг(несправедливо жи)
-            query = "update dbo.Comments set PostId=NULL where PostId=@id; delete from dbo.Ratings where PostId=@id; delete from dbo.Posts where Id=@id;";
+            query = "update dbo.\"Comments\" set \"PostId\"=NULL where \"PostId\"=@id; delete from dbo.\"Ratings\" " + 
+                "where \"PostId\"=@id; delete from dbo.\"Posts\" where \"Id\"=@id;";
             await Db.ExecuteAsync(query, queryParams);
             //Получаем новый рейтинг(нельзя все пихать в один запрос, т.к. новый рейтинг может быть null и выкинет исключение)
-            query = "select SUM(Value) from dbo.Ratings where OwnerId=@userId";
+            query = "select SUM(\"Value\") from dbo.\"Ratings\" where \"OwnerId\"=@userId;";
             var newRating = (await Db.QueryFirstAsync<int?>(query, queryParams)) ?? 0;
-            query = "update dbo.AspNetUsers set Rating=@newRating where Id=@userId";
+            query = "update dbo.\"Users\" set \"Rating\"=@newRating where \"Id\"=@userId;";
             await Db.ExecuteAsync(query, new { Id = id, userId = currentUserId, newRating = newRating });
         }
         /// <summary>
@@ -43,55 +44,36 @@ namespace Mite.DAL.Repositories
         /// <param name="offset">Сколько строк пропустить</param>
         /// <param name="range">Сколько достать</param>
         /// <returns></returns>
-        public Task<IEnumerable<Post>> GetByUserAsync(string userId, bool isPublished, bool blocked, int offset, int range, SortFilter sort)
+        public async Task<IEnumerable<Post>> GetByUserAsync(string userId, bool isPublished, bool blocked, int offset, int range, SortFilter sort)
         {
-            var query = "select * from dbo.Posts where dbo.Posts.UserId=@UserId and PublishDate is ";
-            var publishedQuery = isPublished ? "not null" : "null";
-            query += publishedQuery;
-            if (blocked)
-                query += " and Blocked=1";
-            else
-                query += " and Blocked=0";
+            var posts = Table.Where(x => x.UserId == userId && isPublished ? x.PublishDate != null : x.PublishDate == null
+                && x.Blocked == blocked);
 
             switch (sort)
             {
                 case SortFilter.Popular:
-                    query += " order by dbo.Posts.Rating desc";
+                    posts.OrderByDescending(x => x.Rating);
                     break;
                 case SortFilter.New:
-                    query += " order by dbo.Posts.PublishDate desc";
+                    posts.OrderByDescending(x => x.PublishDate);
                     break;
                 case SortFilter.Old:
-                    query += " order by dbo.Posts.PublishDate asc";
+                    posts.OrderBy(x => x.PublishDate);
                     break;
                 default:
                     throw new ArgumentException("Неизвестный тип сортировки");
             }
-            query += $" offset {offset} rows fetch next {range} rows only";
-            return Db.QueryAsync<Post>(query, new { UserId = userId });
+            posts.Skip(offset).Take(range);
+            return await posts.ToListAsync();
         }
         /// <summary>
         /// Возвращает пост с тегами
         /// </summary>
         /// <param name="id">Id поста</param>
         /// <returns></returns>
-        public async Task<Post> GetWithTagsAsync(Guid id)
+        public Task<Post> GetWithTagsAsync(Guid id)
         {
-            var query = "select * from dbo.Posts left outer join dbo.TagPosts on dbo.Posts.Id=dbo.TagPosts.Post_Id "
-                + $"left outer join dbo.Tags on dbo.TagPosts.Tag_Id=dbo.Tags.Id where dbo.Posts.Id='{id}'";
-
-            //Каждый возвращаемый объект представляет собой строку
-            //поэтому используется такой костыль
-            var tags = new List<Tag>();
-            var post = (await Db.QueryAsync<Post, Tag, Post>(query, (postRow, tag) =>
-            {
-                if (tag != null)
-                    tags.Add(tag);
-                return postRow;
-            })).FirstOrDefault();
-
-            post.Tags = tags;
-            return post;
+            return DbContext.Posts.Include(x => x.Tags).FirstOrDefaultAsync(x => x.Id == id);
         }
         /// <summary>
         /// Возвращает пост с тегами и комментариями
@@ -100,9 +82,9 @@ namespace Mite.DAL.Repositories
         /// <returns></returns>
         public async Task<Post> GetWithTagsCommentsAsync(Guid id)
         {
-            var query = "select * from dbo.Posts left outer join dbo.TagPosts on dbo.TagPosts.Post_Id=dbo.Posts.Id"
-                + " left outer join dbo.Tags on dbo.TagPosts.Tag_Id=dbo.Tags.Id left outer join dbo.Comments"
-                + $" on dbo.Comments.Post_Id=dbo.Posts.Id where dbo.Posts.Id=@id";
+            var query = "select * from dbo.\"Posts\" left outer join dbo.\"TagPosts\" on dbo.\"TagPosts\".\"Post_Id\"=dbo.\"Posts\".\"Id\""
+                + " left outer join dbo.\"Tags\" on dbo.\"TagPosts\".\"Tag_Id\"=dbo.\"Tags\".\"Id\" left outer join dbo.\"Comments\""
+                + $" on dbo.\"Comments\".\"Post_Id\"=dbo.\"Posts\".\"Id\" where dbo.\"Posts\".\"Id\"=@id;";
 
             return (await Db.QueryAsync<Post, Tag, Comment, Post>(query, (post, tag, comment) =>
             {
@@ -113,15 +95,21 @@ namespace Mite.DAL.Repositories
         }
         public Task<int> GetPublishedPostsCount(string userId)
         {
-            return Db.QueryFirstAsync<int>("select COUNT(*) from dbo.Posts where UserId=@UserId and PublishDate is not null and Blocked=0", new { UserId = userId });
+            return Table.CountAsync(x => x.UserId == userId && x.PublishDate != null && !x.Blocked);
         }
-        public Task AddView(Guid id)
+        public async Task AddView(Guid id)
         {
-            return Db.ExecuteAsync("update dbo.Posts set Views=Views+1 where Id=@Id", new { Id = id });
+            var post = await Table.FirstAsync(x => x.Id == id);
+            post.Views++;
+            DbContext.Entry(post).Property(x => x.Views).IsModified = true;
+            await SaveAsync();
         }
-        public Task PublishPost(Guid id, DateTime publishDate)
+        public async Task PublishPost(Guid id, DateTime publishDate)
         {
-            return Db.ExecuteAsync("update dbo.Posts set PublishDate=@PublishDate where Id=@Id", new { Id = id, PublishDate = publishDate });
+            var post = await Table.FirstAsync(x => x.Id == id);
+            post.PublishDate = publishDate;
+            DbContext.Entry(post).Property(x => x.PublishDate).IsModified = true;
+            await SaveAsync();
         }
         /// <summary>
         /// Получить посты по тегам
@@ -140,41 +128,41 @@ namespace Mite.DAL.Repositories
             var tagNamesStr = new StringBuilder();
             for (var i = 0; i < tagsNames.Length; i++)
             {
-                tagNamesStr.AppendFormat("dbo.Tags.Name like N'%{0}%' ", tagsNames[i]);
+                tagNamesStr.AppendFormat("dbo.\"Tags\".\"Name\" like N'%{0}%' ", tagsNames[i]);
                 if (i < tagsNames.Length - 1)
                     tagNamesStr.Append("or ");
             }
             //Запрос для получения кол-ва совпадений тегов для каждого поста
-            var tagsCountQuery = "select COUNT(Tag_Id) as TagsCount, Post_Id from dbo.Tags inner join dbo.TagPosts " +
-                    $"on dbo.Tags.Id=dbo.TagPosts.Tag_Id where {tagNamesStr.ToString()} group by Post_Id";
+            var tagsCountQuery = "select COUNT(\"Tag_Id\") as TagsCount, \"Post_Id\" from dbo.\"Tags\" inner join dbo.\"TagPosts\" " +
+                    $"on dbo.\"Tags\".\"Id\"=dbo.\"TagPosts\".\"Tag_Id\" where {tagNamesStr.ToString()} group by \"Post_Id\";";
             var tagsCountRes = await Db.QueryAsync(tagsCountQuery);
             //Чтобы у поста было точное кол-во совпадений с тегами(т.е. написали в запросе 2 тега - должно совпасть 2 тега)
             var postsIds = tagsCountRes.Where(x => (int)x.TagsCount >= tagsNames.Length)
-                .Select<dynamic, Guid>(x => Guid.Parse(x.Post_Id.ToString()));
+                .Select<dynamic, Guid>(x => Guid.Parse(x.Post_Id.ToString())).ToList();
 
-            var query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId " +
-                "where dbo.Posts.Id in @postsIds and PublishDate is not null and dbo.Posts.Blocked=0 and PublishDate > @minDate ";
+            var query = "select * from dbo.\"Posts\" inner join dbo.\"Users\" on dbo.\"Users\".\"Id\"=dbo.\"Posts\".\"UserId\" " +
+                "where dbo.\"Posts\".\"Id\" = any(@postsIds) and \"PublishDate\" is not null and dbo.\"Posts\".\"Blocked\"=false and \"PublishDate\" > @minDate ";
 
             IEnumerable<string> followings = new List<string>();
             if (onlyFollowings)
             {
-                var followingsQuery = "select FollowingUserId from dbo.Followers where UserId=@currentUserId";
+                var followingsQuery = "select \"FollowingUserId\" from dbo.\"Followers\" where \"UserId\"=@currentUserId;";
                 followings = await Db.QueryAsync<string>(followingsQuery, new { currentUserId });
-                query += "and dbo.AspNetUsers.Id in @followings ";
+                query += "and dbo.\"Users\".\"Id\" = any(@followings) ";
             }
             switch (sortType)
             {
                 case SortFilter.Popular:
-                    query += "order by dbo.Posts.Rating desc";
+                    query += "order by dbo.\"Posts\".\"Rating\" desc";
                     break;
                 case SortFilter.New:
-                    query += "order by dbo.Posts.PublishDate desc";
+                    query += "order by dbo.\"Posts\".\"\"PublishDate\" desc";
                     break;
                 case SortFilter.Old:
-                    query += "order by dbo.Posts.PublishDate asc";
+                    query += "order by dbo.\"Posts\".\"\"PublishDate\" asc";
                     break;
             }
-            query += $" offset {offset} rows fetch next {range} rows only";
+            query += $" offset {offset} limit {range};";
             var posts = await Db.QueryAsync<Post, User, Post>(query, (post, user) =>
             {
                 post.User = user;
@@ -200,47 +188,47 @@ namespace Mite.DAL.Repositories
             var tagNamesStr = new StringBuilder();
             for (var i = 0; i < tagsNames.Length; i++)
             {
-                tagNamesStr.AppendFormat("dbo.Tags.Name like N'%{0}%' ", tagsNames[i]);
+                tagNamesStr.AppendFormat("dbo.\"Tags\".\"Name\" like N'%{0}%' ", tagsNames[i]);
                 if (i < tagsNames.Length - 1)
                     tagNamesStr.Append("or ");
             }
             //Запрос для получения кол-ва совпадений тегов для каждого поста
-            var tagsCountQuery = "select COUNT(Tag_Id) as TagsCount, Post_Id from dbo.Tags inner join dbo.TagPosts " +
-                    $"on dbo.Tags.Id=dbo.TagPosts.Tag_Id where {tagNamesStr.ToString()} group by Post_Id";
+            var tagsCountQuery = "select COUNT(\"Tag_Id\") as TagsCount, \"Post_Id\" from dbo.\"Tags\" inner join dbo.\"TagPosts\" " +
+                    $"on dbo.\"Tags\".\"Id\"=dbo.\"TagPosts\".\"Tag_Id\" where {tagNamesStr.ToString()} group by \"Post_Id\"";
             var tagsCountRes = await Db.QueryAsync(tagsCountQuery);
             //Чтобы у поста было точное кол-во совпадений с тегами(т.е. написали в запросе 2 тега - должно совпасть 2 тега или больше)
             var postsIds = tagsCountRes.Where(x => (int)x.TagsCount >= tagsNames.Length)
                 .Select<dynamic, Guid>(x => Guid.Parse(x.Post_Id.ToString()));
 
-            var query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId " +
-                "where dbo.Posts.Id in @postsIds and PublishDate is not null and dbo.Posts.Blocked=0 and PublishDate > @minDate ";
+            var query = "select * from dbo.\"Posts\" inner join dbo.\"Users\" on dbo.\"Users\".\"Id\"=dbo.\"Posts\".\"UserId\" " +
+                "where dbo.\"Posts\".\"Id\" = any(@postsIds) and \"PublishDate\" is not null and dbo.\"Posts\".\"Blocked\"=false and \"PublishDate\" > @minDate ";
 #if DEBUG
-            query += $"and dbo.Posts.Title like N'%{postName}%'";
+            query += $"and dbo.\"Posts\".Title like N'%{postName}%'";
 #else
             postName = "\"" + postName + "*\"";
-            query += $"and CONTAINS(dbo.Posts.Title, @postName) ";
+            query += $"and CONTAINS(dbo.\"Posts\".Title, @postName) ";
 #endif
             IEnumerable<string> followings = new List<string>();
             if (onlyFollowings)
             {
-                var followingsQuery = "select FollowingUserId from dbo.Followers where UserId=@currentUserId ";
+                var followingsQuery = "select \"FollowingUserId\" from dbo.\"Followers\" where \"UserId\"=@currentUserId ";
                 followings = await Db.QueryAsync<string>(followingsQuery, new { currentUserId });
-                query += "and dbo.AspNetUsers.Id in @followings ";
+                query += "and dbo.\"Users\".\"Id\" = any(@followings) ";
             }
             switch (sortType)
             {
                 case SortFilter.Popular:
-                    query += "order by dbo.Posts.Rating desc";
+                    query += "order by dbo.\"Posts\".\"Rating\" desc";
                     break;
                 case SortFilter.New:
-                    query += "order by dbo.Posts.PublishDate desc";
+                    query += "order by dbo.\"Posts\".\"PublishDate\" desc";
                     break;
                 case SortFilter.Old:
-                    query += "order by dbo.Posts.PublishDate asc";
+                    query += "order by dbo.\"Posts\".\"PublishDate\" asc";
                     break;
             }
             //Получаем по диапазону
-            query += $" offset {offset} rows fetch next {range} rows only";
+            query += $" limit {range} offset {offset};";
             
             var posts = await Db.QueryAsync<Post, User, Post>(query, (post, user) =>
             {
@@ -252,34 +240,35 @@ namespace Mite.DAL.Repositories
         public async Task<IEnumerable<Post>> GetByPostNameAsync(string postName, DateTime minDate,
             bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range)
         {
-            var query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.Posts.UserId=dbo.AspNetUsers.Id " +
-                "where dbo.Posts.PublishDate is not null and dbo.Posts.Blocked=0 and PublishDate > @minDate and ";
+            var query = "select * from dbo.\"Posts\" inner join dbo.\"Users\" on dbo.\"Posts\".\"UserId\"=dbo.\"Users\".\"Id\" " +
+                "where dbo.\"Posts\".\"PublishDate\" is not null and dbo.\"Posts\".\"Blocked\"=false and \"PublishDate\" > @minDate and ";
 #if DEBUG
-            query += $"dbo.Posts.Title like N'%{postName}%'";
+            query += $"dbo.\"Posts\".Title like N'%{postName}%'";
 #else
             postName = "\"" + postName + "*\"";
-            query += "CONTAINS(dbo.Posts.Title, @postName) ";
+            query += "CONTAINS(dbo.\"Posts\".Title, @postName) ";
 #endif
             IEnumerable<string> followings = new List<string>();
             if (onlyFollowings)
             {
-                var followingsQuery = "select FollowingUserId from dbo.Followers where UserId=@currentUserId ";
+                var followingsQuery = "select \"FollowingUserId\" from dbo.\"Followers\" where \"UserId\"=@currentUserId;";
                 followings = await Db.QueryAsync<string>(followingsQuery, new { currentUserId });
-                query += "and dbo.AspNetUsers.Id in @followings ";
+                followings = followings.ToList();
+                query += "and dbo.\"Users\".\"Id\" = any(@followings) ";
             }
             switch (sortType)
             {
                 case SortFilter.Popular:
-                    query += "order by dbo.Posts.Rating desc";
+                    query += "order by dbo.\"Posts\".\"Rating\" desc";
                     break;
                 case SortFilter.New:
-                    query += "order by dbo.Posts.PublishDate desc";
+                    query += "order by dbo.\"Posts\".\"PublishDate\" desc";
                     break;
                 case SortFilter.Old:
-                    query += "order by dbo.Posts.PublishDate asc";
+                    query += "order by dbo.\"Posts\".\"PublishDate\" asc";
                     break;
             }
-            query += $" offset {offset} rows fetch next {range} rows only";
+            query += $" limit {range} offset {offset};";
             var posts = await Db.QueryAsync<Post, User, Post>(query, (post, user) =>
             {
                 post.User = user;
@@ -290,30 +279,31 @@ namespace Mite.DAL.Repositories
         public async Task<IEnumerable<Post>> GetByFilterAsync(DateTime minDate, bool onlyFollowings, 
             string currentUserId, SortFilter sortType, int offset, int range)
         {
-            var query = "select * from dbo.Posts inner join dbo.AspNetUsers on dbo.AspNetUsers.Id=dbo.Posts.UserId" +
-                " where dbo.Posts.PublishDate is not null and dbo.Posts.Blocked=0 and PublishDate > @minDate ";
+
+            var query = "select * from dbo.\"Posts\" inner join dbo.\"Users\" on dbo.\"Users\".\"Id\"=dbo.\"Posts\".\"UserId\"" +
+                " where dbo.\"Posts\".\"PublishDate\" is not null and dbo.\"Posts\".\"Blocked\"=false and \"PublishDate\" > @minDate ";
             IEnumerable<string> followings;
             object queryParams = new { minDate };
             if (onlyFollowings)
             {
-                var followingsQuery = "select FollowingUserId from dbo.Followers where UserId=@currentUserId ";
-                followings = await Db.QueryAsync<string>(followingsQuery, new { currentUserId });
-                query += "and dbo.AspNetUsers.Id in @followings ";
+                var followingsQuery = "select \"FollowingUserId\" from dbo.\"Followers\" where \"UserId\"=@currentUserId;";
+                followings = (await Db.QueryAsync<string>(followingsQuery, new { currentUserId })).ToList();
+                query += "and dbo.\"Users\".\"Id\" = any(@followings) ";
                 queryParams = new { minDate, followings };
             }
             switch (sortType)
             {
                 case SortFilter.Popular:
-                    query += "order by dbo.Posts.Rating desc, dbo.Posts.PublishDate desc";
+                    query += "order by dbo.\"Posts\".\"Rating\" desc, dbo.\"Posts\".\"PublishDate\" desc";
                     break;
                 case SortFilter.New:
-                    query += "order by dbo.Posts.PublishDate desc";
+                    query += "order by dbo.\"Posts\".\"PublishDate\" desc";
                     break;
                 case SortFilter.Old:
-                    query += "order by dbo.Posts.PublishDate asc";
+                    query += "order by dbo.\"Posts\".\"PublishDate\" asc";
                     break;
             }
-            query += $" offset {offset} rows fetch next {range} rows only";
+            query += $" limit {range} offset {offset};";
             var posts = await Db.QueryAsync<Post, User, Post>(query, (post, user) =>
             {
                 post.User = user;
@@ -321,10 +311,9 @@ namespace Mite.DAL.Repositories
             }, queryParams);
             return posts;
         }
-        public Task<IEnumerable<Post>> GetGalleryByUserAsync(string userId)
+        public async Task<IEnumerable<Post>> GetGalleryByUserAsync(string userId)
         {
-            var query = "select Id, Content from dbo.Posts where UserId=@userId and PublishDate is not null and Blocked=0 and IsImage=1";
-            return Db.QueryAsync<Post>(query, new { userId });
+            return await Table.Where(x => x.UserId == userId && x.PublishDate != null && !x.Blocked && x.IsImage).ToListAsync();
         }
     }
 }

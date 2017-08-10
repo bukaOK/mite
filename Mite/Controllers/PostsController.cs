@@ -13,26 +13,22 @@ using AutoMapper;
 using System.Net;
 using NLog;
 using System.Linq;
+using Mite.BLL.Infrastructure;
 
 namespace Mite.Controllers
 {
     [Authorize]
     public class PostsController : BaseController
     {
-        private readonly IPostsService postsService;
-        private readonly IRatingService ratingService;
-        private readonly IHelpersService helpersService;
+        private readonly IServiceBuilder serviceBuilder;
         private readonly ILogger logger;
 
         private readonly string imagesFolder = HostingEnvironment.ApplicationVirtualPath + "Public/images/";
         private readonly string documentsFolder = HostingEnvironment.ApplicationVirtualPath + "Public/documents/";
 
-        public PostsController(IPostsService postsService, IRatingService ratingService, IHelpersService helpersService,
-            ILogger logger)
+        public PostsController(IServiceBuilder serviceBuilder, ILogger logger)
         {
-            this.postsService = postsService;
-            this.ratingService = ratingService;
-            this.helpersService = helpersService;
+            this.serviceBuilder = serviceBuilder;
             this.logger = logger;
         }
         [HttpGet]
@@ -42,6 +38,9 @@ namespace Mite.Controllers
             Guid postId;
             if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out postId))
                 return NotFound();
+
+            var postsService = serviceBuilder.Build<IPostsService>();
+            var ratingService = serviceBuilder.Build<IRatingService>();
 
             var post = await postsService.GetWithTagsUserAsync(postId);
             if (post == null || !post.IsPublished)
@@ -65,6 +64,7 @@ namespace Mite.Controllers
         {
             ViewBag.Title = "Добавление работы";
 
+            var helpersService = serviceBuilder.Build<IHelpersService>();
             switch (postType)
             {
                 case PostTypes.Image:
@@ -82,6 +82,10 @@ namespace Mite.Controllers
         public async Task<ActionResult> EditPost(Guid id)
         {
             ViewBag.Title = "Редактирование работы";
+
+            var postsService = serviceBuilder.Build<IPostsService>();
+            var helpersService = serviceBuilder.Build<IHelpersService>();
+
             var post = await postsService.GetWithTagsAsync(id);
             if (User.Identity.GetUserId() != post.User.Id)
             {
@@ -115,7 +119,9 @@ namespace Mite.Controllers
                 return Json(JsonStatuses.ValidationError, "Проверьте правильность заполнения полей");
             if (!string.IsNullOrEmpty(model.Description) && (model.Description.Contains(">") || model.Description.Contains("<")))
                 return Json(JsonStatuses.ValidationError, "Обнаружены опасные символы в описании");
-            
+
+            var postsService = serviceBuilder.Build<IPostsService>();
+
             //Если изображение, сохраняем на сервере, в контент ставим путь к папке
             if (Regex.IsMatch(model.Content, @"<\s*(script|a)") || (!string.IsNullOrEmpty(model.Description) && Regex.IsMatch(model.Description, @"<\s(script)")))
             {
@@ -140,6 +146,7 @@ namespace Mite.Controllers
             if (model.Content != null && Regex.IsMatch(model.Content, @"<\s*(script|a)"))
                 return Json(JsonStatuses.ValidationError, "Обнаружены опасные данные внутри запроса");
 
+            var postsService = serviceBuilder.Build<IPostsService>();
 
             var result = await postsService.UpdatePostAsync(model);
             if (!result.Succeeded)
@@ -151,6 +158,8 @@ namespace Mite.Controllers
         [HttpPost]
         public async Task<HttpStatusCodeResult> DeletePost(Guid id)
         {
+            var postsService = serviceBuilder.Build<IPostsService>();
+
             var post = await postsService.GetPostAsync(id);
             if(User.Identity.GetUserId() != post.User.Id)
             {
@@ -177,6 +186,8 @@ namespace Mite.Controllers
             }
             try
             {
+                var postsService = serviceBuilder.Build<IPostsService>();
+
                 await postsService.PublishPost(postId);
                 return Ok();
             }
@@ -195,19 +206,28 @@ namespace Mite.Controllers
         [AllowAnonymous]
         public async Task<JsonResult> UserGallery(string userId)
         {
+            var postsService = serviceBuilder.Build<IPostsService>();
+
             var result = await postsService.GetGalleryByUserAsync(userId);
             return Json(JsonStatuses.Success, result);
         }
         [AllowAnonymous]
-        public ViewResult Top()
+        public async Task<ViewResult> Top()
         {
-            return View();
+            var topTags = await serviceBuilder.Build<ITagsService>().GetWithPopularityAsync(true);
+            var model = new TopModel
+            {
+                Tags = topTags
+            };
+            return View(model);
         }
         [HttpPost]
         [AllowAnonymous]
         public async Task<JsonResult> Top(string tags, string postName, SortFilter sortFilter,
             PostTimeFilter postTimeFilter, PostUserFilter postUserFilter, int page)
         {
+            var postsService = serviceBuilder.Build<IPostsService>();
+
             //Плюс зарезервированный символ url, поэтому заменяется пробелом
             tags = tags.Replace("18 ", "18+");
             var tagsNames = string.IsNullOrEmpty(tags) ? new string[0] : tags.Split(',');

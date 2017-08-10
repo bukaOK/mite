@@ -15,7 +15,7 @@ using Mite.BLL.DTO;
 
 namespace Mite.BLL.Services
 {
-    public interface ICashService
+    public interface ICashService : IDataService
     {
         /// <summary>
         /// Возвращает историю денежных операций пользователя

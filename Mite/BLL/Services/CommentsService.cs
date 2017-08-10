@@ -12,7 +12,7 @@ using Mite.DAL.Repositories;
 
 namespace Mite.BLL.Services
 {
-    public interface ICommentsService
+    public interface ICommentsService : IDataService
     {
         Task<IEnumerable<CommentModel>> GetCommentsByPostAsync(Guid postId, string currentUserId);
         Task<CommentModel> AddCommentToPostAsync(CommentModel model);
@@ -49,7 +49,7 @@ namespace Mite.BLL.Services
             var repo = Database.GetRepo<CommentsRepository, Comment>();
             var ratingRepo = Database.GetRepo<RatingRepository, Rating>();
             //Получаем комментарии
-            var comments = await repo.GetListByPostAsync(postId.ToString());
+            var comments = await repo.GetListByPostAsync(postId);
             //Получаем рейтинги текущего пользователя
             var currentUserRatings = await ratingRepo.GetCommentsRatings(comments.Select(x => x.Id), currentUserId);
 

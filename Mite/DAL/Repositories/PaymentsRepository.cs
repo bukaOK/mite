@@ -1,11 +1,11 @@
 ﻿using Mite.DAL.Core;
 using Mite.DAL.Entities;
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
-using Dapper;
 using Mite.DAL.Infrastructure;
+using System.Linq;
+using System.Data.Entity;
 
 namespace Mite.DAL.Repositories
 {
@@ -14,10 +14,10 @@ namespace Mite.DAL.Repositories
         public PaymentsRepository(AppDbContext db) : base(db)
         {
         }
-        public Task<IEnumerable<Payment>> GetByUserAsync(string userId)
+        public async Task<IEnumerable<Payment>> GetByUserAsync(string userId)
         {
-            var query = "select * from dbo.Payments where UserId=@userId order by Date desc";
-            return Db.QueryAsync<Payment>(query, new { userId });
+            var payments = await Table.Where(x => x.UserId == userId).OrderByDescending(x => x.Date).ToListAsync();
+            return payments;
         }
     }
 }

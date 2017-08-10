@@ -8,6 +8,7 @@ using Mite.Enums;
 using System;
 using System.Linq;
 using Mite.DAL.Infrastructure;
+using System.Data.Entity;
 
 namespace Mite.DAL.Repositories
 {
@@ -19,7 +20,7 @@ namespace Mite.DAL.Repositories
 
         public Task<int> GetPostCommentsCountAsync(Guid postId)
         {
-            return Db.QueryFirstAsync<int>("select COUNT(Id) from dbo.Comments where PostId=@PostId", new { PostId = postId });
+            return Table.CountAsync(x => x.PostId == postId);
         }
         public override Task AddAsync(Comment entity)
         {
@@ -32,13 +33,9 @@ namespace Mite.DAL.Repositories
         }
         public async Task<IDictionary<Guid, int>> GetPostsCommentsCountAsync(IEnumerable<Guid> postIds)
         {
-            var result = await Db.QueryAsync("select COUNT(Id) as CommentsCount, PostId from dbo.Comments where PostId in @postIds group by PostId", new { postIds });
-            var dict = new Dictionary<Guid, int>();
-            foreach(var item in result)
-            {
-                dict.Add((Guid)item.PostId, (int)item.CommentsCount);
-            }
-            return dict;
+            var result = await Table.Where(x => postIds.Any(y => y == x.PostId)).GroupBy(x => x.PostId)
+                .ToDictionaryAsync(x => (Guid)x.Key, x => x.Count());
+            return result;
         }
         /// <summary>
         /// Возвращает отсортированные комментарии к посту
@@ -46,31 +43,24 @@ namespace Mite.DAL.Repositories
         /// <param name="postId">Id поста</param>
         /// <param name="rowsCount">кол-во записей</param>
         /// <param name="sortParam">тип сортировки</param>
-        /// <param name="descOrAsc">по убыванию или возрастанию</param>
         /// <returns></returns>
-        public Task<IEnumerable<Comment>> GetListByPostAsync(string postId)
+        public async Task<IEnumerable<Comment>> GetListByPostAsync(Guid postId)
         {
-            var query = "select * from dbo.Comments left outer join dbo.AspNetUsers on"
-                + " dbo.Comments.UserId=dbo.AspNetUsers.Id where PostId=@PostId";
-            return Db.QueryAsync<Comment, User, Comment>(query, (comment, user) =>
-            {
-                comment.User = user;
-                return comment;
-            }, new { PostId = postId });
+            var comments = await Table.Include(x => x.User).Where(x => x.PostId == postId).ToListAsync();
+            return comments;
         }
         public override async Task RemoveAsync(Guid id)
         {
-            var query = "select top 1 UserId from dbo.Comments where Id=@Id";
+            var query = "select \"UserId\" from dbo.\"Comments\" where \"Id\"=@Id;";
             var currentUserId = await Db.QueryFirstAsync<string>(query, new { Id = id });
-
-            query = "update dbo.Comments set ParentCommentId=null where ParentCommentId=@Id;" +
-                "delete from dbo.Ratings where CommentId=@Id;delete from dbo.Comments where Id=@Id;";
+            query = "update dbo.\"Comments\" set \"ParentCommentId\"=null where \"ParentCommentId\"=@Id;" +
+                "delete from dbo.\"Ratings\" where \"CommentId\"=@Id;delete from dbo.\"Comments\" where \"Id\"=@Id;";
             await Db.ExecuteAsync(query, new { Id = id, UserId = currentUserId });
             //Получаем новый рейтинг(нельзя все пихать в один запрос, т.к. новый рейтинг может быть null и выкинет исключение)
-            query = "select SUM(Value) from dbo.Ratings where OwnerId=@UserId";
+            query = "select SUM(\"Value\") from dbo.\"Ratings\" where \"OwnerId\"=@UserId;";
             var newRating = (await Db.QueryFirstAsync<int?>(query, new { Id = id, UserId = currentUserId })) ?? 0;
 
-            query = "update dbo.AspNetUsers set Rating=@newRating where Id=@UserId;";
+            query = "update dbo.\"Users\" set \"Rating\"=@newRating where \"Id\"=@UserId;";
             await Db.ExecuteAsync(query, new { Id = id, UserId = currentUserId, newRating = newRating });
         }
         /// <summary>
@@ -80,22 +70,7 @@ namespace Mite.DAL.Repositories
         /// <returns></returns>
         public async Task<Comment> GetFullAsync(Guid id)
         {
-            var query = "select * from dbo.Comments, dbo.AspNetUsers where dbo.Comments.Id=@id and dbo.AspNetUsers.Id=dbo.Comments.UserId";
-            var comment = (await Db.QueryAsync<Comment, User, Comment>(query, (com, user) =>
-             {
-                 com.User = user;
-                 return com;
-             }, new { id })).First();
-            
-            if(comment.ParentCommentId != null)
-            {
-                query = "select * from dbo.Comments, dbo.AspNetUsers where dbo.Comments.Id=@parentId and dbo.AspNetUsers.Id=dbo.Comments.UserId";
-                comment.ParentComment = (await Db.QueryAsync<Comment, User, Comment>(query, (com, user) =>
-                {
-                    com.User = user;
-                    return com;
-                }, new { parentId = comment.ParentCommentId })).First();
-            }
+            var comment = await Table.Include(x => x.User).Include(x => x.ParentComment).FirstAsync(x => x.Id == id);
             return comment;
         }
     }

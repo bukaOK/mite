@@ -14,7 +14,7 @@ using Mite.DAL.Repositories;
 
 namespace Mite.BLL.Services
 {
-    public interface IHelpersService
+    public interface IHelpersService : IDataService
     {
         Task<IdentityResult> InitHelperAsync(HelperTypes helperType, string userId);
         Task<HelperModel> GetByUserAsync(string userId);
