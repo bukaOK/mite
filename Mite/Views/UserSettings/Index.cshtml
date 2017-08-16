@@ -11,7 +11,7 @@
         <a class="item" data-tab="security">Безопасность</a>
         <a class="item" data-tab="socialservices">Внешние сервисы</a>
     </nav>
-    <div class="ui active tab" data-tab="userprofile">
+    <div class="ui tab" data-tab="userprofile">
         @{Html.RenderAction("UserProfile");}
     </div>
     <div class="ui tab" data-tab="changeavatar">
@@ -34,11 +34,16 @@
 <script>
     $(function () {
         $('.user-settings.item').addClass('active');
-        $('.ui.tabs.menu .item').tab({
-            history: true,
-            historyType: 'state',
-            path: '/user/settings'
-        });
+        //$('.ui.tabs.menu .item').tab({
+        //    history: true,
+        //    historyType: 'state',
+        //    path: '/user/settings',
+        //    onFirstLoad: function (tabPath, parameterArray, historyEvent) {
+        //        var path = location.pathname.replace('/user/settings/', '');
+        //        $('.ui.tabs.menu .item').tab('change tab', path);
+        //    }
+        //});
+        var tabs = new MiteTab('.ui.tabs.menu .item', '/user/settings');
         ViewHelper.disableFormSubmitting('form');
     });
 </script>

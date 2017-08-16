@@ -1,6 +1,6 @@
 ﻿@using Mite.Models
 @using Microsoft.AspNet.Identity
-@using Mite.Constants
+@using Mite.CodeData.Constants
 @model CashModel
 @{
     ViewBag.Title = "Счёт";
@@ -208,7 +208,7 @@
         $('.cash.item').addClass('active');
         $('select').dropdown({
             onChange: function (value) {
-                var yaAuthVal = '@((byte)Mite.Enums.PaymentType.YandexWallet)';
+                var yaAuthVal = '@((byte)Mite.CodeData.Enums.PaymentType.YandexWallet)';
                 var isYandexAuthorized = @Json.Encode(Model.IsYandexAuthorized);
 
                 if(!isYandexAuthorized){

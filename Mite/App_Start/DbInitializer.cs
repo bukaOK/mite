@@ -4,12 +4,9 @@ using Microsoft.Owin.Security.DataProtection;
 using Mite.BLL.IdentityManagers;
 using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
-using Mite.Enums;
+using Mite.CodeData.Enums;
 using System;
-using System.Collections.Generic;
 using System.Data.Entity;
-using System.Linq;
-using System.Web;
 
 namespace Mite
 {

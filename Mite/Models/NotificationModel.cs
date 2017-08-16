@@ -1,4 +1,4 @@
-﻿using Mite.Enums;
+﻿using Mite.CodeData.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

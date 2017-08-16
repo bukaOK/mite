@@ -52,7 +52,7 @@
                 }
             </div>
             <button type="button" class="ui green button" id="save-btn">Сохранить</button>
-            @Html.ValidationSum()
+            @Html.ValidationSum("result-msg")
             <div class="ui hidden error message" style="text-align: center" id="result-msg"></div>
         </div>
     }
@@ -159,15 +159,14 @@
         //Отправляем форму
         $('#save-btn').click(function(ev) {
             var $saveBtn = $(this);
-            if(isImageLarge){
-                $('#imgPostForm').form('add errors', ['Размер файла не может быть больше 30 мбайт']);
-            }
             var isPublished = @Model.IsPublished.ToString().ToLower();
             if(isPublished){
                 savePost(true);
             }
-            if ($('#imgPostForm').form('validate form') && !isPublished) {
+            if ($('#imgPostForm').form('validate form') && !isPublished && !isImageLarge) {
                 $('#saveModal').modal('show');
+            } else if (isImageLarge) {
+                $('#imgPostForm').form('add errors', ['Размер файла не может быть больше 30 мбайт']);
             }
         });
         $('#imgPostForm').form({

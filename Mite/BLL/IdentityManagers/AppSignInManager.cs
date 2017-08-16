@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Mite.DAL.Entities;
+using Microsoft.AspNet.Identity;
 
 namespace Mite.BLL.IdentityManagers
 {
@@ -15,7 +16,7 @@ namespace Mite.BLL.IdentityManagers
 
         public override Task<ClaimsIdentity> CreateUserIdentityAsync(User user)
         {
-            return user.GenerateUserIdentityAsync((AppUserManager) UserManager);
+            return UserManager.CreateIdentityAsync(user, DefaultAuthenticationTypes.ApplicationCookie);
         }
     }
 }

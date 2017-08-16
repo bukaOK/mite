@@ -23,11 +23,11 @@ namespace Mite.Controllers
     public class AdminController : BaseController
     {
         private readonly AppUserManager userManager;
-        private readonly IYandexService yandexService;
+        private readonly IYandexMoneyService yandexService;
         private readonly AppRoleManager roleManager;
         private readonly IUnitOfWork unitOfWork;
 
-        public AdminController(AppUserManager userManager, IYandexService yandexService, AppRoleManager roleManager, 
+        public AdminController(AppUserManager userManager, IYandexMoneyService yandexService, AppRoleManager roleManager, 
             IUnitOfWork unitOfWork)
         {
             this.userManager = userManager;
@@ -58,9 +58,10 @@ namespace Mite.Controllers
         }
         public PartialViewResult Statistic()
         {
-            var model = new AdminStatisticModel();
-            model.UsersCount = userManager.Users.Count();
-
+            var model = new AdminStatisticModel()
+            {
+                UsersCount = userManager.Users.Count()
+            };
             var repo = unitOfWork.GetRepo<PostsRepository, Post>();
             model.PostsCount = repo.GetCount();
             return PartialView(model);

@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNet.Identity;
 using Mite.BLL.IdentityManagers;
 using Mite.BLL.Services;
-using Mite.Constants;
+using Mite.CodeData.Constants;
+using Mite.CodeData.Enums;
 using Mite.Core;
 using Mite.Models;
 using System;
@@ -81,7 +82,7 @@ namespace Mite.Controllers
         public PartialViewResult Advertising()
         {
             var user = userManager.FindById(User.Identity.GetUserId());
-            var operations = cashService.GetByType(User.Identity.GetUserId(), Enums.CashOperationTypes.GoogleAd);
+            var operations = cashService.GetByType(User.Identity.GetUserId(), CashOperationTypes.GoogleAd);
             var dateTimeNow = DateTime.Now;
             return PartialView(new CashAdvertisingModel
             {

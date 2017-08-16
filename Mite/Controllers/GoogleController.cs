@@ -10,10 +10,10 @@ namespace Mite.Controllers
 {
     public class GoogleController : BaseController
     {
-        private readonly IGoogleService googleService;
+        private readonly IGoogleAdSenseService googleService;
         private readonly ILogger logger;
 
-        public GoogleController(IGoogleService googleService, ILogger logger)
+        public GoogleController(IGoogleAdSenseService googleService, ILogger logger)
         {
             this.googleService = googleService;
             this.logger = logger;

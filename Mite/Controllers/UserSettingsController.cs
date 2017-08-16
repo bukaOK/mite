@@ -7,7 +7,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
 using Mite.BLL.IdentityManagers;
 using Mite.BLL.Services;
-using Mite.Constants;
+using Mite.CodeData.Constants;
 using Mite.Core;
 using Mite.Extensions;
 using Mite.Models;

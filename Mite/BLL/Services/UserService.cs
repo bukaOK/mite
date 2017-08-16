@@ -14,6 +14,7 @@ using NLog;
 using System.Text.RegularExpressions;
 using Mite.DAL.Repositories;
 using System.Web.Hosting;
+using Mite.BLL.Helpers;
 
 namespace Mite.BLL.Services
 {

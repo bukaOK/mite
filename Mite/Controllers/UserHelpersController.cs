@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNet.Identity;
 using Mite.BLL.Services;
 using Mite.Core;
-using Mite.Enums;
-using Mite.Infrastructure;
+using Mite.CodeData.Enums;
 using NLog;
 using System;
 using System.Threading.Tasks;

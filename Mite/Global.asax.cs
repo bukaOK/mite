@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
-using Mite.BLL.DTO;
+using Mite.CodeData.Enums;
+using Mite.DAL.DTO;
 using Mite.DAL.Entities;
 using Mite.Models;
 using NLog;
@@ -105,9 +106,9 @@ namespace Mite
                     {
                         switch (src.PaymentType)
                         {
-                            case Enums.PaymentType.BankCard:
+                            case PaymentType.BankCard:
                                 return "Банковская карта";
-                            case Enums.PaymentType.YandexWallet:
+                            case PaymentType.YandexWallet:
                                 return "Яндекс.Деньги";
                             default:
                                 throw new ArgumentException("Неизвестный тип платежа");

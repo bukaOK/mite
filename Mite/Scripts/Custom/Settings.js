@@ -1,6 +1,6 @@
 ﻿var Settings = {
     init: function(){
-        initSemanticSettings();
+        this.initSemanticSettings();
     },
     initSemanticSettings: function(){
         $.fn.dropdown.settings.message = {

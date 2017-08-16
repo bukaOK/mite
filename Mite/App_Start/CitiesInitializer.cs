@@ -33,8 +33,7 @@ namespace Mite
             for (var i = 2; i < rows.Length; i++)
             {
                 var columns = rows[i].Split(';');
-                int population;
-                int.TryParse(columns[4], out population);
+                int.TryParse(columns[4], out int population);
 
                 cities.Add(new City
                 {

@@ -9,10 +9,12 @@
         }
     </style>
 }
+@Scripts.Render("~/bundles/api")
 <h1>Панель модератора</h1>
 <nav class="ui stackable pointing secondary tabs menu" style="border: none">
     <a class="active item" data-tab="tagunchecked">Непроверенные теги</a>
     <a class="item" data-tab="tagchecked">Проверенные теги</a>
+    <a class="item" data-tab="cities">Города</a>
 </nav>
 <div class="ui loading basic segment tab" data-tab="tagunchecked">
     <table class="ui celled table unchecked">
@@ -40,23 +42,33 @@
         <tbody></tbody>
     </table>
 </div>
+<div class="ui loading basic segment tab" data-tab="cities">
+    <button class="ui primary button" onclick="showTagAddModal(this)">Добавить город</button>
+    <table class="ui celled table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Название</th>
+                <th>Действие</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
 <script id="tagRowTmpl" type="text/x-jsrender">
     <tr data-id="{{:Id}}" data-name="{{:Name}}" data-confirmed="{{:IsConfirmed}}" data-checked="{{:Checked}}">
         <td>{{:Id}}</td>
         <td>{{:Name}}</td>
         <td>
-            <div class="ui buttons">
-                {{if !IsConfirmed}}
-                <button class="ui margined compact tag-confirm primary button" onclick="confirmTag(this)">Подтвердить</button>
-                <button class="ui margined compact blue button" onclick="showTagBindModal('{{:Id}}')">Привязать к другому</button>
-                {{/if}}
-                <button class="ui margined compact tag-change button" onclick="showTagChangeModal(this)">Изменить</button>
-                <button class="ui margined compact tag-del red button" onclick="delTag(this)">Удалить</button>
-                {{if !Checked}}
-                <button class="ui margined compact teal button" onclick="checkTag(this)">Проверить</button>
-                {{/if}}
-            </div>
-            
+            {{if !IsConfirmed}}
+            <button class="ui margined compact tag-confirm primary button" onclick="confirmTag(this)">Подтвердить</button>
+            <button class="ui margined compact blue button" onclick="showTagBindModal('{{:Id}}')">Привязать к другому</button>
+            {{/if}}
+            <button class="ui margined compact tag-change button" onclick="showTagChangeModal(this)">Изменить</button>
+            <button class="ui margined compact tag-del red button" onclick="delTag(this)">Удалить</button>
+            {{if !Checked}}
+            <button class="ui margined compact teal button" onclick="checkTag(this)">Проверить</button>
+            {{/if}}
         </td>
         {{if Checked}}
         <td>
@@ -132,6 +144,18 @@
             }
         }).modal('show');
     }
+    function showCityEditModal(btn) {
+        var $tr = $(btn).parents('tr');
+        $('#cityEditModal .header').modal('Изменение города');
+        var $form = $('#cityForm');
+
+        $form.find('[name="Name"]').val($tr.data('name'));
+        $form.find('[name="District"]').val($tr.data('district'));
+        $form.find('[name="Region"]').val($tr.data('region'));
+        $form.find('[name="TimeZone"]').val($tr.data('timezone'));
+        $form.find('[name="Population"]').val($tr.data('population'));
+
+    }
     function checkTag(ev) {
         var $tagRow = $(ev).parents('tr');
         var data = {
@@ -152,7 +176,7 @@
             error: function () {
                 alert('Ошибка!');
             }
-        })
+        });
     }
     function showTagBindModal(oldTagId) {
         $('#oldTagBind').val(oldTagId);
@@ -177,7 +201,7 @@
             error: function (jqXhr) {
                 alert('Ошибка сервера');
             }
-        })
+        });
     }
     function showTagAddModal(ev) {
         $('#tagModal .approve.button').html('Добавить');
@@ -259,6 +283,7 @@
         });
     }
     $(function () {
+        //CitiesApi.init($('.tab[data-tab="cities"] tbody'));
         $('.moder-panel.item').addClass('active');
         //Грузим таблицы с тегами
         $('.ui.tabs .item').tab({

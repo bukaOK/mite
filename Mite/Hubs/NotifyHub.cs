@@ -5,8 +5,8 @@ using Microsoft.AspNet.Identity;
 using Mite.Models;
 using Newtonsoft.Json;
 using Mite.Extensions;
-using Mite.Constants;
-using Mite.Enums;
+using Mite.CodeData.Constants;
+using Mite.CodeData.Enums;
 using System.Threading.Tasks;
 
 namespace Mite.Hubs

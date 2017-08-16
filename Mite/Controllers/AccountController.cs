@@ -9,7 +9,7 @@ using Mite.BLL.IdentityManagers;
 using Mite.BLL.Services;
 using Mite.Models;
 using Mite.Core;
-using Mite.Constants;
+using Mite.CodeData.Constants;
 using Mite.Attributes.Filters;
 using Mite.ExternalServices.Google;
 
@@ -21,10 +21,10 @@ namespace Mite.Controllers
         private readonly AppUserManager userManager;
         private readonly IAuthenticationManager authManager;
         private readonly IExternalServices externalServices;
-        private readonly IGoogleService googleService;
+        private readonly IGoogleAdSenseService googleService;
 
         public AccountController(IUserService userService, AppUserManager userManager, IAuthenticationManager authManager,
-            IExternalServices externalServices, IGoogleService googleService)
+            IExternalServices externalServices, IGoogleAdSenseService googleService)
         {
             this.userService = userService;
             this.userManager = userManager;

@@ -19,13 +19,13 @@
 </div>
 <div class="ui tab" data-tab="extapps" role="tabpanel">
     <form action="https://money.yandex.ru/oauth/authorize" method="post">
-        <input type="hidden" name="client_id" value="@Mite.Constants.YaMoneySettings.ClientId" />
+        <input type="hidden" name="client_id" value="@Mite.CodeData.Constants.YaMoneySettings.ClientId" />
         <input type="hidden" name="response_type" value="code" />
-        <input type="hidden" name="redirect_uri" value="@Mite.Constants.YaMoneySettings.RedirectUri" />
+        <input type="hidden" name="redirect_uri" value="@Mite.CodeData.Constants.YaMoneySettings.RedirectUri" />
         <input type="hidden" name="scope" value="account-info payment-p2p" />
         <button type="submit" class="ui primary button">Авторизовать Яндекс.Деньги</button>
     </form> 
-    <a href="https://accounts.google.com/o/oauth2/v2/auth?client_id=@Mite.Constants.GoogleApiSettings.ClientId&redirect_uri=http://@Request.Url.Host/google/authorize&response_type=code&scope=https://www.googleapis.com/auth/adsense.readonly&access_type=offline">
+    <a href="https://accounts.google.com/o/oauth2/v2/auth?client_id=@Mite.CodeData.Constants.GoogleApiSettings.ClientId&redirect_uri=http://@Request.Url.Host/google/authorize&response_type=code&scope=https://www.googleapis.com/auth/adsense.readonly&access_type=offline">
         Авторизовать GoogleAdSense
     </a>
 </div>

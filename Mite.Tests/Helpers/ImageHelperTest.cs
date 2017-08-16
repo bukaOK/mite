@@ -3,6 +3,7 @@ using System.Text;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mite.Helpers;
+using Mite.BLL.Helpers;
 
 namespace Mite.Tests.Helpers
 {

@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Mite.BLL.DTO;
 using System.Drawing.Imaging;
 using System.Drawing;
 

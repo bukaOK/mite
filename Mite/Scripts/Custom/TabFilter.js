@@ -182,6 +182,8 @@ var TabFilter = {
     pagesEnded: false,
     loadNextPage: false,
     initialized: false,
+    source: [],
+    range: 9,
     loading: false,
 
     init: function(basePath, settings){
@@ -189,16 +191,16 @@ var TabFilter = {
         this.basePath = basePath.toLowerCase();
 
         if (settings.beforeLoad != undefined) {
-            this.ajaxCallbacks.beforeLoad = settings.beforeLoad;
+            this.beforeLoad = settings.beforeLoad;
         }
         if (settings.onSuccess != undefined) {
-            this.ajaxCallbacks.onSuccess = settings.onSuccess;
+            this.onSuccess = settings.onSuccess;
         }
         if (settings.onError != undefined) {
-            this.ajaxCallbacks.onError = settings.onError;
+            this.onError = settings.onError;
         }
         if (settings.onComplete != undefined) {
-            this.ajaxCallbacks.onComplete = settings.onComplete;
+            this.onComplete = settings.onComplete;
         }
         if (settings.ajax != undefined && settings.ajax.type != undefined)
             this.ajax.type = settings.ajax.type;
@@ -213,14 +215,12 @@ var TabFilter = {
             self.Filters.updateFiltersState();
             self.refresh(true);
         }
-        this.loadNext();
+        this.refresh();
     },
-    ajaxCallbacks: {
-        beforeLoad: function () { },
-        onSuccess: function (resp, tab) { },
-        onError: function (jqXhr) { return false; },
-        onComplete: function (jqXhr) { return false; }
-    },
+    beforeLoad: function () { },
+    onSuccess: function (resp, tab) { },
+    onError: function (jqXhr) { return false; },
+    onComplete: function (jqXhr) { return false; },
     ajax: {
         type: 'get',
         url: '',
@@ -228,29 +228,28 @@ var TabFilter = {
             if (resp.status == undefined) {
                 resp = JSON.parse(resp);
             }
-            if (resp.data.length == 0) {
-                TabFilter.pagesEnded = true;
-            }
-            TabFilter.ajaxCallbacks.onSuccess(resp, TabFilter.Tabs.getLastActiveTab());
+            TabFilter.source = resp.data;
+            var items = TabFilter.source.slice(0, TabFilter.range);
+
+            TabFilter.onSuccess(items, TabFilter.Tabs.getLastActiveTab());
             TabFilter.loading = false;
         },
         error: function (jqXhr) {
-            TabFilter.ajaxCallbacks.onError(resp);
+            TabFilter.onError(jqXhr);
         },
         complete: function (jqXhr) {
-            SearchFilters.callbacks.onComplete(jqXhr);
+            TabFilter.onComplete(jqXhr);
         },
         checkResponseLength: function (resp) {
             //Если длина ответа 0
             //Возвращает false
         }
     },
-    load: function () {
-        this.ajaxCallbacks.beforeLoad();
+    fillDataSource: function () {
+        this.beforeLoad();
         //Переводим в строку
         this.ajax.url = this.Tabs.buildPath(this.basePath);
         this.ajax.data = this.Filters.getStringParams();
-        this.ajax.data += '&page=' + this.page;
         this.loading = true;
         return $.ajax(this.ajax);
     },
@@ -261,7 +260,6 @@ var TabFilter = {
         return path + params;
     },
     refresh: function (toBack) {
-        this.pagesEnded = false;
         this.loadNextPage = false;
         this.page = 1;
 
@@ -270,14 +268,17 @@ var TabFilter = {
         if (!toBack)
             history.pushState(url, '', url);
 
-        return this.load();
+        return this.fillDataSource();
     },
     loadNext: function () {
         this.loadNextPage = true;
-        if (this.pagesEnded) {
+        var offset = this.range * this.page;
+        if (this.loading || offset >= this.source.length) {
             return;
         }
         this.page++;
-        return this.load();
+
+        var items = this.source.slice(offset, offset + TabFilter.range);
+        TabFilter.onSuccess(items, TabFilter.Tabs.getLastActiveTab());
     }
 }

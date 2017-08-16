@@ -1,17 +1,15 @@
 ﻿using Mite.BLL.Core;
 using Mite.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Mite.DAL.Infrastructure;
 using AutoMapper;
-using Mite.Helpers;
 using System.Web.Hosting;
-using Mite.BLL.DTO;
 using Mite.BLL.IdentityManagers;
 using Mite.DAL.Repositories;
 using Mite.DAL.Entities;
+using Mite.BLL.Helpers;
 
 namespace Mite.BLL.Services
 {

@@ -1,6 +1,6 @@
-﻿@using Mite.Constants
+﻿@using Mite.CodeData.Constants
 @using Mite.Extensions
-@using Mite.Enums
+@using Mite.CodeData.Enums
 
 <!DOCTYPE html>
 <html style="height: 100% !important" lang="ru">
@@ -126,16 +126,13 @@
             <a href="@Url.RouteUrl("AddPost", new { postType = PostTypes.Document.ToString().ToLower() })" class="violet item" id="editDocItem">
                 <i class="newspaper icon"></i>Добавить документ
             </a>
-            <a class="viole notifications item">
+            <a class="violet notifications item" href="/user/notifications">
                 <i class="feed icon"></i>
                 Уведомления
                 <div class="ui right violet label" style="display: none">
                     0
                 </div>
             </a>
-            <div class="ui notify popup" style="min-width: 400px; min-height: 50px;">
-                <div class="ui active loader"></div>
-            </div>
             <a href="@Url.Action("Index", "UserSettings")" class="violet user-settings item">
                 <i class="settings icon"></i>
                 Настройки
@@ -218,7 +215,7 @@
                         0
                     </div>
                 </a>
-                <div class="ui notify popup" style="min-width: 400px; min-height: 50px;">
+                <div class="ui notify popup" id="notify-popup" style="min-width: 400px; min-height: 50px;">
                     <div class="ui active loader"></div>
                 </div>
                 <a href="@Url.Action("Index", "UserSettings")" class="violet user-settings item" data-content="Настройки">

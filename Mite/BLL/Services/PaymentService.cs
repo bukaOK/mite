@@ -4,8 +4,7 @@ using Mite.DAL.Infrastructure;
 using System.Threading.Tasks;
 using Mite.BLL.IdentityManagers;
 using Mite.DAL.Entities;
-using Mite.Infrastructure;
-using Mite.Enums;
+using Mite.CodeData.Enums;
 using Mite.DAL.Repositories;
 
 namespace Mite.BLL.Services

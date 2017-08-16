@@ -1,0 +1,74 @@
+﻿using Autofac;
+using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.Owin.Security.DataProtection;
+using Mite.BLL.IdentityManagers;
+using Mite.BLL.Services;
+using Mite.DAL.Entities;
+using Mite.DAL.Infrastructure;
+using Mite.BLL.ExternalServices.Google;
+using NLog;
+using Owin;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Mite.BLL.ConfigServices
+{
+    public static class HangfireConfigService
+    {
+        /// <summary>
+        /// Раздаем заработок за день пользователям
+        /// </summary>
+        public static void LoadAdSenseIncome(IContainer container, IAppBuilder owinApp)
+        {
+            var logger = container.Resolve<ILogger>();
+            var dbContext = new AppDbContext();
+            var userManager = new AppUserManager(new UserStore<User>(dbContext), owinApp.GetDataProtectionProvider());
+            IUnitOfWork unitOfWork = new UnitOfWork();
+            IGoogleService googleService = new GoogleService(unitOfWork, container.Resolve<HttpClient>(), logger);
+            ICashService cashService = new CashService(unitOfWork, logger);
+
+            //От имени админа всегда отправляются запросы
+            var admin = userManager.FindByName("landenor");
+
+            //За какой день начислить доход
+            var incomeDay = DateTime.UtcNow.AddDays(-1);
+            var dailyIncomeTask = googleService.GetAdsenseSumAsync(incomeDay, incomeDay, admin.Id);
+            dailyIncomeTask.Wait();
+            var dailyIncome = dailyIncomeTask.Result;
+            if (dailyIncome == 0)
+                return;
+            //30% остается у MiteGroup - остальное пользователям
+            var authorsIncome = dailyIncome * 0.7;
+            //Пользователи, разрешившие показывать рекламу
+            var showAdAuthors = cashService.GetAdUsers();
+            var parameterSum = showAdAuthors.Sum(x => x.Parameter);
+
+            foreach (var author in showAdAuthors)
+            {
+                if (author.Parameter == 0)
+                    continue;
+                if (parameterSum == 0)
+                    break;
+                //Часть от общего дохода(0 < incomePart <= 1)
+                var incomePart = (double)author.Parameter / parameterSum;
+                if (incomePart <= 0 || incomePart == double.NaN)
+                    continue;
+                cashService.AdSensePay(author.Id, incomePart * authorsIncome, incomeDay);
+            }
+        }
+    }
+    public class HangfireAuthFilter : IDashboardAuthorizationFilter
+    {
+        public bool Authorize([NotNull] DashboardContext context)
+        {
+            var owinContext = new OwinContext(context.GetOwinEnvironment());
+            return owinContext.Authentication.User.IsInRole("admin");
+        }
+    }
+}
+
+}

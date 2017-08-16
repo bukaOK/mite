@@ -5,8 +5,11 @@ using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security.DataProtection;
 using Mite.DAL.Entities;
-using Mite.Enums;
+using Mite.CodeData.Enums;
 using Mite.DAL.Infrastructure;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Mite.CodeData.Constants;
 
 namespace Mite.BLL.IdentityManagers
 {
@@ -58,6 +61,14 @@ namespace Mite.BLL.IdentityManagers
                 path += "\\";
             path += "default-ava.png";
             return path;
+        }
+        public async override Task<ClaimsIdentity> CreateIdentityAsync(User user, string authenticationType)
+        {
+            if (user.AvatarSrc == null)
+                user.AvatarSrc = "/Content/images/doubt-ava.png";
+            var userIdentity = await base.CreateIdentityAsync(user, authenticationType);
+            userIdentity.AddClaim(new Claim(ClaimConstants.AvatarSrc, user.AvatarSrc));
+            return userIdentity;
         }
     }
 }

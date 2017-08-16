@@ -1,4 +1,4 @@
-﻿using Mite.Constants;
+﻿using Mite.CodeData.Constants;
 using Mite.Extensions;
 using Mite.Helpers;
 using System;

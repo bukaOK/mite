@@ -46,7 +46,7 @@ namespace Mite
             var dbContext = new AppDbContext();
             var userManager = new AppUserManager(new UserStore<User>(dbContext), owinApp.GetDataProtectionProvider());
             IUnitOfWork unitOfWork = new UnitOfWork();
-            IGoogleService googleService = new GoogleService(unitOfWork, container.Resolve<HttpClient>(), logger);
+            IGoogleAdSenseService googleService = new GoogleAdSenseService(unitOfWork, container.Resolve<HttpClient>(), logger);
             ICashService cashService = new CashService(unitOfWork, logger);
 
             //От имени админа всегда отправляются запросы

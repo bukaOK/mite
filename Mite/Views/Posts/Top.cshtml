@@ -1,4 +1,4 @@
-﻿@using Mite.Enums
+﻿@using Mite.CodeData.Enums
 @model Mite.Models.TopModel
 @{
     ViewBag.Title = "Публикации";
@@ -60,7 +60,7 @@
     <div class="three wide computer four wide tablet column">
         <div class="ui top-tags segment">
             <h3 class="ui dividing header">Теги</h3>
-            @foreach(var tag in Model.Tags) {<a class="ui label" onclick="loadTag('@tag.Name')">@tag.Name</a>}
+            @foreach(var tag in Model.Tags) {<a class="ui label" onclick="loadTag('#@tag.Name')">@tag.Name</a>}
         </div>
         <div id="vk_groups" style="width: 100%"></div>
         <div class="ui segment">
@@ -219,20 +219,6 @@
         $('#postsSearch').val(name);
         SearchFilters.changeFilter();
     }
-    function initTags() {
-        $.ajax({
-            url: '/api/tags',
-            success: function (resp) {
-                var tmpl = '<a class="ui label" onclick="loadTag(\'#{{:Name}}\')">{{:Name}}</a>';
-                var html = $.templates(tmpl).render(resp);
-                $('.top-tags').append(html);
-                $('.top-tags').removeClass('loading');
-            },
-            error: function (jqXhr) {
-                alert('Ошибка при загрузке тегов');
-            }
-        });
-    }
     function loadFullGif(newPath, postId, $button) {
         $button.addClass('loading');
 
@@ -245,7 +231,6 @@
         });
     }
     $(function () {
-        //initTags();
         var grid = $('.posts.grid:visible').masonry({
             itemSelector: '.column'
         });
@@ -267,10 +252,8 @@
                 $('.loader-wrapper').addClass('active');
             },
             onSuccess: function (resp) {
-                if (resp.status == null || resp.status == undefined) {
-                    resp = JSON.parse(resp);
-                }
-                resp.data.forEach(function (elem) {
+                
+                resp.forEach(function (elem) {
                     elem.PublishDate += elem.PublishDate[elem.PublishDate - 1] == 'Z' ? '' : 'Z';
                     elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.PublishDate).getTime());
                     if (elem.User.UserName.length <= 16) {
@@ -280,9 +263,9 @@
                     }
                 });
                 $('.posts.grid:visible .loader').remove();
-                if (resp.data.length > 0) {
+                if (resp.length > 0) {
                     var tmpl = $.templates('#topPostTmpl');
-                    var html = tmpl.render(resp.data);
+                    var html = tmpl.render(resp);
 
                     if (SearchFilters._loadNextPage) {
                         grid.append(html);
@@ -317,7 +300,7 @@
                         $.ajax({
                             url: '/userprofile/getuserprofile',
                             data: 'name=' + item.dataset.username,
-                            type: 'post',
+                            type: 'get',
                             success: function (resp) {
                                 if (resp.status == undefined) {
                                     resp = JSON.parse(resp);
@@ -338,17 +321,7 @@
                 $('.loader-wrapper').removeClass('active');
             },
             ajax: {
-                type: 'post',
-                url: '@Url.Action("Top", "Posts")',
-                checkResponseLength: function (resp) {
-                    if (resp.status == null || resp.status == undefined) {
-                        resp = JSON.parse(resp);
-                    }
-                    if (resp.data.length == 0) {
-                        return false;
-                    }
-                    return true;
-                }
+                url: '@Url.Action("Top", "Posts")'
             },
             filters: [
                 {
@@ -415,7 +388,6 @@
                 return SearchFilters.loadNext();
             }
         });
-        SearchFilters.loadNext();
         $('.ui.checkbox').checkbox();
         VK.Widgets.Group("vk_groups", { mode: 3, no_cover: 1, width: $('.top-tags')[0].offsetWidth }, 143219082);
     });

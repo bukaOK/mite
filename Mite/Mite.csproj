@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
   <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.6\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.6\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="..\packages\Microsoft.Net.Compilers.2.3.1\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.2.3.1\build\Microsoft.Net.Compilers.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -327,38 +328,33 @@
     <Compile Include="Attributes\Filters\ValidateReCaptchaAttribute.cs" />
     <Compile Include="Attributes\Filters\MvcAjaxValidateAntiForgeryAttribute.cs" />
     <Compile Include="Attributes\Filters\OnlyGuestsAttribute.cs" />
-    <Compile Include="BLL\DTO\ImageDTO.cs" />
-    <Compile Include="BLL\DTO\PostDTO.cs" />
-    <Compile Include="BLL\DTO\TagDTO.cs" />
-    <Compile Include="BLL\DTO\UserAdDTO.cs" />
-    <Compile Include="BLL\IdentityManagers\AppSignInManager.cs" />
-    <Compile Include="BLL\IdentityManagers\AppUserManager.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\Services.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Attributes\DataAnnotations\UIDataAttribute.cs" />
+    <Compile Include="BLL\Core\CrudService.cs" />
+    <Compile Include="BLL\Core\DataService.cs" />
+    <Compile Include="BLL\Helpers\FilesHelper.cs" />
+    <Compile Include="BLL\Helpers\ImagesHelper.cs" />
     <Compile Include="BLL\IdentityManagers\AppRoleManager.cs" />
+    <Compile Include="BLL\IdentityManagers\AppSignInManager.cs" />
+    <Compile Include="BLL\IdentityManagers\AppUserManager.cs" />
     <Compile Include="BLL\Infrastructure\ServiceBuilder.cs" />
     <Compile Include="BLL\Services\CashService.cs" />
+    <Compile Include="BLL\Services\CityService.cs" />
     <Compile Include="BLL\Services\CommentsService.cs" />
     <Compile Include="BLL\Services\ExternalServices.cs" />
     <Compile Include="BLL\Services\FollowersService.cs" />
+    <Compile Include="BLL\Services\GoogleAdSenseService.cs" />
     <Compile Include="BLL\Services\HelpersService.cs" />
     <Compile Include="BLL\Services\NotificationService.cs" />
     <Compile Include="BLL\Services\PaymentService.cs" />
     <Compile Include="BLL\Services\PostsService.cs" />
     <Compile Include="BLL\Services\RatingService.cs" />
     <Compile Include="BLL\Services\TagsService.cs" />
-    <Compile Include="Constants\ClaimConstants.cs" />
-    <Compile Include="Constants\FacebookSettings.cs" />
-    <Compile Include="Constants\GoogleApiSettings.cs" />
-    <Compile Include="Constants\GoogleCaptchaSettings.cs" />
-    <Compile Include="Constants\GooglePlusSettings.cs" />
-    <Compile Include="Constants\SessionKeys.cs" />
-    <Compile Include="Constants\TwitterSettings.cs" />
-    <Compile Include="Constants\VkSettings.cs" />
-    <Compile Include="Constants\YaMoneySettings.cs" />
+    <Compile Include="BLL\Services\UserService.cs" />
+    <Compile Include="BLL\Services\YandexMoneyService.cs" />
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\CashController.cs" />
     <Compile Include="Controllers\CitiesController.cs" />
@@ -379,103 +375,29 @@
     <Compile Include="Controllers\VkController.cs" />
     <Compile Include="Controllers\YandexController.cs" />
     <Compile Include="Core\CrudApiController.cs" />
-    <Compile Include="DAL\Core\GuidEntity.cs" />
-    <Compile Include="DAL\Core\Repository.cs" />
-    <Compile Include="DAL\Entities\Advertising.cs" />
-    <Compile Include="DAL\Entities\Author.cs" />
-    <Compile Include="DAL\Entities\AuthorService.cs" />
-    <Compile Include="DAL\Entities\AuthorServiceType.cs" />
-    <Compile Include="DAL\Entities\CashOperation.cs" />
-    <Compile Include="DAL\Entities\ExternalService.cs" />
-    <Compile Include="DAL\Entities\Follower.cs" />
-    <Compile Include="DAL\Entities\Helper.cs" />
-    <Compile Include="DAL\Entities\Notification.cs" />
-    <Compile Include="DAL\Entities\Payment.cs" />
-    <Compile Include="DAL\Entities\City.cs" />
-    <Compile Include="DAL\Entities\PostGroup.cs" />
-    <Compile Include="DAL\Entities\ProfileView.cs" />
-    <Compile Include="DAL\Entities\Rating.cs" />
-    <Compile Include="DAL\Entities\SocialLinks.cs" />
-    <Compile Include="DAL\Entities\Tag.cs" />
-    <Compile Include="DAL\Entities\TagPost.cs" />
-    <Compile Include="DAL\Repositories\CashOperationsRepository.cs" />
-    <Compile Include="DAL\Repositories\CitiesRepository.cs" />
-    <Compile Include="DAL\Repositories\ExternalServiceRepository.cs" />
-    <Compile Include="DAL\Repositories\PaymentsRepository.cs" />
-    <Compile Include="DAL\Repositories\CommentsRepository.cs" />
-    <Compile Include="DAL\Repositories\FollowersRepository.cs" />
-    <Compile Include="DAL\Repositories\HelpersRepository.cs" />
-    <Compile Include="DAL\Repositories\NotificationRepository.cs" />
-    <Compile Include="DAL\Repositories\PostsRepository.cs" />
-    <Compile Include="DAL\Repositories\RatingRepository.cs" />
-    <Compile Include="DAL\Repositories\SocialLinksRepository.cs" />
-    <Compile Include="DAL\Repositories\TagsRepository.cs" />
-    <Compile Include="DAL\Repositories\UserRepository.cs" />
-    <Compile Include="Enums\CashOperationTypes.cs" />
-    <Compile Include="Enums\PaymentType.cs" />
-    <Compile Include="Enums\HelperTypes.cs" />
-    <Compile Include="Enums\ImageSizes.cs" />
-    <Compile Include="Enums\NotificationTypes.cs" />
-    <Compile Include="Enums\PostTimeFilter.cs" />
-    <Compile Include="Enums\PostTypes.cs" />
-    <Compile Include="Enums\PostUserFilter.cs" />
-    <Compile Include="Enums\SocialServiceTypes.cs" />
-    <Compile Include="Enums\SortFilter.cs" />
     <Compile Include="Extensions\ClaimsExtensions.cs" />
+    <Compile Include="Extensions\HtmlExtensions.cs" />
     <Compile Include="Extensions\ValidationExtensions.cs" />
-    <Compile Include="ExternalServices\Google\AdSense\AdSenseRequestParams.cs" />
-    <Compile Include="ExternalServices\Google\AdSense\AdSenseResult.cs" />
-    <Compile Include="ExternalServices\Google\Attributes\ParamNameAttribute.cs" />
-    <Compile Include="ExternalServices\Google\Authorize\AuthCodeResponse.cs" />
-    <Compile Include="ExternalServices\Google\Authorize\Authenticator.cs" />
-    <Compile Include="ExternalServices\Google\Core\ApiRequest.cs" />
-    <Compile Include="ExternalServices\Google\Core\RequestParams.cs" />
-    <Compile Include="ExternalServices\Google\Data\DataStore.cs" />
-    <Compile Include="ExternalServices\Google\GoogleService.cs" />
-    <Compile Include="ExternalServices\YandexMoney\Authenticator.cs" />
-    <Compile Include="ExternalServices\YandexMoney\ExternalPayment.cs" />
-    <Compile Include="ExternalServices\YandexMoney\YaHttpClient.cs" />
-    <Compile Include="ExternalServices\YandexMoney\YandexService.cs" />
-    <Compile Include="ExternalServices\YandexMoney\YaP2PRequestParams.cs" />
     <Compile Include="Helpers\ClaimsHelper.cs" />
     <Compile Include="Helpers\CookieHelper.cs" />
-    <Compile Include="Helpers\FilesHelper.cs" />
-    <Compile Include="BLL\Services\UserService.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\UserSettingsController.cs" />
     <Compile Include="Core\BaseController.cs" />
-    <Compile Include="BLL\Core\DataService.cs" />
     <Compile Include="Core\DataSource.cs" />
-    <Compile Include="DAL\Core\IGuidEntity.cs" />
-    <Compile Include="DAL\Core\IRepository.cs" />
-    <Compile Include="DAL\Entities\Comment.cs" />
-    <Compile Include="DAL\Entities\Group.cs" />
-    <Compile Include="DAL\Entities\Post.cs" />
-    <Compile Include="DAL\Entities\User.cs" />
-    <Compile Include="Enums\Genders.cs" />
-    <Compile Include="DAL\Infrastructure\IUnitOfWork.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Helpers\ImagesHelper.cs" />
     <Compile Include="Helpers\SocialServicesHelper.cs" />
-    <Compile Include="Infrastructure\Logger.cs" />
     <Compile Include="Helpers\ViewHelper.cs" />
-    <Compile Include="DAL\Infrastructure\AppDbContext.cs" />
-    <Compile Include="DAL\Infrastructure\UnitOfWork.cs" />
     <Compile Include="App_Start\AutofacDI.cs" />
     <Compile Include="Hubs\NotifyHub.cs" />
-    <Compile Include="Migrations\201708101610598_Init.cs" />
-    <Compile Include="Migrations\201708101610598_Init.Designer.cs">
-      <DependentUpon>201708101610598_Init.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountModels.cs" />
     <Compile Include="Models\AdminModels.cs" />
     <Compile Include="Models\CashSettingsModels.cs" />
     <Compile Include="Models\CommentModel.cs" />
     <Compile Include="Models\CommentRatingModel.cs" />
+    <Compile Include="Models\FiltersModels.cs" />
     <Compile Include="Models\GooglePlaces\AddressComponent.cs" />
     <Compile Include="Models\HelperModel.cs" />
     <Compile Include="Models\ModerModels.cs" />
@@ -567,9 +489,12 @@
     <None Include="Properties\PublishProfiles\MiteTestProfile.pubxml" />
     <None Include="Scripts\jquery-3.1.1.intellisense.js" />
     <Content Include="robots.txt" />
+    <Content Include="Scripts\Api\Cities.js" />
     <Content Include="Scripts\BrowserSupport.js" />
     <Content Include="Scripts\content-tools.js" />
     <Content Include="Scripts\content-tools.min.js" />
+    <Content Include="Scripts\Custom\MiteTabs.js" />
+    <Content Include="Scripts\Custom\SearchFilters.js" />
     <Content Include="Scripts\Custom\Settings.js" />
     <Content Include="Scripts\jquery-3.1.1.js" />
     <Content Include="Scripts\jquery-3.1.1.min.js" />
@@ -666,7 +591,6 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="bower_components\" />
-    <Folder Include="Initializers\" />
     <Folder Include="ViewModels\" />
     <Folder Include="Views\Base\" />
     <Folder Include="Views\UserHelpers\" />
@@ -678,15 +602,28 @@
     <Content Include="Scripts\jquery-3.1.1.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201708101610598_Init.resx">
-      <DependentUpon>201708101610598_Init.cs</DependentUpon>
-    </EmbeddedResource>
+    <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Mite.CodeData\Mite.CodeData.csproj">
+      <Project>{7f830d87-a7d7-4717-b86c-0806c1e8b6ae}</Project>
+      <Name>Mite.CodeData</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Mite.DAL\Mite.DAL.csproj">
+      <Project>{c3fc354e-9d4d-47c9-82ae-63d5c4ad7343}</Project>
+      <Name>Mite.DAL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Mite.ExternalServices\Mite.ExternalServices.csproj">
+      <Project>{05B84F08-C5FC-4FE8-AA9D-64A2E10849CD}</Project>
+      <Name>Mite.ExternalServices</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
   <Target Name="MvcBuildViews" AfterTargets="AfterBuild" Condition="'$(MvcBuildViews)'=='true'">

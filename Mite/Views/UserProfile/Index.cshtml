@@ -1,4 +1,4 @@
-﻿@using Mite.Enums
+﻿@using Mite.CodeData.Enums
 @using Mite.Helpers
 @model Mite.Models.ProfileModel
 
@@ -291,7 +291,7 @@ else
 </div>
 <script id="followersTmpl" type="text/x-jsrender">
     <div class="column">
-        <div class="ui segment grid" style="margin: 0px;">
+        <div class="ui compact segment follower-card grid" style="margin: 0px;">
             <div class="five wide column">
                 <img src="{{:AvatarSrc}}" class="ui small circular image">
             </div>
@@ -715,7 +715,7 @@ else
             },
             onSuccess: function(resp, tab){
                 var html;
-                if(resp.data.length == 0 && TabFilter.page == 1){
+                if(resp.length == 0 && TabFilter.page == 1){
                     if(tab.name == 'followers'){
                         html = $('#emptyFollowersTmpl').html();
                     } else if(tab.name == 'followings'){
@@ -727,12 +727,12 @@ else
                         html = $('#emptyPostTmpl').html();
                     }
                     tab.content.html(html);
-                } else if(resp.data.length > 0) {
+                } else if(resp.length > 0) {
                     var tmplSelector;
                     if((tab.parentTab != undefined && tab.parentTab != null && tab.parentTab.name == 'posts') || tab.name == 'posts/published'){
                         tmplSelector = '#postsTmpl';
 
-                        resp.data.forEach(function(elem){
+                        resp.forEach(function(elem){
                             elem.LastEdit += elem.LastEdit[elem.LastEdit - 1] == 'Z' ? '' : 'Z';
                             if(elem.PublishDate != null){
                                 elem.PublishDate += elem.PublishDate[elem.PublishDate - 1] == 'Z' ? '' : 'Z';
@@ -745,7 +745,7 @@ else
                         tmplSelector = '#followersTmpl';
                     }
                     var tmpl = $.templates(tmplSelector);
-                    html = tmpl.render(resp.data);
+                    html = tmpl.render(resp);
 
                     if(TabFilter.loadNextPage) {
                         tab.content.append(html);
@@ -764,7 +764,7 @@ else
                         grids[i].elem.imagesLoaded(function(){
                             grids[i].elem.masonry('layout');
                             $('.dot-loader-wrapper').removeClass('active');
-                            resp.data.forEach(function(elem){
+                            resp.forEach(function(elem){
                                 $('.column[data-post-id="' + elem.Id + '"] .user-actions.dropdown').dropdown({
                                     action: 'hide'
                                 });
@@ -776,6 +776,9 @@ else
                     }
                 }
             },
+            onError: function () {
+                $('.dot-loader-wrapper').removeClass('active');
+            },
             ajax: {
                 type: 'post'
             }
@@ -784,7 +787,7 @@ else
             if (!TabFilter.loading) {
                 var lastTab = TabFilter.Tabs.getLastActiveTab();
                 if(lastTab.name != 'followings' && lastTab.name != 'followers'){
-                    return TabFilter.loadNext();
+                    TabFilter.loadNext();
                 }
             }
         });

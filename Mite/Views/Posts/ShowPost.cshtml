@@ -1,5 +1,5 @@
 ﻿@using Mite.Helpers
-@using Mite.Enums
+@using Mite.CodeData.Enums
 @using Microsoft.AspNet.Identity
 @using Mite.Extensions
 @model Mite.Models.PostModel
@@ -246,7 +246,11 @@
                     @Html.ActionLink("Зарегистрируйтесь, чтобы оставлять комментарии.", "Register", "Account")
                 }
                 <div class="ui comments" id="comments-wrapper">
-                    <div class="ui active inline centered medium text active loader">Загрузка...</div>
+                    <div class="active dot-loader" style="position: relative; transform: initial;">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -370,6 +374,7 @@
             url: '/api/comments/',
             data: model,
             success: function (data) {
+                console.log(data);
                 sendNotification('@NotificationTypes.PostComment', '@Model.User.Id', '@Model.Id#com' + data.Id);
                 if(replyCommentId != null && replyCommentId != '') {
                     sendNotification('@NotificationTypes.CommentReply', model.ParentComment.User.Id, '@Model.Id#com' + data.Id);
@@ -404,7 +409,8 @@
                 loadCommentsCount();
                 $('#com' + commentId).remove();
             },
-            error: function(jqXhr){
+            error: function (jqXhr) {
+                console.log(jqXhr);
                 alert('Ошибка при удалении комментария!');
             }
         });

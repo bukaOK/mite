@@ -10,10 +10,10 @@ using Microsoft.Owin.Security.DataProtection;
 using Microsoft.Owin.Security.Facebook;
 using Microsoft.Owin.Security.Twitter;
 using Mite.BLL.IdentityManagers;
-using Mite.Constants;
+using Mite.CodeData.Constants;
 using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
-using Mite.Migrations;
+using Mite.DAL.Migrations;
 using Owin;
 using System;
 using System.Data.Entity;
@@ -38,8 +38,7 @@ namespace Mite
             app.UseWebApi(apiConfig);
             app.MapSignalR();
 
-            CitiesInitializer.Initialize();
-            TelemetryConfiguration.Active.DisableTelemetry = true;
+            //CitiesInitializer.Initialize();
             HangfireConfig.Initialize(app, container);
         }
         private void ConfigureAuth(IAppBuilder app, IContainer diContainer)
@@ -52,7 +51,7 @@ namespace Mite
                 {
                     OnValidateIdentity = SecurityStampValidator.OnValidateIdentity<AppUserManager, User>(
                         validateInterval: TimeSpan.FromMinutes(30),
-                        regenerateIdentity: (manager, user) => user.GenerateUserIdentityAsync(manager))
+                        regenerateIdentity: (manager, user) => manager.CreateIdentityAsync(user, DefaultAuthenticationTypes.ApplicationCookie))
                 },
                 CookieName = "MiteCookie",
                 LogoutPath = new PathString("/account/logoff")
@@ -125,7 +124,7 @@ namespace Mite
             var config = new HttpConfiguration();
             config.MapHttpAttributeRoutes();
 
-            config.Routes.MapHttpRoute("DefaultNameApi", "api/{controller}/{name}", new { name = RouteParameter.Optional });
+            //config.Routes.MapHttpRoute("DefaultNameApi", "api/{controller}/{name}", new { name = RouteParameter.Optional });
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
                 routeTemplate: "api/{controller}/{id}",

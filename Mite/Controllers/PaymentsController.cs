@@ -2,9 +2,9 @@
 using Mite.BLL.Core;
 using Mite.BLL.IdentityManagers;
 using Mite.BLL.Services;
-using Mite.Constants;
+using Mite.CodeData.Constants;
 using Mite.Core;
-using Mite.Enums;
+using Mite.CodeData.Enums;
 using Mite.ExternalServices.YandexMoney;
 using Mite.Models;
 using NLog;
@@ -23,13 +23,13 @@ namespace Mite.Controllers
         private const double Comission = 0.02;
 
         private readonly AppUserManager userManager;
-        private readonly IYandexService yaService;
+        private readonly IYandexMoneyService yaService;
         private readonly IPaymentService paymentService;
         private readonly ICashService cashService;
         private readonly ILogger logger;
         private readonly IExternalServices externalServices;
 
-        public PaymentsController(AppUserManager userManager, IYandexService yaService, IPaymentService paymentService,
+        public PaymentsController(AppUserManager userManager, IYandexMoneyService yaService, IPaymentService paymentService,
             ICashService cashService, ILogger logger, IExternalServices externalServices)
         {
             this.userManager = userManager;
@@ -90,9 +90,8 @@ namespace Mite.Controllers
 
                     if(result.ResultData != null && result.Succeeded)
                     {
-                        if(result.ResultData is ProcessExternalPaymentResult)
+                        if (result.ResultData is ProcessExternalPaymentResult procResult)
                         {
-                            var procResult = (ProcessExternalPaymentResult)result.ResultData;
                             var getParams = DictionaryToParams(procResult.AcsParams);
 
                             Session[SessionKeys.YaMoneyExternal] = sessionPayment;

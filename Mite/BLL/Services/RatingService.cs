@@ -38,7 +38,7 @@ namespace Mite.BLL.Services
         {
             var repo = Database.GetRepo<RatingRepository, Rating>();
 
-            var rating = await repo.GetByUserAndCommentAsync(commentId.ToString(), userId);
+            var rating = await repo.GetByUserAndCommentAsync(commentId, userId);
             if (rating == default(Rating))
                 return null;
 
@@ -68,7 +68,7 @@ namespace Mite.BLL.Services
             else
             {
                 var existingRating =
-                    await repo.GetByUserAndCommentAsync(rating.CommentId.ToString(), rating.UserId);
+                    await repo.GetByUserAndCommentAsync(rating.CommentId, rating.UserId);
 
                 //Если существует, обновляем рейтинг, иначе добавляем новый
                 if (existingRating != default(Rating))

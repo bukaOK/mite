@@ -6,7 +6,7 @@ using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Mite.BLL.Services;
 using Mite.Core;
-using Mite.Enums;
+using Mite.CodeData.Enums;
 using Mite.Models;
 using System.Text.RegularExpressions;
 using AutoMapper;
@@ -14,6 +14,7 @@ using System.Net;
 using NLog;
 using System.Linq;
 using Mite.BLL.Infrastructure;
+using Mite.BLL.Helpers;
 
 namespace Mite.Controllers
 {
@@ -35,8 +36,7 @@ namespace Mite.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> ShowPost(string id)
         {
-            Guid postId;
-            if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out postId))
+            if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out Guid postId))
                 return NotFound();
 
             var postsService = serviceBuilder.Build<IPostsService>();
@@ -179,8 +179,7 @@ namespace Mite.Controllers
         [HttpPost]
         public async Task<HttpStatusCodeResult> PublishPost(string id)
         {
-            Guid postId;
-            if(string.IsNullOrEmpty(id) || !Guid.TryParse(id, out postId))
+            if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out Guid postId))
             {
                 return BadRequest();
             }
@@ -223,16 +222,14 @@ namespace Mite.Controllers
         }
         [HttpPost]
         [AllowAnonymous]
-        public async Task<JsonResult> Top(string tags, string postName, SortFilter sortFilter,
-            PostTimeFilter postTimeFilter, PostUserFilter postUserFilter, int page)
+        public async Task<JsonResult> Top(PostTopFilterModel filter)
         {
             var postsService = serviceBuilder.Build<IPostsService>();
 
             //Плюс зарезервированный символ url, поэтому заменяется пробелом
-            tags = tags.Replace("18 ", "18+");
-            var tagsNames = string.IsNullOrEmpty(tags) ? new string[0] : tags.Split(',');
-            var posts = await postsService.GetTopAsync(tagsNames, postName, sortFilter, postTimeFilter, postUserFilter,
-                User.Identity.GetUserId(), page);
+            if(!string.IsNullOrEmpty(filter.Tags))
+                filter.Tags = filter.Tags.Replace("18 ", "18+");
+            var posts = await postsService.GetTopAsync(filter, User.Identity.GetUserId());
             return Json(JsonStatuses.Success, posts);
         }
     }

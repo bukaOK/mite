@@ -5,6 +5,7 @@ using System.Configuration;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Mite.DAL.Infrastructure;
+using Mite.CodeData.Enums;
 
 namespace Mite.Tests.DAL.Repositories
 {
@@ -22,13 +23,13 @@ namespace Mite.Tests.DAL.Repositories
             const int range = 9;
             var offset = (page - 1) * range;
 
-            var page1 = await repo.GetByFilterAsync(minDate, true, "46d46e53-3035-4772-b8cd-99db788eaaf0", Enums.SortFilter.New, offset, range);
+            var page1 = await repo.GetByFilterAsync(minDate, true, "46d46e53-3035-4772-b8cd-99db788eaaf0", SortFilter.New, offset, range);
             page = 2;
             offset = (page - 1) * range;
-            var page2 = await repo.GetByFilterAsync(minDate, true, "46d46e53-3035-4772-b8cd-99db788eaaf0", Enums.SortFilter.New, offset, range);
+            var page2 = await repo.GetByFilterAsync(minDate, true, "46d46e53-3035-4772-b8cd-99db788eaaf0", SortFilter.New, offset, range);
             page = 3;
             offset = (page - 1) * range;    
-            var page3 = await repo.GetByFilterAsync(minDate, true, "46d46e53-3035-4772-b8cd-99db788eaaf0", Enums.SortFilter.New, offset, range);
+            var page3 = await repo.GetByFilterAsync(minDate, true, "46d46e53-3035-4772-b8cd-99db788eaaf0", SortFilter.New, offset, range);
         }
     }
 }

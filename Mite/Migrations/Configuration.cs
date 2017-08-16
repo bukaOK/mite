@@ -6,11 +6,11 @@ using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity;
-using Mite.Enums;
+using Mite.CodeData.Enums;
 
 namespace Mite.Migrations
 {    
-    internal sealed class Configuration : DbMigrationsConfiguration<AppDbContext>
+    public sealed class Configuration : DbMigrationsConfiguration<AppDbContext>
     {
         public Configuration()
         {

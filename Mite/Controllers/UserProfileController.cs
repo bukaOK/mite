@@ -3,7 +3,7 @@ using System.Web.Mvc;
 using Mite.BLL.Services;
 using Mite.Core;
 using Microsoft.AspNet.Identity;
-using Mite.Enums;
+using Mite.CodeData.Enums;
 using System.Linq;
 using System;
 using System.Collections.Generic;
@@ -99,14 +99,14 @@ namespace Mite.Controllers
             return Index(name);
         }
         [HttpPost]
-        public async Task<ActionResult> Posts(string name, SortFilter sort, PostTypes? type, int page)
+        public async Task<ActionResult> Posts(string name, SortFilter sort, PostTypes? type)
         {
             IEnumerable<ProfilePostModel> posts;
             if (!string.Equals(name, User.Identity.Name, StringComparison.OrdinalIgnoreCase) && type == PostTypes.Drafts)
                 return Forbidden();
             if (type == null)
                 type = PostTypes.Published;
-            posts = await _postsService.GetByUserAsync(name, User.Identity.GetUserId(), sort, (PostTypes)type, page);
+            posts = await _postsService.GetByUserAsync(name, User.Identity.GetUserId(), sort, (PostTypes)type);
             return Json(JsonStatuses.Success, posts);
         }
         public Task<ActionResult> Followings(string name)

@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Net;
-using Mite.Enums;
+using Mite.CodeData.Enums;
 
 namespace Mite.Controllers
 {

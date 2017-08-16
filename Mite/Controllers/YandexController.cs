@@ -3,18 +3,18 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Mite.ExternalServices.YandexMoney;
-using Mite.Constants;
-using System.Linq;
+using Mite.CodeData.Constants;
+using Mite.CodeData.Enums;
 using Mite.BLL.Services;
 
 namespace Mite.Controllers
 {
     public class YandexController : BaseController
     {
-        private readonly IYandexService yandexService;
+        private readonly IYandexMoneyService yandexService;
         private readonly IPaymentService paymentService;
 
-        public YandexController(IYandexService yandexService, IPaymentService paymentService)
+        public YandexController(IYandexMoneyService yandexService, IPaymentService paymentService)
         {
             this.yandexService = yandexService;
             this.paymentService = paymentService;
@@ -53,7 +53,7 @@ namespace Mite.Controllers
             var result = await yandexService.ExternalPayIn(sessionPayment.RequestID, sessionPayment.InstanceID);
             if (result.Succeeded)
             {
-                await paymentService.AddAsync(sessionPayment.Sum, sessionPayment.RequestID, User.Identity.GetUserId(), Enums.PaymentType.BankCard);
+                await paymentService.AddAsync(sessionPayment.Sum, sessionPayment.RequestID, User.Identity.GetUserId(), PaymentType.BankCard);
                 Session[SessionKeys.YaMoneyExternal] = null;
                 return Json(JsonStatuses.Success);
             }

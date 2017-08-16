@@ -1,4 +1,4 @@
-﻿using Mite.Constants;
+﻿using Mite.CodeData.Constants;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -23,10 +23,11 @@ namespace Mite.Attributes.Filters
                 return;
             }
 
-            var reqParams = new Dictionary<string, string>();
-            reqParams.Add("secret", GoogleCaptchaSettings.ReCaptchaSecret);
-            reqParams.Add("response", captcha);
-
+            var reqParams = new Dictionary<string, string>
+            {
+                { "secret", GoogleCaptchaSettings.ReCaptchaSecret },
+                { "response", captcha }
+            };
             var content = new FormUrlEncodedContent(reqParams);
             var result = await HttpClient.PostAsync("https://www.google.com/recaptcha/api/siteverify", content);
 

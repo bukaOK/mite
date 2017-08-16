@@ -64,6 +64,18 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Mite.CodeData\Mite.CodeData.csproj">
+      <Project>{7f830d87-a7d7-4717-b86c-0806c1e8b6ae}</Project>
+      <Name>Mite.CodeData</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Mite.DAL\Mite.DAL.csproj">
+      <Project>{c3fc354e-9d4d-47c9-82ae-63d5c4ad7343}</Project>
+      <Name>Mite.DAL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Mite.ExternalServices\Mite.ExternalServices.csproj">
+      <Project>{05b84f08-c5fc-4fe8-aa9d-64a2e10849cd}</Project>
+      <Name>Mite.ExternalServices</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Mite\Mite.csproj">
       <Project>{0D8688BF-EAC2-4448-B18C-204AB7B17723}</Project>
       <Name>Mite</Name>

@@ -179,12 +179,6 @@ article.ui.container{
     display: flex;
     justify-content: center;
 }
-.follower-item{
-    background-color: white;
-    border-radius: 80px;
-    padding: 5px;
-    box-shadow: 0px 0px 20px rgba(34, 36, 38, 0.15);
-}
 .secondary.labeled.menu .item {
     color: #6D6788 !important;
 }
@@ -470,7 +464,10 @@ p.docs{
 .user-card.popup .statistics.row{
     padding-top: 0;
 }
-
+/*Карточка подписчика/подписки*/
+.post-item .sub.header, .follower-card{
+    overflow: hidden;
+}
 /*Кнопка скроллинга*/
 .ui.button.scroll{
     position: fixed;
