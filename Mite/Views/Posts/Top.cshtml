@@ -76,8 +76,14 @@
         </div>
     </div>
     <div class="thirteen wide computer twelve wide tablet column">
-        <div class="ui posts stackable three column computer mobile only basic segment grid"></div>
-        <div class="ui posts stackable two column tablet only basic segment grid"></div>
+        @if (Request.Browser.IsMobileDevice)
+        {
+            <div class="ui posts two column stackable basic segment grid"></div>
+        }
+        else
+        {
+            <div class="ui posts three column basic segment grid"></div>
+        }
     </div>
     <button class="ui scroll circular primary icon big button" onclick="Scrolling.scrollTo('#sortType', 1800, 'easeOutExpo', -10)"><i class="angle up icon"></i></button>
 </div>
@@ -231,7 +237,7 @@
         });
     }
     $(function () {
-        var grid = $('.posts.grid:visible').masonry({
+        var grid = $('.posts.grid').masonry({
             itemSelector: '.column'
         });
         $('.ui.dropdown').dropdown({

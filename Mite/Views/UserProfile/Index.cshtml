@@ -181,7 +181,14 @@
                 Блокированные
             </a>
         </div>
-        <div class="ui tab stackable three column grid basic segment" data-tab="published"></div>
+        @if (Request.Browser.IsMobileDevice)
+        {
+            <div class="ui tab two column stackable grid basic segment" data-tab="published"></div>
+        }
+        else
+        {
+            <div class="ui tab three column grid basic segment" data-tab="published"></div>
+        }
         <div class="ui tab stackable three column basic segment grid" data-tab="drafts"></div>
         <div class="ui tab stackable three column basic segment grid" data-tab="blocked"></div>
     </div>
@@ -192,6 +199,7 @@ else
 {
     if (Model.ShowAd)
     {
+        
         <div class="ui stackable grid">
             <div class="three wide column">
                 <div class="ui segment">
@@ -207,7 +215,14 @@ else
                 </div>
             </div>
             <div class="thirteen wide column">
-                <div class="ui tab stackable three column basic segment grid" data-tab="posts/published"></div>
+                @if (Request.Browser.IsMobileDevice)
+                {
+                    <div class="ui tab two column stackable basic segment grid" data-tab="posts/published"></div>
+                }
+                else
+                {
+                    <div class="ui tab three column basic segment grid" data-tab="posts/published"></div>
+                }
                 <div class="ui stackable tab three column basic segment grid" data-tab="followers"></div>
             </div>
         </div>
