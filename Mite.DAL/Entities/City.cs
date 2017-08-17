@@ -25,5 +25,13 @@ namespace Mite.DAL.Entities
         /// Население
         /// </summary>
         public int Population { get; set; }
+        /// <summary>
+        /// Долгота
+        /// </summary>
+        public double? Longitude { get; set; }
+        /// <summary>
+        /// Широта
+        /// </summary>
+        public double? Latitude { get; set; }
     }
 }

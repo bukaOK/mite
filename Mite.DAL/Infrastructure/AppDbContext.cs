@@ -17,7 +17,7 @@ namespace Mite.DAL.Infrastructure
         public IDbSet<CashOperation> CashOperations { get; set; }
         public IDbSet<ExternalService> ExternalServices { get; set; }
         public IDbSet<SocialLinks> SocialLinks { get; set; }
-        //public IDbSet<City> Cities { get; set; }
+        public IDbSet<City> Cities { get; set; }
 
         public AppDbContext()
             : base("DefaultConnection")

@@ -37,7 +37,8 @@ namespace Mite.ExternalServices.YandexMoney
             request.AppendItemsTo(yaParams);
             var content = new FormUrlEncodedContent(yaParams);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            if(token != null)
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             var reqUri = new Uri(BaseUri, request.RelativeUri);
             var response = await httpClient.PostAsync(reqUri, content, cancellationToken);
@@ -74,14 +75,6 @@ namespace Mite.ExternalServices.YandexMoney
                     throw new IOException(responseError);
             }
         }
-        private string AuthenticationToken
-        {
-            get
-            {
-                if (authenticator.Token != null)
-                    return authenticator.Token;
-                throw new NullReferenceException("Не задан токен аутентификации");
-            }
-        }
+        private string AuthenticationToken => authenticator.Token;
     }
 }

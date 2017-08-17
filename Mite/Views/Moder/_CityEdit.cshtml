@@ -1,53 +1,67 @@
-﻿@model Mite.DAL.Entities.City
+﻿@model Mite.Models.CityModel
 
-<div class="ui tiny modal" id="cityEditModal" data-city-id>
-    <div class="header">Изменение города</div>
-    <form class="ui form" id="cityEditForm">
-        @Html.EditorFor(x => x.Name)
-        @Html.EditorFor(x => x.District)
-        @Html.EditorFor(x => x.Region)
-        @Html.EditorFor(x => x.TimeZone)
-        @Html.EditorFor(x => x.Population)
-    </form>
-    <div class="actions">
-        <button type="button" class="ui success button" id="cityEditBtn">Отправить</button>
+<div class="ui tiny modal" id="cityModal" data-city-id role="dialog">
+    <div class="header" role="heading">Изменение города</div>
+    <div class="content" role="document">
+        <form class="ui form" id="cityForm">
+            @Html.HiddenFor(x => x.Id)
+            @Html.EditorFor(x => x.Name)
+            @Html.EditorFor(x => x.District)
+            @Html.EditorFor(x => x.Region)
+            @Html.EditorFor(x => x.TimeZone)
+            @Html.EditorFor(x => x.Population)
+        </form>
     </div>
-</div>
-<div class="ui tiny modal" id="cityAddModal">
-    <div class="header">Добавление города</div>
-    <form class="ui form" id="cityAddForm">
-        @Html.EditorFor(x => x.Name)
-        @Html.EditorFor(x => x.District)
-        @Html.EditorFor(x => x.Region)
-        @Html.EditorFor(x => x.TimeZone)
-        @Html.EditorFor(x => x.Population)
-    </form>
     <div class="actions">
-        <button type="button" class="ui ok primary button" id="cityAddBtn">Отправить</button>
+        <button type="button" class="ui green ok button" id="cityFormBtn">Отправить</button>
     </div>
 </div>
 <script id="citiesRowTmpl" type="text/x-jsrender">
     <tr data-id="{{:Id}}" data-name="{{:Name}}" data-population="{{:Population}}" data-district="{{:District}}" data-region="{{:Region}}"
         data-timezone="{{:TimeZone}}">
-        <td>{{:Id}}</td>
         <td>{{:Name}}</td>
+        <td>{{:Region}}</td>
+        <td>{{:District}}</td>
         <td>
-            <button class="ui margined compact button" onclick="showCityEditModal(this)">Изменить</button>
+            <button class="ui margined compact button" onclick="showCityEditModal(this, '{{:Id}}')">Изменить</button>
             <button class="ui margined compact red button" onclick="CitiesApi.remove($(this), $(this).parents('tr'), '{{:Id}}')">Удалить</button>
         </td>
     </tr>
 </script>
 <script>
-    $(function () {
-        $('#cityEditModal').modal({
-            onApprove: function ($elem) {
-                var cityId = $('#cityEditModal').data('id');
-                CitiesApi.update($('#cityEditBtn'), $('#cityEditForm'), $('tr[data-id="' + cityId + '"]'));
-            }
+    function showCityAddModal() {
+        $('#cityModal').data('cityId', null);
+        $('#cityModal>.header').html('Добавление города');
+        var $form = $('#cityForm');
+
+        $form.find('input').each(function (elem) {
+            $(elem).val('');
         });
-        $('#cityAddModal').modal({
+        $('#cityModal').modal('show');
+    }
+    function showCityEditModal(btn, id) {
+        var $tr = $(btn).parents('tr');
+        $('#cityModal .header').html('Изменение города');
+        var $form = $('#cityForm');
+
+        $form.find('[name="Id"]').val($tr.data('id'))
+        $form.find('[name="Name"]').val($tr.data('name'));
+        $form.find('[name="District"]').val($tr.data('district'));
+        $form.find('[name="Region"]').val($tr.data('region'));
+        $form.find('[name="TimeZone"]').val($tr.data('timezone'));
+        $form.find('[name="Population"]').val($tr.data('population'));
+
+        document.getElementById('cityModal').dataset.cityId = id;
+        $('#cityModal').modal('show');
+    }
+    $(function () {
+        $('#cityModal').modal({
             onApprove: function ($elem) {
-                CitiesApi.add($('#cityAddBtn'), $('#cityAddForm'), $('.tab[data-tab="cities"] tbody'));
+                var cityId = document.getElementById('cityModal').dataset.cityId;
+                if (cityId != null)
+                    CitiesApi.update($('#cityFormBtn'), $('#cityForm'), $('tr[data-id="' + cityId + '"]'));
+                else
+                    CitiesApi.add($('#cityFormBtn'), $('#cityForm'), $('.tab[data-tab="cities"] tbody'));
             }
         });
     });

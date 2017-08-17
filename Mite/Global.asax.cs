@@ -118,6 +118,9 @@ namespace Mite
                 cfg.CreateMap<SocialLinks, SocialLinksModel>();
                 cfg.CreateMap<SocialLinksModel, SocialLinks>()
                     .ForMember(dest => dest.UserId, opt => opt.Ignore());
+
+                cfg.CreateMap<CityModel, City>();
+                cfg.CreateMap<City, CityModel>();
             });
         }
     }

@@ -218,6 +218,7 @@ namespace Mite.BLL.Services
         {
             var repo = Database.GetRepo<PostsRepository, Post>();
             var post = await repo.GetWithTagsAsync(postId);
+            post.Tags = post.Tags.Where(x => !string.IsNullOrEmpty(x.Name)).ToList();
             //post.Tags = post.Tags.Where(x => x.IsConfirmed).ToList();
             
             var postModel = Mapper.Map<PostModel>(post);
@@ -238,6 +239,7 @@ namespace Mite.BLL.Services
             var repo = Database.GetRepo<PostsRepository, Post>();
 
             var post = await repo.GetWithTagsAsync(postId);
+            post.Tags = post.Tags.Where(x => !string.IsNullOrEmpty(x.Name)).ToList();
             var user = await _userManager.FindByIdAsync(post.UserId);
             var postModel = Mapper.Map<PostModel>(post);
             var userModel = Mapper.Map<UserShortModel>(user);

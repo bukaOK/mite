@@ -38,7 +38,7 @@ namespace Mite
             app.UseWebApi(apiConfig);
             app.MapSignalR();
 
-            //CitiesInitializer.Initialize();
+            CitiesInitializer.Initialize();
             HangfireConfig.Initialize(app, container);
         }
         private void ConfigureAuth(IAppBuilder app, IContainer diContainer)

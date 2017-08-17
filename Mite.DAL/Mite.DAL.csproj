@@ -108,6 +108,14 @@
     <Compile Include="Migrations\201708141122148_RemoveCities.Designer.cs">
       <DependentUpon>201708141122148_RemoveCities.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201708161446361_AddCities.cs" />
+    <Compile Include="Migrations\201708161446361_AddCities.Designer.cs">
+      <DependentUpon>201708161446361_AddCities.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201708171127170_AddCityCoordinates.cs" />
+    <Compile Include="Migrations\201708171127170_AddCityCoordinates.Designer.cs">
+      <DependentUpon>201708171127170_AddCityCoordinates.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\CashOperationsRepository.cs" />
@@ -142,6 +150,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201708141122148_RemoveCities.resx">
       <DependentUpon>201708141122148_RemoveCities.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201708161446361_AddCities.resx">
+      <DependentUpon>201708161446361_AddCities.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201708171127170_AddCityCoordinates.resx">
+      <DependentUpon>201708171127170_AddCityCoordinates.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

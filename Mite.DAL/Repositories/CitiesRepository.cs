@@ -27,6 +27,16 @@ namespace Mite.DAL.Repositories
             var query = $"select * from dbo.\"{TableName}\" where \"Name\" like N'{name}%';";
             return Db.QueryAsync<City>(query);
         }
+        public override Task UpdateAsync(City entity)
+        {
+            DbContext.Entry(entity).State = EntityState.Modified;
+
+            if (entity.Latitude == null)
+                DbContext.Entry(entity).Property(x => x.Latitude).IsModified = false;
+            if (entity.Longitude == null)
+                DbContext.Entry(entity).Property(x => x.Longitude).IsModified = false;
+            return SaveAsync();
+        }
         public void AddRange(IEnumerable<City> cities)
         {
             foreach(var city in cities)

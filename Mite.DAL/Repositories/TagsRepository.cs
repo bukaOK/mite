@@ -103,6 +103,8 @@ namespace Mite.DAL.Repositories
         /// <returns></returns>
         public async Task AddWithPostAsync(List<Tag> tags, Guid postId)
         {
+            tags = tags.Where(x => !string.IsNullOrEmpty(x.Name)).ToList();
+
             var query = "select * from dbo.\"Tags\" where \"Name\" = any(@Tags); "
                 + "select * from dbo.\"TagPosts\" where \"Post_Id\"=@PostId;";
             var multi = await Db.QueryMultipleAsync(query, new { Tags = tags.Select(x => x.Name).ToList(), PostId = postId });
@@ -128,7 +130,7 @@ namespace Mite.DAL.Repositories
 
             //Выбираем теги для удаления из постов
             var tagPostsToDel = existingTagPosts.Where(x => !existingTags.Any(y => y.Id == x.Tag_Id))
-                .Select(x => x.Tag_Id).ToList();
+                .Select(x => (Guid)x.Tag_Id).ToList();
             //Теги для добавления к постам
             var tagPostsToAdd = tags.Where(x => !existingTagPosts.Any(y => y.Tag_Id == x.Id))
                 .Select((x => new { TagId = x.Id, PostId = postId })).ToList();

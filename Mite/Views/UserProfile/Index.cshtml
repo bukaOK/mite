@@ -594,10 +594,6 @@ else
                 }
             }
         });
-        $('#avatar-img').dimmer({
-            opacity: 0.3,
-            on: 'hover'
-        });
         $('#userActionsDrop').dropdown({
             action: 'nothing',
             transition: 'slide right',
@@ -605,6 +601,12 @@ else
         });
         var currentUser = '@currentUserName'
         var pageUser = '@pageUserName';
+        if (currentUser === pageUser) {
+            $('#avatar-img').dimmer({
+                opacity: 0.3,
+                on: 'hover'
+            });
+        }
 
         var grids = [
             {

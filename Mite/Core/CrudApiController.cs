@@ -16,33 +16,24 @@ namespace Mite.Core
         protected readonly TRepo Repo;
         protected readonly IUnitOfWork UnitOfWork;
         protected readonly ILogger Logger;
-        protected bool ModelIsEntity;
 
         public CrudApiController(IUnitOfWork unitOfWork, ILogger loggger)
         {
             UnitOfWork = unitOfWork;
+            Logger = loggger;
             Repo = unitOfWork.GetRepo<TRepo, TEntity>();
-            ModelIsEntity = typeof(TEntity) == typeof(TModel);
         }
+        [HttpGet]
         public virtual async Task<IEnumerable<TModel>> Get()
         {
             var entities = await Repo.GetAllAsync();
-            if (ModelIsEntity)
-            {
-                return entities as IEnumerable<TModel>;
-            }
-            else
-            {
-                return Mapper.Map<IEnumerable<TModel>>(entities);
-            }
+            return Mapper.Map<IEnumerable<TModel>>(entities);
         }
-        public virtual async Task<IHttpActionResult> Post([FromBody]TModel model)
+        [HttpPost]
+        public virtual async Task<IHttpActionResult> Add([FromBody]TModel model)
         {
             TEntity entity;
-            if (!ModelIsEntity)
-                entity = Mapper.Map<TEntity>(model);
-            else
-                entity = model as TEntity;
+            entity = Mapper.Map<TEntity>(model);
 
             try
             {
@@ -53,16 +44,13 @@ namespace Mite.Core
                 Logger.Error($"Ошибка добавления сущности {typeof(TEntity).Name}: {e.Message}");
                 return InternalServerError();
             }
-            return Ok();
+            return Json(Mapper.Map<TModel>(entity));
         }
-
-        public virtual async Task<IHttpActionResult> Put([FromBody]TModel model)
+        [HttpPut]
+        public virtual async Task<IHttpActionResult> Update([FromBody]TModel model)
         {
             TEntity entity;
-            if (!ModelIsEntity)
-                entity = Mapper.Map<TEntity>(model);
-            else
-                entity = model as TEntity;
+            entity = Mapper.Map<TEntity>(model);
 
             try
             {
@@ -73,9 +61,10 @@ namespace Mite.Core
                 Logger.Error($"Ошибка добавления сущности {typeof(TEntity).Name}: {e.Message}");
                 return InternalServerError();
             }
-            return Ok();
+            return Json(model);
         }
-        public virtual async Task<IHttpActionResult> Delete(Guid id)
+        [HttpDelete]
+        public virtual async Task<IHttpActionResult> Remove([FromUri] Guid id)
         {
             try
             {

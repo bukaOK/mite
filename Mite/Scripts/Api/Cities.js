@@ -2,12 +2,13 @@
     url: '/api/cities',
     tmpl: '',
     init: function ($container) {
+        var self = this;
         this.tmpl = $.templates('#citiesRowTmpl');
         return $.ajax({
             type: 'get',
             url: CitiesApi.url,
             success: function (resp) {
-                $container.html(CitiesApi.tmpl.render(resp));
+                $container.html(self.tmpl.render(resp));
             },
             error: function (jqXhr) {
                 alert('Ошибка');
@@ -35,8 +36,7 @@
         $btn.addClass('loading');
         return $.ajax({
             type: 'delete',
-            url: CitiesApi.url,
-            data: 'id=' + id,
+            url: CitiesApi.url + '/' + id,
             success: function (resp) {
                 $tr.remove();
             },
@@ -58,6 +58,7 @@
                 $(html).insertBefore($tr);
                 $tr.remove();
             },
+            data: $form.serialize(),
             error: function (jqXhr) {
                 alert('Ошибка');
             },
