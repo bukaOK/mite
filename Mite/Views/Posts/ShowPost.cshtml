@@ -1,7 +1,6 @@
 ﻿@using Mite.Helpers
 @using Mite.CodeData.Enums
 @using Microsoft.AspNet.Identity
-@using Mite.Extensions
 @model Mite.Models.PostModel
 
 @{ 
@@ -61,7 +60,7 @@
         @if (Model.IsImage)
         {
             <div class="fifteen wide centered column">
-                <img src="@Model.Content" class="ui centered image"  id="post-content"/>
+                <img src="@Model.Content" class="ui centered image" id="post-content" alt="@ViewBag.Title" />
             </div>
         }
         else
@@ -259,7 +258,7 @@
 <template id="commentTmpl">
     <div class="comment" id="com{{:Id}}" data-reply-user-id="{{:User.Id}}">
         <a class="ui circular avatar image">
-            <img src="{{:User.AvatarSrc}}" />
+            <img src="{{:User.AvatarSrc}}" alt="{{:User.UserName}}" />
         </a>
         <div class="content">
             <a href="/user/profile/{{:User.UserName}}" class="author">{{:User.UserName}}</a>

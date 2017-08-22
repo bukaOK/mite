@@ -8,6 +8,7 @@ using AutoMapper;
 using Mite.DAL.Entities;
 using System.Linq;
 using Mite.DAL.Repositories;
+using Mite.BLL.Helpers;
 
 namespace Mite.BLL.Services
 {
@@ -62,6 +63,10 @@ namespace Mite.BLL.Services
 
             foreach(var commentModel in commentModels)
             {
+                if (ImagesHelper.Compressed.CompressedExists(commentModel.User.AvatarSrc))
+                {
+                    commentModel.User.AvatarSrc = ImagesHelper.Compressed.CompressedVirtualPath(commentModel.User.AvatarSrc);
+                }
                 commentModel.CurrentRating = currentUserRatingModels.FirstOrDefault(x => x.CommentId == commentModel.Id);
             }
 

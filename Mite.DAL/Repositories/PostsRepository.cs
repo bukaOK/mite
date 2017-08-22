@@ -151,11 +151,11 @@ namespace Mite.DAL.Repositories
                 "where dbo.\"Posts\".\"Id\" = any(@postsIds) and \"PublishDate\" is not null and dbo.\"Posts\".\"Blocked\"=false and \"PublishDate\" > @minDate " +
                 "and \"PublishDate\" < @maxDate ";
 
-            IEnumerable<string> followings = new List<string>();
+            var followings = new List<string>();
             if (onlyFollowings)
             {
                 var followingsQuery = "select \"FollowingUserId\" from dbo.\"Followers\" where \"UserId\"=@currentUserId;";
-                followings = await Db.QueryAsync<string>(followingsQuery, new { currentUserId });
+                followings = (await Db.QueryAsync<string>(followingsQuery, new { currentUserId })).ToList();
                 query += "and dbo.\"Users\".\"Id\" = any(@followings) ";
             }
             switch (sortType)
@@ -207,19 +207,20 @@ namespace Mite.DAL.Repositories
             var tagsCountRes = await Db.QueryAsync(tagsCountQuery);
             //Чтобы у поста было точное кол-во совпадений с тегами(т.е. написали в запросе 2 тега - должно совпасть 2 тега или больше)
             var postsIds = tagsCountRes.Where(x => (int)x.TagsCount >= tagsNames.Length)
-                .Select<dynamic, Guid>(x => Guid.Parse(x.Post_Id.ToString()));
+                .Select(x => (Guid)x.Post_Id).ToList();
 
             var query = "select * from dbo.\"Posts\" inner join dbo.\"Users\" on dbo.\"Users\".\"Id\"=dbo.\"Posts\".\"UserId\" " +
                 "where dbo.\"Posts\".\"Id\" = any(@postsIds) and \"PublishDate\" is not null " +
                 "and dbo.\"Posts\".\"Blocked\"=false and \"PublishDate\" > @minDate and \"PublishDate\" < @maxDate ";
 
-            query += $"and dbo.\"Posts\".\"Title\" like N'%{postName}%'";
+            query += "and (setweight(to_tsvector('mite_ru', dbo.\"Posts\".\"Title\"), 'A') || " +
+                "setweight(to_tsvector('mite_ru', coalesce(dbo.\"Posts\".\"Description\", '')), 'B')) @@ plainto_tsquery(@postName)";
 
-            IEnumerable<string> followings = new List<string>();
+            List<string> followings = new List<string>();
             if (onlyFollowings)
             {
                 var followingsQuery = "select \"FollowingUserId\" from dbo.\"Followers\" where \"UserId\"=@currentUserId ";
-                followings = await Db.QueryAsync<string>(followingsQuery, new { currentUserId });
+                followings = (await Db.QueryAsync<string>(followingsQuery, new { currentUserId })).ToList();
                 query += "and dbo.\"Users\".\"Id\" = any(@followings) ";
             }
             switch (sortType)
@@ -250,13 +251,14 @@ namespace Mite.DAL.Repositories
             var query = "select * from dbo.\"Posts\" inner join dbo.\"Users\" on dbo.\"Posts\".\"UserId\"=dbo.\"Users\".\"Id\" " +
                 "where dbo.\"Posts\".\"PublishDate\" is not null and dbo.\"Posts\".\"Blocked\"=false and \"PublishDate\" > @minDate " +
                 "and \"PublishDate\" < @maxDate ";
-            query += $"and dbo.\"Posts\".\"Title\" like N'%{postName}%'";
-            IEnumerable<string> followings = new List<string>();
+            query += "and (setweight(to_tsvector('mite_ru', dbo.\"Posts\".\"Title\"), 'A') || " +
+                "setweight(to_tsvector('mite_ru', coalesce(dbo.\"Posts\".\"Description\", '')), 'B')) @@ plainto_tsquery(@postName)";
+
+            var followings = new List<string>();
             if (onlyFollowings)
             {
                 var followingsQuery = "select \"FollowingUserId\" from dbo.\"Followers\" where \"UserId\"=@currentUserId;";
-                followings = await Db.QueryAsync<string>(followingsQuery, new { currentUserId });
-                followings = followings.ToList();
+                followings = (await Db.QueryAsync<string>(followingsQuery, new { currentUserId })).ToList();
                 query += "and dbo.\"Users\".\"Id\" = any(@followings) ";
             }
             switch (sortType)
@@ -285,7 +287,7 @@ namespace Mite.DAL.Repositories
             var query = "select * from dbo.\"Posts\" inner join dbo.\"Users\" on dbo.\"Users\".\"Id\"=dbo.\"Posts\".\"UserId\"" +
                 " where \"PublishDate\" is not null and dbo.\"Posts\".\"Blocked\"=false and \"PublishDate\" > @minDate " +
                 "and \"PublishDate\" < @maxDate ";
-            IEnumerable<string> followings;
+            var followings = new List<string>();
             object queryParams = new { minDate, maxDate };
             if (onlyFollowings)
             {

@@ -28,10 +28,10 @@
         type: 'post',
         url: '',
         success: function (resp) {
-            if (resp.status == undefined) {
+            if (resp.status === undefined) {
                 resp = JSON.parse(resp);
             }
-            if (resp.data.length == 0) {
+            if (resp.data.length === 0) {
                 SearchFilters._pagesEnded = true;
             }
             SearchFilters.callbacks.onSuccess(resp.data);

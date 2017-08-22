@@ -4,10 +4,11 @@
 
 @{
     ViewBag.Title = "Профиль " + Model.UserName;
+    ViewBag.MetaDescription = string.IsNullOrEmpty(Model.About) ? $"Страница пользователя {Model.UserName}" : Model.About;
+
     var pageUserName = Model.UserName.ToLower();
     var currentUserName = User.Identity.Name.ToLower();
 }
-@Scripts.Render("~/bundles/grid")
 <div class="ui profile center aligned three column stackable grid segment">
     <div class="computer tablet only row">
         <div class="right aligned column">
@@ -181,7 +182,7 @@
                 Блокированные
             </a>
         </div>
-        @if (Request.Browser.IsMobileDevice)
+        @if (ViewHelper.IsMobileDevice(Request))
         {
             <div class="ui tab two column stackable grid basic segment" data-tab="published"></div>
         }
@@ -229,7 +230,14 @@ else
     }
     else
     {
-        <div class="ui tab stackable three column basic segment grid" data-tab="posts/published"></div>
+        if (Request.Browser.IsMobileDevice)
+        {
+            <div class="ui tab stackable two column basic segment grid" data-tab="posts/published"></div>
+        }
+        else
+        {
+            <div class="ui tab three column basic segment grid" data-tab="posts/published"></div>
+        }
         <div class="ui stackable tab three column basic segment grid" data-tab="followers"></div>
     }
 }

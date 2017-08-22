@@ -17,6 +17,9 @@
                 <button class="ui centered margined red button" onclick="removeCover()">
                     Удалить обложку
                 </button>
+                <button class="ui inverted blue button" type="button" onclick="$('#publishGuideModal').modal('show')">
+                    Гайд по публикации
+                </button>
             </div>
         </div>
         @if (string.IsNullOrEmpty(Model.Cover))
@@ -96,6 +99,47 @@
     <div class="actions">
         <button class="ui red cancel button">Нет, просто сохранить</button>
         <button class="ui green ok button">Да</button>
+    </div>
+</div>
+<div class="ui modal" id="publishGuideModal">
+    <i class="close icon"></i>
+    <div class="header">
+        Гайд по публикации работ.
+    </div>
+    <div class="scrolling content">
+        <h3>Зачем мне это?</h3>
+        <p>
+            Многие авторы не знают особенностей работы системы MiteGroup (наш косяк),
+            из-за чего не используют весь функционал. Этот гайд призван раз и навсегда пресечь все недопонимания.
+        </p>
+        <h3>Заголовок</h3>
+        <p>
+            В заголовке указывается основная тема работы. Если у вас нарисован котик, то следует указывать "кот",
+            если работа об известной личности/группе указываете её имя, и т.д. Ещё одна причина не лениться -
+            появление в результатах поисковых систем. К примеру -
+            <a href="https://yandex.ru/images/search?text=denis%20wild&img_url=http%3A%2F%2Fmitegroup.ru%2FPublic%2Fimages%2Fbbaeaf7e-dafd-4853-966c-e470dde3c1b5.jpg&pos=15&rpt=simage"
+               target="_blank">
+                работа одного из авторов в результатах Яндекса.
+            </a>
+        </p>
+        <h3>Описание</h3>
+        <p>
+            Описание подробно раскрывает содержимое работы. Зачастую пользователи пишут всю информацию в теги
+            (даже бренды и названия, несмотря на предупреждения). Достаточно взглянуть на следующий скриншот:
+        </p>
+        <img src="~/Public/guides/image_guide_1.png" alt="Скриншот гайд 1." style="max-width: 100%" />
+        <h3>А для чего тогда теги?</h3>
+        <p>
+            Каждый раз как вы заходите в топ, можно увидеть список слов, которые представляют собой разделы. Мы отказались от чего-то вроде
+            "арт > цифровой арт > вектор" и пр., объединив всё в одно. Позволяя людям добавлять теги, мы избавлялись от рутинной работы,
+            но в итоге многие начали добавлять слепки вроде "артвгорах". Другими словами, <b>профессиональную лексику</b> можно и нужно писать в ключевые слова.
+        </p>
+        <h3>И в заключение...</h3>
+        <p>
+            Как видите, "Заголовок" и "Описание" могут превратиться в мощный инструмент для поднятия позиций ваших работ в поиске.
+            Прежде чем создать публикацию, просто достаточно задать себе вопрос "А что пользователь напишет в поиск, чтобы найти мою работу?",
+            а все остальное - забота MiteGroup &#128521;
+        </p>
     </div>
 </div>
 <script>
@@ -345,6 +389,7 @@
                     },
                     showOnFocus: false,
                     match: 'text',
+                    maxSelections: 5,
                     forceSelection: false
                 });
             },
@@ -401,6 +446,7 @@
                 savePost(true, editor);
             }
         });
+        $('#publishGuidModal').modal();
         var wrapperInput = document.getElementById("wrapperImg");
         wrapperInput.onchange = inputDownloadHandler;
         @if (!Model.Helper.EditDocBtn)

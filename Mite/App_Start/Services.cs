@@ -1,32 +1,35 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
-using System.Net.Mail;
-using System.Net;
-using System.Net.Http;
+using MimeKit;
+using MimeKit.Text;
+using MailKit.Net.Smtp;
 
 namespace Mite
 {
     public class EmailService : IIdentityMessageService
     {
-        public Task SendAsync(IdentityMessage message)
+        public async Task SendAsync(IdentityMessage message)
         {
-            var from = "dispatch@mitegroup.ru";
-            var to = message.Destination;
-            var client = new SmtpClient("smtp.yandex.ru", 25)
+            const string from = "dispatch@mitegroup.ru";
+            var msg = new MimeMessage();
+
+            msg.From.Add(new MailboxAddress("MiteGroup", from));
+            msg.To.Add(new MailboxAddress(message.Destination));
+            msg.Subject = message.Subject;
+
+            msg.Body = new TextPart(TextFormat.Html)
             {
-                DeliveryMethod = SmtpDeliveryMethod.Network,
-                UseDefaultCredentials = false,
-                Credentials = new NetworkCredential(from, "Evd$utTC"),
-                EnableSsl = true
+                Text = message.Body
             };
-            
-            var mail = new MailMessage(new MailAddress(from, "MiteGroup"), new MailAddress(to))
+            using(var client = new SmtpClient())
             {
-                Subject = message.Subject,
-                Body = message.Body,
-                IsBodyHtml = true
-            };
-            return client.SendMailAsync(mail);
+                await client.ConnectAsync("smtp.yandex.ru", 465, true);
+                client.AuthenticationMechanisms.Remove("XOAUTH2");
+                await client.AuthenticateAsync(from, "Evd$utTC");
+                await client.SendAsync(msg);
+
+                await client.DisconnectAsync(true);
+            }
         }
     }
     public class SmsService : IIdentityMessageService

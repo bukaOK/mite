@@ -10,7 +10,6 @@ using Mite.CodeData.Enums;
 using Mite.Models;
 using System.Text.RegularExpressions;
 using AutoMapper;
-using System.Net;
 using NLog;
 using System.Linq;
 using Mite.BLL.Infrastructure;
@@ -213,11 +212,14 @@ namespace Mite.Controllers
         [AllowAnonymous]
         public async Task<ViewResult> Top()
         {
-            var topTags = await serviceBuilder.Build<ITagsService>().GetWithPopularityAsync(true);
             var model = new TopModel
             {
-                Tags = topTags
+                Tags = await serviceBuilder.Build<ITagsService>().GetWithPopularityAsync(true)
             };
+            if (User.Identity.IsAuthenticated)
+            {
+                model.FollowersCount = await serviceBuilder.Build<IFollowersService>().GetFollowersCountAsync(User.Identity.GetUserId());
+            }
             return View(model);
         }
         [HttpPost]

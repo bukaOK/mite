@@ -34,6 +34,7 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -57,6 +58,7 @@
     <Compile Include="Enums\HelperTypes.cs" />
     <Compile Include="Enums\ImageSizes.cs" />
     <Compile Include="Enums\NotificationTypes.cs" />
+    <Compile Include="Enums\OrderTypes.cs" />
     <Compile Include="Enums\PaymentType.cs" />
     <Compile Include="Enums\PostTimeFilter.cs" />
     <Compile Include="Enums\PostTypes.cs" />

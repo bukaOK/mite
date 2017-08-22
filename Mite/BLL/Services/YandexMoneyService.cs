@@ -33,7 +33,7 @@ namespace Mite.ExternalServices.YandexMoney
         /// </summary>
         /// <param name="sum"></param>
         /// <returns></returns>
-        Task<DataServiceResult> PayInAsync(double sum);
+        Task<DataServiceResult> PayInAsync(double sum, string userId);
         Task<DataServiceResult> ExternalPayIn(double sum, string userId, ExternalPayment sessionPayment);
         Task<DataServiceResult> ExternalPayIn(string requestId, string instanceId);
     }
@@ -81,6 +81,8 @@ namespace Mite.ExternalServices.YandexMoney
                 existingService.AccessToken = token.Token;
                 await repo.UpdateAsync(existingService);
             }
+            authenticator.Token = token.Token;
+
             var accountInfoReq = new AccountInfoRequest<AccountInfoResult>(httpClient, new JsonSerializer<AccountInfoResult>());
             var accountInfoRes = await accountInfoReq.Perform();
             var user = await userManager.FindByIdAsync(userId);
@@ -91,14 +93,16 @@ namespace Mite.ExternalServices.YandexMoney
         /// Ввод средств Яндекс.Деньги
         /// </summary>
         /// <param name="sum">Сумма взноса</param>
+        /// <param name="userId">От кого</param>
         /// <returns></returns>
-        public async Task<DataServiceResult> PayInAsync(double sum)
+        public async Task<DataServiceResult> PayInAsync(double sum, string userId)
         {
             var p2p = new P2PRequestPaymentParams
             {
                 AmountDue = sum.ToString(),
                 To = YaMoneySettings.WalletId
             };
+            authenticator.Token = await GetTokenAsync(userId);
             var req = new RequestPaymentRequest<RequestPaymentResult>(httpClient, new JsonSerializer<RequestPaymentResult>())
             {
                 PaymentParams = p2p.GetParams()

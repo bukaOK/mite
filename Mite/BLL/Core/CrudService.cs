@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Mite.DAL.Infrastructure;
 using Mite.DAL.Core;
 using AutoMapper;
+using NLog;
 
 namespace Mite.BLL.Core
 {
@@ -14,10 +15,27 @@ namespace Mite.BLL.Core
         where TEntity: class, new()
         where TRepo : IRepository<TEntity>
     {
+        /// <summary>
+        /// Мапит модель в сущность и отправляет в репозиторий на добавление
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// Объект DataServiceResult(если успешно - с моделькой внутри, иначе - с сообщением ошибки)
+        /// </returns>
         Task<DataServiceResult> AddAsync(TModel model);
+        /// <summary>
+        /// Удаляет
+        /// </summary>
+        /// <param name="keys"></param>
+        /// <returns>DataServiceResult</returns>
         Task<DataServiceResult> RemoveAsync(params object[] keys);
         Task<IEnumerable<TModel>> GetAllAsync();
         Task<TModel> GetAsync(params object[] keys);
+        /// <summary>
+        /// Обновляет
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>DataServiceResult (если успешно-моделька, иначе - сообщение ошибки)</returns>
         Task<DataServiceResult> UpdateAsync(TModel model);
     }
 
@@ -27,39 +45,42 @@ namespace Mite.BLL.Core
         where TRepo : IRepository<TEntity>
     {
         protected readonly TRepo Repo;
+        protected readonly ILogger Logger;
 
-        public CrudService(IUnitOfWork database) : base(database)
+        public CrudService(IUnitOfWork database, ILogger logger) : base(database)
         {
             Repo = Database.GetRepo<TRepo, TEntity>();
+            Logger = logger;
         }
 
-        public async Task<DataServiceResult> AddAsync(TModel model)
+        public virtual async Task<DataServiceResult> AddAsync(TModel model)
         {
             try
             {
-                await Repo.AddAsync(Mapper.Map<TEntity>(model));
-                return DataServiceResult.Success();
+                var entity = Mapper.Map<TEntity>(model);
+                await Repo.AddAsync(entity);
+                return DataServiceResult.Success(Mapper.Map<TModel>(entity));
             }
             catch(Exception e)
             {
-                //logger
+                Logger.Error($"Ошибка добавления {typeof(TEntity).Name}: {e.Message}");
                 return DataServiceResult.Failed();
             }
         }
 
-        public async Task<IEnumerable<TModel>> GetAllAsync()
+        public virtual async Task<IEnumerable<TModel>> GetAllAsync()
         {
             var entities = await Repo.GetAllAsync();
             return Mapper.Map<IEnumerable<TModel>>(entities);
         }
 
-        public async Task<TModel> GetAsync(params object[] keys)
+        public virtual async Task<TModel> GetAsync(params object[] keys)
         {
             var entity = await Repo.GetAsync(keys);
             return Mapper.Map<TModel>(entity);
         }
 
-        public async Task<DataServiceResult> RemoveAsync(params object[] keys)
+        public virtual async Task<DataServiceResult> RemoveAsync(params object[] keys)
         {
             var entity = await Repo.GetAsync(keys);
             try
@@ -69,11 +90,24 @@ namespace Mite.BLL.Core
             }
             catch(Exception e)
             {
-                //log
+                Logger.Error($"Ошибка удаления {typeof(TEntity).Name}: {e.Message}");
                 return DataServiceResult.Failed("Ошибка при удалении");
             }
         }
 
-        public abstract Task<DataServiceResult> UpdateAsync(TModel model);
+        public virtual async Task<DataServiceResult> UpdateAsync(TModel model)
+        {
+            var entity = Mapper.Map<TEntity>(model);
+            try
+            {
+                await Repo.UpdateAsync(entity);
+                return DataServiceResult.Success(Mapper.Map<TModel>(entity));
+            }
+            catch(Exception e)
+            {
+                Logger.Error($"Ошибка обновления {typeof(TEntity).Name}: {e.Message}");
+                return DataServiceResult.Failed("Ошибка при обновлении");
+            }
+        }
     }
 }

@@ -60,7 +60,7 @@ namespace Mite.Controllers
                 case PaymentType.YandexWallet:
                     try
                     {
-                        result = await yaService.PayInAsync(sum);
+                        result = await yaService.PayInAsync(sum, userId);
                         if (result.Succeeded)
                         {
                             //Сохраняем операцию в базу

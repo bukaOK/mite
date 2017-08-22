@@ -239,6 +239,8 @@ namespace Mite.BLL.Services
             var repo = Database.GetRepo<PostsRepository, Post>();
 
             var post = await repo.GetWithTagsAsync(postId);
+            if (post == null)
+                return null;
             post.Tags = post.Tags.Where(x => !string.IsNullOrEmpty(x.Name)).ToList();
             var user = await _userManager.FindByIdAsync(post.UserId);
             var postModel = Mapper.Map<PostModel>(post);
@@ -387,16 +389,10 @@ namespace Mite.BLL.Services
             var currentUser = string.IsNullOrEmpty(currentUserId) ? null : await _userManager.FindByIdAsync(currentUserId);
 
             const int minChars = 400;
-            //Максимальная длина поста, потом обрезается и ставится многоточие
-            const byte maxUserNameLength = 15;
             string fullImgPath;
 
             foreach (var postModel in postModels)
             {
-                if(postModel.User.UserName.Length > maxUserNameLength)
-                {
-                    postModel.User.UserName = postModel.User.UserName.Substring(0, maxUserNameLength - 3) + "...";
-                }
                 if (!postModel.IsImage)
                 {
                     try

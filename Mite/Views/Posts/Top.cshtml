@@ -1,4 +1,5 @@
 ﻿@using Mite.CodeData.Enums
+@using Mite.Helpers
 @model Mite.Models.TopModel
 @{
     ViewBag.Title = "Публикации";
@@ -35,7 +36,21 @@
         </div>
     </div>
     <div class="item">
-        <i class="users icon"></i>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <div class="ui checkbox" id="postUserFilter">
+                <input type="checkbox" />
+                <label>Только подписки</label>
+            </div>
+        }
+        else
+        {
+            <div class="ui disabled checkbox" id="postUserFilter">
+                <input type="checkbox" disabled />
+                <label>Только подписки</label>
+            </div>
+        }
+        @*<i class="users icon"></i>
         Искать среди&nbsp;
         <div class="ui inline dropdown" id="postUserFilter">
             <div class="text">всех</div>
@@ -47,11 +62,12 @@
                     <div class="item" data-text="моих подписок" data-value="@((byte)PostUserFilter.OnlyFollowings)">Мои подписки</div>
                 }
             </div>
-        </div>
+        </div>*@
     </div>
-    <div class="right item">
+    <div class="right item" id="searchItem">
         <div class="ui transparent icon input">
-            <input type="text" placeholder="Поиск..." id="postsSearch" role="search" autofocus/>
+            <input type="text" placeholder="Поиск..." id="postsSearch" role="search" onfocus="$('#searchItem').addClass('maximised')" 
+                   onblur="$('#searchItem').removeClass('maximised')"/>
             <i class="search link icon" onclick="SearchFilters.changeFilter()"></i>
         </div>
     </div>
@@ -76,7 +92,7 @@
         </div>
     </div>
     <div class="thirteen wide computer twelve wide tablet column">
-        @if (Request.Browser.IsMobileDevice)
+        @if (ViewHelper.IsMobileDevice(Request))
         {
             <div class="ui posts two column stackable basic segment grid"></div>
         }
@@ -242,14 +258,20 @@
         });
         $('.ui.dropdown').dropdown({
             onChange: function (ev) {
-                console.log(ev);
+                if (SearchFilters.initialized) {
+                    SearchFilters.changeFilter();
+                }
+            }
+        });
+        $('#postUserFilter').checkbox({
+            onChange: function () {
                 if (SearchFilters.initialized) {
                     SearchFilters.changeFilter();
                 }
             }
         });
         $('#postsSearch').keydown(function (ev) {
-            if (ev.which == 13) {
+            if (ev.which === 13) {
                 SearchFilters.changeFilter();
             }
         })
@@ -258,14 +280,13 @@
                 $('.loader-wrapper').addClass('active');
             },
             onSuccess: function (resp) {
-                
                 resp.forEach(function (elem) {
-                    elem.PublishDate += elem.PublishDate[elem.PublishDate - 1] == 'Z' ? '' : 'Z';
+                    elem.PublishDate += elem.PublishDate[elem.PublishDate - 1] === 'Z' ? '' : 'Z';
                     elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.PublishDate).getTime());
-                    if (elem.User.UserName.length <= 16) {
-                        elem.User.ShowName = elem.User.UserName;
+                    if (elem.User.UserName.length > 15) {
+                        elem.User.ShowName = elem.User.UserName.substr(0, 12) + '...';
                     } else {
-                        elem.User.ShowName = elem.User.UserName.substr(0, 16) + '...';
+                        elem.User.ShowName = elem.User.UserName;
                     }
                 });
                 $('.posts.grid:visible .loader').remove();
@@ -308,7 +329,7 @@
                             data: 'name=' + item.dataset.username,
                             type: 'get',
                             success: function (resp) {
-                                if (resp.status == undefined) {
+                                if (resp.status === undefined) {
                                     resp = JSON.parse(resp);
                                 }
                                 var respData = resp.data;
@@ -380,8 +401,12 @@
                     name: 'postUserFilter',
                     selector: '#postUserFilter',
                     getVal: function () {
-                        return $(this.selector).dropdown('get value') == ''
-                            ? '0' : $(this.selector).dropdown('get value');
+                        var isChecked = $(this.selector).checkbox('is checked');
+                        if (isChecked) {
+                            return '@((byte)PostUserFilter.OnlyFollowings)';
+                        } else {
+                            return '@((byte)PostUserFilter.All)';
+                        }
                     },
                     updateState: function (newVal) {
                         $(this.selector).dropdown('set selected', newVal);
@@ -394,7 +419,6 @@
                 return SearchFilters.loadNext();
             }
         });
-        $('.ui.checkbox').checkbox();
         VK.Widgets.Group("vk_groups", { mode: 3, no_cover: 1, width: $('.top-tags')[0].offsetWidth }, 143219082);
     });
 </script>

@@ -10,6 +10,7 @@ using Mite.BLL.IdentityManagers;
 using Mite.DAL.Repositories;
 using Mite.DAL.Entities;
 using Mite.BLL.Helpers;
+using System;
 
 namespace Mite.BLL.Services
 {
@@ -27,6 +28,7 @@ namespace Mite.BLL.Services
         /// <param name="userId"></param>
         /// <returns></returns>
         Task<List<UserShortModel>> GetFollowingsByUserAsync(string userName);
+        Task<int> GetFollowersCountAsync(string userId);
     }
     public class FollowersService : DataService, IFollowersService
     {
@@ -54,6 +56,11 @@ namespace Mite.BLL.Services
                 }
             }
             return fModels;
+        }
+
+        public Task<int> GetFollowersCountAsync(string userId)
+        {
+            return Database.GetRepo<FollowersRepository, Follower>().GetFollowersCount(userId);
         }
 
         public async Task<List<UserShortModel>> GetFollowingsByUserAsync(string userName)

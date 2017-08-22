@@ -168,7 +168,10 @@
             catch (e) {
                 console.log('yaCounter is not defined.');
             }
-            scrollTo('.main.grid', 1800, 'easeOutExpo', -10);
+            $(window).scrollTo('.main.grid', 1800, {
+                easing: 'easeOutExpo',
+                offset: -10
+            });
         }
         function goToTag() {
             location.href = '/posts/top?tags=' + $('#tagInput').val();

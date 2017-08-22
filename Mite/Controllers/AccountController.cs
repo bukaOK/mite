@@ -274,7 +274,7 @@ namespace Mite.Controllers
                 ModelState.AddModelError("Email", "Email не может быть пустым");
 
             if (!ModelState.IsValid)
-                return Json(JsonStatuses.ValidationError, GetErrorsList());
+                return Json(JsonStatuses.ValidationError, GetModelErrors());
 
             var user = await userManager.FindByEmailAsync(model.Email);
             if(user == null)
@@ -287,7 +287,7 @@ namespace Mite.Controllers
             var callbackUrl = Url.Action("ResetPassword", "Account", new { email = user.Email, code = code }, Request.Url.Scheme);
             var msg = $"Для восстановления пароля перейдите по ссылке -> <a href=\"{callbackUrl}\">жмак</a>";
             await userManager.SendEmailAsync(user.Id, "Восстановление пароля", msg);
-            return Json(JsonStatuses.Success, "На ваш почтовый ящик отправлено сообщение с ссылкой для восстановления");
+            return Json(JsonStatuses.Success, "На ваш почтовый ящик отправлено сообщение с ссылкой для восстановления. Если сообщения нет во входящих, проверьте папку \"Спам\".");
         }
         [Authorize]
         public ActionResult LogOff()
@@ -306,14 +306,14 @@ namespace Mite.Controllers
             var result = await userManager.ConfirmEmailAsync(userId, code);
             if (User.Identity.IsAuthenticated)
             {
-                return Redirect($"http://{Request.Url.Host}/user/settings#/security");
+                return Redirect($"http://{Request.Url.Host}/user/settings/security");
             }
             else
             {
                 return RedirectToAction("Login", "Account");
             }
         }
-        public ActionResult ResetPassword(string code, string email)
+        public ViewResult ResetPassword(string code, string email)
         {
             var user = userManager.FindByEmail(email);
             return View(new ResetPasswordModel { Code = code, UserId = user.Id });
@@ -326,8 +326,11 @@ namespace Mite.Controllers
             {
                 return View(model);
             }
-            await userManager.ResetPasswordAsync(model.UserId, model.Code, model.NewPass);
-            return RedirectToAction("Login", "Account");
+            var result = await userManager.ResetPasswordAsync(model.UserId, model.Code, model.NewPass);
+            if(result.Succeeded)
+                return RedirectToAction("Login", "Account");
+            AddErrors(GetModelErrors());
+            return View(model);
         }
         public async Task ForgotPassword(string email)
         {

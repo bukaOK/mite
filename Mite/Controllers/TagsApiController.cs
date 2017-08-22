@@ -1,23 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Mite.DAL.Infrastructure;
 using AutoMapper;
 using System.Web.Http;
 using Mite.Models;
 using Mite.DAL.Entities;
-using Mite.BLL.DTO;
 using Mite.DAL.Repositories;
 
 namespace Mite.Controllers
 {
     [Authorize(Roles = "moder")]
-    public class TagsController : ApiController
+    [Route("api/tags/{id?}")]
+    public class TagsApiController : ApiController
     {
         private readonly IUnitOfWork _unitOfWork;
 
-        public TagsController(IUnitOfWork unitOfWork)
+        public TagsApiController(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }

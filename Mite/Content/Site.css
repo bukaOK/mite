@@ -40,6 +40,9 @@ html, body{
 .help.word{
     cursor: help;
 }
+.ui.error.message{
+    margin-bottom: 0 !important;
+}
 /*Шапка*/
 header.ui.fixed.menu .item>.button{
     padding: 8px 15px;
@@ -394,6 +397,15 @@ p.docs{
     transform: translateX(-50%) translateY(-50%);
     box-shadow: 0px 0px 10px rgba(34, 36, 38, 0.35);
     display: none;
+}
+#searchItem{
+    transition: all .3s ease-out;
+}
+#searchItem.maximised{
+    flex-grow: 1;
+}
+#searchItem.maximised:before{
+    content: none;
 }
 .post-item.dimmed.hide-adult-content a.content>p, 
 .post-item.dimmed.hide-adult-content a>img.ui.image:not(.avatar){

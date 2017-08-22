@@ -19,11 +19,6 @@ namespace Mite.ExternalServices.YandexMoney
         private readonly HttpClient httpClient;
         private readonly Authenticator authenticator;
 
-        /// <summary>
-        /// От кого отправляется запрос
-        /// </summary>
-        public string FromUserId { get; set; }
-
         public YaHttpClient(HttpClient httpClient, Authenticator authenticator)
         {
             this.httpClient = httpClient;
@@ -32,13 +27,13 @@ namespace Mite.ExternalServices.YandexMoney
         public async Task<Stream> UploadDataAsync(IRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
             var yaParams = new Dictionary<string, string>();
-            var token = AuthenticationToken;
+            var token = authenticator.Token;
 
             request.AppendItemsTo(yaParams);
             var content = new FormUrlEncodedContent(yaParams);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
             if(token != null)
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(authenticator.AuthenticationScheme, token);
 
             var reqUri = new Uri(BaseUri, request.RelativeUri);
             var response = await httpClient.PostAsync(reqUri, content, cancellationToken);
@@ -55,7 +50,7 @@ namespace Mite.ExternalServices.YandexMoney
             var authenticationHeaderValue = response
                 .Headers
                 .WwwAuthenticate
-                .FirstOrDefault(x => x.Scheme == "Bearer");
+                .FirstOrDefault(x => x.Scheme == authenticator.AuthenticationScheme);
 
             if (authenticationHeaderValue != null)
                 responseError = authenticationHeaderValue.Parameter;
@@ -75,6 +70,5 @@ namespace Mite.ExternalServices.YandexMoney
                     throw new IOException(responseError);
             }
         }
-        private string AuthenticationToken => authenticator.Token;
     }
 }

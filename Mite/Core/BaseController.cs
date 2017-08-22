@@ -41,17 +41,6 @@ namespace Mite.Core
                 message = message
             }, "application/json", behavior);
         }
-        protected IEnumerable<string> GetErrorsList()
-        {
-            var errors = ModelState.Where(x => x.Value.Errors.Count > 0);
-            foreach (var error in errors)
-            {
-                foreach (var valueError in error.Value.Errors)
-                {
-                    yield return valueError.ErrorMessage;
-                }
-            }
-        }
         protected ActionResult RedirectToLocal(string returnUrl)
         {
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))

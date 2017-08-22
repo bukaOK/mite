@@ -8,6 +8,7 @@ namespace Mite.Models
 {
     public class TopModel
     {
+        public int FollowersCount { get; set; }
         public IEnumerable<TagModel> Tags { get; set; }
     }
     public class TopPostModel

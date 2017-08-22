@@ -9,7 +9,7 @@ namespace Mite.Attributes.DataAnnotations
     [AttributeUsage(AttributeTargets.Property)]
     public class UIDataAttribute : Attribute
     {
-        public List<SelectListItem> SelectListItems { get; }
+        public IList<SelectListItem> SelectListItems { get; }
         
         public UIDataAttribute(Type instanceType)
         {

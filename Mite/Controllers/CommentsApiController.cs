@@ -3,20 +3,19 @@ using Mite.BLL.Services;
 using Mite.Models;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Net;
-using Mite.CodeData.Enums;
 
 namespace Mite.Controllers
 {
     [Authorize]
-    public class CommentsController : ApiController
+    [Route("api/comments/{id?}")]
+    public class CommentsApiController : ApiController
     {
         private readonly ICommentsService _commentsService;
 
-        public CommentsController(ICommentsService commentsService)
+        public CommentsApiController(ICommentsService commentsService)
         {
             _commentsService = commentsService;
         }
