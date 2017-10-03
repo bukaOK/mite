@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mite.CodeData.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -14,6 +15,7 @@ namespace Mite.Models
         public string ClientId { get; set; }
         public string RedirectUri { get; set; }
         public string SystemYandexWallet { get; set; }
+        public PaymentType PaymentType { get; set; }
     }
     public class ReferalModel
     {

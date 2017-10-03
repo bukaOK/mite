@@ -15,6 +15,8 @@ namespace Mite.DAL.Entities
         public Guid? PostId { get; set; }
         [ForeignKey("Comment")]
         public Guid? CommentId { get; set; }
+        [ForeignKey("AuthorService")]
+        public Guid? AuthorServiceId { get; set; }
         [ForeignKey("User")]
         public string UserId { get; set; }
         [ForeignKey("Owner")]
@@ -31,6 +33,7 @@ namespace Mite.DAL.Entities
         /// Комментарий который оценили
         /// </summary>
         public Comment Comment { get; set; }
+        public AuthorService AuthorService { get; set; }
         /// <summary>
         /// Кого оценили
         /// </summary>

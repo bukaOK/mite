@@ -66,45 +66,7 @@
 </div>
 <script>
     $(function () {
-        $(".ui.form").form({
-            on: "submit",
-            fields: {
-                UserName: {
-                    rules: [
-                        {
-                            type: "empty",
-                            prompt: $("#UserName").data("valRequired")
-                        }
-                    ]
-                },
-                Password: {
-                    rules: [
-                        {
-                            type: "empty",
-                            prompt: $("#Password").data("valRequired")
-                        }
-                    ]
-                }
-            }
-        });
-        $('#forgotPassForm').form({
-            on: 'change',
-            inline: false,
-            fields: {
-                Email: {
-                    rules: [
-                        {
-                            type: "empty",
-                            prompt: $("#Email").data("valRequired")
-                        },
-                        {
-                            type: "email",
-                            prompt: "Введите правильный e-mail"
-                        }
-                    ]
-                }
-            }
-        });
+        @Html.Raw(Html.FormValidation<Mite.Models.LoginModel>(".ui.login.form"))
         $(".checkbox").checkbox();
     });
 </script>

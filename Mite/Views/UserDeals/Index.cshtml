@@ -1,0 +1,189 @@
+﻿@using Mite.CodeData.Constants
+@using Mite.CodeData.Enums
+@using Mite.Helpers
+@{
+    ViewBag.Title = "Заказы";
+    var isAuthor = User.IsInRole(RoleNames.Author);
+}
+
+<div class="ui segment">
+    <h2 class="ui dividing header">Заказы</h2>
+    @if (isAuthor)
+    {
+        <div class="ui stackable grid">
+            <div class="three wide column">
+                <div class="ui secondary pointing vertical menu" role="tablist">
+                    <a class="active item" role="tab" data-tab="incoming">Входящие</a>
+                    <a class="item" role="tab" data-tab="outgoing">Исходящие</a>
+                </div>
+            </div>
+            <div class="thirteen wide column">
+                <div class="ui tab" data-tab="incoming" role="tabpanel">
+                    <div class="ui secondary stackable menu" role="tablist">
+                        <a class="active item" role="tab" data-tab="new">Новые</a>
+                        <a class="item" role="tab" data-tab="expectpayment">Ожидает оплаты</a>
+                        <a class="item" role="tab" data-tab="process">В процессе</a>
+                        <a class="item" role="tab" data-tab="closed">Завершенные</a>
+                    </div>
+                    <div class="ui active tab" role="tabpanel" data-tab="new"></div>
+                    <div class="ui tab" role="tabpanel" data-tab="expectpayment"></div>
+                    <div class="ui tab" role="tabpanel" data-tab="process"></div>
+                    <div class="ui tab" role="tabpanel" data-tab="closed"></div>
+                </div>
+                <div class="ui tab" data-tab="outgoing" role="tabpanel">
+                    <div class="ui secondary stackable menu" role="tablist">
+                        <a class="item" role="tab" data-tab="new">Новые</a>
+                        <a class="item" role="tab" data-tab="expectpayment">Ожидает оплаты</a>
+                        <a class="item" role="tab" data-tab="process">В процессе</a>
+                        <a class="item" role="tab" data-tab="expect">Ожидает подтверждения</a>
+                        <a class="item" role="tab" data-tab="closed">Завершенные</a>
+                    </div>
+                    <div class="ui tab" role="tabpanel" data-tab="new"></div>
+                    <div class="ui tab" role="tabpanel" data-tab="expectpayment"></div>
+                    <div class="ui tab" role="tabpanel" data-tab="process"></div>
+                    <div class="ui tab" role="tabpanel" data-tab="closed"></div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="ui secondary stackable menu" role="tablist">
+            <a class="active item" role="tab" data-tab="new">Новые</a>
+            <a class="item" role="tab" data-tab="expectpayment">Ожидает оплаты</a>
+            <a class="item" role="tab" data-tab="process">В процессе</a>
+            <a class="item" role="tab" data-tab="expect">Ожидает подтверждения</a>
+            <a class="item" role="tab" data-tab="closed">Завершенные</a>
+        </div>
+        <div class="ui tab" role="tabpanel" data-tab="new"></div>
+        <div class="ui tab" role="tabpanel" data-tab="expectpayment"></div>
+        <div class="ui tab" role="tabpanel" data-tab="process"></div>
+        <div class="ui tab" role="tabpanel" data-tab="expect"></div>
+        <div class="ui tab" role="tabpanel" data-tab="closed"></div>
+    }
+    <div class="dot-loader-wrapper">
+        <div class="dot-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+</div>
+<script type="text/x-jsrender" id="dealsTmpl">
+    <div class="ui divided items">
+        {{for}}
+        <div class="item">
+            <div class="ui tiny image">
+                <img src="{{:ImageSrc}}" />
+            </div>
+            <div class="content">
+                <a class="header" href="@Url.Action("Show", "Deals")/{{:Id}}">{{:Title}}</a>
+                <div class="meta">
+                    <span>{{:Price}}</span>
+                    <span>{{:EndDate}}</span>
+                </div>
+                <div class="description">{{:Description}}</div>
+            </div>
+        </div>
+        {{/for}}
+    </div>
+</script>
+<template id="emptyDealsTmpl">
+    <h3 class="ui center aligned header">
+        <i class="frown icon"></i>
+        Заказы не найдены
+    </h3>
+</template>
+<template id="errorDealsTmpl">
+    <div class="ui icon red message">
+        <i class="warning circle icon"></i>
+        <div class="content">
+            <div class="header">Упс...</div>
+            <p>Ошибка при загрузке заказов</p>
+        </div>
+    </div>
+</template>
+@Scripts.Render("~/bundles/jsrender")
+<script>
+    var isAuthor = @isAuthor.ToString().ToLower();
+    $(function () {
+        $('.deals.item').addClass('active');
+        var tabs = [];
+        TabFilter.range = 30;
+        if (isAuthor) {
+            var incomingTab = new Tab({
+                name: 'incoming',
+                isActive: true,
+                parentTab: null
+            });
+            tabs.push(incomingTab);
+            incomingTab.content.find('.item[data-tab]').each(function (i, elem) {
+                var tabSettings = {
+                    name: elem.dataset.tab,
+                    parentTab: incomingTab,
+                    $item: $(elem),
+                    $content: $('.tab[data-tab="incoming"] .tab[data-tab="' + elem.dataset.tab + '"]')
+                };
+                if (i === 0) {
+                    tabSettings.isActive = true;
+                } else {
+                    tabSettings.isActive = false;
+                }
+                tabs.push(new Tab(tabSettings));
+            });
+            var outgoingTab = new Tab({
+                name: 'outgoing',
+                parentTab: null
+            });
+            tabs.push(outgoingTab);
+            outgoingTab.content.find('.item[data-tab]').each(function (i, elem) {
+                tabs.push(new Tab({
+                    name: elem.dataset.tab,
+                    parentTab: outgoingTab,
+                    $item: $(elem),
+                    $content: $('.tab[data-tab="outgoing"] .tab[data-tab="' + elem.dataset.tab + '"]')
+                }));
+            });
+        } else {
+            $('.item[data-tab]').each(function (i, elem) {
+                var tabSettings = {
+                    name: elem.dataset.tab,
+                };
+                if (i === 0) {
+                    tabSettings.isActive = true;
+                } else {
+                    tabSettings.isActive = false;
+                }
+                tabs.push(new Tab(tabSettings));
+            });
+        }
+        TabFilter.Tabs.items = tabs;
+        TabFilter.init('@Url.Action("Index", "UserDeals")', {
+            beforeLoad: function () {
+                $('.dot-loader-wrapper').addClass('active');
+            },
+            onSuccess: function (resp, tab) {
+                if (resp.length == 0 && TabFilter.page == 1) {
+                    html = $('#emptyDealsTmpl').html();
+                    tab.content.html(html);
+                } else if (resp.length > 0) {
+                    var tmpl = $.templates('#dealsTmpl');
+                    html = tmpl.render(resp);
+
+                    if (TabFilter.loadNextPage) {
+                        tab.content.append(html);
+                    } else {
+                        tab.content.html(html);
+                    }
+                }
+            },
+            onError: function (jqXhr, tab) {
+                tab.content.html($('#errorDealsTmpl').html());
+            },
+            onComplete: function (jqXhr) {
+                $('.dot-loader-wrapper').removeClass('active');
+            }
+        });
+    });
+</script>
+

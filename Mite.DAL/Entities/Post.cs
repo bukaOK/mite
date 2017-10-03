@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Mite.DAL.Core;
 using System.Collections.Generic;
+using Mite.CodeData.Enums;
 
 namespace Mite.DAL.Entities
 {
@@ -15,10 +16,14 @@ namespace Mite.DAL.Entities
         public Guid Id { get; set; }
         public string Title { get; set; }
         /// <summary>
-        /// Может храниться путь к картинке, если пост является рисунком
-        /// или текст, если это рассказ, книга и т.п.
+        /// Хранится путь к контенту
         /// </summary>
         public string Content { get; set; }
+        /// <summary>
+        /// Сжатый контент
+        /// </summary>
+        public string Content_50 { get; set; }
+        [Obsolete("Заменено PostContentType, после обновления удалить")]
         public bool IsImage { get; set; }
         /// <summary>
         /// Время последнего редактирования
@@ -30,13 +35,18 @@ namespace Mite.DAL.Entities
         public DateTime? PublishDate { get; set; }
         [Obsolete("Заменено PublishDate, должно быть удалено")]
         public bool IsPublished { get; set; }
+        [Obsolete("Заменено PostTypes, после обновления базы удалить")]
         public bool Blocked { get; set; }
         public List<Tag> Tags { get; set; }
         public List<Comment> Comments { get; set; }
         /// <summary>
-        /// Путь к обложке
+        /// Путь к обложке или к главному изображению(если коллекция)
         /// </summary>
         public string Cover { get; set; }
+        /// <summary>
+        /// Сжатая обложка
+        /// </summary>
+        public string Cover_50 { get; set; }
         public string Description { get; set; }
         /// <summary>
         /// Для экономии добавляем int'овое значение рейтинга
@@ -46,6 +56,8 @@ namespace Mite.DAL.Entities
         /// Кол-во просмотров
         /// </summary>
         public int Views { get; set; }
+        public PostTypes Type { get; set; }
+        public PostContentTypes ContentType { get; set; }
         public List<Rating> Ratings { get; set; }
         [ForeignKey("User")]
         public string UserId { get; set; }

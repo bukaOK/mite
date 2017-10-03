@@ -17,7 +17,7 @@ namespace Mite.BLL.Services
         /// <param name="accessToken"></param>
         /// <returns></returns>
         Task Add(string userId, string serviceType, string accessToken);
-        Task<ExternalService> Get(string userId, string serviceName);
+        Task<ExternalService> GetAsync(string userId, string serviceName);
         /// <summary>
         /// Обновляет сервис
         /// </summary>
@@ -59,7 +59,7 @@ namespace Mite.BLL.Services
             }
         }
 
-        public Task<ExternalService> Get(string userId, string serviceName)
+        public Task<ExternalService> GetAsync(string userId, string serviceName)
         {
             var repo = Database.GetRepo<ExternalServiceRepository, ExternalService>();
             return repo.GetAsync(userId, serviceName);

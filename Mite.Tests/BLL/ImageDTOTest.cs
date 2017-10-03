@@ -5,7 +5,7 @@ using System.Drawing;
 
 namespace Mite.Tests.BLL
 {
-    [TestClass]
+    //[TestClass]
     public class ImageDTOTest
     {
         [TestMethod]

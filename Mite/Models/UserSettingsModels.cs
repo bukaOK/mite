@@ -1,11 +1,8 @@
 ﻿using Mite.Attributes.DataAnnotations;
 using Mite.CodeData.Enums;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
 
 namespace Mite.Models
 {
@@ -16,12 +13,14 @@ namespace Mite.Models
         [DisplayName("Старый пароль")]
         [DataType(DataType.Password)]
         public string OldPass { get; set; }
+
         [Required]
         [UIHint("StrengthPass")]
         [MinLength(6, ErrorMessage = "Слишком короткий пароль")]
         [MaxLength(100, ErrorMessage = "Слишком длинный пароль")]
         [DisplayName("Новый пароль")]
         public string NewPass { get; set; }
+
         [Required]
         [DataType("password")]
         [DisplayName("Подтвердите пароль")]
@@ -36,23 +35,35 @@ namespace Mite.Models
         [UIHint("TextBox")]
         [Required]
         public string NickName { get; set; }
+
         [DisplayName("Пол")]
         [UIHint("RadioButtonList")]
         [UIData(typeof(Genders))]
         [Required]
         public byte Gender { get; set; }
+
         [DisplayName("Имя")]
         [UIHint("TextBox")]
         [RegularExpression(@"[А-Яа-яA-Za-z].*", ErrorMessage = "Имя может содержать только буквы")]
         public string FirstName { get; set; }
+
         [DisplayName("Фамилия")]
         [UIHint("TextBox")]
         [RegularExpression(@"[А-Яа-яA-Za-z].*", ErrorMessage = "Фамилия может содержать только буквы")]
         public string LastName { get; set; }
+
         [DisplayName("Возраст")]
         [Range(9, 80, ErrorMessage = "Слишком маленький/большой возраст")]
         [UIHint("TextBox")]
         public byte? Age { get; set; }
+
+        /// <summary>
+        /// Id города
+        /// </summary>
+        [DisplayName("Город")]
+        public string City { get; set; }
+        public IEnumerable<System.Web.Mvc.SelectListItem> Cities { get; set; }
+
         [DisplayName("Напишите о себе")]
         [UIHint("TextArea")]
         [MaxLength(150, ErrorMessage = "Слишком длинный текст для описания")]
@@ -61,16 +72,20 @@ namespace Mite.Models
     public class EmailSettingsModel
     {
         public string Email { get; set; }
+
         public bool Confirmed { get; set; }
+
         [Required]
         [UIHint("TextBox")]
         [DisplayName("Новый e-mail")]
         public string NewEmail { get; set; }
+
         [Required]
         [UIHint("TextBox")]
         [DataType(DataType.Password)]
         [DisplayName("Пароль от аккаунта")]
         public string Password { get; set; }
+
         public bool EmailConfirmationSended { get; set; }
     }
     public class SocialLinksModel
@@ -78,18 +93,23 @@ namespace Mite.Models
         [DisplayName("Вконтакте")]
         [UIHint("LabeledTextBox")]
         public string Vk { get; set; }
+
         [DisplayName("Твиттер")]
         [UIHint("LabeledTextBox")]
         public string Twitter { get; set; }
+
         [DisplayName("Facebook")]
         [UIHint("LabeledTextBox")]
         public string Facebook { get; set; }
+
         [DisplayName("Dribbble")]
         [UIHint("LabeledTextBox")]
         public string Dribbble { get; set; }
+
         [DisplayName("ArtStation")]
         [UIHint("LabeledTextBox")]
         public string ArtStation { get; set; }
+
         [DisplayName("Instagram")]
         [UIHint("LabeledTextBox")]
         public string Instagram { get; set; }

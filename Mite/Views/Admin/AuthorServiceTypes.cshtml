@@ -1,0 +1,86 @@
+﻿@using Mite.Extensions
+@model Mite.Models.ServiceTypeModel
+
+<button class="ui primary button" onclick="showServiceTypeAddModal()">Добавить</button>
+<table class="ui table" style="font-size: 14px">
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Подтвержден</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+<div class="ui small modal" id="serviceTypeModal" data-service-type-id="">
+    <div class="header">Добавление типа услуги</div>
+    <div class="content">
+        @using (Html.BeginForm("", "", FormMethod.Post, new { @class = "ui form", id = "serviceTypeForm" }))
+        {
+            <div class="field">
+                @Html.LabelFor(x => x.Name)
+                @Html.TextBoxFor(x => x.Name, new { placeholder = Html.DisplayNameFor(x => x.Name) })
+            </div>
+            @Html.HiddenFor(x => x.Confirmed)
+            @Html.HiddenFor(x => x.Id)
+            <div class="ui error message" id="serviceTypeMsg"></div>
+        }
+    </div>
+    <div class="actions">
+        <button class="ui green ok button" id="serviceTypeBtn">Отправить</button>
+    </div>
+</div>
+<script type="text/x-jsrender" id="serviceTypeRowTmpl">
+    <tr data-id="{{:Id}}" data-name="{{:Name}}" data-confirmed="{{:Confirmed}}">
+        <td>{{:Name}}</td>
+        <td>
+            {{if Confirmed}}
+            Да
+            {{else}}
+            Нет
+            {{/if}}
+        </td>
+        <td>
+            <button class="ui margined compact button" onclick="showCityEditModal(this, '{{:Id}}')">Изменить</button>
+            <button class="ui margined compact red button" onclick="ServiceTypesApi.remove($(this), $(this).parents('tr'), '{{:Id}}')">Удалить</button>
+        </td>
+    </tr>
+</script>
+<script>
+    function showServiceTypeAddModal() {
+        document.getElementById('serviceTypeModal').dataset.id = '';
+
+        $('#serviceTypeModal>.header').html('Добавление типа услуги');
+
+        $('#serviceTypeForm input').each(function (index, elem) {
+            $(elem).val('');
+        });
+        $('#serviceTypeModal').modal('show');
+    }
+    function showCityEditModal(btn, id) {
+        var $tr = $(btn).parents('tr');
+        $('#serviceTypeModal>.header').html('Изменение типа услуги');
+        var $form = $('#serviceTypeForm');
+
+        $form.find('#Name').val($tr.data('name'));
+        $form.find('#Confirmed').val($tr.data('confirmed'));
+        $form.find('#Id').val($tr.data('id'));
+
+        document.getElementById('serviceTypeModal').dataset.id = id;
+        $('#serviceTypeModal').modal('show');
+    }
+    $(function () {
+        ServiceTypesApi.init();
+        @Html.Raw(Html.FormValidation<Mite.Models.ServiceTypeModel>("#serviceTypeForm"))
+        $('#serviceTypeModal').modal({
+            onApprove: function ($elem) {
+                var id = document.getElementById('serviceTypeModal').dataset.id;
+                if (id === '' || id == undefined || id == null)
+                    ServiceTypesApi.add();
+                else
+                    ServiceTypesApi.update($('tr[data-id="' + id + '"]'));
+            }
+        });
+    });
+</script>
+

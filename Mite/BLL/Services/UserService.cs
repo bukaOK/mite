@@ -225,12 +225,7 @@ namespace Mite.BLL.Services
             }
             else
             {
-                socialLinks.ArtStation = model.ArtStation;
-                socialLinks.Dribbble = model.Dribbble;
-                socialLinks.Vk = model.Vk;
-                socialLinks.Instagram = model.Instagram;
-                socialLinks.Twitter = model.Twitter;
-                socialLinks.Facebook = model.Facebook;
+                Mapper.Map(model, socialLinks);
                 await repo.UpdateAsync(socialLinks);
             }
         }

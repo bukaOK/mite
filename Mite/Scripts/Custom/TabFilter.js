@@ -1,10 +1,20 @@
 ﻿function Tab(settings) {
     this.name = settings.name;
-    this.item = settings.$item;
-    this.content = settings.$content;
+    if (settings.$item === undefined || settings.$item === null) {
+        this.item = $('.item[data-tab="' + settings.name + '"]');
+    } else {
+        this.item = settings.$item;
+    }
+    if (settings.$content === undefined || settings.$content === null) {
+        this.content = $('.tab[data-tab="' + settings.name + '"]');
+    } else {
+        this.content = settings.$content;
+    }
     this.parentTab = settings.parentTab;
     this.childrenTabs = [];
     this.isActive = settings.isActive;
+    this.tmplSelector = settings.tmplSelector;
+    this.emptyTmplSelector = settings.emptyTmplSelector;
 }
 Tab.prototype.activate = function (activateChild) {
     this.content.show();
@@ -14,10 +24,10 @@ Tab.prototype.activate = function (activateChild) {
         return;
     }
     this.isActive = true;
-    if (this.parentTab != null && !this.parentTab.isActive) {
+    if (this.parentTab !== null && !this.parentTab.isActive) {
         this.parentTab.activate();
     }
-    if (activateChild == true && this.childrenTabs.length > 0) {
+    if (activateChild === true && this.childrenTabs.length > 0) {
         this.childrenTabs[0].activate();
     }
 }
@@ -45,7 +55,7 @@ var TabFilter = {
                 tabs;
             path = path[path.length - 1] == '/' ? path.substr(0, path.length - 1) : path;
 
-            if (parentTab == null || parentTab == undefined) {
+            if (parentTab === null || parentTab === undefined) {
                 tabs = this.items;
             } else {
                 tabs = parentTab.childrenTabs;
@@ -97,6 +107,7 @@ var TabFilter = {
             if (tabsPath != '' && tabsPath != null) {
                 this.items.forEach(function (tab) {
                     if (tabsPath.search(tab.name) !== -1) {
+                        tabsPath = tabsPath.replace(tab.name, '');
                         tab.activate();
                     } else {
                         tab.deActivate();
@@ -207,19 +218,23 @@ var TabFilter = {
         //this.ajax.checkResponseLength = settings.ajax.checkResponseLength;
 
         this.Tabs.init(basePath);
-        this.Filters.init();
+        if (this.Filters.items.length > 0) {
+            this.Filters.init();
+        }
         this.initialized = true;
 
         window.onpopstate = function (ev) {
             self.Tabs.updateState(basePath);
-            self.Filters.updateFiltersState();
+            if (this.Filters.items.length > 0) {
+                self.Filters.updateFiltersState();
+            }
             self.refresh(true);
         }
         this.refresh();
     },
     beforeLoad: function () { },
     onSuccess: function (resp, tab) { },
-    onError: function (jqXhr) { return false; },
+    onError: function (jqXhr, tab) { return false; },
     onComplete: function (jqXhr) { return false; },
     ajax: {
         type: 'get',
@@ -235,7 +250,7 @@ var TabFilter = {
             TabFilter.loading = false;
         },
         error: function (jqXhr) {
-            TabFilter.onError(jqXhr);
+            TabFilter.onError(jqXhr, TabFilter.Tabs.getLastActiveTab());
         },
         complete: function (jqXhr) {
             TabFilter.onComplete(jqXhr);
@@ -245,18 +260,23 @@ var TabFilter = {
             //Возвращает false
         }
     },
-    fillDataSource: function () {
+    fillDataSource: function (url) {
         this.beforeLoad();
-        //Переводим в строку
-        this.ajax.url = this.Tabs.buildPath(this.basePath);
+
+        if (url == undefined) {
+            //Переводим в строку
+            this.ajax.url = this.Tabs.buildPath(this.basePath);
+        }
         this.ajax.data = this.Filters.getStringParams();
         this.loading = true;
         return $.ajax(this.ajax);
     },
     //Получаем URL из текущего таба и фильтра(не зависит от URL страницы)
     buildUrl: function(){
-        var path = this.Tabs.buildPath(this.basePath);
-        var params = '?' + this.Filters.getStringParams();
+        var path = this.Tabs.buildPath(this.basePath),
+            params = '';
+        if (this.Filters.items.length > 0)
+            params += '?' + this.Filters.getStringParams();
         return path + params;
     },
     refresh: function (toBack) {
@@ -268,7 +288,7 @@ var TabFilter = {
         if (!toBack)
             history.pushState(url, '', url);
 
-        return this.fillDataSource();
+        return this.fillDataSource(url);
     },
     loadNext: function () {
         this.loadNextPage = true;

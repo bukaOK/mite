@@ -45,6 +45,7 @@ namespace Mite.DAL.Entities
         /// Работы пользователя(только для авторов)
         /// </summary>
         public IList<Post> Posts { get; set; }
+
         /// <summary>
         /// Номер Яндекс кошелька
         /// </summary>

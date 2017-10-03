@@ -30,7 +30,7 @@
 </script>
 <script>
     function showCityAddModal() {
-        $('#cityModal').data('cityId', null);
+        document.getElementById('cityModal').dataset.cityId = '';
         $('#cityModal>.header').html('Добавление города');
         var $form = $('#cityForm');
 

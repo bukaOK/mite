@@ -88,7 +88,8 @@
 .ui.form input[type="time"],
 .ui.form input[type="text"],
 .ui.form input[type="file"],
-.ui.form input[type="url"] {
+.ui.form input[type="url"],
+.ui.form [contenteditable="true"] {
   width: @inputWidth;
   vertical-align: top;
 }
@@ -110,7 +111,8 @@
 .ui.form input[type="time"],
 .ui.form input[type="text"],
 .ui.form input[type="file"],
-.ui.form input[type="url"] {
+.ui.form input[type="url"],
+.ui.form [contenteditable="true"] {
   font-family: @inputFont;
   margin: 0em;
   outline: none;
@@ -376,7 +378,8 @@
 .ui.form input[type="time"]:focus,
 .ui.form input[type="text"]:focus,
 .ui.form input[type="file"]:focus,
-.ui.form input[type="url"]:focus {
+.ui.form input[type="url"]:focus,
+.ui.form [contenteditable="true"]:focus {
   color: @inputFocusColor;
   border-color: @inputFocusBorderColor;
   border-radius: @inputFocusBorderRadius;

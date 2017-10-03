@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Web.Hosting;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security.DataProtection;
 using Mite.DAL.Entities;
-using Mite.CodeData.Enums;
-using Mite.DAL.Infrastructure;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Mite.CodeData.Constants;

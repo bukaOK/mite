@@ -66,7 +66,7 @@
     </div>
     <div class="right item" id="searchItem">
         <div class="ui transparent icon input">
-            <input type="text" placeholder="Поиск..." id="postsSearch" role="search" onfocus="$('#searchItem').addClass('maximised')" 
+            <input type="text" placeholder="дизайн#арт#цифровой арт" title="Поиск" id="postsSearch" role="search" onfocus="$('#searchItem').addClass('maximised')" 
                    onblur="$('#searchItem').removeClass('maximised')"/>
             <i class="search link icon" onclick="SearchFilters.changeFilter()"></i>
         </div>
@@ -105,8 +105,8 @@
 </div>
 <script id="topPostTmpl" type="text/x-jsrender">
     <div class="column">
-        <div class="ui segment {{if Cover != null}}invert{{/if}}{{if !ShowAdultContent}} hide-adult-content{{/if}} post-item" id="post{{:Id}}"
-             {{if Cover != null}} style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})" {{/if}}>
+        <div class="ui segment {{if !IsImage && Cover != null}}invert{{/if}}{{if !ShowAdultContent}} hide-adult-content{{/if}} post-item" id="post{{:Id}}"
+             {{if !IsImage && Cover != null}} style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})" {{/if}}>
             <div class="extra content">
                 <a href="/user/profile/{{:User.UserName}}" class="username" data-username="{{:User.UserName}}">
                     <img src="{{:User.AvatarSrc}}" class="ui avatar image" />
@@ -120,7 +120,7 @@
                     </div>
                 </div>
                 <span style="float: right">
-                    <a class="ui compact inverted {{if Cover == null}}violet {{/if}}button" href="/posts/showpost/{{:Id}}">
+                    <a class="ui compact inverted {{if IsImage}}violet {{/if}}button" href="/posts/showpost/{{:Id}}">
                         {{if IsImage}}
                         Смотреть
                         {{else}}
@@ -129,7 +129,7 @@
                     </a>
                 </span>
             </div>
-            <div class="ui {{if Cover != null}}inverted {{/if}}divider"></div>
+            <div class="ui {{if !IsImage && Cover != null}}inverted {{/if}}divider"></div>
             {{if IsImage}}
             <div class="img-content">
                 <a href="/posts/showpost/{{:Id}}">
@@ -147,24 +147,24 @@
                 {{:Content}}
             </a>
             {{/if}}
-            <div class="ui {{if Cover != null}}inverted {{/if}}divider"></div>
+            <div class="ui {{if !IsImage && Cover != null}}inverted {{/if}}divider"></div>
             <div class="extra content">
-                <a class="ui {{if Cover != null}}inverted {{/if}}header" style="margin-bottom: 5px" href="/posts/showpost/{{:Id}}">
+                <a class="ui {{if !IsImage && Cover != null}}inverted {{/if}}header" style="margin-bottom: 5px" href="/posts/showpost/{{:Id}}">
                     {{:Title}}
                     <span class="sub header">
                         {{:Description}}
                     </span>
                 </a>
-                {{for Tags ~Cover=Cover}}
-                <a class="ui{{if ~Cover != null}} invert{{/if}} label" onclick="loadTag('#{{>#data}}')">{{>#data}}</a>
+                {{for Tags}}
+                <a class="ui{{if !~root.IsImage && ~root.Cover != null}} invert{{/if}} label" onclick="loadTag('#{{>#data}}')">{{>#data}}</a>
                 {{/for}}
             </div>
-            <div class="ui {{if Cover != null}}inverted {{/if}} divider"></div>
+            <div class="ui {{if !IsImage && Cover != null}}inverted {{/if}} divider"></div>
             <div class="extra content">
                 <span>{{:PublicTimeStr}}</span>
                 <div class="right floated" style="float: right">
                     <i class="yellow star icon"></i>{{:Rating}}
-                    <i class="{{if Cover == null}}blue{{else}}black{{/if}} unhide icon"></i>{{:Views}}
+                    <i class="{{if IsImage}}blue{{else}}black{{/if}} unhide icon"></i>{{:Views}}
                     <i class="green comments outline icon"></i>{{:CommentsCount}}
                 </div>
             </div>
@@ -344,7 +344,7 @@
                 });
             },
             onError: function () {
-                alert('Ошибка сервера');
+                swal('Упс!', 'Ошибка сервера.', 'error');
                 $('.loader-wrapper').removeClass('active');
             },
             ajax: {

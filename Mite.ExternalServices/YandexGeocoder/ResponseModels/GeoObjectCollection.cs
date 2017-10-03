@@ -7,5 +7,7 @@ namespace Mite.ExternalServices.YandexGeocoder.ResponseModels
 {
     public class GeoObjectCollection
     {
+        public MetaDataProperty metaDataProperty { get; set; }
+        public List<FeatureMember> featureMember { get; set; }
     }
 }

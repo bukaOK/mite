@@ -1,0 +1,52 @@
+.ui.segment.msg-dialog-wrapper{
+    padding-right: 10px;
+    max-height: 500px;
+    overflow: hidden;
+}
+.msg-dialog-wrapper .ps-scrollbar-y-rail {
+    margin: 10px 0;
+    opacity: 0.5;
+    background-color: #eee;
+}
+
+.mite-input{
+    border: 2px solid #e8e8e8;
+    color: rgba(0, 0, 0, 0.87);
+    border-radius: 0.28571429rem;
+    line-height: 1.4285em;
+    resize: vertical;
+    font-family: "Open Sans", sans-serif;
+    font-size: 14px;
+    padding: 5px;
+}
+.mite-input:focus{
+    border-color: #b540c6;
+    outline: none;
+}
+/*emoji*/
+.ui.emoji.popup .ui.grid .column{
+    padding: 5px;
+}
+.ui.emoji.popup .tabs.menu{
+    margin-bottom: 5px;
+}
+.ui.emoji.popup .tab>.grid>.column{
+    cursor: pointer;
+    border-radius: 2px;
+}
+.ui.emoji.popup .tab>.grid>.em-col.column:hover{
+    background-color: rgba(148, 48, 163, 0.1);
+}
+.ui.emoji.popup .tab{
+    padding: 0 10px 0 0;
+    margin: 0;
+    max-height: 150px;
+    overflow: hidden;
+}
+.ui.emoji.popup .tab>.grid{
+    margin: 0;
+}
+.em-img{
+    width: 1.5em;
+    height: 1.5em;   
+}

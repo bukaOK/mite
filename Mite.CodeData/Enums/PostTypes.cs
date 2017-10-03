@@ -2,23 +2,31 @@
 
 namespace Mite.CodeData.Enums
 {
-    public enum PostTypes
+    /// <summary>
+    /// По скрытности(обычно отображается на странице пользователя)
+    /// </summary>
+    public enum PostTypes : byte
     {
-        //По типу контента
-        Image,
-        Document,
-        Article,
+        //По скрытности
         /// <summary>
         /// Опубликованные
         /// </summary>
-        Published,
+        Published = 3,
         /// <summary>
         /// Неопубликованные(черновик)
         /// </summary>
-        Drafts,
+        Drafts = 4,
         /// <summary>
         /// Заблокированные
         /// </summary>
-        Blocked
+        Blocked = 5,
+        /// <summary>
+        /// Избранное
+        /// </summary>
+        Favorite = 7,
+        /// <summary>
+        /// Не заполненные после импорта
+        /// </summary>
+        NotFilled = 8
     }
 }

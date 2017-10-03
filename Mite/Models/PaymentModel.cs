@@ -1,32 +1,59 @@
 ﻿using Mite.Attributes.DataAnnotations;
-using Mite.CodeData.Enums;
-using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
 
 namespace Mite.Models
 {
-    public class PayOutModel
+    /// <summary>
+    /// Вывод через яндекс.деньги
+    /// </summary>
+    public class YaPayOutModel
     {
         [Required]
         [UIHint("TextBox")]
-        [DataType("number")]
         [Display(Name = "Сумма")]
         public int? PayOutSum { get; set; }
     }
-    public class PayInModel
+    /// <summary>
+    /// Ввод через яндекс.деньги
+    /// </summary>
+    public class YaPayInModel
     {
         [Required]
         [UIHint("TextBox")]
-        [DataType("number")]
-        [Display(Name = "Сумма")]
-        public int? PayInSum { get; set; }
+        [DisplayName("Сумма")]
+        public int? YaPayInSum { get; set; }
+    }
+    /// <summary>
+    /// Платеж через банковскую карту
+    /// </summary>
+    public class BankPayInModel
+    {
         [Required]
-        [UIHint("DropDownList")]
-        [Display(Name = "Платежная система")]
-        [UIData(typeof(PaymentType))]
-        public int PaymentType { get; set; }
+        [UIHint("TextBox")]
+        [DisplayName("Сумма")]
+        public int? BankPayInSum { get; set; }
+    }
+    /// <summary>
+    /// Ввод через webmoney
+    /// </summary>
+    public class WmPayInModel
+    {
+        [Required]
+        [UIHint("TextBox")]
+        [DisplayName("Сумма")]
+        public int? WmPayInSum { get; set; }
+        [Required, OffClientValidation]
+        [UIHint("TextBox")]
+        [DisplayName("Телефон")]
+        [RegularExpression(@"\+7\([0-9]{3}\)[0-9]{3}-[0-9]{2}-[0-9]{2}", ErrorMessage = "Введите правильный номер")]
+        public string WmPhoneNumber { get; set; }
+    }
+    public class WmPayInConfirmModel
+    {
+        [Required]
+        [UIHint("TextBox")]
+        [DisplayName("Код подтверждения")]
+        public string WmConfirmCode { get; set; }
     }
 }

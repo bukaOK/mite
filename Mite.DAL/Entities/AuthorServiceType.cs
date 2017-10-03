@@ -1,16 +1,12 @@
 ﻿using Mite.DAL.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+using System.ComponentModel.DataAnnotations;
 
 namespace Mite.DAL.Entities
 {
     public class AuthorServiceType : GuidEntity
     {
-        /// <summary>
-        /// Название типа услуги(портрерт, фотосессия и пр.)
-        /// </summary>
+        [MaxLength(200)]
         public string Name { get; set; }
+        public bool Confirmed { get; set; }
     }
 }

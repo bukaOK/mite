@@ -130,7 +130,6 @@ namespace Mite.BLL.Services
             {
                 cash += payment.Sum;
             }
-            logger.Info($"PaymentsSum: {cash.ToString()}");
             foreach (var operation in cashOperations)
             {
                 if (userId == operation.FromId)
@@ -142,7 +141,6 @@ namespace Mite.BLL.Services
                     cash += operation.Sum;
                 }
             }
-            logger.Info($"AllSum: {cash.ToString()}");
             return Math.Round(cash, 2);
         }
 

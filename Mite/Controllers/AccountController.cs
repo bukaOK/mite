@@ -170,14 +170,15 @@ namespace Mite.Controllers
             }
         }
         [OnlyGuests]
-        public ActionResult Register()
+        public ActionResult Register(string returnUrl)
         {
+            ViewBag.ReturnUrl = returnUrl;
             return View();
         }
         [HttpPost]
         [OnlyGuests]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Register(RegisterModel model)
+        public async Task<ActionResult> Register(RegisterModel model, string returnUrl)
         {
             if (Request.Url.Host == "test.mitegroup.ru")
             {
@@ -215,7 +216,10 @@ namespace Mite.Controllers
                 var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, "http");
 
                 await userManager.SendEmailAsync(user.Id, "MiteGroup.Подтверждение почты.", $"Для подтверждения вашего аккаунта перейдите по <a href=\"{callbackUrl}\">ссылке.</a> MiteGroup.");
-                return Redirect($"/user/profile/{model.UserName}");
+                if (string.IsNullOrEmpty(returnUrl))
+                    return Redirect($"/user/profile/{model.UserName}");
+                else
+                    return RedirectToLocal(returnUrl);
             }
             //Если что то пошло не так, отображаем форму заново(вместе с ошибками)
             AddErrors(result.Errors);

@@ -23,13 +23,15 @@ namespace Mite.Controllers
         private readonly IUserService _userService;
         private readonly AppUserManager _userManager;
         private readonly IAuthenticationManager _authManager;
+        private readonly ICityService cityService;
 
-        public UserSettingsController(IUserService userService, AppUserManager userManager,
+        public UserSettingsController(IUserService userService, AppUserManager userManager, ICityService cityService,
             IAuthenticationManager authManager)
         {
             _userService = userService;
             _userManager = userManager;
             _authManager = authManager;
+            this.cityService = cityService;
         }
         public ViewResult Index()
         {
@@ -53,7 +55,7 @@ namespace Mite.Controllers
 
             if (!result.Succeeded) return Json(JsonStatuses.Error, "Неудача при сохранении");
 
-            User.AddUpdateClaim(_authManager, ClaimConstants.AvatarSrc, updatedUser.AvatarSrc);
+            User.Identity.AddUpdateClaim(_authManager, ClaimConstants.AvatarSrc, updatedUser.AvatarSrc);
             return Json(JsonStatuses.Success, "Аватарка обновлена");
         }
         public ActionResult UserProfile()
@@ -66,7 +68,8 @@ namespace Mite.Controllers
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Age = user.Age,
-                About = user.Description
+                About = user.Description,
+                Cities = cityService.GetCitiesSelectList(user)
             };
 
             return PartialView(model);
@@ -89,8 +92,8 @@ namespace Mite.Controllers
             }
             var updatedUser = await _userManager.FindByIdAsync(User.Identity.GetUserId());
 
-            User.AddUpdateClaim(_authManager, ClaimTypes.Name, updatedUser.UserName);
-            User.AddUpdateClaim(_authManager, ClaimConstants.AvatarSrc, updatedUser.AvatarSrc);
+            User.Identity.AddUpdateClaim(_authManager, ClaimTypes.Name, updatedUser.UserName);
+            User.Identity.AddUpdateClaim(_authManager, ClaimConstants.AvatarSrc, updatedUser.AvatarSrc);
             return Json(JsonStatuses.Success, "Сохранено");
 
         }

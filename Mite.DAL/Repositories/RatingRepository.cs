@@ -47,54 +47,71 @@ namespace Mite.DAL.Repositories
         }
         public override async Task AddAsync(Rating entity)
         {
-            
             if(string.IsNullOrWhiteSpace(entity.UserId) || string.IsNullOrWhiteSpace(entity.OwnerId))
             {
                 throw new NullReferenceException("Пустые Id пользователей недопустимы");
             }
-            var query = "insert into dbo.\"Ratings\" (\"Value\", \"CommentId\", \"PostId\", \"UserId\", \"OwnerId\", \"RateDate\") " +
-                "values(@Value, @CommentId, @PostId, @UserId, @OwnerId, @RateDate); ";
-            if (entity.PostId != Guid.Empty && entity.PostId != null)
+            Table.Add(entity);
+            if (entity.PostId != null)
             {
-                query += "update dbo.\"Posts\" set \"Rating\" = (select SUM(\"Value\") from dbo.\"Ratings\" where \"PostId\"=@PostId) " +
-                    "where \"Id\"=@PostId; ";
+                var post = await DbContext.Posts.FirstAsync(x => x.Id == entity.PostId);
+                post.Rating = await Table.Where(x => x.PostId == post.Id).SumAsync(x => x.Value);
+                DbContext.Entry(post).Property(x => x.Rating).IsModified = true;
             }
-            else if(entity.CommentId != Guid.Empty && entity.CommentId != null)
+            else if(entity.CommentId != null)
             {
-                query += "update dbo.\"Comments\" set \"Rating\"=(select SUM(\"Value\") from dbo.\"Ratings\" where \"CommentId\"=@CommentId)" +
-                    " where \"Id\"=@CommentId; ";
+                var comment = await DbContext.Comments.FirstAsync(x => x.Id == entity.CommentId);
+                comment.Rating = await Table.Where(x => x.CommentId == comment.Id).SumAsync(x => x.Value);
+                DbContext.Entry(comment).Property(x => x.Rating).IsModified = true;
+            }
+            else if(entity.AuthorServiceId != null)
+            {
+                var authorService = await DbContext.AuthorServices.FirstAsync(x => x.Id == entity.AuthorServiceId);
+                authorService.Rating = await Table.Where(x => x.AuthorServiceId == authorService.Id).SumAsync(x => x.Value);
+                DbContext.Entry(authorService).Property(x => x.Rating).IsModified = true;
             }
             else
             {
                 throw new NullReferenceException("Id комментария и Id поста не могут быть пустыми одновременно");
             }
-            query += "update dbo.\"Users\" set \"Rating\" = (select SUM(\"Value\") from dbo.\"Ratings\" where \"OwnerId\"=@OwnerId) where \"Id\"=@OwnerId; ";
+            var user = await DbContext.Users.FirstAsync(x => x.Id == entity.OwnerId);
+            user.Rating = await Table.Where(x => x.OwnerId == user.Id).SumAsync(x => x.Value);
+            DbContext.Entry(user).Property(x => x.Rating).IsModified = true;
 
-            await Db.ExecuteAsync(query, entity);
+            await SaveAsync();
         }
         public override async Task UpdateAsync(Rating entity)
         {
             //Запрос для обновления рейтинга поста или комментария, и пользователя
-            var query = "update dbo.\"Ratings\" set\"Value\"= @Value where \"Id\"=@Id; ";
+            DbContext.Entry(entity).Property(x => x.Value).IsModified = true;
 
-            if (entity.PostId != Guid.Empty && entity.PostId != null)
+            if (entity.PostId != null)
             {
-                query += "update dbo.\"Posts\" set \"Rating\" = (select SUM(\"Value\") from dbo.\"Ratings\" where \"PostId\"=@PostId) " +
-                    "where \"Id\"=@PostId; ";
+                var post = await DbContext.Posts.FirstAsync(x => x.Id == entity.PostId);
+                post.Rating = await Table.Where(x => x.PostId == post.Id).SumAsync(x => x.Value);
+                DbContext.Entry(post).Property(x => x.Rating).IsModified = true;
             }
             else if (entity.CommentId != Guid.Empty && entity.CommentId != null)
             {
-                query += "update dbo.\"Comments\" set \"Rating\" = (select SUM(\"Value\") from dbo.\"Ratings\" where \"CommentId\"=@CommentId) " +
-                    "where \"Id\"=@CommentId; ";
+                var comment = await DbContext.Comments.FirstAsync(x => x.Id == entity.CommentId);
+                comment.Rating = await Table.Where(x => x.CommentId == comment.Id).SumAsync(x => x.Value);
+                DbContext.Entry(comment).Property(x => x.Rating).IsModified = true;
+            }
+            else if(entity.AuthorServiceId != null)
+            {
+                var authorService = await DbContext.AuthorServices.FirstAsync(x => x.Id == entity.AuthorServiceId);
+                authorService.Rating = await Table.Where(x => x.AuthorServiceId == authorService.Id).SumAsync(x => x.Value);
+                DbContext.Entry(authorService).Property(x => x.Rating).IsModified = true;
             }
             else
             {
                 throw new NullReferenceException("Id комментария и Id поста не могут быть пустыми одновременно");
             }
-            query += "update dbo.\"Users\" set \"Rating\" = (select SUM(\"Value\") from dbo.\"Ratings\" where \"OwnerId\"=@OwnerId) " +
-                "where \"Id\"=@OwnerId; ";
+            var user = await DbContext.Users.FirstAsync(x => x.Id == entity.OwnerId);
+            user.Rating = await Table.Where(x => x.OwnerId == user.Id).SumAsync(x => x.Value);
+            DbContext.Entry(user).Property(x => x.Rating).IsModified = true;
 
-            await Db.ExecuteAsync(query, entity);
+            await SaveAsync();
         }
         /// <summary>
         /// Возвращаем рейтинги по оценившему пользователю(асинхронно) 

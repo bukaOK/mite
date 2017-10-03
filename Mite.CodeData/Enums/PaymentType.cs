@@ -20,6 +20,8 @@ namespace Mite.CodeData.Enums
         /// Перевод с банковской карты на Яндекс.Кошелек
         /// </summary>
         [Display(Name = "Банковская карта")]
-        BankCard
+        BankCard,
+        WebMoney,
+        QIWI
     }
 }

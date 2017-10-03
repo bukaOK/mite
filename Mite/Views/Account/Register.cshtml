@@ -59,63 +59,8 @@
 </div>
 <script>
     $(function () {
-            $('.ui.dropdown').dropdown();
-            $(".ui.form").form({
-                on: "submit",
-                fields: {
-                    UserName: {
-                        rules: [
-                            {
-                                type: "empty",
-                                prompt: $("#UserName").data("valRequired")
-                            },
-                            {
-                                type: "regExp",
-                                value: $("#UserName").data("valRegexPattern"),
-                                prompt: $("#UserName").data("valRegex")
-                            }
-                        ]
-                    },
-                    Email: {
-                        rules: [
-                            {
-                                type: "empty",
-                                prompt: $("#Email").data("valRequired")
-                            },
-                            {
-                                type: "email",
-                                prompt: "Введите правильный e-mail"
-                            }
-                        ]
-                    },
-                    Password: {
-                        rules: [
-                            {
-                                type: "empty",
-                                prompt: $("#Password").data("valRequired")
-                            },
-                            {
-                                type: "length[6]",
-                                prompt: "Минимальная длина пароля - 6 символов"
-                            }
-                        ]
-                    },
-                    ConfirmPassword: {
-                        depends: "Password",
-                        rules: [
-                            {
-                                type: "empty",
-                                prompt: $("#ConfirmPassword").data("valRequired")
-                            },
-                            {
-                                type: "match[Password]",
-                                prompt: $("#ConfirmPassword").data("valEqualto")
-
-                            }
-                        ]
-                    }
-                }
-            });
-            initPassStrength('#Password');
-        });
+        $('.ui.dropdown').dropdown();
+        @Html.Raw(Html.FormValidation<Mite.Models.RegisterModel>(".ui.register.form"))
+        initPassStrength('#Password');
+    });
 </script>

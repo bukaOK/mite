@@ -23,7 +23,7 @@ namespace Mite.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(ModelState);
             }
             try
             {

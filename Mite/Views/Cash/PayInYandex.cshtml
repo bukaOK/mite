@@ -1,0 +1,15 @@
+﻿@using Mite.Extensions
+@model Mite.Models.YaPayInModel
+
+@using (Html.BeginForm("PayInYandex", "Payments", FormMethod.Post, new { @class = "ui form", id = "yaPayInForm" }))
+{
+    @Html.EditorFor(x => x.YaPayInSum)
+    @Html.AntiForgeryToken()
+    <button type="button" class="ui primary button" id="payInBtn" onclick="PaymentsApi.yandex.payIn()">Пополнить</button>
+    <div class="ui error message" id="yaPayInMsg"></div>
+}
+<script>
+    $(function(){
+        @Html.Raw(Html.FormValidation<Mite.Models.YaPayInModel>("#yaPayInForm"))
+    });
+</script>

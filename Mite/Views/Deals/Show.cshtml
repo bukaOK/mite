@@ -1,0 +1,203 @@
+﻿@using Microsoft.AspNet.Identity
+@using Mite.CodeData.Enums
+@using Mite.Extensions
+@using Mite.Helpers
+@model Mite.Models.DealModel
+
+@{
+    ViewBag.Title = "Заказ " + Model.Id;
+    var isAuthor = User.Identity.GetUserId() == Model.Author.Id;
+}
+
+@section styles{
+    @Styles.Render("~/Content/datepicker", "~/Content/dialog")
+}
+<div class="ui grid segment">
+    <div class="sixteen wide column">
+        <h2 class="ui dividing header">
+            Заказ № @Model.Id
+            @if(Model.Deadline != null && Model.Deadline.Value < DateTime.UtcNow)
+            {
+                <span class="ui red label">Просрочено</span>
+            }
+        </h2>
+        <div class="ui tiny steps">
+            <a class="step" data-step="@DealStatuses.New">
+                <i class="plus icon"></i>
+                <div class="content">
+                    <div class="title">@ViewHelper.GetEnumDisplayName(DealStatuses.New)</div>
+                    <div class="description">Выбор срока, цены и требований</div>
+                </div>
+            </a>
+            <a class="step" data-step="@DealStatuses.ExpectPayment">
+                <i class="payment icon"></i>
+                <div class="content">
+                    <div class="title">@ViewHelper.GetEnumDisplayName(DealStatuses.ExpectPayment)</div>
+                    <div class="description">Оплата клиентом</div>
+                </div>
+            </a>
+            <a class="step" data-step="@DealStatuses.ExpectClient">
+                <i class="checkmark box icon"></i>
+                <div class="content">
+                    <div class="title">@ViewHelper.GetEnumDisplayName(DealStatuses.ExpectClient)</div>
+                    <div class="description">Подтверждение выполнения заказа</div>
+                </div>
+            </a>
+            <a class="step" data-step="@DealStatuses.Confirmed">
+                <i class="flag checkered icon"></i>
+                <div class="content">
+                    <div class="title">@ViewHelper.GetEnumDisplayName(DealStatuses.Confirmed)</div>
+                    <div class="description">Заказ выполнен</div>
+                </div>
+            </a>
+        </div>
+        @Html.ValidationSum()
+    </div>
+    <div class="eight wide column">
+        <div class="ui segments">
+            <div class="ui msg-dialog-wrapper segment">
+                <div class="ui msg-dialog feed">
+                    <div class="event">
+                        <div class="label">
+                            <img src="~/Content/images/male.png" />
+                        </div>
+                        <div class="content">
+                            <div class="summary">
+                                <a class="user">landenor</a>
+                                <span class="date">2 часа</span>
+                            </div>
+                            <p class="text">
+                                Ours is a life of constant reruns. We're always circling back to where we'd we started, then starting all over again. Even if we don't run extra laps that day, we surely will come back for more of the same another day soon.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="ui horizontal divider">12 июня</div>
+                    <div class="event">
+                        <div class="label">
+                            <img src="~/Content/images/male.png" />
+                        </div>
+                        <div class="content">
+                            <div class="summary">
+                                <a class="user">oh_sda_awd</a>
+                                <span class="date">4 часа</span>
+                            </div>
+                            <p class="text">
+                                Ours is a life of constant reruns. We're always circling back to where we'd we started, then starting all over again. Even if we don't run extra laps that day, we surely will come back for more of the same another day soon.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="event">
+                        <div class="label">
+                            <img src="~/Content/images/male.png" />
+                        </div>
+                        <div class="content">
+                            <div class="summary">
+                                <a class="user">oh_sda_awd</a>
+                                <span class="date">5 часов</span>
+                            </div>
+                            <p class="text">
+                                Ours is a life of constant reruns. We're always circling back to where we'd we started, then starting all over again. Even if we don't run extra laps that day, we surely will come back for more of the same another day soon.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <form class="ui clearing form segment">
+                <div class="field">
+                    <div contenteditable="true" id="dialogArea"></div>
+                </div>
+                <button type="button" class="ui right floated compact labeled icon primary button">
+                    <i class="send outline icon"></i>
+                    Отправить
+                </button>
+                <button type="button" class="ui right floated compact icon default button" id="emoji-btn">
+                    <i class="smile icon"></i>
+                </button>
+                <div class="ui emoji popup">
+                    <div class="ui mini icon tabs menu" role="tablist">
+                        <a class="active item" role="tab" data-tab="emotions"><i class="em em-smile"></i></a>
+                        <a class="item" role="tab" data-tab="cats"><i class="em em-smile_cat"></i></a>
+                        <a class="item" role="tab" data-tab="gestures"><i class="em em---1"></i></a>
+                    </div>
+                    <div class="ui basic segment active tab" data-tab="emotions">
+                        <div class="ui center aligned six column grid"></div>
+                    </div>
+                    <div class="ui center aligned basic segment tab" data-tab="cats">
+                        <div class="ui six column grid"></div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="eight wide column">
+        <div class="ui styled accordion">
+            <div class="title">
+                <i class="dropdown icon"></i>
+                Подробности услуги
+            </div>
+            <div class="content">
+                <h2 class="ui dividing header">@Model.Service.Title</h2>
+                <img src="@Model.Service.ImageSrc" class="ui image" />
+                <h3 class="ui header">Описание</h3>
+                <p>@Model.Service.Description</p>
+            </div>
+        </div>
+        @if (isAuthor)
+        {
+            Html.RenderPartial("_ShowAuthor", AutoMapper.Mapper.Map<Mite.Models.DealAuthorModel>(Model));
+        }
+        else
+        {
+            Html.RenderPartial("_ShowClient", AutoMapper.Mapper.Map<Mite.Models.DealClientModel>(Model));
+        }
+    </div>
+</div>
+@section scripts{
+    @Scripts.Render("~/bundles/datepicker", "~/bundles/api")
+}
+<script>
+    function toExpectPayDialog(btn) {
+        swal({
+            type: 'warning',
+            title: 'Вы уверены?',
+            text: 'После изменения статуса Вы уже не сможете изменить цену и дату сделки.',
+            showCancelButton: true,
+            confirmButtonText: 'Да',
+            cancelButtonText: 'Нет',
+            confirmButtonClass: 'ui large green button',
+            cancelButtonClass: 'ui large red button',
+            buttonsStyling: false
+        }).then(function () {
+            DealsMvc.toExpectPayment(btn);
+        });
+    }
+    function closeDialog(btn) {
+        swal({
+            type: 'warning',
+            title: 'Вы уверены?',
+            text: 'При закрытии сделки все средства возвращаются клиенту.',
+            showCancelButton: true,
+            confirmButtonText: 'Да',
+            cancelButtonText: 'Нет',
+            confirmButtonClass: 'ui large green button',
+            cancelButtonClass: 'ui large red button',
+            buttonsStyling: false
+        }).then(function () {
+            DealsMvc.close(btn);
+        });
+    }
+
+    $(function () {
+        $('.accordion').accordion();
+        $('.steps [data-step="@Model.Status"]').addClass('active');
+        FileReaderHelper.settings = {
+            saveBtn: $('#save-btn'),
+            imgWrapper: $('#img-wrapper'),
+            field: $('#ImageSrc')
+        };
+        var imgInput = document.getElementById('img-download');
+        if (imgInput !== null) {
+            imgInput.onchange = FileReaderHelper.inputDownloadHandler;
+        }
+    });
+</script>

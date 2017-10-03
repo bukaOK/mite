@@ -5,19 +5,26 @@ using System.Web;
 
 namespace Mite.CodeData.Enums
 {
+    /// <summary>
+    /// Типы перечисления д.е. внутри системы
+    /// </summary>
     public enum CashOperationTypes : byte
     {
         /// <summary>
         /// Реклама Google(перечисление части доходов пользователю)
         /// </summary>
-        GoogleAd,
+        GoogleAd = 0,
         /// <summary>
         /// Перечисление от реферала рефереру (комиссия за вывод денег)
         /// </summary>
-        Referal,
+        Referal = 1,
         /// <summary>
         /// Комиссия системы
         /// </summary>
-        Comission
+        Comission = 2,
+        /// <summary>
+        /// Оплата сделки
+        /// </summary>
+        Deal = 3
     }
 }

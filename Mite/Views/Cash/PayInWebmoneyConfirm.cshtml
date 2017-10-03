@@ -1,0 +1,11 @@
+﻿@model Mite.Models.WmPayInConfirmModel
+
+@using(Html.BeginForm("ConfirmPayInWebmoney", "Payments", FormMethod.Post, new { @class = "ui form", id = "wmConfirmForm" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.EditorFor(x => x.WmConfirmCode)
+    <button class="ui primary button" type="button" onclick="PaymentsApi.webmoney.confirmPayIn()">Отправить</button>
+    <div class="ui error message" id="wmConfirmMsg"></div>
+    <div class="ui blue message">Пожалуйста, не перезагружайте страницу, пока не завершится процесс оплаты.</div>
+}
+

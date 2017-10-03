@@ -18,6 +18,9 @@ namespace Mite.DAL.Infrastructure
         public IDbSet<ExternalService> ExternalServices { get; set; }
         public IDbSet<SocialLinks> SocialLinks { get; set; }
         public IDbSet<City> Cities { get; set; }
+        public IDbSet<AuthorService> AuthorServices { get; set; }
+        public IDbSet<AuthorServiceType> AuthorServiceTypes { get; set; }
+        public IDbSet<Deal> Deals { get; set; }
 
         public AppDbContext()
             : base("DefaultConnection")

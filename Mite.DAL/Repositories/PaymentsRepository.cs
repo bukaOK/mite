@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Mite.DAL.Infrastructure;
 using System.Linq;
 using System.Data.Entity;
+using Mite.CodeData.Enums;
 
 namespace Mite.DAL.Repositories
 {
@@ -18,6 +19,11 @@ namespace Mite.DAL.Repositories
         {
             var payments = await Table.Where(x => x.UserId == userId).OrderByDescending(x => x.Date).ToListAsync();
             return payments;
+        }
+        public async Task<Payment> GetByOperationAsync(string operationId, PaymentType paymentType)
+        {
+            var payment = await Table.FirstOrDefaultAsync(x => x.OperationId == operationId && x.PaymentType == paymentType);
+            return payment;
         }
     }
 }

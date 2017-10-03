@@ -11,7 +11,7 @@
                 $container.html(self.tmpl.render(resp));
             },
             error: function (jqXhr) {
-                alert('Ошибка');
+                swal('Ошибка', 'Ошибка при инициализации', 'error');
             },
         })
     },
@@ -24,7 +24,7 @@
                 $container.prepend(CitiesApi.tmpl.render(resp));
             },
             error: function (jqXhr) {
-                alert('Ошибка');
+                swal('Ошибка', 'Ошибка при добавлении', 'error');
             },
             complete: function () {
                 $btn.removeClass('loading');
@@ -41,7 +41,7 @@
                 $tr.remove();
             },
             error: function (jqXhr) {
-                alert('Ошибка');
+                swal('Ошибка', 'Ошибка при удалении', 'error');
             },
             complete: function () {
                 $btn.removeClass('loading');
@@ -60,10 +60,32 @@
             },
             data: $form.serialize(),
             error: function (jqXhr) {
-                alert('Ошибка');
+                swal('Ошибка', 'Ошибка при обновлении', 'error');
             },
             complete: function () {
                 $btn.removeClass('loading');
+            }
+        });
+    },
+    bindCity: function (cityName) {
+        return $.ajax({
+            url: '/cities/bindcity',
+            data: 'cityName=' + cityName,
+            type: 'post',
+            success: function (resp) {
+                if (resp.status === undefined) {
+                    resp = JSON.parse(resp);
+                }
+            },
+            error: function () {
+                $.ajax({
+                    url: '/api/cities',
+                    success: function (resp) {
+                        swal('Успешно');
+                        $('#cityChoseSelect').dropdown();
+                        $('#cityChoseModal').modal('show');
+                    }
+                });
             }
         });
     }

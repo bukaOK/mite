@@ -7,9 +7,24 @@
     ViewBag.Title = Model.Header;
     ViewBag.MetaDescription = string.Format("Публикация пользователя {0} {1} | {2}", Model.User.UserName, Model.Header, Model.Description);
 
+    var openGraphMeta = new Dictionary<string, string>
+    {
+        { "og:title", ViewBag.Title },
+        { "og:type", "article" },
+        { "og:url", Url.Action("Index", "ShowPost", new{id = Model.Id}, "http") }
+    };
+    if (Model.ContentType == PostContentTypes.Image)
+    {
+        openGraphMeta.Add("og:image", Model.Content);
+    }
+    else if(Model.ContentType == PostContentTypes.ImageCollection)
+    {
+        openGraphMeta.Add("og:image", Model.Cover);
+    }
+
     var userId = User.Identity.GetUserId();
     var tagsRow = "";
-    var vkWidgetImage = Model.IsImage ? "http://" + Request.Url.Host + Model.Content : "";
+    //var vkWidgetImage = Model.IsImage ? "http://" + Request.Url.Host + Model.Content : "";
     var pageUserName = Model.User.UserName;
     var currentUserName = User.Identity.Name;
 
@@ -19,7 +34,13 @@
     }
 
 }
-@Scripts.Render("~/bundles/scroll")
+@section meta{
+    @ViewHelper.GenerateMeta(openGraphMeta)
+}
+@section styles{
+    @Styles.Render("~/Content/gallery")
+}
+@Scripts.Render("~/bundles/scroll", "~/bundles/gallery")
 <div class="ui segment grid">
     <div class="stackable two column row">
         <div class="column">
@@ -36,7 +57,7 @@
             }
         </div>
     </div>
-    @if (Model.Blocked)
+    @if (Model.Type == PostTypes.Blocked)
     {
         <div class="row">
             <div class="centered ten wide column">
@@ -57,15 +78,22 @@
         </div>
     }
     <div class="row">
-        @if (Model.IsImage)
+        @if (Model.ContentType == PostContentTypes.Image)
         {
-            <div class="fifteen wide centered column">
+            <div data-editable class="fifteen wide centered column">
                 <img src="@Model.Content" class="ui centered image" id="post-content" alt="@ViewBag.Title" />
             </div>
         }
-        else
+        else if(Model.ContentType == PostContentTypes.Document)
         {
             <div data-editable class="fifteen wide centered column" id="post-content">
+                @Html.Raw(Model.Content)
+            </div>
+        }
+        else if (Model.ContentType == PostContentTypes.ImageCollection)
+        {
+            <div data-editable class="fifteen wide centered column">
+                <img src="@Model.Cover" class="ui centered image" id="post-content" alt="@ViewBag.Title" />
                 @Html.Raw(Model.Content)
             </div>
         }
@@ -119,7 +147,7 @@
                         <button type="button" class="ui primary button" onclick="updateTags()">Обновить</button>
                     </div>
                     <div class="field">
-                        @if (Model.Blocked)
+                        @if (Model.Type == PostTypes.Blocked)
                         {
                             <button type="button" class="ui green button" onclick="unblockPost()">Разблокировать</button>
                         }
@@ -213,7 +241,7 @@
                             });
                         },
                         error: function (jqXhr) {
-                            alert('Ошибка инициализации тегов.');
+                            swal('Упс...', 'Ошибка инициализации тегов.', 'error');
                         }
                     });
                 })
@@ -286,24 +314,9 @@
         </div>
     </div>
 </template>
-@if (Model.IsImage)
-{
-    <div class="ui basic large modal" id="post-image-modal" style="display: none">
-        <div class="gallery image content">
-            <div class="loader-wrapper" style="top: 45%;"><div class="ui active loader"></div></div>
-            <button class="ui primary go button" onclick="location.href='/posts/showpost/' + PostGallery.getCurrentItem().Id">Перейти</button>
-            <div class="prev btn" id="galleryPrevious">
-                <i class="angle left icon"></i>
-            </div>
-            <img src="@Model.Content" class="ui centered image" />
-            <div class="next btn" id="galleryNext">
-                <i class="angle right icon"></i>
-            </div>
-        </div>
-    </div>
-}
 <script>
     var commentsCount = @Model.CommentsCount;
+    var isImage = @((Model.ContentType == PostContentTypes.Image).ToString().ToLower());
     document.onselectstart = function(){return false;}
 
     function loadPostTime(){
@@ -346,7 +359,7 @@
                 scrollToComment();
             },
             error: function (jqXhr) {
-                alert('Ошибка при инициализации комментариев!');
+                swal('Упс...', 'Ошибка при инициализации комментариев.', 'error');
             }
         });
     }
@@ -392,7 +405,7 @@
                 $('#com' + data.Id + ' .thumbs.up.icon').parent().popup();
             },
             error: function (jqXhr) {
-                alert('Ошибка во время отправки комментария!');
+                swal('Упс...', 'Ошибка во время отправки комментария.', 'error');
             }
         });
     }
@@ -409,8 +422,7 @@
                 $('#com' + commentId).remove();
             },
             error: function (jqXhr) {
-                console.log(jqXhr);
-                alert('Ошибка при удалении комментария!');
+                swal('Упс...', 'Ошибка при удалении комментария!', 'error');
             }
         });
     }
@@ -439,54 +451,23 @@
                 $(ev).data('isRate', !isRate);
                 sendNotification('@NotificationTypes.CommentRating', userId, '@Model.Id#com' + commentId);
             },
-            error: function(jqXhr){
-                alert('Ошибка сервера при оценке!');
+            error: function (jqXhr) {
+                swal('Упс...', 'Ошибка при оценке комментария.', 'error');
             }
         });
     }
     function loadUserGallery(){
         return $.ajax({
-            type: 'post',
             url: '@Url.Action("UserGallery", "Posts")',
             data: {
                 userId: '@Model.User.Id',
+                postId: '@Model.Id'
             },
             success: function(resp) {
                 if(resp.status == undefined){
                     resp = JSON.parse(resp);
                 }
-                PostGallery.init({
-                    currentPostId: '@Model.Id.ToString("N")',
-                    posts: resp.data,
-                    nextItemCall: function(item){
-                        $('#post-image-modal img').attr('src', item.Content);
-                        if(!item.IsLoaded){
-                            $('.loader-wrapper').addClass('active');
-
-                            $('#post-image-modal img').on('load', function(){
-                                item.IsLoaded = true;
-                                $('.loader-wrapper').removeClass('active');
-                            });
-                        }
-                    },
-                    previousItemCall: function(item){
-                        $('#post-image-modal img').attr('src', item.Content);
-                        if(!item.IsLoaded){
-                            $('.loader-wrapper').addClass('active');
-
-                            $('#post-image-modal img').on('load', function(){
-                                item.IsLoaded = true;
-                                $('.loader-wrapper').removeClass('active');
-                            });
-                        }
-                    }
-                });
-                $('#galleryPrevious').click(function(ev){
-                    PostGallery.previousItem();
-                });
-                $('#galleryNext').click(function(ev){
-                    PostGallery.nextItem();
-                });
+                MiteGallery.init(resp.data.Items, resp.data.InitialIndex, '@Url.Action("ShowPost", "Posts")', $('#post-content'));
             },
             error: function(jqXhr){
             }
@@ -521,8 +502,8 @@
                     $.connection.notifyHub.server.newNotification(targetUserId, notificType, sourceValue);
                 });
             },
-            error: function(jqXhr){
-                alert('Ошибка при отправке уведомления.');
+            error: function (jqXhr) {
+                swal('Упс...', 'Ошибка при отправке уведомления.', 'error');
             }
         });
     }
@@ -548,7 +529,7 @@
                         sendNotification('@NotificationTypes.PostRating', '@Model.User.Id', '@Model.Id');
                     },
                     error: function (jqXhr) {
-                        alert('Ошибка инициализации рейтинга.');
+                        swal('Упс...', 'Ошибка инициализации рейтинга.', 'error');
                     }
                 });
             }
@@ -591,8 +572,8 @@
         document.getElementById('vk_share').innerHTML = VK.Share.button({
             url: '@Request.Url.AbsoluteUri',
             title: '@Model.Header',
-            image: '@vkWidgetImage',
-            noparse: true,
+            @*image: '@vkWidgetImage',*@
+            noparse: false,
         }, {
             type: 'custom',
             text: '<span class="ui vk small compact button"><i class="vk icon"></i>Поделиться</span>'
@@ -624,20 +605,8 @@
         });
         initRating();
         initFormValidation();
-        @if (Model.IsImage)
-        {
-            <text>
-        $('#post-image-modal')
-            .modal({
-                onShow: function(){
-                    $(this).css('display', '').addClass('responsive');
-                },
-                onHidden: function(){
-                    PostGallery.reset();
-                }
-            }).modal('attach events', '#post-content');
-        loadUserGallery();
-            </text>
+        if (isImage) {
+            loadUserGallery();
         }
         $('.dimmer.modals.page').click(function(ev){
             $('#post-image-modal').modal('hide');

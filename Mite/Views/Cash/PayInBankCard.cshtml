@@ -1,0 +1,9 @@
+﻿@model Mite.Models.BankPayInModel
+
+@using(Html.BeginForm("PayInBank", "Payments", FormMethod.Post, new { @class = "ui form", id = "bankPayInForm" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.EditorFor(x => x.BankPayInSum)
+    <button type="button" class="ui primary button" onclick="PaymentsApi.bank.payIn()">Пополнить</button>
+    <div class="ui error message" id="bankPayInMsg"></div>
+}

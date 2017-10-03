@@ -91,10 +91,10 @@ namespace Mite.DAL.Core
             DbContext.SaveChanges();
         }
 
-        public virtual Task<TEntity> GetAsync(Guid id)
-        {
-            return Db.QueryFirstAsync<TEntity>($"select * from dbo.\"{TableName}\" where \"Id\"=@id;", new { id });
-        }
+        //public virtual Task<TEntity> GetAsync(Guid id)
+        //{
+        //    return Db.QueryFirstAsync<TEntity>($"select * from dbo.\"{TableName}\" where \"Id\"=@id;", new { id });
+        //}
 
         public TEntity Get(params object[] keyValues)
         {
@@ -116,8 +116,6 @@ namespace Mite.DAL.Core
         public async virtual Task<TEntity> GetAsync(params object[] keyValues)
         {
             var entity = await ((DbSet<TEntity>)Table).FindAsync(keyValues);
-            if(entity != null)
-                DbContext.Entry(entity).State = EntityState.Detached;
             return entity;
         }
     }

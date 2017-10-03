@@ -15,10 +15,24 @@ namespace Mite.Models
     {
         public Guid Id { get; set; }
         public string Title { get; set; }
+
+        private string content;
         /// <summary>
         /// Здесь может храниться или отрывок из документа, или путь к сжатой картинке
         /// </summary>
-        public string Content { get; set; }
+        public string Content
+        {
+            get
+            {
+                if (IsImage)
+                    return content.Replace('\\', '/');
+                return content;
+            }
+            set
+            {
+                content = value;
+            }
+        }
         /// <summary>
         /// Только для изображений, полный путь к изображению
         /// </summary>
@@ -30,7 +44,21 @@ namespace Mite.Models
         /// Только для изображений, gif ли это
         /// </summary>
         public bool IsGif { get; set; }
-        public string Cover { get; set; }
+
+        private string cover;
+        public string Cover
+        {
+            get
+            {
+                return cover == null ? 
+                    cover : cover.Replace('\\', '/');
+            }
+            set
+            {
+                cover = value;
+            }
+        }
+
         public int Rating { get; set; }
         public int Views { get; set; }
         public int CommentsCount { get; set; }

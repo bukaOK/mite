@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mite.DAL", "Mite.DAL\Mite.D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mite.CodeData", "Mite.CodeData\Mite.CodeData.csproj", "{7F830D87-A7D7-4717-B86C-0806C1E8B6AE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mite.SqlTable", "Mite.SqlTable\Mite.SqlTable.csproj", "{37DBCABE-5832-4332-B241-7310B581390F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{7F830D87-A7D7-4717-B86C-0806C1E8B6AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F830D87-A7D7-4717-B86C-0806C1E8B6AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F830D87-A7D7-4717-B86C-0806C1E8B6AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37DBCABE-5832-4332-B241-7310B581390F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37DBCABE-5832-4332-B241-7310B581390F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37DBCABE-5832-4332-B241-7310B581390F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37DBCABE-5832-4332-B241-7310B581390F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

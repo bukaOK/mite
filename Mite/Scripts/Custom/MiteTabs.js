@@ -5,8 +5,7 @@
     this.basePath += basePath[basePath.length - 1] == '/' ? '' : '/';
     var self = this;
 
-    var matches = document.querySelectorAll(itemsSelector);
-    matches.forEach(function (match) {
+    $(itemsSelector).each(function (index, match) {
         var tab = {
             name: match.dataset.tab,
             item: match,

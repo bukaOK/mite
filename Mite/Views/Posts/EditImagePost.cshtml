@@ -1,4 +1,5 @@
 ﻿@using Mite.Extensions
+@using Mite.CodeData.Enums
 @model Mite.Models.ImagePostModel
 
 @{ 
@@ -74,47 +75,8 @@
         <button class="ui green ok button">Да</button>
     </div>
 </div>
-<div class="ui modal" id="publishGuideModal">
-    <i class="close icon"></i>
-    <div class="header">
-        Гайд по публикации работ.
-    </div>
-    <div class="scrolling content">
-        <h3>Зачем мне это?</h3>
-        <p>
-            Многие авторы не знают особенностей работы системы MiteGroup (наша ошибка), 
-            из-за чего не используют весь функционал. Этот гайд призван раз и навсегда пресечь все недопонимания.
-        </p>
-        <h3>Заголовок</h3>
-        <p>
-            В заголовке указывается основная тема работы. Если у вас нарисован котик, то следует указывать "кот",
-            если работа об известной личности/группе указываете её имя, и т.д. Ещё одна причина не лениться - 
-            появление в результатах поисковых систем. К примеру - 
-            <a href="https://yandex.ru/images/search?text=denis%20wild&img_url=http%3A%2F%2Fmitegroup.ru%2FPublic%2Fimages%2Fbbaeaf7e-dafd-4853-966c-e470dde3c1b5.jpg&pos=15&rpt=simage"
-               target="_blank">
-                работа одного из авторов в результатах Яндекса.
-            </a>
-        </p>
-        <h3>Описание</h3>
-        <p>
-            Описание подробно раскрывает содержимое работы. Зачастую пользователи пишут всю информацию в теги
-            (даже бренды и названия, несмотря на предупреждения). Достаточно взглянуть на следующий скриншот:
-        </p>
-        <img src="~/Public/guides/image_guide_1.png" alt="Скриншот гайд 1." />
-        <h3>А для чего тогда теги?</h3>
-        <p>
-            Каждый раз как вы заходите в топ работ, можно увидеть список слов, которые представляют собой разделы. Мы отказались от чего-то вроде 
-            "арт > цифровой арт > вектор" и пр., объединив всё в одно. Позволяя людям добавлять теги, мы избавлялись от рутинной работы, 
-            но в итоге многие начали добавлять слепки вроде "артвгорах". <b>Профессиональную же лексику можно и нужно писать в теги.</b>.
-        </p>
-        <h3>И в заключение...</h3>
-        <p>
-            Как видите, "Заголовок" и "Описание" могут превратиться в мощный инструмент для поднятия позиций ваших работ в поиске.
-            Прежде чем создать публикацию, просто достаточно задать себе вопрос "А что пользователь напишет в поиск, чтобы найти мою работу?", 
-            все остальное - забота MiteGroup &#128521;
-        </p>
-    </div>
-</div>
+
+@{ Html.RenderPartial("~/Views/Guides/_PublicationGuide.cshtml"); }
 <script>
     function savePost(isPublished){
         var $saveBtn = $('#save-btn');
@@ -122,14 +84,16 @@
         var $resultMsg = $('#result-msg');
         @{
             var url = string.IsNullOrEmpty(Model.Header)
-                ? Url.RouteUrl("AddPost", new { postType = 0 })
+                ? Url.RouteUrl("AddPost", new { postType = (byte)PostContentTypes.Image })
                 : Url.Action("UpdatePost", "Posts");
         }
+        var postType = isPublished ? '@PostTypes.Published' : '@PostTypes.Drafts';
         var model = {
             Header: $('#Header').val(),
             Content: $('#Content').val(),
             Description: $('#Description').val(),
-            IsImage: true,
+            ContentType: '@PostContentTypes.Image',
+            Type: postType,
             Id: '@Model.Id',
             Tags: $('#Tags').val().split(',')
         };
@@ -191,13 +155,14 @@
                     showOnFocus: false,
                     forceSelection: false,
                     match: 'text',
-                    onShow: function(){
-                        $(this).children('.menu').perfectScrollbar();
-                    }
+                    maxSelections: 5,
+                    //onShow: function(){
+                    //    $(this).children('.menu').perfectScrollbar();
+                    //}
                 });
             },
             error: function(jqXhr){
-                alert('Ошибка инициализации тегов.');
+                swal('Упс!', 'Ошибка инициализации тегов.', 'error');
             }
         });
         //Отправляем форму
@@ -213,38 +178,7 @@
                 $('#imgPostForm').form('add errors', ['Размер файла не может быть больше 30 мбайт']);
             }
         });
-        $('#imgPostForm').form({
-            fields: {
-                '@Html.IdFor(x => x.Header)': {
-                    rules: [
-                        {
-                            type: 'empty',
-                            prompt: $('#@Html.IdFor(x => x.Header)').data('valRequired')
-                        },
-                        {
-                            type: 'maxLength[' + $('#Header').data('val-maxlength-max') + ']',
-                            prompt: $('#Header').data('val-maxlength')
-                        }
-                    ]
-                },
-                'Description': {
-                    rules: [
-                        {
-                            type: 'maxLength[' + $('#Description').data('val-maxlength-max') + ']',
-                            prompt: $('#Description').data('val-maxlength')
-                        }
-                    ]
-                },
-                '@Html.IdFor(x => x.Content)': {
-                    rules: [
-                        {
-                            type: 'empty',
-                            prompt: $('#@Html.IdFor(x => x.Content)').data('valRequired')
-                        }
-                    ]
-                }
-            }
-        });
+        @Html.Raw(Html.FormValidation<Mite.Models.ImagePostModel>("#imgPostForm"))
         $("#saveModal").modal({
             onDeny: function(){
                 savePost(false);
@@ -254,49 +188,12 @@
             }
         });
         $('#publishGuidModal').modal();
-        function readFile(file, evt) {
-            var reader = new FileReader();
-            reader.onprogress = function () {
-                $(evt).addClass('loading');
-            };
-            reader.onloadend = function () {
-                $(evt).removeClass('loading');
-            };
-            reader.onload = function () {
-                $('#save-btn').show();
-                $('#img-wrapper').html('<img src="' + reader.result + '" style="max-width: 100%"/>');
-                $('#Content').val(reader.result);
-            };
-            if(file.size / 1024 / 1024 > 30){
-                isImageLarge = true;
-            }
-            reader.readAsDataURL(file);
-        }
-        //Когда перемещаем файл мышкой и курсор над областью
-        function dragOverHandler(evt) {
-            evt.stopPropagation();
-            evt.preventDefault();
-            evt.dataTransfer.dropEffect = "copy";
-        }
-
-        //Когда переместили файл
-        function dropHandler(evt) {
-            evt.stopPropagation();
-            evt.preventDefault();
-            var file = evt.dataTransfer.files[0];
-            readFile(file, evt);
-        }
-
-        function inputDownloadHandler(evt) {
-            var file = evt.target.files[0];
-            readFile(file, evt);
-        }
         //Настраиваем загрузку файлов
         var dropZone = document.getElementById("drop-zone");
-        dropZone.ondragover = dragOverHandler;
-        dropZone.ondrop = dropHandler;
+        dropZone.ondragover = FileReaderHelper.dragOverHandler;
+        dropZone.ondrop = FileReaderHelper.dropHandler;
 
         var inputDownload = document.getElementById("img-download");
-        inputDownload.onchange = inputDownloadHandler;
+        inputDownload.onchange = FileReaderHelper.inputDownloadHandler;
     });
 </script>

@@ -12,13 +12,29 @@
                 @Html.EditorFor(x => x.Gender)
             </div>
             <div class="two fields">
-                @Html.EditorFor(x => x.FirstName, new { WithLabel = true })
-                @Html.EditorFor(x => x.LastName, new { WithLabel = true })
+                <div class="field">
+                    @Html.LabelFor(x => x.FirstName)
+                    @Html.TextBoxFor(x => x.FirstName, new { placeholder = "Иван" })
+                </div>
+                <div class="field">
+                    @Html.LabelFor(x => x.LastName)
+                    @Html.TextBoxFor(x => x.LastName, new { placeholder = "Иванов" })
+                </div>
             </div>
-            <div class="four wide fields">
-                @Html.EditorFor(x => x.Age, new { WithLabel = true })
+            <div class="fields">
+                <div class="four wide field">
+                    @Html.LabelFor(x => x.Age)
+                    @Html.TextBoxFor(x => x.Age, new { placeholder = "18" })
+                </div>
+                <div class="twelve wide field">
+                    @Html.LabelFor(x => x.City)
+                    @Html.DropDownListFor(x => x.City, Model.Cities, new { @class = "ui fluid search selection dropdown" })
+                </div>
             </div>
-            @Html.EditorFor(x => x.About, new { WithLabel = true })
+            <div class="field">
+                @Html.LabelFor(x => x.About)
+                @Html.TextAreaFor(x => x.About, new { placeholder = "Люблю разработку...и власть" })
+            </div>
             <button type="button" class="ui primary button" onclick="updateUserProfile(this)">Сохранить</button>
             <div class="ui hidden message" style="text-align: center" id="update-state-msg">
             </div>
@@ -28,8 +44,10 @@
 </div>
 <script>
     $(function () {
-        $('#profileForm input:text').siblings('label').show();
-        $('#profileForm textarea').siblings('label').show();
+        $('#City').dropdown({
+            fullTextSearch: true,
+            match: 'text'
+        });
     });
     function updateUserProfile(ev) {
         var $form = $(ev).parents('form');

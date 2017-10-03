@@ -19,6 +19,9 @@ using Yandex.Money.Api.Sdk.Interfaces;
 using NLog;
 using Mite.BLL.Core;
 using Mite.BLL.Infrastructure;
+using Mite.Infrastructure;
+using System.Web;
+using Mite.Modules;
 
 namespace Mite
 {
@@ -37,7 +40,8 @@ namespace Mite
             DependencyResolver.SetResolver(new AutofacDependencyResolver(container));
             apiConfiguration.DependencyResolver = new AutofacWebApiDependencyResolver(container);
 
-            app.UseAutofacMiddleware(container);
+            //app.UseAutofacMiddleware(container);
+
             app.UseAutofacWebApi(apiConfiguration);
             app.UseAutofacMvc();
 
@@ -47,9 +51,11 @@ namespace Mite
         private static void RegisterComponents(ContainerBuilder builder, IAppBuilder app)
         {
             var dataProtectionProvider = app.GetDataProtectionProvider();
+
             builder.RegisterType<AppDbContext>().InstancePerRequest();
             builder.RegisterType<UnitOfWork>().As<IUnitOfWork>().InstancePerRequest();
-            builder.Register(c => c.Resolve<IOwinContext>().Authentication).As<IAuthenticationManager>().InstancePerRequest();
+
+            builder.Register(c => HttpContext.Current.GetOwinContext().Authentication).As<IAuthenticationManager>().InstancePerRequest();
             builder.Register(c => new AppUserManager(new UserStore<User>(c.Resolve<AppDbContext>()),
                 dataProtectionProvider)).InstancePerRequest();
             builder.RegisterType<AppSignInManager>();
@@ -65,6 +71,8 @@ namespace Mite
             builder.RegisterType<Authenticator>().InstancePerRequest();
 
             builder.Register(c => LogManager.GetLogger("LOGGER")).As<ILogger>().SingleInstance();
+
+            builder.RegisterType<GeoMiddleware>().InstancePerRequest();
         }
     }
 }

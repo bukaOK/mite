@@ -8,11 +8,11 @@
         }
     </style>
 }
-
 <nav class="ui stackable pointing secondary tabs menu" style="border: none" role="tablist">
     <a class="active item" data-tab="moderregister" role="tab">Добавление модератора</a>
     <a class="item" data-tab="extapps" role="tab">Авторизовать приложения</a>
     <a class="item" data-tab="statistic" role="tab">Статистика</a>
+    <a class="item" data-tab="servicetypes" role="tab">Типы услуг</a>
 </nav>
 <div class="ui active tab" data-tab="moderregister" role="tabpanel">
     @{Html.RenderAction("ModerRegister");}
@@ -32,15 +32,17 @@
 <div class="ui tab" data-tab="statistic" role="tabpanel">
     @{Html.RenderAction("Statistic");}
 </div>
+<div class="ui tab" data-tab="servicetypes" role="tabpanel">
+    @{ Html.RenderAction("ServiceTypes"); }
+</div>
+@section scripts{
+    @Scripts.Render("~/bundles/api", "~/bundles/jsrender")
+}
 <script>
     $(function () {
         $('.admin-panel.item').addClass('active');
-        $('.ui.tabs .item').tab({
-            history: true,
-            historyType: 'state',
-            path: '/user/settings'
-        });
-        var tabs = new MiteTab('.ui.tabs .item', '/admin/');
+        ViewHelper.disableFormSubmitting('form');
+        var tabs = new MiteTab('.ui.tabs .item', '/admin');
     });
 </script>
 

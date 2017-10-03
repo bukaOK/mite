@@ -1,0 +1,206 @@
+﻿@using Mite.Extensions
+@using Mite.CodeData.Enums
+@using Mite.Helpers
+@model Mite.Models.AuthorServiceModel
+
+<div class="ui segment">
+    <h2 class="ui dividing header">@ViewBag.Title</h2>
+    <form class="ui stackable two column center aligned grid form" id="authorServiceForm">
+        <div class="column">
+            <h3 class="ui header">Изображение, характеризующее услугу.</h3>
+            <input type="file" id="img-download" onchange="inputDownloadHandler(event)" style="display: none" />
+            <label for="img-download" class="ui labeled icon large primary button">
+                Загрузить
+                <i class="cloud download icon"></i>
+            </label>
+            <div class="ui section divider horizontal">Или</div>
+            <div class="ui dashed segment" id="drop-zone" ondrop="dropHandler(event)" ondragover="dragOverHandler(event)">
+                <h3 class="ui disabled grey">Перетащите сюда</h3>
+            </div>
+            <div id="img-wrapper" class="field">
+                @if (!string.IsNullOrEmpty(Model.ImageSrc))
+                {
+                    <img src="@Model.ImageSrc" class="ui image" />
+                }
+            </div>
+            <div id="vkCodeWrapper" class="field">
+                @if (!string.IsNullOrEmpty(Model.VkPostCode))
+                {
+                    @Html.Raw(Model.VkPostCode)
+                }
+            </div>
+        </div>
+        <div class="left aligned column">
+            <div class="field">
+                <button class="ui fluid inverted blue button" type="button" onclick="$('#publishGuideModal').modal('show')">Гайд по услугам.</button>
+            </div>
+            @Html.HiddenFor(x => x.Id)
+            @Html.HiddenFor(x => x.ImageBase64)
+            <div class="field">
+                <label>@Html.DisplayNameFor(x => x.Title)</label>
+                @Html.TextBoxFor(x => x.Title, new { placeholder = "Портрет по фото" })
+            </div>
+            <div class="fields">
+                <div class="ten wide field">
+                    <label>@Html.DisplayNameFor(x => x.ServiceTypeId) (<a onclick="$('#serviceTypeModal').modal('show')">Предложить новый</a>)</label>
+                    @Html.DropDownListFor(x => x.ServiceTypeId, Model.ServiceTypes, new { @class = "ui selection dropdown" })
+                </div>
+                <div class="six wide field">
+                    <label>@Html.DisplayNameFor(x => x.Price)</label>
+                    @Html.TextBoxFor(x => x.Price, new { placeholder = "500" })
+                </div>
+            </div>
+            <div class="fields">
+                <div class="field">
+                    <label>@Html.DisplayNameFor(x => x.DeadlineNum)</label>
+                    <div class="ui action input">
+                        @Html.TextBoxFor(x => x.DeadlineNum, new { placeholder = Html.DisplayNameFor(x => x.DeadlineNum), onchange = "updateDropdown(this.value)" })
+                        <div class="ui compact selection dropdown" id="deadlineDropdown">
+                            @Html.HiddenFor(x => x.DeadlineType)
+                            <div class="text">@ViewHelper.GetEnumDisplayName(DurationTypes.Hour)</div>
+                            <i class="dropdown icon"></i>
+                            <div class="menu">
+                                <div class="item" data-text="час" data-value="@DurationTypes.Hour">Час</div>
+                                <div class="item" data-text="день" data-value="@DurationTypes.Day">День</div>
+                                <div class="item" data-text="неделя" data-value="@DurationTypes.Week">Неделя</div>
+                                <div class="item" data-text="месяц" data-value="@DurationTypes.Month">Месяц</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <label>@Html.DisplayNameFor(x => x.Description)</label>
+                @Html.TextAreaFor(x => x.Description, new { rows = 4, placeholder = "Не принимаются низкокачественные фотографии" })
+            </div>
+            <div class="ui blue icon message">
+                <i class="warning icon"></i>
+                <div class="content">
+                    <span class="header">Внимание!</span>
+                    <p>
+                        Значения <b>Цена</b> и <b>Срок выполнения</b> представляют собой примерные(средние) значения. 
+                        Конкретные значения устанавливаются непосредственно во время сделки.
+                    </p>
+                </div>
+            </div>
+            <h3 class="ui header">Дополнительные условия оплаты</h3>
+            <div class="field">
+                <label>@Html.DisplayNameFor(x => x.VkPostCode) (<a onclick="$('#vkRepostHelpModal').modal('show')">Как добавить код?</a>)</label>
+                @Html.TextAreaFor(x => x.VkPostCode, new { placeholder = "Код для вставки", onchange = "$('#vkCodeWrapper').html(this.value)" })
+            </div>
+            <div class="ui error message" id="serviceEditMsg"></div>
+            @if (Model.Id == null)
+            {
+                <button class="ui green fluid button" type="button" onclick="AuthorServiceApi.add()">Сохранить</button>
+            }
+            else
+            {
+                <button class="ui green fluid button" type="button" onclick="AuthorServiceApi.update()">Сохранить</button>
+            }
+        </div>
+    </form>
+</div>
+<div class="ui modal" id="vkRepostHelpModal">
+    <i class="close icon"></i>
+    <div class="header">Добавление виджета записи ВКонтакте</div>
+    <div class="image content">
+        <img src="~/Public/guides/vk_repost_1.png" class="ui image" width="530" height="367" />
+        <div class="description">
+            <p>Нажмите на кнопку "Поделиться записью" (приведена на скриншоте).</p>
+        </div>
+    </div>
+    <div class="ui fitted divider"></div>
+    <div class="image content">
+        <img src="~/Public/guides/vk_repost_2.png" class="ui image" />
+        <div class="description">
+            <p>В открывшемся модальном окне перейдите на вкладку "Экспортировать", после чего скопируйте "Код для вставки".</p>
+        </div>
+    </div>
+</div>
+@{ Html.RenderPartial("_AddServiceType", new Mite.Models.ServiceTypeModel()); }
+@section scripts{
+    @Scripts.Render("~/bundles/api")
+}
+<script>
+    var deadlineItems = [
+        {
+            val: '@DurationTypes.Hour',
+            words: ['Час', 'Часа', 'Часов']
+        },
+        {
+            val: '@DurationTypes.Day',
+            words: ['День', 'Дня', 'Дней']
+        },
+        {
+            val: '@DurationTypes.Week',
+            words: ['Неделя', 'Недели', 'Недель']
+        },
+        {
+            val: '@DurationTypes.Month',
+            words: ['Месяц', 'Месяца', 'Месяцев']
+        }
+    ];
+
+    //Когда перемещаем файл мышкой и курсор над областью
+    function dragOverHandler(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+        evt.dataTransfer.dropEffect = "copy";
+    }
+
+    //Когда переместили файл
+    function dropHandler(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+        var file = evt.dataTransfer.files[0];
+        readFile(file, evt);
+    }
+
+    function inputDownloadHandler(evt) {
+        var file = evt.target.files[0];
+        readFile(file, evt);
+    }
+    function readFile(file, evt) {
+        var reader = new FileReader();
+        reader.onprogress = function () {
+            $(evt).addClass('loading');
+        };
+        reader.onloadend = function () {
+            $(evt).removeClass('loading');
+        };
+        reader.onload = function () {
+            $('#save-btn').show();
+            $('#img-wrapper').html('<img src="' + reader.result + '" class="ui image" />');
+            $('#ImageBase64').val(reader.result);
+        };
+        if (file.size / 1024 / 1024 > 30) {
+            isImageLarge = true;
+        }
+        reader.readAsDataURL(file);
+    }
+    function updateDropdown(inputVal) {
+        $('#deadlineDropdown>.menu>.item').each(function (index, item) {
+            for (var i = 0; i < deadlineItems.length; i++) {
+                var itemWords = deadlineItems[i];
+                if (itemWords.val === item.dataset.value) {
+                    var word = ViewHelper.getWordCase(+inputVal, itemWords.words[0], itemWords.words[1], itemWords.words[2]);
+                    item.dataset.text = word.toLowerCase();
+                    item.innerHTML = word;
+                    break;
+                }
+            }
+        });
+        var $dropdown = $('#deadlineDropdown');
+        var currentVal = $dropdown.dropdown('get value');
+        var items = $dropdown.dropdown('get item', currentVal);
+        if (items !== false) {
+            $('#deadlineDropdown>.text').html(items[0].dataset.text);
+        }
+    }
+    $(function () {
+        @Html.Raw(Html.FormValidation<Mite.Models.AuthorServiceModel>("#authorServiceForm"))
+        $('#ServiceTypeId').dropdown();
+        $('#deadlineDropdown').dropdown();
+        updateDropdown($('#DeadlineNum').val());
+    });
+</script>

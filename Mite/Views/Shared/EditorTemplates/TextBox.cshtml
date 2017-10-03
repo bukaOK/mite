@@ -12,7 +12,11 @@
     var iconClass = "icon " + ViewData["InputIcon"];
     <div class="field">
         <div class="ui left icon input">
-            <label style="display: none">@Html.DisplayName("")</label>
+            @if(ViewData["WithLabel"] as bool? == true)
+            {
+                <label>@Html.DisplayName("")</label>
+            }
+            @*<label style="display: none">@Html.DisplayName("")</label>*@
             <i class="@iconClass"></i>
             @Html.TextBox("", Model, new { placeholder = Html.DisplayName(""), type = dataType})
         </div>
@@ -21,7 +25,10 @@
 else
 {
     <div class="field">
-        <label style="display: none">@Html.DisplayName("")</label>
+        @if (ViewData["WithLabel"] as bool? == true)
+        {
+            <label>@Html.DisplayName("")</label>
+        }
         @Html.TextBox("", Model, new {type = dataType, placeholder = Html.DisplayName("")})
     </div>
 }

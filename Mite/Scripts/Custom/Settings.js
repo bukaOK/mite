@@ -1,4 +1,9 @@
 ﻿var Settings = {
+    apiStatuses: {
+        success: 0,
+        error: 1,
+        validationError: 2
+    },
     init: function(){
         this.initSemanticSettings();
     },

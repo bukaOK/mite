@@ -1,11 +1,10 @@
 ﻿@using Mite.Models
 @using Microsoft.AspNet.Identity
-@using Mite.CodeData.Constants
+@using Mite.CodeData.Enums
 @model CashModel
 @{
     ViewBag.Title = "Счёт";
 }
-@Scripts.Render("~/bundles/clipboard")
 <div class="ui stackable grid">
     <div class="four wide column">
         <div class="ui segment">
@@ -17,18 +16,46 @@
                 <a class="item" data-tab="payOut">Вывод</a>
             </nav>
             <div class="ui active tab" data-tab="payIn">
-                @{Html.RenderPartial("PayIn", new PayInModel());}
-                <button type="submit" class="ui primary button" form="yaAuth" id="yaAuthBtn" style="display: none">Авторизовать Яндекс.Деньги</button>
+                @Html.EnumDropDownListFor(x => x.PaymentType, new { @class = "ui margined selection fluid dropdown" })
+                <div class="ui tab" data-tab="payIn/yandex">
+                    @if (Model.IsYandexAuthorized)
+                    {
+                        Html.RenderPartial("PayInYandex", new YaPayInModel());
+                    }
+                    else
+                    {
+                        <button type="submit" class="ui primary button" form="yaAuth" id="yaAuthBtn">
+                            Авторизовать Яндекс.Деньги
+                        </button>
+                    }
+                </div>
+                <div class="ui tab" data-tab="payIn/webmoney">
+                    @{ Html.RenderPartial("PayInWebmoney", new WmPayInModel()); }
+                </div>
+                <div class="ui tab" data-tab="payIn/wmconfirm">
+                    @{ Html.RenderPartial("PayInWebmoneyConfirm", new WmPayInConfirmModel()); }
+                </div>
+                <div class="ui tab" data-tab="payIn/bank">
+                    @{ Html.RenderPartial("PayInBankCard", new BankPayInModel()); }
+                </div>
             </div>
             <div class="ui tab" data-tab="payOut">
-                @if (Model.IsYandexAuthorized)
-                {
-                    Html.RenderPartial("PayOut", new PayOutModel());
-                }
-                else
-                {
-                    <button type="submit" class="ui primary button" form="yaAuth">Авторизовать Яндекс.Деньги</button>
-                }
+                <div class="ui tab" data-tab="payOut/yandex">
+                    @if (Model.IsYandexAuthorized)
+                    {
+                        Html.RenderPartial("PayOutYandex", new YaPayOutModel());
+                    }
+                    else
+                    {
+                        <form action="https://money.yandex.ru/oauth/authorize" method="post" id="yaAuth">
+                            <input type="hidden" name="client_id" value="@Model.ClientId" />
+                            <input type="hidden" name="response_type" value="code" />
+                            <input type="hidden" name="redirect_uri" value="@Model.RedirectUri" />
+                            <input type="hidden" name="scope" value="account-info payment.to-account(&quot;@Model.SystemYandexWallet&quot;)" />
+                            <button type="submit" class="ui primary button" @*form="yaAuth"*@>Авторизовать Яндекс.Деньги</button>
+                        </form>
+                    }
+                </div>
             </div>
         </div>
     </div>
@@ -47,20 +74,9 @@
         </div>
     </div>
 </div>
-<div class="ui small modal" id="payOutModal">
-    <div class="header">
-        Пополнение счёта
-    </div>
-    <div class="content">
-        <form class="ui form" id="payOutForm" action="@Url.Action("PayOut", "Payments")" method="post">
-            <div class="field">
-                <input type="number" placeholder="Сумма" name="sum" />
-            </div>
-            @Html.AntiForgeryToken()
-            <button type="submit" class="ui primary button">Пополнить</button>
-        </form>
-    </div>
-</div>
+@section scripts{
+    @Scripts.Render("~/bundles/clipboard", "~/bundles/api", "~/bundles/inputmask")
+}
 <script id="referalsTmpl" type="text/x-jsrender">
     <div class="ui blue message">
         <p>Чтобы пользователь стал вашим <b class="help word" data-tooltip="Пользователь, которого Вы пригласили.">рефералом</b>, следуйте следующим пунктам: </p>
@@ -138,12 +154,6 @@
 @*
     Форма яндекса для авторизации
 *@
-<form action="https://money.yandex.ru/oauth/authorize" method="post" id="yaAuth">
-    <input type="hidden" name="client_id" value="@Model.ClientId" />
-    <input type="hidden" name="response_type" value="code" />
-    <input type="hidden" name="redirect_uri" value="@Model.RedirectUri" />
-    <input type="hidden" name="scope" value="account-info payment.to-account(&quot;@Model.SystemYandexWallet&quot;)" />
-</form>
 
 <script>
     function loadReferals() {
@@ -190,38 +200,32 @@
             }
         })
     }
-    function initYaForm(){
-        var isYandexAuthorized = @Json.Encode(Model.IsYandexAuthorized);
-
-        if(!isYandexAuthorized){
-            $('#PayInSum').hide();
-            $('#payInBtn').hide();
-            $('#yaAuthBtn').show();
-        }
-    }
     $(function () {
         new Clipboard('#refCopyBtn');
         loadReferals();
         loadPayments();
-        initYaForm();
         $('.ui.checkbox').checkbox();
         $('.cash.item').addClass('active');
-        $('select').dropdown({
+        $('.tab[data-tab="payIn/yandex"]').show();
+        $('#PaymentType').dropdown({
             onChange: function (value) {
-                var yaAuthVal = '@((byte)Mite.CodeData.Enums.PaymentType.YandexWallet)';
-                var isYandexAuthorized = @Json.Encode(Model.IsYandexAuthorized);
-
-                if(!isYandexAuthorized){
-                    if(yaAuthVal == value){
-                        $('#PayInSum').hide();
-                        $('#payInBtn').hide();
-                        $('#yaAuthBtn').show();
-                    } else{
-                        $('#PayInSum').show();
-                        $('#payInBtn').show();
-                        $('#yaAuthBtn').hide();
-                    }
+                var tabName;
+                switch (value) {
+                    case '@((byte)PaymentType.YandexWallet)':
+                        tabName = 'payIn/yandex';
+                        break;
+                    case '@((byte)PaymentType.WebMoney)':
+                        tabName = 'payIn/webmoney';
+                        break;
+                    case '@((byte)PaymentType.BankCard)':
+                        tabName = 'payIn/bank';
+                        break;
+                    default:
+                        tabName = 'payIn/yandex';
+                        break;
                 }
+                $('.tab[data-tab="' + tabName + '"]').show();
+                $('.tab[data-tab="' + tabName + '"]').siblings('.tab').hide();
             }
         });
         $('.ui.tabs.menu .item').tab();

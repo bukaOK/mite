@@ -11,6 +11,9 @@ using Mite.DAL.Entities;
 using Mite.Models;
 using System.Web;
 using System.Text.RegularExpressions;
+using System.Text;
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace Mite.Helpers
 {
@@ -65,7 +68,20 @@ namespace Mite.Helpers
                     goto case 0;
             }
         }
-
+        /// <summary>
+        /// На основе параметров генерируем мета-заголовки(вообще вся шумиха из-за Open Graph)
+        /// </summary>
+        /// <param name="props"></param>
+        /// <returns></returns>
+        public static MvcHtmlString GenerateMeta(IDictionary<string, string> props)
+        {
+            var str = new StringBuilder();
+            foreach(var meta in props)
+            {
+                str.AppendFormat("<meta property=\"{0}\" content=\"{1}\" />", meta.Key, meta.Value);
+            }
+            return new MvcHtmlString(str.ToString());
+        }
         public static List<SelectListItem> GetSelectList(Type enumType) 
         {
             if (!enumType.IsEnum)
@@ -78,14 +94,14 @@ namespace Mite.Helpers
         /// <summary>
         /// Преобразует разницу во времени в слова(два дня назад, неделю назад и тд)
         /// </summary>
-        /// <param name="publicTime">Время публикации</param>
-        /// <param name="userTime">Время текущего пользователя</param>
+        /// <param name="pastTime">Прошедшее время</param>
+        /// <param name="futureTime">Большее время</param>
         /// <returns></returns>
-        public static string GetPastTense(DateTime publicTime, DateTime userTime)
+        public static string GetPastTense(DateTime pastTime, DateTime futureTime, string backWord = "", string errorWord = "неверная дата")
         {
-            var difTime = userTime - publicTime;
-
-            const string backWord = "";
+            var difTime = futureTime - pastTime;
+            if (futureTime < pastTime)
+                return errorWord;
 
             if (difTime.Days >= 365)
             {
@@ -152,6 +168,13 @@ namespace Mite.Helpers
                 return wordCase + backWord;
             }
             return null;
+        }
+        public static string GetEnumDisplayName(Enum value)
+        {
+            return value.GetType()
+                .GetMember(value.ToString())
+                .First()
+                .GetCustomAttribute<DisplayAttribute>().Name;
         }
     }
 }

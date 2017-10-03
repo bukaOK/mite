@@ -215,7 +215,7 @@ var Scrolling = {
         document.addEventListener('touchstart', function (e) {
             lastY = e.touches[0].clientY;
             lastX = e.touches[0].clientX;
-        })
+        });
         
     },
     scrollTo: function scrollTo(settings) {

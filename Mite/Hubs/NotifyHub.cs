@@ -34,7 +34,7 @@ namespace Mite.Hubs
                 NotifyUser = new UserShortModel
                 {
                     Id = Context.User.Identity.GetUserId(),
-                    AvatarSrc = Context.User.GetClaimValue(ClaimConstants.AvatarSrc),
+                    AvatarSrc = Context.User.Identity.GetClaimValue(ClaimConstants.AvatarSrc),
                     UserName = Context.User.Identity.Name
                 },
                 NotifyDate = DateTime.UtcNow,

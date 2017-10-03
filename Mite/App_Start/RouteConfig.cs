@@ -11,6 +11,8 @@ namespace Mite
             routes.IgnoreRoute("Public/{all}");
             routes.LowercaseUrls = true;
 
+            routes.MapMvcAttributeRoutes();
+
             routes.MapRoute("Sitemap", "sitemap.xml", new { controller = "Sitemap", action = "Index" });
             routes.MapRoute(
                 name: "UserProfile",
@@ -27,7 +29,22 @@ namespace Mite
                 url: "user/notifications",
                 defaults: new { controller = "UserProfile", action = "Notifications" }
             );
-            routes.MapRoute("AddPost", "posts/add/{postType}", new { controller = "Posts", Action = "AddPost" });
+            routes.MapRoute(
+                name: "AuthorServices", 
+                url: "author/services/{action}/{id}",
+                defaults: new { controller = "AuthorServices", action = "Index", id = UrlParameter.Optional }
+            );
+            routes.MapRoute(
+                name: "AddPost",
+                url: "posts/add/{postType}",
+                defaults: new { controller = "Posts", Action = "AddPost" }
+            );
+            routes.MapRoute(
+                name: "UserDeals",
+                url: "user/deals/{action}/{type}",
+                defaults: new { controller = "UserDeals", Action = "Index", type = UrlParameter.Optional }
+            );
+
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",

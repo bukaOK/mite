@@ -6,9 +6,9 @@ namespace Mite.Extensions
 {
     public static class ClaimsExtensions
     {
-        public static void AddUpdateClaim(this IPrincipal currentPrincipal, IAuthenticationManager authManager, string key, string value)
+        public static void AddUpdateClaim(this IIdentity currentIdentity, IAuthenticationManager authManager, string key, string value)
         {
-            var identity = currentPrincipal.Identity as ClaimsIdentity;
+            var identity = currentIdentity as ClaimsIdentity;
             if(identity == null)
                 return;
 
@@ -22,12 +22,12 @@ namespace Mite.Extensions
                 new AuthenticationProperties {IsPersistent = true});
         }
 
-        public static string GetClaimValue(this IPrincipal currentPrincipal, string key)
+        public static string GetClaimValue(this IIdentity currentIdentity, string key)
         {
-            var identity = (ClaimsIdentity) currentPrincipal.Identity;
+            var identity = (ClaimsIdentity) currentIdentity;
 
             var claim = identity.FindFirst(x => x.Type == key);
-            return claim == null ? "" : claim.Value;
+            return claim == null ? null : claim.Value;
         }
     }
 }

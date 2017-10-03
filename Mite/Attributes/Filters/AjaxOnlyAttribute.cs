@@ -26,8 +26,10 @@ namespace Mite.Attributes.Filters
             if (!filterContext.HttpContext.Request.IsAjaxRequest() && filterContext.RequestContext.RouteData.Values["action"].ToString() != IndexPage
                 && !filterContext.IsChildAction)
             {
-                var view = new ViewResult();
-                view.ViewName = IndexPage;
+                var view = new ViewResult
+                {
+                    ViewName = IndexPage
+                };
                 filterContext.Result = view;
             }
         }

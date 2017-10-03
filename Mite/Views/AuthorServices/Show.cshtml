@@ -1,0 +1,72 @@
+﻿@model Mite.Models.AuthorServiceShowModel
+
+@{ 
+    ViewBag.Title = Model.Title;
+}
+<div class="ui two column grid segment">
+    <div class="column">
+        <img src="@Model.ImageSrc" class="ui image" alt="@Model.Title" />
+    </div>
+    <div class="column">
+        <h2 class="ui header">
+            @Model.Title
+            <span class="sub header">@Model.ServiceType.Name</span>
+        </h2>
+        <form class="ui form" id="dealForm">
+            @Html.HiddenFor(x => x.Id)
+            <button type="button" class="ui animated fade fluid primary button" onclick="DealsApi.create()">
+                <div class="hidden content"><i class="shop icon"></i></div>
+                <div class="visible content">Сделать заказ</div>
+            </button>
+            <div class="ui error message"></div>
+        </form>        
+        <h3 class="ui dividing header">Описание</h3>
+        <p>@Model.Description</p>
+        <h3 class="ui dividing header">Информация</h3>
+        <div class="ui relaxed large list" role="list">
+            <a class="item" href="#" role="listitem">
+                <i class="blue calendar large icon"></i>
+                <div class="content">
+                    <div class="header">Выполнит примерно за <b>@Model.Deadline</b></div>
+                </div>
+            </a>
+            @if (Model.Price != null)
+            {
+                <a class="item" href="#" role="listitem">
+                    <i class="green ruble large icon"></i>
+                    <div class="content">
+                        <div class="header">Цена: <b>@Model.Price</b></div>
+                    </div>
+                </a>
+            }
+        </div>
+        @if (!string.IsNullOrEmpty(Model.VkRepostCode))
+        {
+            <h3 class="ui dividing header">Дополнительные условия оплаты</h3>
+            <div class="ui relaxed large list" role="list">
+                <a class="item" role="listitem">
+                    <i class="vk icon"></i>
+                    Репост записи ВКонтакте
+                </a>
+            </div>
+        }
+        <h3 class="ui dividing header">Автор</h3>
+        <div class="ui items">
+            <div class="item">
+                <a class="ui tiny image">
+                    <img src="@Model.Author.AvatarSrc" />
+                </a>
+                <div class="content">
+                    @Html.ActionLink(Model.Author.UserName, "Index", "UserProfile", new { name = Model.Author.UserName}, new { @class = "header"})
+                    <p class="description" style="margin-top: 0">@Model.Author.Description</p>
+                    <div class="meta">
+                        <a class="ui primary compact button" href="#">Написать</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    @Scripts.Render("~/bundles/api")
+}

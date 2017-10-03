@@ -1,6 +1,9 @@
 ﻿@model string
 
 <div class="field">
-    <label style="display: none">@Html.DisplayName("")</label>
-    @Html.TextArea("", Model, new { placeholder = Html.DisplayName("")})
+    @if (ViewData["WithLabel"] as bool? == true)
+    {
+        @Html.Label("")
+    }
+    @Html.TextArea("", Model, new { placeholder = Html.DisplayName("") })
 </div>

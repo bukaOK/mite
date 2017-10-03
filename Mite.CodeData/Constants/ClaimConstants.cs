@@ -14,5 +14,9 @@ namespace Mite.CodeData.Constants
         public const string ExternalServiceToken = "ExternalServiceToken";
         public const string ExternalServiceExpires = "ExternalServiceExpires";
         public const string ExternalServiceName = "ExternalServiceName";
+        /// <summary>
+        /// Id Города
+        /// </summary>
+        public const string UserCityId = "CityId";
     }
 }

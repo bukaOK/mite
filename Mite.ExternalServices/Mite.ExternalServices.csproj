@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AutoMapper, Version=6.1.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.6.1.1\lib\net45\AutoMapper.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -45,6 +48,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="WebMoney.Cryptography, Version=3.3.1.0, Culture=neutral, PublicKeyToken=7532635057d899e6, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebMoney.Cryptography.3.3.1\lib\net20\WebMoney.Cryptography.dll</HintPath>
+    </Reference>
     <Reference Include="Yandex.Money.Api.Sdk, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Yandex.Money.Api.Sdk.1.4.5\lib\net45\Yandex.Money.Api.Sdk.dll</HintPath>
     </Reference>
@@ -58,9 +64,52 @@
     <Compile Include="Google\Core\ApiRequest.cs" />
     <Compile Include="Google\Core\RequestParams.cs" />
     <Compile Include="Google\Data\DataStore.cs" />
+    <Compile Include="IpApi\Requests\IpApiRequest.cs" />
+    <Compile Include="IpApi\Responses\IpApiResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VkApi\Converters\BoolConverter.cs" />
+    <Compile Include="VkApi\Core\VkApiException.cs" />
+    <Compile Include="VkApi\Core\VkParamAttribute.cs" />
+    <Compile Include="VkApi\Core\VkRequest.cs" />
+    <Compile Include="VkApi\Objects\Error.cs" />
+    <Compile Include="VkApi\Objects\Group.cs" />
+    <Compile Include="VkApi\Objects\Post.cs" />
+    <Compile Include="VkApi\Objects\User.cs" />
+    <Compile Include="VkApi\Wall\GetRepostsRequest.cs" />
+    <Compile Include="VkApi\Wall\GetRepostsResponse.cs" />
+    <Compile Include="WebMoney\Business\Automapper\WebMoneyProfile.cs" />
+    <Compile Include="WebMoney\Business\Enums\ExpressClientLoginTypes.cs" />
+    <Compile Include="WebMoney\Business\Enums\ExpressConfirmTypes.cs" />
+    <Compile Include="WebMoney\Business\Phone.cs" />
+    <Compile Include="WebMoney\Core\WMPayment.cs" />
+    <Compile Include="WebMoney\Core\WmPaymentResult.cs" />
+    <Compile Include="WebMoney\Core\WMResponse.cs" />
+    <Compile Include="WebMoney\Params\ExpressPaymentConfirmParams.cs" />
+    <Compile Include="WebMoney\Params\ExpressPaymentParams.cs" />
+    <Compile Include="WebMoney\Core\WMRequest.cs" />
+    <Compile Include="WebMoney\Requests\ExpressPaymentConfirmRequest.cs" />
+    <Compile Include="WebMoney\Requests\ExpressPaymentRequest.cs" />
+    <Compile Include="WebMoney\Responses\ExpressPaymentConfirmResponse.cs" />
+    <Compile Include="WebMoney\Responses\ExpressPaymentResponse.cs" />
+    <Compile Include="WebMoney\WMExpressPayment.cs" />
+    <Compile Include="YandexGeocoder\Requests\YaGeocoderRequest.cs" />
+    <Compile Include="YandexGeocoder\ResponseModels\Address.cs" />
+    <Compile Include="YandexGeocoder\ResponseModels\AddressDetails.cs" />
+    <Compile Include="YandexGeocoder\ResponseModels\AdministrativeArea.cs" />
+    <Compile Include="YandexGeocoder\ResponseModels\Component.cs" />
+    <Compile Include="YandexGeocoder\ResponseModels\Country.cs" />
+    <Compile Include="YandexGeocoder\ResponseModels\FeatureMember.cs" />
+    <Compile Include="YandexGeocoder\ResponseModels\GeocoderMetaData.cs" />
+    <Compile Include="YandexGeocoder\ResponseModels\GeocoderMetaDataProperty.cs" />
+    <Compile Include="YandexGeocoder\ResponseModels\GeocoderResponseMetaData.cs" />
+    <Compile Include="YandexGeocoder\ResponseModels\GeoObject.cs" />
     <Compile Include="YandexGeocoder\ResponseModels\GeoObjectCollection.cs" />
-    <Compile Include="YandexGeocoder\ResponseModels\MetaData.cs" />
+    <Compile Include="YandexGeocoder\ResponseModels\Locality.cs" />
+    <Compile Include="YandexGeocoder\ResponseModels\MetaDataProperty.cs" />
+    <Compile Include="YandexGeocoder\ResponseModels\Point.cs" />
+    <Compile Include="YandexGeocoder\ResponseModels\Premise.cs" />
+    <Compile Include="YandexGeocoder\ResponseModels\Thoroughfare.cs" />
+    <Compile Include="YandexGeocoder\ResponseModels\YaGeocoderResponse.cs" />
     <Compile Include="YandexMoney\Authenticator.cs" />
     <Compile Include="YandexMoney\ExternalPayment.cs" />
     <Compile Include="YandexMoney\YaHttpClient.cs" />
@@ -74,7 +123,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <Content Include="NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="NLog.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="WebMoney\Payment\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -8,6 +8,7 @@ using System.Linq;
 using System;
 using System.Collections.Generic;
 using Mite.Models;
+using Mite.BLL.IdentityManagers;
 
 namespace Mite.Controllers
 {
@@ -16,12 +17,17 @@ namespace Mite.Controllers
         private readonly IUserService _userService;
         private readonly IPostsService _postsService;
         private readonly IFollowersService _followersService;
+        private readonly IAuthorServiceService _authorService;
+        private readonly AppUserManager userManager;
 
-        public UserProfileController(IUserService userService, IPostsService postsService, IFollowersService followersService)
+        public UserProfileController(IUserService userService, IPostsService postsService, IFollowersService followersService,
+            IAuthorServiceService authorService, AppUserManager userManager)
         {
             _userService = userService;
             _postsService = postsService;
             _followersService = followersService;
+            _authorService = authorService;
+            this.userManager = userManager;
         }
         /// <summary>
         /// Страница пользователя
@@ -39,8 +45,11 @@ namespace Mite.Controllers
             profile.SocialLinks = await _userService.GetSocialLinksAsync(profile.UserId.ToString());
             return View("Index", profile);
         }
-        public async Task<JsonResult> GetUserProfile(string name)
+        public async Task<ActionResult> GetUserProfile(string name)
         {
+            if (string.IsNullOrEmpty(name))
+                return NotFound();
+
             name = name.Replace(" ", string.Empty);
             var profile = await _userService.GetUserProfileAsync(name, User.Identity.GetUserId());
             profile.SocialLinks = await _userService.GetSocialLinksAsync(profile.UserId.ToString());
@@ -98,6 +107,11 @@ namespace Mite.Controllers
         {
             return Index(name);
         }
+        [HttpGet]
+        public Task<ActionResult> Services(string name)
+        {
+            return Index(name);
+        }
         [HttpPost]
         public async Task<ActionResult> Posts(string name, SortFilter sort, PostTypes? type)
         {
@@ -137,6 +151,15 @@ namespace Mite.Controllers
             }
 
             return Json(JsonStatuses.Success, userModels, JsonRequestBehavior.AllowGet);
+        }
+        [HttpPost]
+        public async Task<JsonResult> Services(string name, SortFilter sort)
+        {
+            var user = await userManager.FindByNameAsync(name);
+            if (user == null)
+                return Json(JsonStatuses.Error);
+            var services = await _authorService.GetByUserAsync(user.Id);
+            return Json(JsonStatuses.Success, services);
         }
     }
 }

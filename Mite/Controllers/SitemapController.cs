@@ -61,6 +61,7 @@ namespace Mite.Controllers
         private async Task<IEnumerable<SitemapNode>> GetNodes()
         {
             var postsRepo = unitOfWork.GetRepo<PostsRepository, Post>();
+            var servicesRepo = unitOfWork.GetRepo<AuthorServiceRepository, AuthorService>();
 
             var nodes = new List<SitemapNode>
             {
@@ -88,6 +89,8 @@ namespace Mite.Controllers
 
             var users = await dbContext.Users.ToListAsync();
             var posts = await postsRepo.GetAllAsync();
+            var authorServices = await servicesRepo.GetAllAsync();
+
             foreach(var user in users)
             {
                 nodes.Add(new SitemapNode
@@ -101,6 +104,14 @@ namespace Mite.Controllers
                 {
                     Url = AbsoluteRouteUrl("Default", new { controller = "Posts", action = "ShowPost", id = post.Id.ToString("N") }),
                     LastModified = post.LastEdit
+                });
+            }
+            foreach(var service in authorServices)
+            {
+                nodes.Add(new SitemapNode
+                {
+                    Url = AbsoluteRouteUrl("Default", new { controller = "AuthorServices", action = "Show", id = service.Id.ToString() }),
+                    Frequency = "weekly"
                 });
             }
             return nodes;

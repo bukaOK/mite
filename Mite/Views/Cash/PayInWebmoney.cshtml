@@ -1,0 +1,17 @@
+﻿@using Mite.Extensions
+@model Mite.Models.WmPayInModel
+
+@using(Html.BeginForm("PayInWebMoney", "Payments", FormMethod.Post, new { @class = "ui form", id = "wmPayInForm" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.EditorFor(x => x.WmPayInSum)
+    @Html.EditorFor(x => x.WmPhoneNumber)
+    <button type="button" class="ui primary button" onclick="PaymentsApi.webmoney.payIn()">Пополнить</button>
+    <div class="ui error message" id="wmPayInMsg"></div>
+}
+<script>
+    $(function () {
+        @Html.Raw(Html.FormValidation<Mite.Models.WmPayInModel>("#wmPayInForm"))
+        $('#WmPhoneNumber').mask('+7(999)999-99-99');
+    });
+</script>

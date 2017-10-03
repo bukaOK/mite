@@ -6,8 +6,20 @@
     ViewBag.Title = "Профиль " + Model.UserName;
     ViewBag.MetaDescription = string.IsNullOrEmpty(Model.About) ? $"Страница пользователя {Model.UserName}" : Model.About;
 
+    var openGraphMeta = new Dictionary<string, string>
+    {
+        { "og:title", ViewBag.Title },
+        { "og:type", "profile" },
+        { "og:image", $"http://{Request.Url.Host}/{Model.AvatarSrc}" },
+        { "og:url", Url.Action("Index", "UserProfile", new{name = Model.UserName}, "http") }
+    };
+
     var pageUserName = Model.UserName.ToLower();
     var currentUserName = User.Identity.Name.ToLower();
+    var isMobileDevice = ViewHelper.IsMobileDevice(Request);
+}
+@section meta{
+    @ViewHelper.GenerateMeta(openGraphMeta)
 }
 <div class="ui profile center aligned three column stackable grid segment">
     <div class="computer tablet only row">
@@ -151,6 +163,7 @@
     {
         <a class="item" data-tab="followings">Я подписан</a>
     }
+    <a class="item" data-tab="services">Услуги</a>
     <div class="right item">
         <i class="filter icon"></i>
         Сначала&nbsp;
@@ -182,25 +195,43 @@
                 Блокированные
             </a>
         </div>
-        @if (ViewHelper.IsMobileDevice(Request))
+        @if (isMobileDevice)
         {
-            <div class="ui tab two column stackable grid basic segment" data-tab="published"></div>
+            <div class="ui tab stackable two column grid basic segment" data-tab="published"></div>
+            <div class="ui tab stackable two column basic segment grid" data-tab="drafts"></div>
+            <div class="ui tab stackable two column basic segment grid" data-tab="blocked"></div>
         }
         else
         {
             <div class="ui tab three column grid basic segment" data-tab="published"></div>
+            <div class="ui tab three column basic segment grid" data-tab="drafts"></div>
+            <div class="ui tab three column basic segment grid" data-tab="blocked"></div>
         }
-        <div class="ui tab stackable three column basic segment grid" data-tab="drafts"></div>
-        <div class="ui tab stackable three column basic segment grid" data-tab="blocked"></div>
     </div>
-    <div class="ui stackable tab three column basic segment grid" data-tab="followers"></div>
-    <div class="ui stackable tab three column basic segment grid" data-tab="followings"></div>
+    if (isMobileDevice)
+    {
+        <div class="ui tab stackable two column basic segment grid" data-tab="followers"></div>
+        <div class="ui tab stackable two column basic segment grid" data-tab="followings"></div>
+        <div class="ui tab stackable two column basic segment grid" data-tab="services"></div>
+    }
+    else
+    {
+        <div class="ui tab three column basic segment grid" data-tab="followers"></div>
+        <div class="ui tab three column basic segment grid" data-tab="followings"></div>
+        <div class="ui tab three column basic segment grid" data-tab="services"></div>
+    }
+    <div class="dot-loader-wrapper">
+        <div class="dot-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
 }
 else
 {
     if (Model.ShowAd)
     {
-        
         <div class="ui stackable grid">
             <div class="three wide column">
                 <div class="ui segment">
@@ -216,38 +247,51 @@ else
                 </div>
             </div>
             <div class="thirteen wide column">
-                @if (Request.Browser.IsMobileDevice)
+                @if (isMobileDevice)
                 {
                     <div class="ui tab two column stackable basic segment grid" data-tab="posts/published"></div>
+                    <div class="ui stackable tab two column basic segment grid" data-tab="followers"></div>
+                    <div class="ui tab stackable two column basic segment grid" data-tab="services"></div>
                 }
                 else
                 {
                     <div class="ui tab three column basic segment grid" data-tab="posts/published"></div>
+                    <div class="ui tab three column basic segment grid" data-tab="followers"></div>
+                    <div class="ui tab three column basic segment grid" data-tab="services"></div>
                 }
-                <div class="ui stackable tab three column basic segment grid" data-tab="followers"></div>
+                <div class="dot-loader-wrapper">
+                    <div class="dot-loader">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </div>
             </div>
         </div>
     }
     else
     {
-        if (Request.Browser.IsMobileDevice)
+        if (isMobileDevice)
         {
             <div class="ui tab stackable two column basic segment grid" data-tab="posts/published"></div>
+            <div class="ui stackable tab two column basic segment grid" data-tab="followers"></div>
+            <div class="ui tab stackable two column basic segment grid" data-tab="services"></div>
         }
         else
         {
             <div class="ui tab three column basic segment grid" data-tab="posts/published"></div>
+            <div class="ui tab three column basic segment grid" data-tab="followers"></div>
+            <div class="ui tab three column basic segment grid" data-tab="services"></div>
         }
-        <div class="ui stackable tab three column basic segment grid" data-tab="followers"></div>
+        <div class="dot-loader-wrapper">
+            <div class="dot-loader">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
     }
 }
-<div class="dot-loader-wrapper">
-    <div class="dot-loader">
-        <div class="dot"></div>
-        <div class="dot"></div>
-        <div class="dot"></div>
-    </div>
-</div>
 <div class="ui basic modal" id="confirmPostDelete">
     <div class="ui icon header">
         <i class="remove circle icon"></i>
@@ -331,8 +375,9 @@ else
 </script>
 <script id="postsTmpl" type="text/x-jsrender">
     <div class="column" data-post-id="{{:Id}}">
-        <div class="ui segment {{if Cover != null}}invert{{/if}}{{if !ShowAdultContent}} hide-adult-content{{/if}} post-item" {{if Cover != null}}
-             style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})"{{/if}} id="post{{:Id}}">
+        <div class="ui segment {{if !IsImage && Cover != null}}invert{{/if}}{{if !ShowAdultContent}} hide-adult-content{{/if}} post-item" 
+        {{if !IsImage && Cover != null}} style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})"{{/if}} 
+        id="post{{:Id}}">
             @if (currentUserName == pageUserName)
             {
                 <div class="extra content">
@@ -356,7 +401,7 @@ else
                         {{/if}}
                     </div>
                 </div>
-                <div class="ui {{if Cover != null}}inverted {{/if}} divider"></div>
+                <div class="ui {{if !IsImage && Cover != null}}inverted {{/if}} divider"></div>
             }
             {{if IsImage}}
             <div class="img-content">
@@ -387,23 +432,23 @@ else
             </a>
             {{/if}}
             {{/if}}
-            <div class="ui {{if Cover != null}}inverted{{/if}} divider"></div>
+            <div class="ui {{if !IsImage && Cover != null}}inverted{{/if}} divider"></div>
             <div class="extra content">
-                <a class="ui {{if Cover != null}}inverted {{/if}}header" style="margin-bottom: 5px" href="/posts/showpost/{{:Id}}">
+                <a class="ui {{if !IsImage && Cover != null}}inverted {{/if}}header" style="margin-bottom: 5px" href="/posts/showpost/{{:Id}}">
                     {{:Header}}
                     <span class="sub header">
                         {{:Description}}
                     </span>
                 </a>
-                {{for Tags ~Cover=Cover}}
-                <a class="ui{{if ~Cover != null}} invert{{/if}} label" href="/posts/top?tags={{>#data}}">{{>#data}}</a>
+                {{for Tags}}
+                <a class="ui{{if !~root.IsImage && ~root.Cover != null}} invert{{/if}} label" href="/posts/top?tags={{>#data}}">{{>#data}}</a>
                 {{/for}}
             </div>
-            <div class="ui {{if Cover != null}}inverted{{/if}} divider"></div>
+            <div class="ui {{if !IsImage && Cover != null}}inverted{{/if}} divider"></div>
             <div class="extra content">
                 {{:PublicTimeStr}}
                 {{if IsPublished}}
-                <div class="right floated" style="float: right">
+                <div class="right">
                     <i class="yellow star icon"></i>{{:Rating}}
                     <i class="{{if Cover == null}}blue{{else}}black{{/if}} unhide icon"></i>{{:Views}}
                     <i class="green comments outline icon"></i>{{:CommentsCount}}
@@ -423,7 +468,48 @@ else
         </div>
     </div>
 </script>
-<script id="emptyPostTmpl" type="text/x-jsrender">
+<script id="servicesTmpl" type="text/x-jsrender">
+    <div class="column">
+        <div class="ui service-item segment">
+            <div class="extra content">
+                <a class="ui right floated teal tag label">{{:ServiceTypeName}}</a>
+                @if (currentUserName == pageUserName)
+                {
+                    <a class="ui primary compact button" href="@Url.Action("Edit", "AuthorServices")/{{:Id}}">Редактировать</a>
+                }
+                else
+                {
+                    <a class="ui primary compact button" href="@Url.Action("Show", "AuthorServices")/{{:Id}}">Смотреть</a>
+                }
+            </div>
+            <div class="ui divider"></div>
+            <div class="img-content">
+                <a href="@Url.Action("Show", "AuthorServices")/{{:Id}}">
+                    <img src="{{:ImageSrc}}" class="ui image" />
+                </a>
+            </div>
+            <div class="ui divider"></div>
+            <div class="extra content">
+                <a class="ui header" href="@Url.Action("Show", "AuthorServices")/{{:Id}}">
+                    {{:Title}}
+                    <span class="sub header">{{:Description}}</span>
+                </a>
+            </div>
+            <div class="ui divider"></div>
+            <div class="extra content">
+                <i class="calendar violet icon"></i>
+                <span>Срок: {{:Deadline}}</span>
+                {{if Price != null && Price > 0}}
+                <div class="right">
+                    <i class="ruble green icon"></i>
+                    <span>Цена: {{:Price}}</span>
+                </div>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+</script>
+<template id="emptyPostTmpl">
     <div class="column"></div>
     <div class="column">
         <h2 class="ui center aligned icon header" style="color: #6D6788; margin-top: 20px;">
@@ -442,7 +528,7 @@ else
             }
         </h2>
     </div>
-</script>
+</template>
 <template id="emptyBlockedTmpl">
     <div class="column"></div>
     <div class="column">
@@ -452,7 +538,7 @@ else
         </h2>
     </div>
 </template>
-<script id="emptyFollowersTmpl" type="text/x-jsrender">
+<template id="emptyFollowersTmpl">
     <div class="column"></div>
     <div class="column">
         <h3 class="ui center aligned icon header" style="color: #6D6788">
@@ -471,8 +557,8 @@ else
             }
         </h3>
     </div>
-</script>
-<script id="emptyFollowingsTmpl" type="text/x-jsrender">
+</template>
+<template id="emptyFollowingsTmpl">
     <div class="column"></div>
     <div class="column">
         <h3 class="ui center aligned icon header" style="color: #6D6788">
@@ -482,7 +568,25 @@ else
             </span>
         </h3>
     </div>
-</script>
+</template>
+<template id="emptyServicesTmpl">
+    <div class="column"></div>
+    <div class="column">
+        <h3 class="ui center aligned icon header" style="color: #6D6788">
+            <i class="suitcase icon"></i>
+            <span class="content">
+                @if(pageUserName == currentUserName)
+                {
+                    @Html.Raw("У вас пока нет услуг.")
+                }
+                else
+                {
+                    @Html.Raw("У пользователя пока нет услуг.")
+                }
+            </span>
+        </h3>
+    </div>
+</template>
 @Scripts.Render("~/bundles/jsrender", "~/bundles/grid")
 <script>
     var delPostId;
@@ -558,7 +662,7 @@ else
                 $btn.siblings().show();
             },
             error: function (jqXhr) {
-                alert('Ошибка сервера');
+                swal('Упс!', 'Ошибка сервера', 'error');
             },
             complete: function(){
                 $btn.removeClass('loading disabled');
@@ -640,6 +744,10 @@ else
             {
                 tabName: 'followings',
                 elem: $('.tab[data-tab="followings"]').masonry()
+            },
+            {
+                tabName: 'services',
+                elem: $('.tab[data-tab="services"]').masonry()
             }
         ];
         if(isOwner){
@@ -663,65 +771,64 @@ else
         });
         if(isOwner){
             var postsTab = new Tab({
-                $content: $('.tab[data-tab="posts"]'),
-                $item: $('.item[data-tab="posts"]'),
                 parentTab: null,
                 name: 'posts',
-                isActive: true
+                isActive: true,
             });
             var publishedTab = new Tab({
-                $content: $('.tab[data-tab="published"]'),
-                $item: $('.item[data-tab="published"]'),
                 parentTab: postsTab,
                 name: 'published',
-                isActive: true
+                isActive: true,
+                tmplSelector: '#postsTmpl',
+                emptyTmplSelector: '#emptyPostTmpl'
             });
             var blockedTab = new Tab({
-                $content: $('.tab[data-tab="blocked"]'),
-                $item: $('.item[data-tab="blocked"]'),
                 parentTab: postsTab,
                 name: 'blocked',
-                isActive: false
+                isActive: false,
+                tmplSelector: '#postsTmpl',
+                emptyTmplSelector: '#emptyBlockedTmpl'
             });
             var draftsTab = new Tab({
-                $content: $('.tab[data-tab="drafts"]'),
-                $item: $('.item[data-tab="drafts"]'),
                 parentTab: postsTab,
                 name: 'drafts',
-                isActive: false
+                isActive: false,
+                tmplSelector: '#postsTmpl',
+                emptyTmplSelector: '#emptyPostTmpl'
             });
             var followingsTab = new Tab({
-                $content: $('.tab[data-tab="followings"]'),
-                $item: $('.item[data-tab="followings"'),
                 parentTab: null,
                 name: 'followings',
-                isActive: false
+                isActive: false,
+                tmplSelector: '#followersTmpl',
+                emptyTmplSelector: '#emptyFollowingsTmpl'
             });
-            var followersTab = new Tab({
-                $content: $('.tab[data-tab="followers"]'),
-                $item: $('.item[data-tab="followers"'),
-                parentTab: null,
-                name: 'followers',
-                isActive: false
-            });
-            TabFilter.Tabs.items = [postsTab, publishedTab, draftsTab, blockedTab, followingsTab, followersTab];
+            TabFilter.Tabs.items = [postsTab, publishedTab, draftsTab, blockedTab, followingsTab];
         } else{
             var postsTab = new Tab({
-                $content: $('.tab[data-tab="posts/published"]'),
-                $item: $('.item[data-tab="posts/published"]'),
                 parentTab: null,
                 name: 'posts/published',
+                tmplSelector: '#postsTmpl',
+                emptyTmplSelector: '#emptyPostTmpl',
                 isActive: true
             });
-            var followersTab = new Tab({
-                $content: $('.tab[data-tab="followers"]'),
-                $item: $('.item[data-tab="followers"'),
-                parentTab: null,
-                name: 'followers',
-                isActive: false
-            });
-            TabFilter.Tabs.items = [postsTab, followersTab];
+            TabFilter.Tabs.items = [postsTab];
         }
+        var followersTab = new Tab({
+            parentTab: null,
+            name: 'followers',
+            isActive: false,
+            tmplSelector: '#followersTmpl',
+            emptyTmplSelector: '#emptyFollowersTmpl'
+        });
+        var servicesTab = new Tab({
+            parentTab: null,
+            name: 'services',
+            isActive: false,
+            tmplSelector: '#servicesTmpl',
+            emptyTmplSelector: '#emptyServicesTmpl'
+        });
+        TabFilter.Tabs.items.push(followersTab, servicesTab);
         TabFilter.Filters.add({
             name: 'sort',
             elem: $('#sortDropDown'),
@@ -741,22 +848,11 @@ else
             onSuccess: function(resp, tab){
                 var html;
                 if(resp.length == 0 && TabFilter.page == 1){
-                    if(tab.name == 'followers'){
-                        html = $('#emptyFollowersTmpl').html();
-                    } else if(tab.name == 'followings'){
-                        html = $('#emptyFollowingsTmpl').html();
-                    } else if(tab.name == 'blocked'){
-                        html = $('#emptyBlockedTmpl').html();
-                    }
-                    else {
-                        html = $('#emptyPostTmpl').html();
-                    }
+                    html = $(tab.emptyTmplSelector).html();
                     tab.content.html(html);
+                    $('.dot-loader-wrapper').removeClass('active');
                 } else if(resp.length > 0) {
-                    var tmplSelector;
                     if((tab.parentTab != undefined && tab.parentTab != null && tab.parentTab.name == 'posts') || tab.name == 'posts/published'){
-                        tmplSelector = '#postsTmpl';
-
                         resp.forEach(function(elem){
                             elem.LastEdit += elem.LastEdit[elem.LastEdit - 1] == 'Z' ? '' : 'Z';
                             if(elem.PublishDate != null){
@@ -766,10 +862,8 @@ else
                                 elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.LastEdit).getTime());
                             }
                         });
-                    } else if(tab.name == 'followings' || tab.name == 'followers'){
-                        tmplSelector = '#followersTmpl';
                     }
-                    var tmpl = $.templates(tmplSelector);
+                    var tmpl = $.templates(tab.tmplSelector);
                     html = tmpl.render(resp);
 
                     if(TabFilter.loadNextPage) {
@@ -822,6 +916,5 @@ else
             }
         });
         $('.social.dropdown').dropdown();
-        $('.ui.checkbox').checkbox();
     });
 </script>

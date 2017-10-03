@@ -1,4 +1,5 @@
-﻿@using Mite.CodeData.Enums;
+﻿@using Mite.CodeData.Enums
+@using Mite.Extensions
 @model Mite.Models.WritingPostModel
 
 @{
@@ -39,7 +40,9 @@
     </div>
     @using (Html.BeginForm("AddPost", "Posts", FormMethod.Post, new { @class = "ui form", id = "writeEditForm" }))
     {
-        @Html.EditorFor(x => x.Header)
+        <div class="field">
+            @Html.TextBoxFor(x => x.Header, new { placeholder = Html.DisplayNameFor(x => x.Header), oninput = "onHeaderInput(this)"})
+        </div>
         @Html.HiddenFor(x => x.Cover)
         <input type="file" id="wrapperImg" style="display: none"/>
         <div class="two fields">
@@ -69,11 +72,11 @@
         </div>
         if (Model.Header == null)
         {
-            <h2>@Html.DisplayNameFor(x => x.Header)</h2>
+            <h2 id="title">@Html.DisplayNameFor(x => x.Header)</h2>
         }
         else
         {
-            <h2>@Model.Header</h2>
+            <h2 id="title">@Model.Header</h2>
         }
         <div style="clear: both" data-editable data-name="@Html.NameFor(x => x.Content)">
             @if (string.IsNullOrEmpty(Model.Content))
@@ -101,47 +104,7 @@
         <button class="ui green ok button">Да</button>
     </div>
 </div>
-<div class="ui modal" id="publishGuideModal">
-    <i class="close icon"></i>
-    <div class="header">
-        Гайд по публикации работ.
-    </div>
-    <div class="scrolling content">
-        <h3>Зачем мне это?</h3>
-        <p>
-            Многие авторы не знают особенностей работы системы MiteGroup (наш косяк),
-            из-за чего не используют весь функционал. Этот гайд призван раз и навсегда пресечь все недопонимания.
-        </p>
-        <h3>Заголовок</h3>
-        <p>
-            В заголовке указывается основная тема работы. Если у вас нарисован котик, то следует указывать "кот",
-            если работа об известной личности/группе указываете её имя, и т.д. Ещё одна причина не лениться -
-            появление в результатах поисковых систем. К примеру -
-            <a href="https://yandex.ru/images/search?text=denis%20wild&img_url=http%3A%2F%2Fmitegroup.ru%2FPublic%2Fimages%2Fbbaeaf7e-dafd-4853-966c-e470dde3c1b5.jpg&pos=15&rpt=simage"
-               target="_blank">
-                работа одного из авторов в результатах Яндекса.
-            </a>
-        </p>
-        <h3>Описание</h3>
-        <p>
-            Описание подробно раскрывает содержимое работы. Зачастую пользователи пишут всю информацию в теги
-            (даже бренды и названия, несмотря на предупреждения). Достаточно взглянуть на следующий скриншот:
-        </p>
-        <img src="~/Public/guides/image_guide_1.png" alt="Скриншот гайд 1." style="max-width: 100%" />
-        <h3>А для чего тогда теги?</h3>
-        <p>
-            Каждый раз как вы заходите в топ, можно увидеть список слов, которые представляют собой разделы. Мы отказались от чего-то вроде
-            "арт > цифровой арт > вектор" и пр., объединив всё в одно. Позволяя людям добавлять теги, мы избавлялись от рутинной работы,
-            но в итоге многие начали добавлять слепки вроде "артвгорах". Другими словами, <b>профессиональную лексику</b> можно и нужно писать в ключевые слова.
-        </p>
-        <h3>И в заключение...</h3>
-        <p>
-            Как видите, "Заголовок" и "Описание" могут превратиться в мощный инструмент для поднятия позиций ваших работ в поиске.
-            Прежде чем создать публикацию, просто достаточно задать себе вопрос "А что пользователь напишет в поиск, чтобы найти мою работу?",
-            а все остальное - забота MiteGroup &#128521;
-        </p>
-    </div>
-</div>
+@{ Html.RenderPartial("~/Views/Guides/_PublicationGuide.cshtml"); }
 <script>
     function initEditPopup(){
         var $editBtn = $('.ct-ignition__button--edit');
@@ -160,6 +123,9 @@
                 }
             });
         });
+    }
+    function onHeaderInput(headerInput) {
+        document.getElementById('title').innerText = headerInput.value;
     }
     function removeCover(){
         $('#Cover').val('');
@@ -232,7 +198,7 @@
                 var validErrorStatus = @((byte)Mite.Core.JsonStatuses.ValidationError);
                 if(resp.status == validErrorStatus){
                     var errorStr = 'Ошибка при сохранении: ' + resp.message;
-                    alert(errorStr);
+                    swal('Упс!', errorStr, 'error');
                 } else{
                     if(isPublished){
                         location.href = '/user/profile/@User.Identity.Name#posts/published';
@@ -243,7 +209,7 @@
             },
             error: function (jqXhr) {
                 $('.ct-ignition__button--edit').css('background', '#e74c3c');
-                alert('Ошибка при сохранении');
+                swal('Упс!', 'Ошибка при сохранении', 'error');
             },
             complete: function (jqXhr) {
                 editorInstance.busy(false);
@@ -340,37 +306,8 @@
     $(function () {
         ViewHelper.activateSidebarItem('#editDocItem');
         ViewHelper.disableFormSubmitting('#writeEditForm');
-        var headerId = '#@Html.IdFor(x => x.Header)';
 
-        $(headerId).keyup(function (ev) {
-            $('.ui.form').children('h2').html(ev.target.value);
-        });
-        $('')
-        $('form').form({
-            inline: true,
-            fields: {
-                Header: {
-                    rules: [
-                        {
-                            type: 'empty',
-                            prompt: $('#Header').data('valRequired')
-                        },
-                        {
-                            type: 'maxLength[' + $('#Header').data('val-maxlength-max') + ']',
-                            prompt: $('#Header').data('val-maxlength')
-                        }
-                    ]
-                },
-                Description: {
-                    rules: [
-                        {
-                            type: 'maxLength[' + $('#Description').data('val-maxlength-max') + ']',
-                            prompt: $('#Description').data('val-maxlength')
-                        }
-                    ]
-                }
-            }
-        });
+        @Html.Raw(Html.FormValidation<Mite.Models.WritingPostModel>("#writeEditForm"))
         $.ajax({
             url: '/api/tags',
             type: 'get',
@@ -404,7 +341,7 @@
         editor.inspector().show = function () { return false; }
         editor.addEventListener('saved',
             function (ev) {
-                if (!$('form').form('is valid')) {
+                if (!$('#writeEditForm').form('validate form')) {
                     $('.ct-ignition__button--edit').css('background', '#e74c3c');
                     return false;
                 }
@@ -417,17 +354,17 @@
                 {
                     <text>
                 if (content == '' || content == null || content == undefined) {
-                    alert('Контент не может быть пустым!');
+                    swal('Не все заполнили.', 'Контент не может быть пустым!', 'error');
                     return false;
                 }
                 </text>
                 }
                 formData = {
                     Content: content,
-                    Header: $(headerId).val(),
+                    Header: $('#Header').val(),
                     Description: $('#Description').val(),
                     Id: '@Model.Id',
-                    IsImage: false,
+                    ContentType: '@PostContentTypes.Document',
                     Tags: $('#Tags').val().split(','),
                     Cover: $('#Cover').val()
                 };

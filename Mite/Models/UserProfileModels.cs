@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mite.CodeData.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -9,7 +10,18 @@ namespace Mite.Models
     {
         public Guid UserId { get; set; }
         public string UserName { get; set; }
-        public string AvatarSrc { get; set; }
+        private string avatarSrc;
+        public string AvatarSrc
+        {
+            get
+            {
+                return avatarSrc.Replace("\\", "/");
+            }
+            set
+            {
+                avatarSrc = value;
+            }
+        }
         public int Rating { get; set; }
         public int FollowersCount { get; set; }
         /// <summary>
@@ -47,15 +59,30 @@ namespace Mite.Models
         /// </summary>
         public string FullPath { get; set; }
         public int CommentsCount { get; set; }
-        public byte PostType { get; set; }
+        public PostTypes Type { get; set; }
+        public PostContentTypes ContentType { get; set; }
         public bool IsPublished => PublishDate != null;
         /// <summary>
         /// Может ли пользователь редактировать работу
         /// </summary>
         public bool CanEdit => (PublishDate == null) || (PublishDate != null && (DateTime.UtcNow - PublishDate).Value.TotalDays <= 3);
-        public string Cover { get; set; }
+
+        private string cover;
+        public string Cover
+        {
+            get
+            {
+                return cover == null ? cover : cover.Replace('\\', '/');
+            }
+            set
+            {
+                cover = value;
+            }
+        }
+
         public int Views { get; set; }
-        public bool IsImage { get; set; }
+        public bool IsImage => ContentType == PostContentTypes.Image || 
+            ContentType == PostContentTypes.ImageCollection;
         /// <summary>
         /// Показывать ли взрослый контент
         /// </summary>

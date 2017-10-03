@@ -1,0 +1,70 @@
+﻿@using Mite.CodeData.Enums
+@using Mite.Extensions
+@model Mite.Models.DealClientModel
+
+@if (Model.Status == DealStatuses.New)
+{
+    <h3 class="ui header">Информация</h3>
+    <div class="ui relaxed large list" role="list">
+        <a class="item" role="listitem">
+            <i class="blue calendar large icon"></i>
+            <span class="content">
+                <span class="header">
+                    Дата окончания: @Html.Raw(Model.Deadline?.ToString("dd.MM.yyyy") ?? "Неизвестно(ожидаем автора)")
+                </span>
+            </span>
+        </a>
+        <a class="item" role="listitem">
+            <i class="green ruble large icon"></i>
+            <span class="content">
+                <span class="header">Цена: @Html.Raw(Model.Price?.ToString() ?? "Неизвестно(ожидаем автора)")</span>
+            </span>
+        </a>
+    </div>
+    <h3 class="ui header">Параметры</h3>
+    <form class="ui form" id="dealForm">
+        @Html.HiddenFor(x => x.Id)
+        <div class="field">
+            <label>@Html.DisplayNameFor(x => x.Demands)</label>
+            @Html.TextAreaFor(x => x.Demands, new { placeholder = "Ваши требования" })
+        </div>
+        <button class="ui red button" type="button" onclick="DealsMvc.close(this)">
+            <i class="close icon"></i>
+            Закрыть сделку
+        </button>
+        <button class="ui green button" type="button" onclick="DealsApi.update(this)">Сохранить</button>
+        <div class="ui error message"></div>
+    </form>
+}
+else if (Model.Status == DealStatuses.ExpectPayment)
+{
+    <form class="ui form" id="dealForm">
+        @Html.AntiForgeryToken()
+        <div class="field">@Html.HiddenFor(x => x.Id)</div>
+        <div class="field">
+            <button class="ui red button" type="button" onclick="DealsMvc.close(this)">
+                <i class="close icon"></i>
+                Закрыть сделку
+            </button>
+            @if (!Model.Payed)
+            {
+                <button class="ui primary button" type="button" onclick="DealsMvc.pay(this)">Оплатить</button>
+            }
+            else
+            {
+                <button class="ui disabled primary button" type="button" disabled>Денежная оплата совершена</button>
+            }
+        </div>
+        @if (Model.VkReposted == false)
+        {
+            <div class="field">@Html.Raw(Model.Service.VkRepostCode)</div>
+            <button class="ui blue compact button" type="button">Проверить репост</button>
+        }
+        <div class="ui error message"></div>
+    </form>
+}
+<script>
+    $(function () {
+        @Html.Raw(Html.FormValidation<Mite.Models.DealClientModel>("#dealForm"))
+    });
+</script>

@@ -1,0 +1,45 @@
+﻿@using Mite.CodeData.Enums
+@using Mite.Extensions
+@model Mite.Models.DealAuthorModel
+
+@{ 
+    var demands = string.IsNullOrEmpty(Model.Demands) ? "Ожидаются..." : Model.Demands;
+    var deadline = Model.Deadline ?? DateTime.UtcNow;
+}
+@if (Model.Status == DealStatuses.New)
+{
+    <h3 class="ui header">Требования</h3>
+    <p>@demands</p>
+    <h3 class="ui header">Параметры</h3>
+    <form class="ui form" id="dealForm">
+        @Html.HiddenFor(x => x.Id)
+        <div class="two fields">
+            <div class="field">
+                <label>@Html.DisplayNameFor(x => x.Price)</label>
+                @Html.TextBoxFor(x => x.Price, new { placeholder = Model.Price ?? Model.Service.Price })
+            </div>
+            <div class="field">
+                <label>@Html.DisplayNameFor(x => x.DeadlineStr)</label>
+                @Html.TextBoxFor(x => x.DeadlineStr, new { placeholder = deadline.ToString("dd.MM.yyyy") })
+            </div>
+        </div>
+        <button class="ui red button" type="button" onclick="DealsMvc.close(this)">
+            <i class="close icon"></i>
+            Закрыть сделку
+        </button>
+        <button type="button" class="ui green button" onclick="DealsApi.update(this)">Сохранить</button>
+        <div class="ui error message"></div>
+    </form>
+}
+else if (Model.Status == DealStatuses.ExpectPayment)
+{
+    <h3 class="ui header">Ожидаем оплату</h3>
+}
+<script>
+    $(function () {
+        @Html.Raw(Html.FormValidation<Mite.Models.DealAuthorModel>("#dealForm"))
+        $('#DeadlineStr').datepicker({
+            minDate: new Date()
+        });
+    });
+</script>

@@ -39,22 +39,11 @@ namespace Mite.DAL.Repositories
         /// Получить посты по пользователю
         /// </summary>
         /// <param name="userId">Id пользователя</param>
-        /// <param name="isPublished">Опубликованные или нет</param>
-        /// <param name="blocked">Заблокированные или нет</param>
-        /// <param name="offset">Сколько строк пропустить</param>
-        /// <param name="range">Сколько достать</param>
+        /// <param name="postType">Тип поста</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Post>> GetByUserAsync(string userId, bool isPublished, bool blocked, SortFilter sort)
+        public async Task<IEnumerable<Post>> GetByUserAsync(string userId, PostTypes postType, SortFilter sort)
         {
-            var query = "select * from dbo.\"Posts\" where \"UserId\"=@userId and \"Blocked\"=@blocked ";
-            if (isPublished)
-            {
-                query += "and \"PublishDate\" is not null ";
-            }
-            else
-            {
-                query += "and \"PublishDate\" is null ";
-            }
+            var query = "select * from dbo.\"Posts\" where \"UserId\"=@userId and \"Type\"=@postType ";
             switch (sort)
             {
                 case SortFilter.Popular:
@@ -70,7 +59,7 @@ namespace Mite.DAL.Repositories
                     throw new ArgumentException("Неизвестный тип сортировки");
             }
             query += ";";
-            var posts = await Db.QueryAsync<Post>(query, new { blocked, userId });
+            var posts = await Db.QueryAsync<Post>(query, new { postType, userId });
             return posts;
         }
         /// <summary>
@@ -102,7 +91,7 @@ namespace Mite.DAL.Repositories
         }
         public Task<int> GetPublishedPostsCount(string userId)
         {
-            return Table.CountAsync(x => x.UserId == userId && x.PublishDate != null && !x.Blocked);
+            return Table.CountAsync(x => x.UserId == userId && x.PublishDate != null && x.Type != PostTypes.Blocked);
         }
         public async Task AddView(Guid id)
         {
@@ -115,6 +104,7 @@ namespace Mite.DAL.Repositories
         {
             var post = await Table.FirstAsync(x => x.Id == id);
             post.PublishDate = publishDate;
+            post.Type = PostTypes.Published;
             DbContext.Entry(post).Property(x => x.PublishDate).IsModified = true;
             await SaveAsync();
         }
@@ -148,10 +138,12 @@ namespace Mite.DAL.Repositories
                 .Select<dynamic, Guid>(x => Guid.Parse(x.Post_Id.ToString())).ToList();
 
             var query = "select * from dbo.\"Posts\" inner join dbo.\"Users\" on dbo.\"Users\".\"Id\"=dbo.\"Posts\".\"UserId\" " +
-                "where dbo.\"Posts\".\"Id\" = any(@postsIds) and \"PublishDate\" is not null and dbo.\"Posts\".\"Blocked\"=false and \"PublishDate\" > @minDate " +
-                "and \"PublishDate\" < @maxDate ";
+                "where dbo.\"Posts\".\"Id\" = any(@postsIds) and dbo.\"Posts\".\"Type\"=@postType and " +
+                "\"PublishDate\" > @minDate and \"PublishDate\" < @maxDate ";
 
             var followings = new List<string>();
+            var postType = PostTypes.Published;
+
             if (onlyFollowings)
             {
                 var followingsQuery = "select \"FollowingUserId\" from dbo.\"Followers\" where \"UserId\"=@currentUserId;";
@@ -175,7 +167,7 @@ namespace Mite.DAL.Repositories
             {
                 post.User = user;
                 return post;
-            }, new { postsIds, minDate, followings, maxDate });
+            }, new { postsIds, minDate, followings, maxDate, postType });
             return posts;
         }
         /// <summary>
@@ -211,12 +203,14 @@ namespace Mite.DAL.Repositories
 
             var query = "select * from dbo.\"Posts\" inner join dbo.\"Users\" on dbo.\"Users\".\"Id\"=dbo.\"Posts\".\"UserId\" " +
                 "where dbo.\"Posts\".\"Id\" = any(@postsIds) and \"PublishDate\" is not null " +
-                "and dbo.\"Posts\".\"Blocked\"=false and \"PublishDate\" > @minDate and \"PublishDate\" < @maxDate ";
+                "and dbo.\"Posts\".\"Type\"=@postType and \"PublishDate\" > @minDate and \"PublishDate\" < @maxDate ";
 
             query += "and (setweight(to_tsvector('mite_ru', dbo.\"Posts\".\"Title\"), 'A') || " +
                 "setweight(to_tsvector('mite_ru', coalesce(dbo.\"Posts\".\"Description\", '')), 'B')) @@ plainto_tsquery(@postName)";
 
-            List<string> followings = new List<string>();
+            var postType = PostTypes.Published;
+            var followings = new List<string>();
+
             if (onlyFollowings)
             {
                 var followingsQuery = "select \"FollowingUserId\" from dbo.\"Followers\" where \"UserId\"=@currentUserId ";
@@ -242,18 +236,18 @@ namespace Mite.DAL.Repositories
             {
                 post.User = user;
                 return post;
-            }, new { minDate, postsIds, followings, postName, maxDate });
+            }, new { minDate, postsIds, followings, postName, maxDate, postType });
             return posts;
         }
         public async Task<IEnumerable<Post>> GetByPostNameAsync(string postName, DateTime minDate,
             bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range, DateTime maxDate)
         {
             var query = "select * from dbo.\"Posts\" inner join dbo.\"Users\" on dbo.\"Posts\".\"UserId\"=dbo.\"Users\".\"Id\" " +
-                "where dbo.\"Posts\".\"PublishDate\" is not null and dbo.\"Posts\".\"Blocked\"=false and \"PublishDate\" > @minDate " +
-                "and \"PublishDate\" < @maxDate ";
-            query += "and (setweight(to_tsvector('mite_ru', dbo.\"Posts\".\"Title\"), 'A') || " +
+                $"where dbo.\"Posts\".\"Type\"=@postType and \"PublishDate\" > @minDate " +
+                "and \"PublishDate\" < @maxDate and (setweight(to_tsvector('mite_ru', dbo.\"Posts\".\"Title\"), 'A') || " +
                 "setweight(to_tsvector('mite_ru', coalesce(dbo.\"Posts\".\"Description\", '')), 'B')) @@ plainto_tsquery(@postName)";
 
+            var postType = PostTypes.Published;
             var followings = new List<string>();
             if (onlyFollowings)
             {
@@ -278,23 +272,22 @@ namespace Mite.DAL.Repositories
             {
                 post.User = user;
                 return post;
-            }, new { minDate, postName, followings, maxDate });
+            }, new { minDate, postName, followings, maxDate, postType });
             return posts;
         }
         public async Task<IEnumerable<Post>> GetByFilterAsync(DateTime minDate, bool onlyFollowings, 
             string currentUserId, SortFilter sortType, int offset, int range, DateTime maxDate)
         {
             var query = "select * from dbo.\"Posts\" inner join dbo.\"Users\" on dbo.\"Users\".\"Id\"=dbo.\"Posts\".\"UserId\"" +
-                " where \"PublishDate\" is not null and dbo.\"Posts\".\"Blocked\"=false and \"PublishDate\" > @minDate " +
+                $"where dbo.\"Posts\".\"Type\"=@postType and \"PublishDate\" > @minDate " +
                 "and \"PublishDate\" < @maxDate ";
+            var postType = PostTypes.Published;
             var followings = new List<string>();
-            object queryParams = new { minDate, maxDate };
             if (onlyFollowings)
             {
                 var followingsQuery = "select \"FollowingUserId\" from dbo.\"Followers\" where \"UserId\"=@currentUserId;";
                 followings = (await Db.QueryAsync<string>(followingsQuery, new { currentUserId })).ToList();
                 query += "and dbo.\"Users\".\"Id\" = any(@followings) ";
-                queryParams = new { minDate, followings, maxDate };
             }
             switch (sortType)
             {
@@ -309,16 +302,22 @@ namespace Mite.DAL.Repositories
                     break;
             }
             query += $" limit {range} offset {offset};";
+
             var posts = await Db.QueryAsync<Post, User, Post>(query, (post, user) =>
             {
                 post.User = user;
                 return post;
-            }, queryParams);
+            }, new { minDate, maxDate, postType, followings });
             return posts;
+        }
+        public Task<List<Guid>> GetAllIdsAsync()
+        {
+            return Table.Select(x => x.Id).ToListAsync();
         }
         public async Task<IEnumerable<Post>> GetGalleryByUserAsync(string userId)
         {
-            return await Table.Where(x => x.UserId == userId && x.PublishDate != null && !x.Blocked && x.IsImage).ToListAsync();
+            return await Table.Where(x => x.UserId == userId && x.Type == PostTypes.Published && x.ContentType == PostContentTypes.Image)
+                .ToListAsync();
         }
     }
 }

@@ -4,32 +4,27 @@
         display: none !important;
     }
 }
-
 html, body{
     height: 100% !important;
 }
+.ui.selection.dropdown .menu {
+    width: calc(100% + 3px);
+    min-width: calc(100% + 3px);
+}
 .ui.margined.button{
     margin-bottom: 4px;
+}
+.ui.vertical.menu{
+    width: 100%;
+}
+.ui.margined.dropdown{
+    margin-bottom: 1em;
 }
 .ui.tab:not(.active){
     display: none;
 }
 .ui.tab.basic.segment:not(.grid){
     margin: 0;
-}
-.ui.search.selection.dropdown{
-    border: 2px solid #e8e8e8;
-}
-.ui.search.selection.dropdown.active, .ui.search.selection.dropdown:focus{
-    border-color: #b540c6;
-}
-.ui.selection.dropdown .menu{
-    border: 2px solid #e8e8e8;
-    left: -1px;
-    width: calc(100% +  4px );
-}
-.ui.selection.dropdown.active .menu, .ui.selection.dropdown.active:hover .menu{
-    border-color: #b540c6;
 }
 .ui.fixed.menu{
     z-index: 900;
@@ -39,9 +34,6 @@ html, body{
 }
 .help.word{
     cursor: help;
-}
-.ui.error.message{
-    margin-bottom: 0 !important;
 }
 /*Шапка*/
 header.ui.fixed.menu .item>.button{
@@ -93,7 +85,8 @@ form.login>.segment, form.register>.segment{
 }
 /*Настраиваем сайдбар*/
 .ui.right.sidebar{
-    overflow: visible !important;
+    overflow-x: visible;
+    overflow-y: scroll;
     width: 200px;
 }
 .side-avatar{
@@ -145,7 +138,7 @@ article.ui.container{
 .logoff.button{
     margin-top: 10px;
     margin-left: 10px;
-    max-width: 178px;
+    max-width: 90%;
 }
 .pusher{
     background-color: #f4f4f4 !important;
@@ -195,23 +188,27 @@ article.ui.container{
 .ui.profile.segment {
     margin-top: 130px;
 }
-.ui.profile.segment .centered.circular.image{
+.ui.profile.segment #avatar-img{
     margin-top: -90px;
-    border: 5px solid white;
-    box-shadow: 0 -10px 20px 0 rgba(0,0,0,0.1);
-    background-color: white;
+    transform: rotate(45deg);
+    border: 1px solid rgba(34, 36, 38, 0.15);
+    border-bottom-color: #fff;
+    border-right-color: #fff;
+}
+#avatar-img .dimmer, #avatar-img img{
+    transform: rotate(-45deg);
 }
 input[type="text"],input[type="email"],input[type="password"]{
     font-weight: bold;
 }
-.segment.post-item:hover{
+.segment.post-item:hover, .segment.service-item:hover{
     margin-top: -2px;
 }
-.post-item .extra.content{
+.post-item .extra.content, .service-item .extra.content {
     font-weight: bold;
     color: rgba(0,0,0,0.4);
 }
-.post-item .extra.content .right{
+.extra.content .right{
     float: right;
 }
 .ui.profile.segment .menu .item.active{
@@ -289,6 +286,11 @@ input[type="text"],input[type="email"],input[type="password"]{
     margin-right: auto;
 }
 /*Страница поста*/
+img.collection-img{
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
 img#post-content{
     cursor: zoom-in;
     cursor: -webkit-zoom-in;
@@ -491,4 +493,8 @@ p.docs{
 }
 .ui.button.scroll.active{
     display: block;
+}
+/*Услуги*/
+.ui.dropdown#deadlineDropdown {
+    min-width: 100px;
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mite.CodeData.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -15,15 +16,34 @@ namespace Mite.Models
         [Display(Name = "Заголовок")]
         [MaxLength(100, ErrorMessage = "Слишком большой заголовок")]
         public string Header { get; set; }
+        private string content;
+        /// <summary>
+        /// Если коллекция изображений или документ, то хранится документ, иначе изображение(это на входе)
+        /// Если изображение или коллекция, то хранится изображение, иначе документ(это на выходе, т.е. при показе поста)
+        /// </summary>
         [AllowHtml]
-        public string Content { get; set; }
+        public string Content
+        {
+            get
+            {
+                if (ContentType == PostContentTypes.Image)
+                    return content == null ? content : content.Replace('\\', '/');
+                return content;
+            }
+            set
+            {
+                content = value;
+            }
+        }
         [MaxLength(350, ErrorMessage = "Слишком длинное описание")]
         public string Description { get; set; }
-        public byte PostType { get; set; }
-        public bool IsImage { get; set; }
+        public PostTypes Type { get; set; }
+        public PostContentTypes ContentType { get; set; }
+        /// <summary>
+        /// True, если это изображение, или коллекция изображений
+        /// </summary>
         public int Views { get; set; }
         public int CommentsCount { get; set; }
-        public bool IsPublished => PublishDate != null;
         public int Rating { get; set; }
         /// <summary>
         /// Рейтинг, который поставил пользователь запроса
@@ -36,8 +56,22 @@ namespace Mite.Models
         /// Список имен тегов
         /// </summary>
         public List<string> Tags { get; set; }
-        public string Cover { get; set; }
-        public bool Blocked { get; set; }
+        /// <summary>
+        /// Обложка, если документ(т.е. главное текст), или главное изображение коллекции изображений.(при создании/редактировании)
+        /// Документ если коллекция изображений(при показе поста)
+        /// </summary>
+        private string cover;
+        public string Cover
+        {
+            get
+            {
+                return cover == null ? cover : cover.Replace('\\', '/');
+            }
+            set
+            {
+                cover = value;
+            }
+        }
         public UserShortModel User { get; set; }
     }
     public class WritingPostModel
@@ -54,12 +88,12 @@ namespace Mite.Models
         [DisplayName("Описание")]
         [MaxLength(350, ErrorMessage = "Слишком длинное описание")]
         public string Description { get; set; }
-        public bool IsPublished { get; set; }
+        public PostTypes Type { get; set; }
+        public bool IsPublished => Type == PostTypes.Published;
         public List<string> Tags { get; set; }
         public string Cover { get; set; }
         public HelperModel Helper { get; set; }
         public bool Blocked { get; set; }
-        public List<CommentModel> Comments { get; set; }
     }
     public class ImagePostModel
     {
@@ -69,16 +103,56 @@ namespace Mite.Models
         [MaxLength(100, ErrorMessage = "Слишком большой заголовок")]
         [Required]
         public string Header { get; set; }
+
+        private string content;
         [Required(ErrorMessage = "Вы не загрузили изображение")]
-        public string Content { get; set; }
-        public bool IsPublished { get; set; }
+        public string Content
+        {
+            get
+            {
+                return content == null ? content : content.Replace('\\', '/');
+            }
+            set
+            {
+                content = value;
+            }
+        }
+
+        public PostTypes Type { get; set; }
+        public bool IsPublished => Type == PostTypes.Published;
         [DisplayName("Описание")]
         [UIHint("TextArea")]
         [MaxLength(350, ErrorMessage = "Слишком длинное описание")]
         public string Description { get; set; }
         public bool Blocked { get; set; }
         public List<string> Tags { get; set; }
-        public List<CommentModel> Comments { get; set; }
+    }
+    public class ImageCollectionPostModel
+    {
+        public Guid Id { get; set; }
+        [UIHint("TextBox")]
+        [DisplayName("Заголовок")]
+        [MaxLength(100, ErrorMessage = "Слишком большой заголовок")]
+        [Required]
+        public string Header { get; set; }
+        /// <summary>
+        /// Контент(т.е. сама коллекция)
+        /// </summary>
+        [Required(ErrorMessage = "Вы не добавили контент")]
+        public string Content { get; set; }
+        public bool IsPublished { get; set; }
+        [DisplayName("Описание")]
+        [UIHint("TextArea")]
+        [MaxLength(350, ErrorMessage = "Слишком длинное описание")]
+        public string Description { get; set; }
+        /// <summary>
+        /// Главное изображение
+        /// </summary>
+        [Required(ErrorMessage = "Вы не загрузили главное изображение")]
+        public string Cover { get; set; }
+        public bool Blocked { get; set; }
+        public HelperModel Helper { get; set; }
+        public IEnumerable<string> Tags { get; set; }
     }
     public class PostRatingModel
     {
@@ -96,9 +170,11 @@ namespace Mite.Models
     public class GalleryPostModel
     {
         public string Id { get; set; }
+        public string Title { get; set; }
         /// <summary>
         /// Ссылка на изображение
         /// </summary>
-        public string Content { get; set; }
+        public string ImageSrc { get; set; }
+        public string ImageCompressed { get; set; }
     }
 }

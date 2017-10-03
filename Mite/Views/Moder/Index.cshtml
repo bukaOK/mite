@@ -9,7 +9,7 @@
         }
     </style>
 }
-@Scripts.Render("~/bundles/api")
+@Scripts.Render("~/bundles/api", "~/bundles/clipboard")
 <h1>Панель модератора</h1>
 <nav class="ui stackable pointing secondary tabs menu" style="border: none">
     <a class="active item" data-tab="tagunchecked">Непроверенные теги</a>
@@ -30,6 +30,9 @@
 </div>
 <div class="ui loading basic segment tab" data-tab="tagchecked">
     <button class="ui primary button" onclick="showTagAddModal(this)">Добавить тег</button>
+    <div class="ui input">
+        <input type="text" oninput="handleTagInput(this.value)" placeholder="Введите тег..." />
+    </div>
     <table class="ui celled table checked">
         <thead>
             <tr>
@@ -58,7 +61,7 @@
 </div>
 <script id="tagRowTmpl" type="text/x-jsrender">
     <tr data-id="{{:Id}}" data-name="{{:Name}}" data-confirmed="{{:IsConfirmed}}" data-checked="{{:Checked}}">
-        <td>{{:Id}}</td>
+        <td data-clipboard-text="{{:Id}}" data-inverted style="cursor: pointer" data-tooltip="Нажмите для копирования">{{:Id}}</td>
         <td>{{:Name}}</td>
         <td>
             {{if !IsConfirmed}}
@@ -145,6 +148,17 @@
                 });
             }
         }).modal('show');
+    }
+    function handleTagInput(inputVal) {
+        console.log(inputVal);
+        $('.tab[data-tab="tagchecked"]>table>tbody tr').each(function (el) {
+            console.log(this);
+            if (this.dataset.name.search(inputVal) === -1) {
+                $(this).hide();
+            } else {
+                $(this).show();
+            }
+        });
     }
     function checkTag(ev) {
         var $tagRow = $(ev).parents('tr');
@@ -253,7 +267,7 @@
         });
     }
     function initTags() {
-        $.ajax({
+        return $.ajax({
             url: '@Url.Action("Tags")',
             type: 'post',
             success: function (resp) {
@@ -280,6 +294,8 @@
             history: true,
             historyType: 'hash'
         });
-        initTags();
+        initTags().then(function () {
+            new Clipboard('td[data-clipboard-text]');
+        });
     });
 </script>

@@ -1,5 +1,4 @@
 ﻿using System;
-using Mite.Helpers;
 using System.Threading.Tasks;
 using System.Web.Hosting;
 using System.Web.Mvc;
@@ -14,6 +13,7 @@ using NLog;
 using System.Linq;
 using Mite.BLL.Infrastructure;
 using Mite.BLL.Helpers;
+using System.Collections.Generic;
 
 namespace Mite.Controllers
 {
@@ -42,7 +42,7 @@ namespace Mite.Controllers
             var ratingService = serviceBuilder.Build<IRatingService>();
 
             var post = await postsService.GetWithTagsUserAsync(postId);
-            if (post == null || !post.IsPublished)
+            if (post == null || post.Type != PostTypes.Published)
             {
                 return NotFound();
             }
@@ -50,29 +50,38 @@ namespace Mite.Controllers
                 ?? new PostRatingModel();
             userRating.PostId = post.Id;
 
-            if (!post.IsImage)
+            if (post.ContentType == PostContentTypes.Document || post.ContentType == PostContentTypes.ImageCollection)
             {
                 //Заменяем путь к документу на содержание
                 post.Content = await FilesHelper.ReadDocumentAsync(post.Content);
+            }
+            //Если это коллекция
+            if(post.ContentType == PostContentTypes.ImageCollection)
+            {
+                post.Content = Regex.Replace(post.Content, "<img", "<img class=\"collection-img\"");
             }
             post.CurrentRating = userRating;
             await postsService.AddViews(postId);
             return View(post);
         }
-        public ActionResult AddPost(PostTypes postType)
+        public ActionResult AddPost(PostContentTypes postType)
         {
             ViewBag.Title = "Добавление работы";
 
             var helpersService = serviceBuilder.Build<IHelpersService>();
             switch (postType)
             {
-                case PostTypes.Image:
+                case PostContentTypes.Image:
                     return View("EditImagePost", new ImagePostModel());
-                case PostTypes.Document:
-                    var helper = helpersService.GetByUser(User.Identity.GetUserId());
+                case PostContentTypes.Document:
                     return View("EditWritePost", new WritingPostModel
                     {
-                        Helper = helper
+                        Helper = helpersService.GetByUser(User.Identity.GetUserId())
+                    });
+                case PostContentTypes.ImageCollection:
+                    return View("EditImageCollection", new ImageCollectionPostModel
+                    {
+                        Helper = helpersService.GetByUser(User.Identity.GetUserId()),
                     });
                 default:
                     return NotFound();
@@ -94,22 +103,26 @@ namespace Mite.Controllers
             {
                 return BadRequest();
             }
-
-            if (post.IsImage)
+            switch (post.ContentType)
             {
-                var imagePost = Mapper.Map<ImagePostModel>(post);
-                return View("EditImagePost", imagePost);
+                case PostContentTypes.Image:
+                    var imagePost = Mapper.Map<ImagePostModel>(post);
+                    return View("EditImagePost", imagePost);
+                case PostContentTypes.ImageCollection:
+                    var imageCollection = Mapper.Map<ImageCollectionPostModel>(post);
+                    imageCollection.Content = await FilesHelper.ReadDocumentAsync(imageCollection.Content);
+                    imageCollection.Content = Regex.Replace(imageCollection.Content, "<img", "<img class=\"collection-img\"");
+                    imageCollection.Helper = await helpersService.GetByUserAsync(User.Identity.GetUserId());
+                    return View("EditImageCollection", imageCollection);
+                case PostContentTypes.Document:
+                    var writePost = Mapper.Map<WritingPostModel>(post);
+                    //Заменяем путь к документу на содержание
+                    writePost.Content = await FilesHelper.ReadDocumentAsync(writePost.Content);
+                    writePost.Helper = await helpersService.GetByUserAsync(User.Identity.GetUserId());
+                    return View("EditWritePost", writePost);
+                default:
+                    throw new NotImplementedException("Неизвестный тип контента работы");
             }
-            else
-            {                
-                var writePost = Mapper.Map<WritingPostModel>(post);
-                var helper = helpersService.GetByUser(User.Identity.GetUserId());
-                //Заменяем путь к документу на содержание
-                writePost.Content = await FilesHelper.ReadDocumentAsync(writePost.Content);
-                writePost.Helper = helper;
-                return View("EditWritePost", writePost);
-            }
-
         }
         [HttpPost]
         public async Task<JsonResult> AddPost(PostModel model)
@@ -118,6 +131,11 @@ namespace Mite.Controllers
                 return Json(JsonStatuses.ValidationError, "Проверьте правильность заполнения полей");
             if (!string.IsNullOrEmpty(model.Description) && (model.Description.Contains(">") || model.Description.Contains("<")))
                 return Json(JsonStatuses.ValidationError, "Обнаружены опасные символы в описании");
+
+            if (model.PublishDate != null)
+                model.Type = PostTypes.Published;
+            else
+                model.Type = PostTypes.Drafts;
 
             var postsService = serviceBuilder.Build<IPostsService>();
 
@@ -150,7 +168,7 @@ namespace Mite.Controllers
             var result = await postsService.UpdatePostAsync(model);
             if (!result.Succeeded)
             {
-                return Json(JsonStatuses.ValidationError, result.Errors);
+                return Json(JsonStatuses.ValidationError, result.Errors.ToArray()[0]);
             }
             return Json(JsonStatuses.Success, "Успешно отредактировано");
         }
@@ -164,16 +182,10 @@ namespace Mite.Controllers
             {
                 return Forbidden();
             }
-            try
-            {
-                await postsService.DeletePostAsync(id);
+            var result = await postsService.DeletePostAsync(id);
+            if(result.Succeeded)
                 return Ok();
-            }
-            catch(Exception e)
-            {
-                logger.Error(e, "Ошибка при удалении поста");
-                return InternalServerError();
-            }
+            return InternalServerError();
         }
         [HttpPost]
         public async Task<HttpStatusCodeResult> PublishPost(string id)
@@ -182,32 +194,27 @@ namespace Mite.Controllers
             {
                 return BadRequest();
             }
-            try
-            {
-                var postsService = serviceBuilder.Build<IPostsService>();
+            var postsService = serviceBuilder.Build<IPostsService>();
 
-                await postsService.PublishPost(postId);
+            var result = await postsService.PublishPost(postId);
+            if(result.Succeeded)
                 return Ok();
-            }
-            catch (Exception e)
-            {
-                logger.Error(e, "Ошибка при публикации поста");
-                return InternalServerError();
-            }
+            return InternalServerError();
         }
         /// <summary>
         /// Получаем список изображений пользователя (для галереи при показе поста)
         /// </summary>
         /// <param name="userId">Id пользователя</param>
         /// <returns></returns>
-        [HttpPost]
         [AllowAnonymous]
-        public async Task<JsonResult> UserGallery(string userId)
+        public async Task<JsonResult> UserGallery(string userId, Guid postId)
         {
             var postsService = serviceBuilder.Build<IPostsService>();
 
             var result = await postsService.GetGalleryByUserAsync(userId);
-            return Json(JsonStatuses.Success, result);
+            result.InitialIndex = Array.IndexOf(result.Items, result.Items.First(x => string.Equals(x.Id, postId.ToString())));
+
+            return Json(JsonStatuses.Success, result, JsonRequestBehavior.AllowGet);
         }
         [AllowAnonymous]
         public async Task<ViewResult> Top()

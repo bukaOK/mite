@@ -27,6 +27,12 @@ namespace Mite.BLL.Core
             Succeeded = success;
             ResultData = data;
         }
+        private DataServiceResult(bool success, object data, IEnumerable<string> errors)
+        {
+            Succeeded = success;
+            ResultData = data;
+            Errors = errors;
+        }
 
         public object ResultData { get; }
         public bool Succeeded { get; }
@@ -50,11 +56,11 @@ namespace Mite.BLL.Core
         }
         public static DataServiceResult Failed(object data, params string[] errors)
         {
-            return new DataServiceResult(false, data);
+            return new DataServiceResult(false, data, errors);
         }
         public static DataServiceResult Failed(object data, IEnumerable<string> errors)
         {
-            return new DataServiceResult(false, data);
+            return new DataServiceResult(false, data, errors);
         }
     }
 }

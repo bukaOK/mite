@@ -1,12 +1,10 @@
 ﻿using Autofac;
 using Duke.Owin.VkontakteMiddleware;
 using Duke.Owin.VkontakteMiddleware.Provider;
-using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
-using Microsoft.Owin.Security.DataProtection;
 using Microsoft.Owin.Security.Facebook;
 using Microsoft.Owin.Security.Twitter;
 using Mite.BLL.IdentityManagers;
@@ -38,8 +36,12 @@ namespace Mite
             app.UseWebApi(apiConfig);
             app.MapSignalR();
 
+            app.UseAutofacMiddleware(container);
+
             CitiesInitializer.Initialize();
+#if !DEBUG
             HangfireConfig.Initialize(app, container);
+#endif
         }
         private void ConfigureAuth(IAppBuilder app, IContainer diContainer)
         {
@@ -102,6 +104,7 @@ namespace Mite
                 AppSecret = "bfVzsqk5oyHvlGUwLM8P",
                 AuthenticationType = VkSettings.DefaultAuthType,
                 Caption = "Вконтакте",
+                Scope = "offline",
                 Provider = new VkAuthenticationProvider
                 {
                     OnAuthenticated = context =>

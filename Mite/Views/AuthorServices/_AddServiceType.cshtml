@@ -1,0 +1,31 @@
+﻿@using Mite.Extensions
+@model Mite.Models.ServiceTypeModel
+
+<div class="ui tiny modal" id="serviceTypeModal">
+    <i class="close icon"></i>
+    <div class="header">Добавление типа услуги</div>
+    <div class="content">
+        @using (Html.BeginForm("", "", FormMethod.Post, new { @class = "ui form", id = "serviceTypeForm" }))
+        {
+            <div class="field">
+                @Html.LabelFor(x => x.Name)
+                @Html.TextBoxFor(x => x.Name, new { placeholder = Html.DisplayNameFor(x => x.Name) })
+            </div>
+            <div class="ui error message" id="serviceTypeMsg"></div>
+        }
+    </div>
+    <div class="actions">
+        <button class="ui green ok button" id="serviceTypeBtn">Отправить</button>
+    </div>
+</div>
+<script>
+    $(function () {
+        @Html.Raw(Html.FormValidation<Mite.Models.ServiceTypeModel>("#serviceTypeForm"))
+        $('#serviceTypeModal').modal({
+            onApprove: function () {
+                ServiceTypesApi.addByAuthor();
+                return false;
+            }
+        });
+    });
+</script>

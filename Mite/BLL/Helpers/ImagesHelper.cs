@@ -22,14 +22,19 @@ namespace Mite.BLL.Helpers
             var pathArr = path.Split('.');
             return pathArr[pathArr.Length - 1];
         }
+        public static bool IsAnimatedImage(string path)
+        {
+            var img = Image.FromFile(path);
+            return img.GetFrameCount(new FrameDimension(img.FrameDimensionsList[0])) > 1;
+        }
         public static class Compressed
         {
             public static string CompressedVirtualPath(string path)
             {
                 var compressedFullPath = CompressedPath(path, "jpg");
                 var virtualPath = compressedFullPath.Replace(HostingEnvironment.ApplicationPhysicalPath, string.Empty);
-                if (virtualPath[0] != '\\' || virtualPath[0] != '/')
-                    virtualPath = "\\" + virtualPath;                
+                if (virtualPath[0] != '\\' && virtualPath[0] != '/')
+                    virtualPath = "\\" + virtualPath;
                 return virtualPath;
             }
             /// <summary>

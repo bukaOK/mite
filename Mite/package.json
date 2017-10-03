@@ -2,7 +2,10 @@
   "version": "1.0.0",
   "name": "asp.net",
   "private": true,
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/jquery": "^3.2.12",
+    "@types/semantic-ui": "^2.2.5"
+  },
   "dependencies": {
     "gulp": "^3.9.1",
     "jsrender": "^0.9.83",
