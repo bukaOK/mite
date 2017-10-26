@@ -35,7 +35,7 @@ namespace Mite.BLL.Helpers
                 var virtualPath = compressedFullPath.Replace(HostingEnvironment.ApplicationPhysicalPath, string.Empty);
                 if (virtualPath[0] != '\\' && virtualPath[0] != '/')
                     virtualPath = "\\" + virtualPath;
-                return virtualPath;
+                return virtualPath.Replace('\\', '/');
             }
             /// <summary>
             /// Генерируем путь к сжатому изображению

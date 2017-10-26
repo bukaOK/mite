@@ -305,9 +305,9 @@
                     <a data-comment-id="{{:Id}}" onclick="deleteComment(this)">Удалить</a>
                     {{/if}}
                     {{if CurrentRating == null || CurrentRating.Value == 0}}
-                    <a data-is-rate="false" data-variation="tiny" data-content="Нравится!" onclick="rateComment(this, '{{:Id}}', '{{:User.Id}}')"><i class="thumbs outline up violet icon"></i><span class="rating">{{:Rating}}</span></a>
+                    <a data-is-rate="false" title="Нравится!" onclick="rateComment(this, '{{:Id}}', '{{:User.Id}}')"><i class="thumbs outline up violet icon"></i><span class="rating">{{:Rating}}</span></a>
                     {{else}}
-                    <a data-is-rate="true" data-variation="tiny" data-content="Нравится!" onclick="rateComment(this, '{{:Id}}', '{{:User.Id}}')"><i class="thumbs up violet icon"></i><span class="rating">{{:Rating}}</span></a>
+                    <a data-is-rate="true" title="Нравится!" onclick="rateComment(this, '{{:Id}}', '{{:User.Id}}')"><i class="thumbs up violet icon"></i><span class="rating">{{:Rating}}</span></a>
                     {{/if}}
                 </div>
             }
@@ -401,8 +401,6 @@
 
                 var html = tmpl.render(data);
                 $('#comments-wrapper').prepend(html);
-
-                $('#com' + data.Id + ' .thumbs.up.icon').parent().popup();
             },
             error: function (jqXhr) {
                 swal('Упс...', 'Ошибка во время отправки комментария.', 'error');
@@ -600,9 +598,7 @@
         resizeModalImage();
         loadPostTime();
         lastRateValue = $(".ui.rating").data("rating");
-        initComments('@Model.Id', @((byte)SortFilter.Old)).then(function(){
-            $('.thumbs.up.icon').parent().popup();
-        });
+        initComments('@Model.Id', @((byte)SortFilter.Old));
         initRating();
         initFormValidation();
         if (isImage) {

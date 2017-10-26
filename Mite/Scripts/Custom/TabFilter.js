@@ -45,7 +45,14 @@ Tab.prototype.deActivate = function () {
         });
     }
 }
-
+Tab.prototype.buildPath = function (path) {
+    path = '/' + this.name + path;
+    if (this.parentTab === null || this.parentTab === undefined) {
+        return path;
+    } else {
+        return this.parentTab.buildPath(path);
+    }
+}
 var TabFilter = {
     Tabs: {
         items: [],
@@ -101,13 +108,13 @@ var TabFilter = {
             TabFilter.refresh(false);
         },
         updateState: function (basePath) {
-            var tabsPath = location.pathname.toLowerCase().replace(basePath, '');
+            var tabsPath = location.pathname.toLowerCase().replace(basePath, ''),
+                tPath = '';
             tabsPath = tabsPath.substr(1, tabsPath.length - 1);
 
             if (tabsPath != '' && tabsPath != null) {
                 this.items.forEach(function (tab) {
-                    if (tabsPath.search(tab.name) !== -1) {
-                        tabsPath = tabsPath.replace(tab.name, '');
+                    if ('/' + tabsPath === tab.buildPath('')) {
                         tab.activate();
                     } else {
                         tab.deActivate();
@@ -225,7 +232,7 @@ var TabFilter = {
 
         window.onpopstate = function (ev) {
             self.Tabs.updateState(basePath);
-            if (this.Filters.items.length > 0) {
+            if (self.Filters.items.length > 0) {
                 self.Filters.updateFiltersState();
             }
             self.refresh(true);

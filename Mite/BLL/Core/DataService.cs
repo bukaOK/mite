@@ -9,6 +9,8 @@ namespace Mite.BLL.Core
     public abstract class DataService : IDataService
     {
         protected readonly IUnitOfWork Database;
+        protected DataServiceResult Success => DataServiceResult.Success();
+        protected DataServiceResult CommonError => DataServiceResult.Failed("Внутренняя ошибка");
 
         protected DataService(IUnitOfWork database)
         {

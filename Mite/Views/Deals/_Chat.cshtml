@@ -1,0 +1,215 @@
+﻿@model Mite.Models.ChatModel
+
+@{
+    var emCount = 0;
+}
+<div class="ui segments">
+    <div class="ui chat-header two column grid segment">
+        <div class="column">
+            <h4 class="ui header"><b>@Model.Name</b></h4>
+        </div>
+        <div class="right aligned msg-actions column">
+            <div class="ui red compact small button" onclick="ChatMessages.Api.remove()">Удалить</div>
+        </div>
+    </div>
+    <div class="ui msg-chat-wrapper segment">
+        <div class="active dot-loader-wrapper" style="height: 20px">
+            <div class="dot-loader">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
+        <div class="ui chat feed" data-id="@Model.Id"></div>
+    </div>
+    <form class="ui clearing form segment" id="chat-form" data-chat-id="@Model.Id">
+        <input type="file" multiple id="att-input" style="display: none" />
+        <div class="ui attachments five column grid segment"></div>
+        <div class="field">
+            <div contenteditable="true" id="dialogArea" data-state="begin" oninput="ChatMessages.inputHandle('@Model.Id', this)"></div>
+        </div>
+        <button type="button" class="ui right floated compact labeled icon primary button" id="msgSendBtn">
+            <i class="send outline icon"></i>
+            Отправить
+        </button>
+        <label for="att-input" class="ui compact blue icon circular button">
+            <i class="attach icon"></i>
+        </label>
+        <div class="chat-dl dot-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+        <span class="type-label" style="display: none"></span>
+        <button type="button" class="ui right floated compact icon circular button" id="emoji-btn">
+            <i class="smile icon"></i>
+        </button>
+        <div class="ui emoji popup">
+            <div class="em-wrapper">
+                <div class="ui mini tabs icon menu" role="tablist">
+                    @foreach (var emGroup in Model.Emojies)
+                    {
+                        <a title="@emGroup.RuName" class="@Html.Raw(emCount == 0 ? "active " : "")item" role="tab" data-tab="@emGroup.Name">
+                            @if (!string.IsNullOrEmpty(emGroup.IconClass))
+                            {
+                                <i class="@emGroup.IconClass large violet icon"></i>
+                            }
+                            else
+                            {
+                                <img class="ui image em-img" src="@emGroup.MainImage" alt="@emGroup.RuName" />
+                            }
+                        </a>
+                        emCount++;
+                    }
+                </div>
+            </div>
+            @{ emCount = 0; }
+            @foreach (var emGroup in Model.Emojies)
+            {
+                <div class="ui @Html.Raw(emCount == 0 ? "active " : "")tab" data-tab="@emGroup.Name">
+                    <div class="ui @emGroup.ColsCount column grid">
+                        @foreach (var em in emGroup.Emojies)
+                        {
+                            <div class="em-col column"><img class="@emGroup.EmClass" src="@em.Src" alt="@em.Alt" /></div>
+                        }
+                    </div>
+                </div>
+                emCount++;
+            }
+        </div>
+        <div class="ui error message"></div>
+    </form>
+</div>
+<div class="ui tiny modal" id="attModal" role="dialog">
+    <i class="close icon"></i>
+    <div class="header">Вложения</div>
+    <div class="ui basic segment content" role="document">
+        <div class="ui fluid pointing secondary menu" role="tablist" id="att-menu">
+            <a class="active item" role="tab" data-tab="att-images">Изображения</a>
+            <a class="item" role="tab" data-tab="att-documents">Документы</a>
+        </div>
+        <div class="ui active four column grid tab" data-tab="att-images" role="tabpanel"></div>
+        <div class="ui four column grid tab" data-tab="att-documents" role="tabpanel"></div>
+    </div>
+</div>
+<script type="text/x-jsrender" id="messageTmpl">
+    {{if DividerDate != null}}
+    <div class="ui horizontal divider">{{:DividerDate}}</div>
+    {{/if}}
+    <div class="event" data-date="{{:Date}}" data-id="{{:Id}}" data-status="{{:Status.name}}" onclick="ChatMessages.Events.MessageClick($(this))">
+        <div class="label">
+            <img src="{{:Sender.AvatarSrc}}" />
+        </div>
+        <div class="content">
+            <div class="summary">
+                <a class="user">{{:Sender.UserName}}</a>
+                <span class="date">{{:Time}}</span>
+                <span class="status" title="{{:Status.title}}"><i class="{{:Status.class}} violet icon"></i></span>
+            </div>
+            <div class="text">
+                {{:Message}}
+            </div>
+            {{if images.length > 0}}
+            <div class="extra images">
+                {{for images}}
+                <a href="{{:Src}}">
+                    <img src="{{:CompressedSrc}}" />
+                </a>
+                {{/for}}
+            </div>
+            {{/if}}
+            {{if documents.length > 0}}
+            <div class="meta">
+                {{for documents}}
+                <a download href="/files/download?path={{:Src}}&name={{:Name}}" target="_blank"><i class="attach icon"></i>{{:Name}}</a>
+                {{/for}}
+            </div>
+            {{/if}}
+        </div>
+        <div class="msg-mark-wrap"></div>
+    </div>
+</script>
+<script type="text/x-jsrender" id="attTmpl">
+    <div class="column" data-id="{{:Id}}" onclick="MsgFiles.clickEvent(this)">
+        {{if IsImage}}
+        <div class="ui small image">
+            <div class="ui dimmer">
+                <div class="content">
+                    <div class="center">
+                        <i class="big remove icon"></i>
+                    </div>
+                </div>
+            </div>
+            <img src="{{:Src}}" />
+        </div>
+        {{else}}
+        <div class="ui segment">
+            <div class="ui dimmer">
+                <div class="content">
+                    <div class="center">
+                        <i class="big remove icon"></i>
+                    </div>
+                </div>
+            </div>
+            <p>{{:Name}}</p>
+        </div>
+        {{/if}}
+    </div>
+</script>
+<script type="text/x-jsrender" id="attShowTmpl">
+    {{if IsImage}}
+        <div class="column" data-index="{{:Index}}">
+            <img src="{{:CompressedSrc}}" class="ui small image" />
+        </div>
+    {{else}}
+    <div class="column">
+        <div class="ui segment">
+            <div class="ui dimmer">
+                <div class="content">
+                    <div class="center">
+                        <i class="download icon"></i>
+                    </div>
+                </div>
+            </div>
+            <p>{{:Name}}</p>
+        </div>
+    </div>
+    {{/if}}
+</script>
+<script>
+
+    $(function () {
+        $('#emoji-btn').popup({
+            inline: true,
+            hoverable: true,
+            position: 'top center'
+        });
+        MsgFiles.init('att-input');
+        $('.emoji .tabs .item').tab();
+        $('#att-menu .item').tab()
+        $('.emoji .tab').each(function (index, elem) {
+            new PerfectScrollbar(elem);
+        });
+        $('#msgSendBtn').click(function () {
+            ChatMessages.Api.add('@Model.Id', {
+                AvatarSrc: '@Model.CurrentUser.AvatarSrc',
+                Id: '@Model.CurrentUser.Id',
+                UserName: '@Model.CurrentUser.UserName'
+            }, $('#dialogArea').html());
+        });
+        var emPs = new PerfectScrollbar('.em-wrapper', {
+            useBothWheelAxes: true
+        });
+        $('.em-col').click(function () {
+            EmojiHelper.addToArea('#dialogArea', this.childNodes[0].cloneNode());
+        }).mousedown(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            });
+        ChatMessages.initHub('@Model.Id');
+        ChatMessages.chatId = '@Model.Id';
+        var chatLoader = new ChatLoader('@Model.Id');
+        chatLoader.loadNext();
+        console.log(chatLoader);
+    });
+</script>

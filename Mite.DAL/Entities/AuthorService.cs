@@ -38,6 +38,11 @@ namespace Mite.DAL.Entities
         /// </summary>
         public int Rating { get; set; }
         /// <summary>
+        /// Надежность
+        /// </summary>
+        public int Reliability { get; set; }
+        public DateTime CreateDate { get; set; }
+        /// <summary>
         /// Тип услуги(портрет, тату и т.д.)
         /// </summary>
         [ForeignKey("ServiceType")]

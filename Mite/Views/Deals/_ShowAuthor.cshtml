@@ -34,6 +34,44 @@
 else if (Model.Status == DealStatuses.ExpectPayment)
 {
     <h3 class="ui header">Ожидаем оплату</h3>
+    <form class="ui form" id="dealForm">
+        @if (Model.VkReposted == false)
+        {
+        <div class="field">@Html.Raw(Model.Service.VkRepostCode)</div>
+        <button type="button" class="ui primary button" onclick="DealsMvc.confirmVkRepost(this, '@Model.Id')">Подтвердить репост</button>
+        }
+        else if (Model.VkReposted == true)
+        {
+        <div class="field">@Html.Raw(Model.Service.VkRepostCode)</div>
+        <button type="button" disabled class="ui disabled primary button">Репост подтвержден</button>
+        }
+        <div class="ui error message"></div>
+    </form>
+}
+else if(Model.Status == DealStatuses.ExpectClient)
+{
+    <h3 class="ui header">Ожидаем подтверждения клиента</h3>
+    <form class="ui form" id="dealForm">
+        <div class="field">
+            <button class="ui fluid red button" type="button" onclick="DealsMvc.openDispute(this, '@Model.Id')">
+                <i class="meh icon"></i>Открыть спор
+            </button>
+        </div>
+        <div class="ui error message"></div>
+    </form>
+}
+else if (Model.Status == DealStatuses.Confirmed)
+{
+    <h3 class="ui header"><i class="check icon"></i>Заказ выполнен</h3>
+}
+else if (Model.Status == DealStatuses.Rejected)
+{
+    <h3 class="ui header">Заказ отклонен</h3>
+
+}
+else if (Model.Status == DealStatuses.Dispute)
+{
+    <h3 class="ui header">Диалог с модератором</h3>
 }
 <script>
     $(function () {

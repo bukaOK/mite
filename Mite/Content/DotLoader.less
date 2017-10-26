@@ -1,10 +1,22 @@
-﻿.dot-loader-wrapper{
+﻿.chat-dl.dot-loader-wrapper.active{
+    height: auto;
+    display: inline-block;
+}
+.dot-loader-wrapper{
     height: 50px; 
     position: relative;
     display: none;
 }
 .active.dot-loader-wrapper{
     display: block;
+}
+.chat-dl.dot-loader{
+    display: none;
+    transform: scale(0.9);
+    position: static;
+}
+.chat-dl.dot-loader.active{
+    display: inline-block;
 }
 .dot-loader {
 	position: absolute;

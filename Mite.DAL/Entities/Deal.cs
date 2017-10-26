@@ -44,6 +44,9 @@ namespace Mite.DAL.Entities
         /// Выплачено ли
         /// </summary>
         public bool Payed { get; set; }
+        public byte Rating { get; set; }
+        [MaxLength(500)]
+        public string Feedback { get; set; }
         /// <summary>
         /// Репостнули ли запись(если null, записи нет)
         /// </summary>
@@ -54,6 +57,9 @@ namespace Mite.DAL.Entities
         [ForeignKey("Service")]
         public Guid ServiceId { get; set; }
         public AuthorService Service { get; set; }
+        [ForeignKey("Chat")]
+        public Guid ChatId { get; set; }
+        public Chat Chat { get; set; }
         [ForeignKey("Client")]
         public string ClientId { get; set; }
         public User Client { get; set; }

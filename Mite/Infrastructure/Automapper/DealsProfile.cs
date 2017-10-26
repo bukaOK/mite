@@ -13,7 +13,7 @@ namespace Mite.Infrastructure.Automapper
         {
             CreateMap<Deal, DealUserModel>()
                 .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.Deadline != null 
-                    ? ViewHelper.GetPastTense(DateTime.UtcNow, src.Deadline.Value, "осталось", "просрочено")
+                    ? ViewHelper.GetPastTense(DateTime.UtcNow, src.Deadline.Value, "", "срок истек", true)
                     : "дата ожидается"))
                 .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Service.Title))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Service.Description))

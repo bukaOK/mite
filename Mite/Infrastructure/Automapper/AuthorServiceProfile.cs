@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Mite.CodeData.Enums;
 using Mite.DAL.Entities;
+using Mite.DAL.Filters;
 using Mite.Helpers;
 using Mite.Models;
 using Newtonsoft.Json;
@@ -44,8 +45,8 @@ namespace Mite.Infrastructure.Automapper
 
             CreateMap<AuthorService, ProfileServiceModel>()
                 .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => src.ImageSrc_50))
-                .ForMember(dest => dest.ServiceTypeName, opt => opt.MapFrom(src => src.ServiceType.Name))
-                .ForMember(dest => dest.Deadline, opt => opt.MapFrom(src => GetDeadline(src.DeadlineNum, src.DeadlineType)));
+                .ForMember(dest => dest.Deadline, opt => opt.MapFrom(src => GetDeadline(src.DeadlineNum, src.DeadlineType)))
+                .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.Author));
 
             CreateMap<AuthorService, AuthorServiceShowModel>()
                 .ForMember(dest => dest.Deadline, opt => opt.MapFrom(src => GetDeadline(src.DeadlineNum, src.DeadlineType)))
@@ -60,6 +61,10 @@ namespace Mite.Infrastructure.Automapper
             CreateMap<ServiceTypeModel, AuthorServiceType>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore());
             CreateMap<AuthorServiceType, ServiceTypeModel>();
+
+            CreateMap<ServiceTopFilterModel, ServiceTopFilter>()
+                .ForMember(dest => dest.MaxDate, opt => opt.MapFrom(src => src.InitialDate))
+                .ForMember(dest => dest.CityId, opt => opt.MapFrom(src => src.City));
         }
         private string GetDeadline(int num, DurationTypes type)
         {

@@ -15,6 +15,10 @@ namespace Mite.Models
         public DateTime? Deadline => DeadlineStr == null ? null : (DateTime?)DateTime.Parse(DeadlineStr);
         public UserShortModel Author { get; set; }
         public UserShortModel Client { get; set; }
+        public ChatModel Chat { get; set; }
+        [DisplayName("Отзыв")]
+        public string Feedback { get; set; }
+        public byte Rating { get; set; }
         public DealStatuses Status { get; set; }
         public bool Payed { get; set; }
         public bool? VkReposted { get; set; }

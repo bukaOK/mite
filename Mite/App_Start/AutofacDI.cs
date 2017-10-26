@@ -22,6 +22,7 @@ using Mite.BLL.Infrastructure;
 using Mite.Infrastructure;
 using System.Web;
 using Mite.Modules;
+using Autofac.Integration.SignalR;
 
 namespace Mite
 {
@@ -34,10 +35,11 @@ namespace Mite
 
             builder.RegisterControllers(executingAssembly);
             builder.RegisterApiControllers(executingAssembly);
+            builder.RegisterHubs(Assembly.GetExecutingAssembly());
             RegisterComponents(builder, app);
 
             var container = builder.Build();
-            DependencyResolver.SetResolver(new AutofacDependencyResolver(container));
+            DependencyResolver.SetResolver(new Autofac.Integration.Mvc.AutofacDependencyResolver(container));
             apiConfiguration.DependencyResolver = new AutofacWebApiDependencyResolver(container);
 
             //app.UseAutofacMiddleware(container);
@@ -52,12 +54,12 @@ namespace Mite
         {
             var dataProtectionProvider = app.GetDataProtectionProvider();
 
-            builder.RegisterType<AppDbContext>().InstancePerRequest();
-            builder.RegisterType<UnitOfWork>().As<IUnitOfWork>().InstancePerRequest();
+            builder.RegisterType<AppDbContext>().InstancePerLifetimeScope();
+            builder.RegisterType<UnitOfWork>().As<IUnitOfWork>().InstancePerLifetimeScope();
 
-            builder.Register(c => HttpContext.Current.GetOwinContext().Authentication).As<IAuthenticationManager>().InstancePerRequest();
+            builder.Register(c => HttpContext.Current.GetOwinContext().Authentication).As<IAuthenticationManager>().InstancePerLifetimeScope();
             builder.Register(c => new AppUserManager(new UserStore<User>(c.Resolve<AppDbContext>()),
-                dataProtectionProvider)).InstancePerRequest();
+                dataProtectionProvider)).InstancePerLifetimeScope();
             builder.RegisterType<AppSignInManager>();
             builder.RegisterType<AppRoleManager>();
 
@@ -68,11 +70,11 @@ namespace Mite
 
             builder.RegisterType<HttpClient>().SingleInstance();
             builder.RegisterType<YaHttpClient>().As<IHttpClient>();
-            builder.RegisterType<Authenticator>().InstancePerRequest();
+            builder.RegisterType<Authenticator>().InstancePerLifetimeScope();
 
             builder.Register(c => LogManager.GetLogger("LOGGER")).As<ILogger>().SingleInstance();
 
-            builder.RegisterType<GeoMiddleware>().InstancePerRequest();
+            builder.RegisterType<GeoMiddleware>().InstancePerLifetimeScope();
         }
     }
 }

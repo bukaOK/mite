@@ -174,9 +174,16 @@ var MiteMobile = {
     }
 }
 var Scrolling = {
-    init: function (selector, callback) {
-        $(window).scroll(function () {
-            if (!Scrolling._isBlocked && Scrolling._isInView(selector)) {
+    /**
+     * @param {string} selector
+     * @param {string|HTMLElement} container
+    */
+    init: function (selector, callback, container) {
+        if (container === null || container === undefined) {
+            container = window;
+        }
+        $(container).scroll(function () {
+            if (!Scrolling._isBlocked && Scrolling._isInView(selector, container)) {
                 Scrolling._isBlocked = true;
                 var exeFunc = callback();
                 if (exeFunc != undefined) {
@@ -189,7 +196,7 @@ var Scrolling = {
             }
         });
         $(document).on('touchmove', function () {
-            if (!Scrolling._isBlocked && Scrolling._isInView(selector)) {
+            if (!Scrolling._isBlocked && Scrolling._isInView(selector, container)) {
                 Scrolling._isBlocked = true;
                 var exeFunc = callback();
                 if (exeFunc != undefined) {
@@ -203,9 +210,9 @@ var Scrolling = {
         });
     },
     _isBlocked: false,
-    _isInView: function (elm) {
-        var vpH = $(window).height(), // Viewport Height
-            st = $(window).scrollTop(), // Scroll Top
+    _isInView: function (elm, container) {
+        var vpH = $(container).height(), // Viewport Height
+            st = $(container).scrollTop(), // Scroll Top
             y = $(elm).offset().top,
             elementHeight = $(elm).height();
 

@@ -20,7 +20,7 @@ namespace Mite.Hubs
         /// </summary>
         /// <param name="userId">Id пользователя, которому должно прийти уведомление</param>
         /// <param name="notificationType">Тип уведомления</param>
-        /// <param name="sourceValue">Значение источника(имя пользователя, Id работы, Id комментария и пр.)</param>
+        /// <param name="sourceValue">Значение(имя пользователя, Id работы, Id комментария и пр.)</param>
         public void NewNotification(string userId, NotificationTypes notificationType, string sourceValue)
         {
             if (userId == Context.User.Identity.GetUserId())
@@ -66,6 +66,16 @@ namespace Mite.Hubs
                     throw new NotImplementedException("Неизвестный тип уведомления");
             }
             Clients.Group(userId).notifyUser(JsonConvert.SerializeObject(notifyModel));
+        }
+        public void NewMessage(ChatMessageModel message)
+        {
+            foreach(var re in message.Recipients)
+            {
+                if(re.Id != message.Sender.Id)
+                {
+                    Clients.Group(re.Id).addMessage(JsonConvert.SerializeObject(message));
+                }
+            }
         }
         public override Task OnConnected()
         {

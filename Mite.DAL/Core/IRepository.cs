@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Mite.DAL.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Entity;
 using System.Threading.Tasks;
 
 namespace Mite.DAL.Core
@@ -29,5 +31,7 @@ namespace Mite.DAL.Core
         Task UpdateAsync(TEntity entity);
         int GetCount();
         Task<int> GetCountAsync();
+
+        DbContextTransaction BeginTransaction();
     }
 }

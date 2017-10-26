@@ -3,12 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using System.Web.Mvc.Html;
-using Autofac.Integration.Mvc;
-using AutoMapper;
-using Microsoft.AspNet.Identity;
-using Mite.BLL.IdentityManagers;
-using Mite.DAL.Entities;
-using Mite.Models;
 using System.Web;
 using System.Text.RegularExpressions;
 using System.Text;
@@ -96,8 +90,12 @@ namespace Mite.Helpers
         /// </summary>
         /// <param name="pastTime">Прошедшее время</param>
         /// <param name="futureTime">Большее время</param>
+        /// <param name="backWord">Слово которое ставится позади времени(напр. 3 дня назад)</param>
+        /// <param name="errorWord">Когда большая дата меньше меньшей</param>
+        /// <param name="inFuture">Если разность во времени относится к будущему(завтра), а не к прошлому(вчера)</param>
         /// <returns></returns>
-        public static string GetPastTense(DateTime pastTime, DateTime futureTime, string backWord = "", string errorWord = "неверная дата")
+        public static string GetPastTense(DateTime pastTime, DateTime futureTime, string backWord = "", string errorWord = "неверная дата",
+            bool inFuture = false)
         {
             var difTime = futureTime - pastTime;
             if (futureTime < pastTime)
@@ -109,7 +107,7 @@ namespace Mite.Helpers
                 var wordCase = GetWordCase(years, "год", "года", "лет");
                 if (years > 1)
                     return $"{years} {wordCase} {backWord}";
-                return wordCase + backWord;
+                return $"{wordCase} {backWord}";
             }
             if (difTime.Days >= 30 && difTime.Days < 365)
             {
@@ -117,7 +115,7 @@ namespace Mite.Helpers
                 var wordCase = GetWordCase(months, "месяц", "месяца", "месяцев");
                 if (months > 1)
                     return $"{months} {wordCase} {backWord}";
-                return wordCase + backWord;
+                return $"{wordCase} {backWord}";
             }
             if (difTime.Days >= 7 && difTime.Days < 30)
             {
@@ -127,17 +125,17 @@ namespace Mite.Helpers
                 {
                     return $"{weeks} {wordCase} {backWord}";
                 }
-                return wordCase + backWord;
+                return $"{wordCase} {backWord}";
             }
             if (difTime.Days >= 1 && difTime.Days < 7)
             {
                 var wordCase = GetWordCase(difTime.Days, "день", "дня", "дней");
                 if (difTime.Days == 1)
-                {
-                    return "Вчера";
-                }
+                    return inFuture ? "Завтра" : "Вчера";
+
                 if (difTime.Days == 2)
-                    return "Позавчера";
+                    return inFuture ? "Послезавтра" : "Позавчера";
+
                 return $"{difTime.Days} {wordCase} {backWord}";
             }
             if (difTime.Hours >= 1 && difTime.Hours < 24)
@@ -147,7 +145,7 @@ namespace Mite.Helpers
                 {
                     return $"{difTime.Hours} {wordCase} {backWord}";
                 }
-                return wordCase + backWord;
+                return $"{wordCase} {backWord}";
             }
             if (difTime.Minutes >= 1 && difTime.Minutes < 60)
             {
@@ -156,7 +154,7 @@ namespace Mite.Helpers
                 {
                     return $"{difTime.Minutes} {wordCase} {backWord}";
                 }
-                return wordCase + backWord;
+                return $"{wordCase} {backWord}";
             }
             if (difTime.Seconds < 60)
             {
@@ -165,7 +163,7 @@ namespace Mite.Helpers
                 {
                     return $"{difTime.Seconds} {wordCase} {backWord}";
                 }
-                return wordCase + backWord;
+                return $"{wordCase} {backWord}";
             }
             return null;
         }

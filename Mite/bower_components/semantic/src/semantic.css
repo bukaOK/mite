@@ -2260,27 +2260,6 @@ input::selection {
   background-color: rgba(100, 100, 100, 0.4);
   color: rgba(0, 0, 0, 0.87);
 }
-/* Force Simple Scrollbars */
-body ::-webkit-scrollbar {
-  -webkit-appearance: none;
-  width: 10px;
-}
-body ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 0px;
-}
-body ::-webkit-scrollbar-thumb {
-  cursor: pointer;
-  border-radius: 5px;
-  background: rgba(0, 0, 0, 0.25);
-  transition: color 0.2s ease;
-}
-body ::-webkit-scrollbar-thumb:window-inactive {
-  background: rgba(0, 0, 0, 0.15);
-}
-body ::-webkit-scrollbar-thumb:hover {
-  background: rgba(128, 135, 139, 0.8);
-}
 /* Inverted UI */
 body .ui.inverted::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.1);
@@ -15988,7 +15967,7 @@ img.ui.bordered.image {
   font-weight: bold;
   border: 0px solid transparent;
   border-radius: 0.28571429rem;
-  transition: background 0.1s ease;
+  transition: background 0.3s ease;
 }
 .ui.label:first-child {
   margin-left: 0em;
@@ -16005,7 +15984,7 @@ a.ui.label {
   cursor: pointer;
   color: inherit;
   opacity: 0.5;
-  transition: 0.1s opacity ease;
+  transition: 0.3s opacity ease;
 }
 .ui.label > a:hover {
   opacity: 1;
@@ -16040,7 +16019,7 @@ a.ui.label {
   margin-left: 0.5em;
   font-size: 0.92857143em;
   opacity: 0.5;
-  transition: background 0.1s ease;
+  transition: background 0.3s ease;
 }
 .ui.label > .delete.icon:hover {
   opacity: 1;
@@ -16161,7 +16140,7 @@ a.ui.label {
   width: 4em;
   height: 4em;
   z-index: 1;
-  transition: border-color 0.1s ease;
+  transition: border-color 0.3s ease;
 }
 /* Icon Label */
 .ui.corner.label {
@@ -16181,7 +16160,7 @@ a.ui.label {
   border-bottom: 4em solid transparent;
   border-left: 0em solid transparent;
   border-right-color: inherit;
-  transition: border-color 0.1s ease;
+  transition: border-color 0.3s ease;
 }
 .ui.corner.label .icon {
   cursor: default;
@@ -16951,7 +16930,7 @@ a.ui.basic.label:hover {
   z-index: 2;
   width: 0.6666em;
   height: 0.6666em;
-  transition: background 0.1s ease;
+  transition: background 0.3s ease;
 }
 /*--- Above ---*/
 .ui.pointing.label,

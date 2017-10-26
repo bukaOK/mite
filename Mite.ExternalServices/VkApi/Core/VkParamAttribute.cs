@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mite.ExternalServices.VkApi.Core
 {
-    public class VkParamAttribute : Attribute
+    internal class VkParamAttribute : Attribute
     {
         public string Name { get; set; }
 

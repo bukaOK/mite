@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Mite.CodeData.Enums;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -13,6 +15,18 @@ namespace Mite.BLL.Helpers
 {
     public static class FilesHelper
     {
+        public static AttachmentTypes AttachmentTypeBase64(string base64Data)
+        {
+            var fileType = Regex.Match(base64Data, @"^data:(?<type>[a-z]+)\/(?<format>.+);").Groups["type"].Value;
+
+            switch (fileType)
+            {
+                case "image":
+                    return AttachmentTypes.Image;
+                default:
+                    return AttachmentTypes.Document;
+            }
+        }
         /// <summary>
         /// Сохраняет изображение в файловой системе
         /// </summary>
@@ -68,7 +82,7 @@ namespace Mite.BLL.Helpers
             virtualPath += virtualPath[virtualPath.Length - 1] == '/' ? "" : "/";
             return Regex.Replace(virtualPath, "~", "") + imageName;
         }
-        public static string CreateDocument(string virtualPath, string content)
+        public static string CreateDocument(string virtualPath, string content, string ext = "dat")
         {
             var path = HostingEnvironment.MapPath(virtualPath);
             string filePath;
@@ -78,7 +92,7 @@ namespace Mite.BLL.Helpers
 
             do
             {
-                fileName = Guid.NewGuid() + ".dat";
+                fileName = Guid.NewGuid() + $".{ext}";
                 filePath = path[path.Length - 1] == '\\' ? path + fileName : path + "\\" + fileName;
             } while (File.Exists(filePath));
 
@@ -86,7 +100,6 @@ namespace Mite.BLL.Helpers
             virtualPath += virtualPath[virtualPath.Length - 1] == '/' ? "" : "/";
             return Regex.Replace(virtualPath, "~", "") + fileName;
         }
-
         public static void UpdateDocument(string filePath, string content)
         {
             filePath = HostingEnvironment.MapPath(filePath);

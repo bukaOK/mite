@@ -50,19 +50,6 @@
                 <label>Только подписки</label>
             </div>
         }
-        @*<i class="users icon"></i>
-        Искать среди&nbsp;
-        <div class="ui inline dropdown" id="postUserFilter">
-            <div class="text">всех</div>
-            <i class="dropdown icon"></i>
-            <div class="menu">
-                <div class="active item" data-text="всех" data-value="@((byte)PostUserFilter.All)">Все</div>
-                @if (User.Identity.IsAuthenticated)
-                {
-                    <div class="item" data-text="моих подписок" data-value="@((byte)PostUserFilter.OnlyFollowings)">Мои подписки</div>
-                }
-            </div>
-        </div>*@
     </div>
     <div class="right item" id="searchItem">
         <div class="ui transparent icon input">
@@ -101,7 +88,6 @@
             <div class="ui posts three column basic segment grid"></div>
         }
     </div>
-    <button class="ui scroll circular primary icon big button" onclick="Scrolling.scrollTo('#sortType', 1800, 'easeOutExpo', -10)"><i class="angle up icon"></i></button>
 </div>
 <script id="topPostTmpl" type="text/x-jsrender">
     <div class="column">
@@ -223,7 +209,6 @@
     </div>
 </script>
 <template id="emptyResultTmpl">
-    <div class="column"></div>
     <div class="column">
         <h2 class="ui center aligned icon header" style="color: #6D6788; margin-top: 20px;">
             <i class="frown icon"></i>

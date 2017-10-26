@@ -11,23 +11,13 @@ namespace Mite
             bundles.Add(new ScriptBundle("~/bundles/jquery", "https://code.jquery.com/jquery-3.2.1.min.js").Include(
                 "~/Scripts/jquery-3.1.1.js"
             ));
-            bundles.Add(new ScriptBundle("~/bundles/semantic")
-                .Include("~/bower_components/semantic/dist/components/transition.min.js",
-                "~/bower_components/semantic/dist/components/checkbox.min.js",
-                "~/bower_components/semantic/dist/components/dimmer.min.js",
-                "~/bower_components/semantic/dist/components/dropdown.min.js",
-                "~/bower_components/semantic/dist/components/form.min.js",
-                "~/bower_components/semantic/dist/components/modal.min.js",
-                "~/bower_components/semantic/dist/components/popup.min.js",
-                "~/bower_components/semantic/dist/components/rating.min.js",
-                "~/bower_components/semantic/dist/components/sidebar.min.js",
-                "~/bower_components/semantic/dist/components/tab.min.js",
-                "~/bower_components/semantic/dist/components/accordion.min.js"
-            ));
+            bundles.Add(new ScriptBundle("~/bundles/semantic", "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.js")
+                .Include("~/bower_components/semantic/dist/semantic.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/site")
                 .Include("~/Scripts/jquery.address.js",
-                "~/bower_components/perfect-scrollbar/js/perfect-scrollbar.jquery.js",
+                "~/Scripts/perfect-scrollbar.js",
+                "~/bower_components/simplebar/simplebar.js",
                 "~/bower_components/sweetalert2/dist/sweetalert2.min.js",
                 "~/Scripts/jquery.signalR-2.2.2.min.js")
                 .IncludeDirectory("~/Scripts/Custom/", "*.js"));
@@ -61,7 +51,8 @@ namespace Mite
 
             //CSS
             bundles.Add(new StyleBundle("~/Content/semantic").Include(
-                "~/bower_components/semantic/src/semantic.css"
+                "~/bower_components/semantic/src/semantic.css",
+                "~/bower_components/semantic-ui-range/range.css"
             ));
             bundles.Add(new StyleBundle("~/Content/landing").Include(
                 "~/Content/landing.css"
@@ -72,7 +63,8 @@ namespace Mite
                 "~/Content/Site.css",
                 "~/Content/ident.css",
                 "~/Content/content-tools.min.css",
-                "~/bower_components/perfect-scrollbar/css/perfect-scrollbar.css",
+                "~/bower_components/simplebar/simplebar.css",
+                "~/node_modules/perfect-scrollbar/css/perfect-scrollbar.css",
                 "~/Content/UserMenu.css"
             ));
             bundles.Add(new StyleBundle("~/Content/datepicker").Include(
@@ -81,7 +73,7 @@ namespace Mite
                 "~/Content/gallery/css/lightgallery.min.css",
                 "~/Content/gallery.css"
             ));
-            bundles.Add(new StyleBundle("~/Content/dialog").Include("~/Content/dialog.css"));
+            bundles.Add(new StyleBundle("~/Content/dialog").Include("~/Content/dialogs.css"));
             //LESS
             bundles.Add(new LessBundle("~/Content/less").Include(
                 "~/Content/DotLoader.less"

@@ -1,8 +1,10 @@
 ﻿using Autofac;
+using Autofac.Integration.SignalR;
 using Duke.Owin.VkontakteMiddleware;
 using Duke.Owin.VkontakteMiddleware.Provider;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
+using Microsoft.AspNet.SignalR;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.Facebook;
@@ -34,7 +36,10 @@ namespace Mite
             var container = AutofacDI.Initialize(app, apiConfig);
             ConfigureAuth(app, container);
             app.UseWebApi(apiConfig);
-            app.MapSignalR();
+            app.MapSignalR(new HubConfiguration
+            {
+                Resolver = new AutofacDependencyResolver(container)
+            });
 
             app.UseAutofacMiddleware(container);
 

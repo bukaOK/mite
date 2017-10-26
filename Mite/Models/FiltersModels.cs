@@ -3,10 +3,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.Mvc;
 
 namespace Mite.Models
 {
-    public class PostTopFilterModel
+    public abstract class BaseFilterModel
+    {
+        public int Page { get; set; }
+        /// <summary>
+        /// Когда был первый запрос(перед перезагрузкой страницы или сменой фильтра)
+        /// </summary>
+        public DateTime InitialDate { get; set; }
+    }
+    public class PostTopFilterModel : BaseFilterModel
     {
         /// <summary>
         /// Список тегов(через запятую)
@@ -30,11 +39,16 @@ namespace Mite.Models
                 return tagNames;
             }
         }
-
-        public int Page { get; set; }
-        /// <summary>
-        /// Когда был первый запрос(перед перезагрузкой страницы или сменой фильтра)
-        /// </summary>
-        public DateTime InitialDate { get; set; }
+    }
+    public class ServiceTopFilterModel : BaseFilterModel
+    {
+        public Guid? City { get; set; }
+        public Guid? ServiceType { get; set; }
+        public string Input { get; set; }
+        public IEnumerable<SelectListItem> Cities { get; set; }
+        public IEnumerable<SelectListItem> ServiceTypes { get; set; }
+        public ServiceSortFilter SortFilter { get; set; }
+        public int? Min { get; set; }
+        public int? Max { get; set; }
     }
 }

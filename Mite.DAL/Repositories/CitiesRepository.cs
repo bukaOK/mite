@@ -19,12 +19,12 @@ namespace Mite.DAL.Repositories
         }
         public override async Task<IEnumerable<City>> GetAllAsync()
         {
-            var query = "select * from dbo.\"Cities\" order by \"Population\" desc";
+            var query = "select * from dbo.\"Cities\" order by \"Population\" desc;";
             return await Db.QueryAsync<City>(query);
         }
         public override IEnumerable<City> GetAll()
         {
-            var query = "select * from dbo.\"Cities\" order by \"Population\" desc";
+            var query = "select * from dbo.\"Cities\" order by \"Population\" desc;";
             return Db.Query<City>(query);
         }
         public Task<City> GetAsync(string name)

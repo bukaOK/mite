@@ -6,21 +6,24 @@ namespace Mite.DAL.Infrastructure
 {
     public class AppDbContext : IdentityDbContext<User>
     {
-        public IDbSet<Post> Posts { get; set; }
-        public IDbSet<Group> Groups { get; set; }
-        public IDbSet<Comment> Comments { get; set; }
-        public IDbSet<Notification> Notifications { get; set; }
-        public IDbSet<Helper> Helpers { get; set; }
-        public IDbSet<Payment> Payments { get; set; }
-        public IDbSet<Follower> Followers { get; set; }
-        public IDbSet<Tag> Tags { get; set; }
-        public IDbSet<CashOperation> CashOperations { get; set; }
-        public IDbSet<ExternalService> ExternalServices { get; set; }
-        public IDbSet<SocialLinks> SocialLinks { get; set; }
-        public IDbSet<City> Cities { get; set; }
-        public IDbSet<AuthorService> AuthorServices { get; set; }
-        public IDbSet<AuthorServiceType> AuthorServiceTypes { get; set; }
-        public IDbSet<Deal> Deals { get; set; }
+        public DbSet<Post> Posts { get; set; }
+        public DbSet<Group> Groups { get; set; }
+        public DbSet<Comment> Comments { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Helper> Helpers { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+        public DbSet<Follower> Followers { get; set; }
+        public DbSet<Tag> Tags { get; set; }
+        public DbSet<CashOperation> CashOperations { get; set; }
+        public DbSet<ExternalService> ExternalServices { get; set; }
+        public DbSet<SocialLinks> SocialLinks { get; set; }
+        public DbSet<City> Cities { get; set; }
+        public DbSet<AuthorService> AuthorServices { get; set; }
+        public DbSet<AuthorServiceType> AuthorServiceTypes { get; set; }
+        public DbSet<Deal> Deals { get; set; }
+        public DbSet<Chat> Chats { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<ChatMessageUser> MessageUsers { get; set; }
 
         public AppDbContext()
             : base("DefaultConnection")
@@ -37,6 +40,14 @@ namespace Mite.DAL.Infrastructure
             modelBuilder.Entity<IdentityUserRole>().ToTable("UserRoles");
             modelBuilder.Entity<IdentityUserLogin>().ToTable("UserLogins");
             modelBuilder.Entity<IdentityUserClaim>().ToTable("UserClaims");
+
+            modelBuilder.Entity<Chat>().HasMany(x => x.Members).WithMany()
+                .Map(x =>
+                {
+                    x.ToTable("ChatMembers");
+                    x.MapLeftKey("ChatId");
+                    x.MapRightKey("UserId");
+                });
         }
     }
 }

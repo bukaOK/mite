@@ -21,7 +21,7 @@ namespace Mite.DAL.Repositories
                 .Where(x => x.UserId == userId && (onlyNew ? x.IsNew : x.IsNew || !x.IsNew))
                 .Include(x => x.NotifyUser)
                 .ToListAsync();
-            return notifications;            
+            return notifications;
         }
         public Task ReadByUserAsync(string userId)
         {

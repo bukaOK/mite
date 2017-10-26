@@ -7,7 +7,7 @@
             $msg = $form.find('.message');
         $btn.addClass('loading disabled');
 
-        if (data === undefined || data === null) {
+        if (data === undefined) {
             data = $form.serialize();
         }
         if (!$form.form('validate form')) {
@@ -42,19 +42,74 @@
             }
         });
     },
-    pay: function (btn) {
-        var $form = $(this.formSelector);
-        var $msg = $form.find('.message');
-
-        return this._send('pay', 'post', function (resp) {
-            $msg.removeClass('error').addClass('green');
-            $msg.html('Успешно.');
+    rate: function (id, value) {
+        var url = 'rate/' + id + '?value=' + value;
+        return this._send(url, 'post', function (resp) {
+            $('#rating-res').text(value);
+        }, $(null), null);
+    },
+    giveFeedback: function (btn) {
+        return this._send('givefeedback', 'post', function (resp) {
+            $(DealsMvc.formSelector + ' .message').removeClass('error').addClass('green')
+                .html('Отзыв успешно оставлен');
         }, $(btn));
     },
-    close: function (btn, id) {
-        var $form = $(this.formSelector);
-        var $msg = $form.find('.message');
+    pay: function (btn) {
+        var $btn = $(btn);
 
+        return this._send('pay', 'post', function (resp) {
+            $btn.attr('disabled', '');
+            $btn.addClass('disabled');
+            $btn.text('Денежная оплата совершена');
+
+            if (resp.payed) {
+                location.reload();
+            }
+        }, $btn);
+    },
+    confirm: function (btn, id) {
+        return this._send('confirm/' + id, 'post', function () {
+            location.reload();
+        }, $(btn), null);
+    },
+    moderConfirm: function (btn, id, confirm) {
+        var url = 'moderconfirm/' + id + '?confirm=' + confirm.toString();
+        return this._send(url, 'post', function () {
+            location.reload();
+        }, $(btn), null);
+    },
+    openDispute: function (btn, id) {
+        return this._send('opendispute/' + id, 'post', function () {
+            location.reload();
+        }, $(btn), null);
+    },
+    checkVkRepost: function (btn, id) {
+        var $btn = $(btn);
+        return this._send('checkvkrepost/' + id, 'post', function (resp) {
+            $btn.attr('disabled', '');
+            $btn.addClass('disabled');
+            $btn.text('Репост подтвержден');
+
+            if (resp.payed) {
+                $('.step.active').removeClass('active');
+                $('.step[data-step="' + resp.next + '"]').addClass('active');
+            }
+        }, $btn, null);
+    },
+    confirmVkRepost: function (btn, id) {
+        var $btn = $(btn);
+
+        return this._send('confirmvkrepost/' + id, 'post', function (resp) {
+            $btn.attr('disabled', '');
+            $btn.addClass('disabled');
+            $btn.text('Репост подтвержден');
+            if (resp.payed) {
+                $('.step.active').removeClass('active');
+                $('.step[data-step="' + resp.next + '"]').addClass('active');
+            }
+        }, $btn, null)
+    },
+    close: function (btn, id) {
         return this._send('close', 'post', function (resp) {
             location.href = '/user/deals';
         }, $(btn));

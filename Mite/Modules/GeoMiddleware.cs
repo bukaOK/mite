@@ -57,6 +57,8 @@ namespace Mite.Modules
             var cityName = await yaReq.GetCityNameAsync(ipResult.Latitude, ipResult.Longitude);
 
             var city = await cityService.GetByNameAsync(cityName);
+            if (city == null)
+                city = await cityService.GetByNameAsync("Москва");
 
             return city;
         }

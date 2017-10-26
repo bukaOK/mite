@@ -22,17 +22,15 @@ namespace Mite.DAL.Repositories
         /// <param name="postId">что оценили</param>
         /// <param name="userId">кто оценил</param>
         /// <returns></returns>
-        public async Task<Rating> GetByUserAndPostAsync(Guid postId, string userId)
+        public Task<Rating> GetByUserAndPostAsync(Guid postId, string userId)
         {
-            var rating = await Table.FirstOrDefaultAsync(x => x.PostId == postId && x.UserId == userId);
-            return rating;
+            return Table.FirstOrDefaultAsync(x => x.PostId == postId && x.UserId == userId);
         }
-        public async Task<Rating> GetByUserAndCommentAsync(Guid? commentId, string userId)
+        public Task<Rating> GetByUserAndCommentAsync(Guid? commentId, string userId)
         {
             if (commentId == null)
                 return null;
-            var rating = await Table.FirstOrDefaultAsync(x => x.CommentId == commentId && x.UserId == userId);
-            return rating;
+            return Table.FirstOrDefaultAsync(x => x.CommentId == commentId && x.UserId == userId);
         }
         /// <summary>
         /// Возвращает рейтинги комментариев определенного пользователя
@@ -55,20 +53,14 @@ namespace Mite.DAL.Repositories
             if (entity.PostId != null)
             {
                 var post = await DbContext.Posts.FirstAsync(x => x.Id == entity.PostId);
-                post.Rating = await Table.Where(x => x.PostId == post.Id).SumAsync(x => x.Value);
+                post.Rating += entity.Value;
                 DbContext.Entry(post).Property(x => x.Rating).IsModified = true;
             }
             else if(entity.CommentId != null)
             {
                 var comment = await DbContext.Comments.FirstAsync(x => x.Id == entity.CommentId);
-                comment.Rating = await Table.Where(x => x.CommentId == comment.Id).SumAsync(x => x.Value);
+                comment.Rating += entity.Value;
                 DbContext.Entry(comment).Property(x => x.Rating).IsModified = true;
-            }
-            else if(entity.AuthorServiceId != null)
-            {
-                var authorService = await DbContext.AuthorServices.FirstAsync(x => x.Id == entity.AuthorServiceId);
-                authorService.Rating = await Table.Where(x => x.AuthorServiceId == authorService.Id).SumAsync(x => x.Value);
-                DbContext.Entry(authorService).Property(x => x.Rating).IsModified = true;
             }
             else
             {

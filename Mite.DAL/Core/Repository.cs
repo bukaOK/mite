@@ -14,7 +14,7 @@ namespace Mite.DAL.Core
     {
         protected readonly IDbConnection Db;
         protected readonly AppDbContext DbContext;
-        protected readonly IDbSet<TEntity> Table;
+        protected readonly DbSet<TEntity> Table;
         protected string TableName;
 
         protected Repository(AppDbContext dbContext)
@@ -115,8 +115,13 @@ namespace Mite.DAL.Core
 
         public async virtual Task<TEntity> GetAsync(params object[] keyValues)
         {
-            var entity = await ((DbSet<TEntity>)Table).FindAsync(keyValues);
+            var entity = await Table.FindAsync(keyValues);
             return entity;
+        }
+
+        public DbContextTransaction BeginTransaction()
+        {
+            return DbContext.Database.BeginTransaction();
         }
     }
 }

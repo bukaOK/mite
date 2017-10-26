@@ -165,6 +165,7 @@
                 <a href="/posts/top?tags=арт" class="computer tablet only item">Арт</a>
                 <a href="/posts/top?tags=литература" class="computer tablet only item">Литература</a>
                 <a href="/posts/top?tags=фото" class="computer tablet only item">Фото</a>
+                @Html.ActionLink("Услуги", "Top", "AuthorServices", null, new { @class = "item"})
                 @if (Request.IsAuthenticated)
                 {
                     <div class="right menu">
@@ -394,7 +395,7 @@
                 }
             });
             initNotifications();
-            $('.notify.popup').perfectScrollbar();
+            var nPs = new PerfectScrollbar('.notify.popup');
         });
     </script>
 </body>

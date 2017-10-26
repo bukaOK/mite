@@ -1,4 +1,5 @@
-﻿using Mite.BLL.Services;
+﻿using Microsoft.AspNet.Identity;
+using Mite.BLL.Services;
 using Mite.Core;
 using Mite.Models;
 using System;
@@ -36,6 +37,19 @@ namespace Mite.Controllers
             if (authorService == null)
                 return NotFound();
             return View(authorService);
+        }
+        public async Task<ActionResult> Top()
+        {
+            var userId = User.Identity.IsAuthenticated ? User.Identity.GetUserId() : null;
+            var model = await authorServiceService.GetTopModelAsync(userId);
+
+            return View(model);
+        }
+        [HttpPost]
+        public async Task<ActionResult> Top(ServiceTopFilterModel filterModel)
+        {
+            var result = await authorServiceService.GetTopAsync(filterModel);
+            return Json(JsonStatuses.Success, result, JsonRequestBehavior.AllowGet);
         }
     }
 }

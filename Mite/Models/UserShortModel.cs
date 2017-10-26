@@ -6,7 +6,20 @@ namespace Mite.Models
     {
         public string Id { get; set; }
         public string UserName { get; set; }
-        public string AvatarSrc { get; set; }
+        private string avatarSrc;
+        public string AvatarSrc
+        {
+            get
+            {
+                if (avatarSrc == null)
+                    return null;
+                return avatarSrc.Replace('\\', '/');
+            }
+            set
+            {
+                avatarSrc = value;
+            }
+        }
         public string Description { get; set; }
         public int Rating { get; set; }
         public DateTime RegisterDate { get; set; }

@@ -19,12 +19,12 @@
     "scrollup": "^2.4.1",
     "jquery.scrollTo": "^2.1.2",
     "jquery.easing": "^1.3.1",
-    "sweetalert": "^1.1.3",
     "semantic": "^2.2.13",
-    "photoswipe": "^4.1.2",
     "lightgallery.js": "^1.0.1",
     "lightgallery": "^1.6.0",
     "air-datepicker": "^2.2.3",
-    "sweetalert2": "^6.9.1"
+    "sweetalert2": "^6.9.1",
+    "semantic-ui-range": "tyleryasaka/semantic-ui-range#^1.0.0",
+    "simplebar": "^2.4.4"
   }
 }

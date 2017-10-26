@@ -35,6 +35,8 @@ html, body{
 .help.word{
     cursor: help;
 }
+/*Labels*/
+
 /*Шапка*/
 header.ui.fixed.menu .item>.button{
     padding: 8px 15px;

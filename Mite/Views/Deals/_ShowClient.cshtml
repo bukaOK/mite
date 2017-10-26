@@ -58,13 +58,70 @@ else if (Model.Status == DealStatuses.ExpectPayment)
         @if (Model.VkReposted == false)
         {
             <div class="field">@Html.Raw(Model.Service.VkRepostCode)</div>
-            <button class="ui blue compact button" type="button">Проверить репост</button>
+            <button class="ui blue compact button" type="button" onclick="DealsMvc.checkVkRepost(this, '@Model.Id')">Проверить репост</button>
+        }
+        else if (Model.VkReposted == true)
+        {
+            <div class="field">@Html.Raw(Model.Service.VkRepostCode)</div>
+            <button class="ui disabled blue compact button" type="button" disabled>Репост подтвержден</button>
         }
         <div class="ui error message"></div>
     </form>
 }
+else if(Model.Status == DealStatuses.ExpectClient)
+{
+    <form class="ui form" id="dealForm">
+        <div class="field"></div>
+        <div class="field">
+            <button class="ui fluid green button" onclick="DealsMvc.confirm(this, '@Model.Id')">
+                <i class="check icon"></i>
+                Заказ выполнен в соответствии с требованиями
+            </button>
+        </div>
+        <div class="field">
+            <button class="ui fluid red button" type="button" onclick="DealsMvc.openDispute(this, '@Model.Id')">
+                <i class="meh icon"></i>Открыть спор
+            </button>
+        </div>
+        <div class="ui error message"></div>
+    </form>
+}
+else if(Model.Status == DealStatuses.Confirmed)
+{
+    <h3 class="ui header"><i class="check icon"></i>Заказ выполнен</h3>
+    <form class="ui form" id="dealForm">
+        @Html.HiddenFor(x => x.Id)
+        <div class="field">
+            @Html.LabelFor(x => x.Feedback)
+            @Html.TextAreaFor(x => x.Feedback)
+        </div>
+        <div class="field">
+            <button type="button" class="ui primary button" onclick="DealsMvc.giveFeedback(this)">Отправить</button>
+        </div>
+        <div class="field">
+            <label>Оценка выполнения заказа</label>
+            <div class="ui star large rating" data-rating="@Model.Rating" data-max-rating="5"></div>
+            (<span id="rating-res">@Model.Rating</span>)
+        </div>
+        <div class="ui error message"></div>
+    </form>
+}
+else if(Model.Status == DealStatuses.Rejected)
+{
+    <h3 class="ui header">Заказ отклонен</h3>
+
+}
+else if(Model.Status == DealStatuses.Dispute)
+{
+    <h3 class="ui header">Диалог с модератором</h3>
+}
 <script>
     $(function () {
         @Html.Raw(Html.FormValidation<Mite.Models.DealClientModel>("#dealForm"))
+        $('.rating').rating({
+            onRate: function (val) {
+                return DealsMvc.rate('@Model.Id', val);
+            }
+        });
     });
 </script>

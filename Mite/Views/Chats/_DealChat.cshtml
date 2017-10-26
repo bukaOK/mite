@@ -1,0 +1,120 @@
+﻿@model Mite.Models.ChatModel
+
+@{ 
+    var emCount = 0;
+}
+<div class="ui segments">
+    <div class="ui msg-dialog-wrapper segment">
+        <div class="ui msg-dialog feed">
+            <div class="event">
+                <div class="label">
+                    <img src="~/Content/images/male.png" />
+                </div>
+                <div class="content">
+                    <div class="summary">
+                        <a class="user">landenor</a>
+                        <span class="date">2 часа</span>
+                    </div>
+                    <p class="text">
+                        Ours is a life of constant reruns. We're always circling back to where we'd we started, then starting all over again. Even if we don't run extra laps that day, we surely will come back for more of the same another day soon.
+                    </p>
+                </div>
+            </div>
+            <div class="ui horizontal divider">12 июня</div>
+            <div class="event">
+                <div class="label">
+                    <img src="~/Content/images/male.png" />
+                </div>
+                <div class="content">
+                    <div class="summary">
+                        <a class="user">oh_sda_awd</a>
+                        <span class="date">4 часа</span>
+                    </div>
+                    <p class="text">
+                        Ours is a life of constant reruns. We're always circling back to where we'd we started, then starting all over again. Even if we don't run extra laps that day, we surely will come back for more of the same another day soon.
+                    </p>
+                </div>
+            </div>
+            <div class="event">
+                <div class="label">
+                    <img src="~/Content/images/male.png" />
+                </div>
+                <div class="content">
+                    <div class="summary">
+                        <a class="user">oh_sda_awd</a>
+                        <span class="date">5 часов</span>
+                    </div>
+                    <p class="text">
+                        Ours is a life of constant reruns. We're always circling back to where we'd we started, then starting all over again. Even if we don't run extra laps that day, we surely will come back for more of the same another day soon.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <form class="ui clearing form segment">
+        <div class="field">
+            <div contenteditable="true" id="dialogArea"></div>
+        </div>
+        <button type="button" class="ui right floated compact labeled icon primary button">
+            <i class="send outline icon"></i>
+            Отправить
+        </button>
+        <button type="button" class="ui right floated compact icon default button" id="emoji-btn">
+            <i class="smile icon"></i>
+        </button>
+        <div class="ui emoji popup">
+            <div class="em-wrapper">
+                <div class="ui mini tabs icon menu" role="tablist">
+                    @foreach (var emGroup in Model.Emojies)
+                    {
+                        <a title="@emGroup.RuName" class="@Html.Raw(emCount == 0 ? "active " : "")item" role="tab" data-tab="@emGroup.Name">
+                            @if (!string.IsNullOrEmpty(emGroup.IconClass))
+                            {
+                                <i class="@emGroup.IconClass violet icon"></i>
+                            }
+                            else
+                            {
+                                <img class="ui image em-img" src="@emGroup.Emojies[0].Src" alt="@emGroup.RuName" />
+                            }
+                        </a>
+                        emCount++;
+                    }
+                </div>
+            </div>
+            @{ emCount = 0; }
+            @foreach (var emGroup in Model.Emojies)
+            {
+                <div class="ui @Html.Raw(emCount == 0 ? "active " : "")tab" data-tab="@emGroup.Name">
+                    <div class="ui six column grid">
+                        @foreach (var em in emGroup.Emojies)
+                        {
+                            <div class="em-col column"><img class="ui centered image @emGroup.EmClass" src="@em.Src" alt="@em.Alt" /></div>
+                        }
+                    </div>
+                </div>
+                emCount++;
+            }
+        </div>
+    </form>
+</div>
+<script type="text/x-jsrender" id="messageTmpl">
+
+</script>
+<script>
+    $(function () {
+        $('#emoji-btn').popup({
+            inline: true,
+            // hoverable: true,
+            position: 'top center',
+            on: 'click'
+        });
+        $('.emoji .tabs .item').tab();
+        $('.emoji .tab').each(function (index, elem) {
+            new PerfectScrollbar(elem);
+        });
+        var emPs = new PerfectScrollbar('.em-wrapper', {
+            useBothWheelAxes: true
+        });
+        var msgPs = new PerfectScrollbar('.msg-dialog-wrapper');
+    });
+</script>

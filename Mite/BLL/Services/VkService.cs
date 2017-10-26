@@ -9,7 +9,8 @@ namespace Mite.BLL.Services
 {
     public interface IVkService : IDataService
     {
-        Task<DataServiceResult> FindVkReposts()
+        Task<DataServiceResult> CheckVkRepostsAsync(long dealId);
+
     }
     public class VkService
     {

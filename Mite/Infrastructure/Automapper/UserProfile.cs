@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
+using Mite.BLL.Helpers;
 using Mite.DAL.Entities;
 using Mite.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.Hosting;
 
 namespace Mite.Infrastructure.Automapper
 {
@@ -22,7 +24,14 @@ namespace Mite.Infrastructure.Automapper
                     .ForMember(dest => dest.About, opt => opt.MapFrom(src => src.Description))
                     .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => Guid.Parse(src.Id)));
 
-            CreateMap<User, UserShortModel>();
+            CreateMap<User, UserShortModel>()
+                .ForMember(dest => dest.AvatarSrc, opt => opt.ResolveUsing(src =>
+                {
+                    var srcPath = HostingEnvironment.MapPath(src.AvatarSrc);
+                    if (ImagesHelper.Compressed.CompressedExists(srcPath))
+                        return ImagesHelper.Compressed.CompressedVirtualPath(srcPath);
+                    return src.AvatarSrc;
+                }));
         }
     }
 }

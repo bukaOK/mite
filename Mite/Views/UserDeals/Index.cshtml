@@ -5,69 +5,103 @@
     ViewBag.Title = "Заказы";
     var isAuthor = User.IsInRole(RoleNames.Author);
 }
-
+@section styles{
+    <style>
+        .ui.grid.tab{
+            margin: 0;
+        }
+        .secondary.menu[role="tablist"]{
+            margin-bottom: 0;
+        }
+    </style>
+}
 <div class="ui segment">
     <h2 class="ui dividing header">Заказы</h2>
     @if (isAuthor)
     {
-        <div class="ui stackable grid">
+        <div class="ui secondary stackable menu" role="tablist">
+            <a class="active item" role="tab" data-tab="incoming">Входящие</a>
+            <a class="item" role="tab" data-tab="outgoing">Исходящие</a>
+        </div>
+        <div class="ui stackable grid tab" data-tab="incoming" role="tabpanel">
             <div class="three wide column">
-                <div class="ui secondary pointing vertical menu" role="tablist">
-                    <a class="active item" role="tab" data-tab="incoming">Входящие</a>
-                    <a class="item" role="tab" data-tab="outgoing">Исходящие</a>
+                <div class="ui vertical secondary pointing menu" role="tablist">
+                    <a class="active item" role="tab" data-tab="new">Новые</a>
+                    <a class="item" role="tab" data-tab="expectpayment">Ожидает оплаты</a>
+                    <a class="item" role="tab" data-tab="expectclient">Ожидает подтверждения</a>
+                    <a class="item" role="tab" data-tab="dispute">В споре</a>
+                    <a class="item" role="tab" data-tab="confirmed">Подтвержденные</a>
+                    <a class="item" role="tab" data-tab="rejected">Отклоненные</a>
                 </div>
             </div>
-            <div class="thirteen wide column">
-                <div class="ui tab" data-tab="incoming" role="tabpanel">
-                    <div class="ui secondary stackable menu" role="tablist">
-                        <a class="active item" role="tab" data-tab="new">Новые</a>
-                        <a class="item" role="tab" data-tab="expectpayment">Ожидает оплаты</a>
-                        <a class="item" role="tab" data-tab="process">В процессе</a>
-                        <a class="item" role="tab" data-tab="closed">Завершенные</a>
+            <div class="twelve wide column">
+                <div class="ui active tab" role="tabpanel" data-tab="new"></div>
+                <div class="ui tab" role="tabpanel" data-tab="expectpayment"></div>
+                <div class="ui tab" role="tabpanel" data-tab="expectclient"></div>
+                <div class="ui tab" role="tabpanel" data-tab="dispute"></div>
+                <div class="ui tab" role="tabpanel" data-tab="confirmed"></div>
+                <div class="ui tab" role="tabpanel" data-tab="rejected"></div>
+                <div class="dot-loader-wrapper">
+                    <div class="dot-loader">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
                     </div>
-                    <div class="ui active tab" role="tabpanel" data-tab="new"></div>
-                    <div class="ui tab" role="tabpanel" data-tab="expectpayment"></div>
-                    <div class="ui tab" role="tabpanel" data-tab="process"></div>
-                    <div class="ui tab" role="tabpanel" data-tab="closed"></div>
                 </div>
-                <div class="ui tab" data-tab="outgoing" role="tabpanel">
-                    <div class="ui secondary stackable menu" role="tablist">
-                        <a class="item" role="tab" data-tab="new">Новые</a>
-                        <a class="item" role="tab" data-tab="expectpayment">Ожидает оплаты</a>
-                        <a class="item" role="tab" data-tab="process">В процессе</a>
-                        <a class="item" role="tab" data-tab="expect">Ожидает подтверждения</a>
-                        <a class="item" role="tab" data-tab="closed">Завершенные</a>
+            </div>
+        </div>
+        <div class="ui stackable grid tab" data-tab="outgoing" role="tabpanel">
+            <div class="three wide column">
+                <div class="ui vertical secondary pointing menu" role="tablist">
+                    <a class="item" role="tab" data-tab="new">Новые</a>
+                    <a class="item" role="tab" data-tab="expectpayment">Ожидает оплаты</a>
+                    <a class="item" role="tab" data-tab="expectclient">Ожидает подтверждения</a>
+                    <a class="item" role="tab" data-tab="dispute">В споре</a>
+                    <a class="item" role="tab" data-tab="confirmed">Подтвержденные</a>
+                    <a class="item" role="tab" data-tab="rejected">Отклоненные</a>
+                </div>
+            </div>
+            <div class="twelve wide column">
+                <div class="ui tab" role="tabpanel" data-tab="new"></div>
+                <div class="ui tab" role="tabpanel" data-tab="expectpayment"></div>
+                <div class="ui tab" role="tabpanel" data-tab="expectclient"></div>
+                <div class="ui tab" role="tabpanel" data-tab="dispute"></div>
+                <div class="ui tab" role="tabpanel" data-tab="confirmed"></div>
+                <div class="ui tab" role="tabpanel" data-tab="rejected"></div>
+                <div class="dot-loader-wrapper">
+                    <div class="dot-loader">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
                     </div>
-                    <div class="ui tab" role="tabpanel" data-tab="new"></div>
-                    <div class="ui tab" role="tabpanel" data-tab="expectpayment"></div>
-                    <div class="ui tab" role="tabpanel" data-tab="process"></div>
-                    <div class="ui tab" role="tabpanel" data-tab="closed"></div>
                 </div>
             </div>
         </div>
     }
     else
     {
-        <div class="ui secondary stackable menu" role="tablist">
+        <div class="ui vertical secondary pointing menu" role="tablist">
             <a class="active item" role="tab" data-tab="new">Новые</a>
             <a class="item" role="tab" data-tab="expectpayment">Ожидает оплаты</a>
-            <a class="item" role="tab" data-tab="process">В процессе</a>
-            <a class="item" role="tab" data-tab="expect">Ожидает подтверждения</a>
-            <a class="item" role="tab" data-tab="closed">Завершенные</a>
+            <a class="item" role="tab" data-tab="expectclient">Ожидает подтверждения</a>
+            <a class="item" role="tab" data-tab="dispute">В споре</a>
+            <a class="item" role="tab" data-tab="confirmed">Подтвержденные</a>
+            <a class="item" role="tab" data-tab="rejected">Отклоненные</a>
         </div>
         <div class="ui tab" role="tabpanel" data-tab="new"></div>
         <div class="ui tab" role="tabpanel" data-tab="expectpayment"></div>
-        <div class="ui tab" role="tabpanel" data-tab="process"></div>
-        <div class="ui tab" role="tabpanel" data-tab="expect"></div>
-        <div class="ui tab" role="tabpanel" data-tab="closed"></div>
-    }
-    <div class="dot-loader-wrapper">
-        <div class="dot-loader">
-            <div class="dot"></div>
-            <div class="dot"></div>
-            <div class="dot"></div>
+        <div class="ui tab" role="tabpanel" data-tab="expectclient"></div>
+        <div class="ui tab" role="tabpanel" data-tab="dispute"></div>
+        <div class="ui tab" role="tabpanel" data-tab="confirmed"></div>
+        <div class="ui tab" role="tabpanel" data-tab="rejected"></div>
+        <div class="dot-loader-wrapper">
+            <div class="dot-loader">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
         </div>
-    </div>
+    }
 </div>
 <script type="text/x-jsrender" id="dealsTmpl">
     <div class="ui divided items">
@@ -79,8 +113,8 @@
             <div class="content">
                 <a class="header" href="@Url.Action("Show", "Deals")/{{:Id}}">{{:Title}}</a>
                 <div class="meta">
-                    <span>{{:Price}}</span>
-                    <span>{{:EndDate}}</span>
+                    <span title="Цена">{{:Price}}</span>
+                    <span title="Осталось">{{:EndDate}}</span>
                 </div>
                 <div class="description">{{:Description}}</div>
             </div>

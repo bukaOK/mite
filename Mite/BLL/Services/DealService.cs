@@ -40,27 +40,28 @@ namespace Mite.BLL.Services
         /// <returns></returns>
         Task<DataServiceResult> SaveResultImgAsync(long id, string imageBase64, string clientId);
         /// <summary>
-        /// Переход к ожиданию подтверждения
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="authorId"></param>
-        /// <returns></returns>
-        Task<DataServiceResult> ToExpectConfirmAsync(long id, string authorId);
-        /// <summary>
-        /// Подтверждение/отклонение клиентом
+        /// Подтверждение клиентом
         /// </summary>
         /// <param name="id">Id сделки</param>
         /// <param name="clientId">Id клиента</param>
         /// <param name="confirm">Подтверждает или отклоняет</param>
         /// <returns></returns>
-        Task<DataServiceResult> ClientConfirmAsync(long id, string clientId, bool confirm);
+        Task<DataServiceResult> ClientConfirmAsync(long id, string clientId);
         /// <summary>
-        /// Подтверждение/отклонение модератором
+        /// Подтверждение(в пользу автора)/отклонение(в пользу клиента) модератором
         /// </summary>
         /// <param name="id"></param>
         /// <param name="confirm"></param>
         /// <returns></returns>
         Task<DataServiceResult> ModerConfirmAsync(long id, bool confirm);
+        Task<DataServiceResult> RejectAsync(long id, string userId = null);
+        /// <summary>
+        /// Открыть спор
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task<DataServiceResult> OpenDisputeAsync(long id, string userId);
         /// <summary>
         /// Перевод в состояние ожидания оплаты
         /// </summary>
@@ -70,19 +71,42 @@ namespace Mite.BLL.Services
         Task<IEnumerable<DealUserModel>> GetIncomingAsync(DealStatuses dealType, string authorId);
         Task<IEnumerable<DealUserModel>> GetOutgoingAsync(DealStatuses dealType, string clientId);
         /// <summary>
-        /// Оплата сделки клиентом(2 этап)
+        /// Оплата сделки клиентом
         /// </summary>
         /// <param name="id"></param>
         /// <param name="clientId"></param>
         /// <returns></returns>
         Task<DataServiceResult> PayAsync(long id, string clientId);
         /// <summary>
-        /// Проверка, репостнул ли чел запись(2 этап)
+        /// Проверка, репостнул ли клиент запись
         /// </summary>
         /// <param name="id"></param>
         /// <param name="clientId"></param>
         /// <returns></returns>
         Task<DataServiceResult> CheckVkRepostAsync(long id, string clientId);
+        /// <summary>
+        /// Автор сам подтверждает репост его записи
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="authorId"></param>
+        /// <returns></returns>
+        Task<DataServiceResult> ConfirmVkRepostAsync(long id, string authorId);
+        /// <summary>
+        /// Оценка сделки клиентом
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="value"></param>
+        /// <param name="clientId"></param>
+        /// <returns></returns>
+        Task<DataServiceResult> RateAsync(long id, byte value, string clientId);
+        /// <summary>
+        /// Оставить отзыв к сделке
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="feedback"></param>
+        /// <param name="clientId"></param>
+        /// <returns></returns>
+        Task<DataServiceResult> GiveFeedbackAsync(long id, string feedback, string clientId);
         /// <summary>
         /// Кол-во новых заказов автора
         /// </summary>
@@ -92,6 +116,7 @@ namespace Mite.BLL.Services
     public class DealService : DataService, IDealService
     {
         private readonly IAuthorServiceService authorServiceService;
+        private readonly IChatService chatService;
         private readonly ICashService cashService;
         private readonly IExternalServices externalServices;
         private readonly HttpClient httpClient;
@@ -99,10 +124,11 @@ namespace Mite.BLL.Services
         private readonly ILogger logger;
         private readonly DealRepository repo;
 
-        public DealService(IUnitOfWork database, ILogger logger, IAuthorServiceService authorServiceService, 
+        public DealService(IUnitOfWork database, ILogger logger, IAuthorServiceService authorServiceService, IChatService chatService, 
             ICashService cashService, IExternalServices externalServices, HttpClient httpClient, AppUserManager userManager) : base(database)
         {
             this.authorServiceService = authorServiceService;
+            this.chatService = chatService;
             this.cashService = cashService;
             this.externalServices = externalServices;
             this.httpClient = httpClient;
@@ -113,6 +139,8 @@ namespace Mite.BLL.Services
 
         public async Task<DataServiceResult> CreateAsync(Guid authorServiceId, string clientId)
         {
+            var chatRepo = Database.GetRepo<ChatRepository, Chat>();
+
             var authorService = await Database.GetRepo<AuthorServiceRepository, AuthorService>().GetAsync(authorServiceId);
             if (authorService == null)
                 return DataServiceResult.Failed("Не найдена услуга");
@@ -130,6 +158,20 @@ namespace Mite.BLL.Services
                 deal.VkReposted = false;
             try
             {
+                var members = new List<string> { authorService.AuthorId, clientId };
+                var chat = await chatRepo.GetByMembersAsync(members);
+                if(chat == null)
+                {
+                    chat = new Chat
+                    {
+                        Members = members.Select(x => new User
+                        {
+                            Id = x
+                        }).ToList()
+                    };
+                    await chatRepo.AddAsync(chat);
+                }
+                deal.ChatId = chat.Id;
                 await repo.AddAsync(deal);
                 return DataServiceResult.Success(deal.Id);
             }
@@ -233,33 +275,44 @@ namespace Mite.BLL.Services
             var userCash = await cashService.GetUserCashAsync(clientId);
             if (userCash < deal.Price)
                 return DataServiceResult.Failed("На вашем счету недостаточно средств");
-            try
+            using(var transaction = repo.BeginTransaction())
             {
-                await cashService.AddAsync(deal.ClientId, null, deal.Price.Value, CashOperationTypes.Deal);
-                deal.Payed = true;
+                try
+                {
+                    await cashService.AddAsync(deal.ClientId, null, deal.Price.Value, CashOperationTypes.Deal);
+                    deal.Payed = true;
 
-                var condFilled = await CheckDealConditions(id);
-                if (condFilled)
-                    deal.Status = DealStatuses.ExpectClient;
+                    var condFilled = await CheckDealConditions(id);
+                    if (condFilled)
+                        deal.Status = DealStatuses.ExpectClient;
 
-                await repo.UpdateAsync(deal);
-                return DataServiceResult.Success();
-            }
-            catch(Exception e)
-            {
-                logger.Error($"Id: {deal.Id}; Ошибка при выплате системе за сделку: {e.Message}");
-                return DataServiceResult.Failed("Внутренняя ошибка. Попробуйте позднее");
+                    await repo.UpdateAsync(deal);
+                    transaction.Commit();
+                    return DataServiceResult.Success(condFilled);
+                }
+                catch (Exception e)
+                {
+                    transaction.Rollback();
+                    logger.Error($"Id: {deal.Id}; Ошибка при выплате системе за сделку: {e.Message}");
+                    return DataServiceResult.Failed("Внутренняя ошибка. Попробуйте позднее");
+                }
             }
         }
 
         public async Task<DataServiceResult> CheckVkRepostAsync(long id, string clientId)
         {
+            var deal = await repo.GetAsync(id);
+            if (deal.ClientId != clientId)
+                return DataServiceResult.Failed("Неизвестный пользователь");
+            if (deal.VkReposted == true || deal.VkReposted == null)
+                return DataServiceResult.Failed("Проверка не требуется");
+
             var vkService = await externalServices.GetAsync(clientId, VkSettings.DefaultAuthType);
             var logins = await userManager.GetLoginsAsync(clientId);
             var vkLogin = logins.FirstOrDefault(x => x.LoginProvider == VkSettings.DefaultAuthType);
 
             if (vkService == null || vkLogin == null)
-                return DataServiceResult.Failed("Не найден ключ доступа. Пожалуйста, выйдите из аккаунта и зайдите через \"ВКонтакте\"");
+                return DataServiceResult.Failed("Не найден ключ доступа. Пожалуйста, выйдите из аккаунта и зайдите через \"ВКонтакте\".");
             
             //функция нахождения профиля пользователя вк(по рекурсии)
             async Task<bool> FindVkRepost(int offset)
@@ -276,13 +329,32 @@ namespace Mite.BLL.Services
                 {
                     if (result.Items.Count < count)
                         return false;
-                    return await FindVkProfile(offset + count);
+                    return await FindVkRepost(offset + count);
                 }
                 return true;
             }
 
-            var isawait FindVkProfile(0);
+            var repostExists = await FindVkRepost(0);
+            if (repostExists)
+            {
+                deal.VkReposted = true;
+                var condFilled = await CheckDealConditions(id);
+                if (condFilled)
+                    deal.Status = DealStatuses.ExpectClient;
+                try
+                {
+                    await repo.UpdateAsync(deal);
+                    return DataServiceResult.Success(condFilled);
+                }
+                catch(Exception e)
+                {
+                    logger.Error($"Id: {deal.Id}. Ошибка при попытке проверки ВК репоста: {e.Message}");
+                    return DataServiceResult.Failed("Ошибка при попытке обновления. Повторите попытку позже.");
+                }
+            }
+            return DataServiceResult.Failed("Репост не найден.");
         }
+
         /// <summary>
         /// Проверяем, все ли условия сделки выполнены
         /// </summary>
@@ -326,19 +398,197 @@ namespace Mite.BLL.Services
             }
         }
 
-        public Task<DataServiceResult> ToExpectConfirmAsync(long id, string authorId)
+        public async Task<DataServiceResult> ClientConfirmAsync(long id, string clientId)
         {
-            throw new NotImplementedException();
+            var deal = await repo.GetAsync(id);
+            if (deal == null)
+                return DataServiceResult.Failed("Сделка не найдена");
+            if (deal.ClientId != clientId)
+                return DataServiceResult.Failed("Неизвестный пользователь");
+            if (deal.Price != null && !deal.Payed)
+                return DataServiceResult.Failed("Сделка не оплачена");
+
+            using(var transaction = repo.BeginTransaction())
+            {
+                deal.Status = DealStatuses.Confirmed;
+
+                try
+                {
+                    if (deal.Price != null)
+                        await cashService.AddAsync(null, deal.AuthorId, (double)deal.Price, CashOperationTypes.Deal);
+                    await repo.UpdateAsync(deal);
+                    transaction.Commit();
+                    return DataServiceResult.Success();
+                }
+                catch (Exception e)
+                {
+                    transaction.Rollback();
+                    logger.Error($"Id: {id}. Ошибка при подтверждении клиентом сделки: {e.Message}");
+                    return DataServiceResult.Failed("Ошибка при подтверждении");
+                }
+            }
         }
 
-        public Task<DataServiceResult> ClientConfirmAsync(long id, string clientId, bool confirm)
+        public async Task<DataServiceResult> ModerConfirmAsync(long id, bool confirm)
         {
-            throw new NotImplementedException();
+            using(var transaction = repo.BeginTransaction())
+            {
+                var deal = await repo.GetAsync(id);
+                try
+                {
+                    deal.Status = confirm ? DealStatuses.Confirmed : DealStatuses.Rejected;
+                    if (deal.Price != null)
+                    {
+                        var to = confirm ? deal.AuthorId : deal.ClientId;
+                        await cashService.AddAsync(null, to, (double)deal.Price, CashOperationTypes.Deal);
+                    }
+                    await repo.UpdateAsync(deal);
+                    transaction.Commit();
+
+                    return DataServiceResult.Success();
+                }
+                catch(Exception e)
+                {
+                    transaction.Rollback();
+                    logger.Error($"Id: {deal.Id}. Ошибка при подтверждении/отклонении модератором сделки: {e.Message}");
+                    return DataServiceResult.Failed("Внутренняя ошибка, попробуйте позднее");
+                }
+            }
         }
 
-        public Task<DataServiceResult> ModerConfirmAsync(long id, bool confirm)
+        public async Task<DataServiceResult> ConfirmVkRepostAsync(long id, string authorId)
         {
-            throw new NotImplementedException();
+            var deal = await repo.GetAsync(id);
+            if (deal == null)
+                return DataServiceResult.Failed("Сделка не найдена");
+            if (deal.AuthorId != authorId)
+                return DataServiceResult.Failed("Неизвестный пользователь");
+            if (deal.VkReposted == true || deal.VkReposted == null)
+                return DataServiceResult.Failed("Подтверждение не требуется");
+
+            deal.VkReposted = true;
+            var condFilled = await CheckDealConditions(id);
+            if (condFilled)
+                deal.Status = DealStatuses.ExpectClient;
+            try
+            {
+                await repo.UpdateAsync(deal);
+                return DataServiceResult.Success(condFilled);
+            }
+            catch(Exception e)
+            {
+                logger.Error($"Id: {deal.Id}. Ошибка при попытке подтверждения репоста ВК записи сделки: {e.Message}");
+                return DataServiceResult.Failed("Ошибка при подтверждении. Попробуйте позже");
+            }
+        }
+
+        public async Task<DataServiceResult> OpenDisputeAsync(long id, string userId)
+        {
+            var deal = await repo.GetAsync(id);
+            if (deal == null)
+                return DataServiceResult.Failed("Сделка не найдена");
+            if (deal.ClientId != userId && deal.AuthorId != userId)
+                return DataServiceResult.Failed("Неизвестный пользователь");
+
+            deal.Status = DealStatuses.Dispute;
+            try
+            {
+                await repo.UpdateAsync(deal);
+                return DataServiceResult.Success();
+            }
+            catch(Exception e)
+            {
+                logger.Error($"Id: {deal.Id}. Ошибка при открытии спора: {e.Message}");
+                return DataServiceResult.Failed("Ошибка при открытии спора");
+            }
+        }
+
+        public async Task<DataServiceResult> RejectAsync(long id, string userId = null)
+        {
+            var isModer = userId == null;
+
+            var deal = await repo.GetAsync(id);
+            if (!isModer && deal.ClientId != userId && deal.AuthorId != userId)
+            {
+                return DataServiceResult.Failed("Неизвестный пользователь");
+            }
+            deal.Status = DealStatuses.Rejected;
+            if (deal.Payed)
+            {
+                using(var transaction = repo.BeginTransaction())
+                {
+                    try
+                    {
+                        deal.Payed = false;
+                        await cashService.AddAsync(null, deal.ClientId, (double)deal.Price, CashOperationTypes.Deal);
+                        await repo.UpdateAsync(deal);
+                        transaction.Commit();
+                        return DataServiceResult.Success();
+                    }
+                    catch(Exception e)
+                    {
+                        transaction.Rollback();
+                        logger.Error($"Id: {deal.Id}. Ошибка при закрытии оплаченной сделки: {e.Message}");
+                        return DataServiceResult.Failed("Внутренняя ошибка");
+                    }
+                }
+            }
+            try
+            {
+                await repo.UpdateAsync(deal);
+                return DataServiceResult.Success();
+            }
+            catch(Exception e)
+            {
+                logger.Error($"Id: {deal.Id}. Ошибка при закрытии неоплаченной сделки: {e.Message}");
+                return DataServiceResult.Failed("Внутренняя ошибка");
+            }
+        }
+
+        public async Task<DataServiceResult> RateAsync(long id, byte rateVal, string clientId)
+        {
+            var deal = await repo.GetAsync(id);
+            if (deal == null)
+                return DataServiceResult.Failed("Сделка не найдена");
+            if (deal.ClientId != clientId)
+                return DataServiceResult.Failed("Неизвестный пользователь");
+            if (deal.Status != DealStatuses.Confirmed)
+                return DataServiceResult.Failed("Действие запрещено");
+
+            deal.Rating = rateVal;
+            try
+            {
+                await repo.UpdateAsync(deal);
+                return DataServiceResult.Success();
+            }
+            catch(Exception e)
+            {
+                logger.Error($"Id: {deal.Id}. Ошибка при попытке оценить сделку: {e.Message}");
+                return DataServiceResult.Failed("Внутренняя ошибка");
+            }
+        }
+
+        public async Task<DataServiceResult> GiveFeedbackAsync(long id, string feedback, string clientId)
+        {
+            var deal = await repo.GetAsync(id);
+            if (deal == null)
+                return DataServiceResult.Failed("Сделка не найдена");
+            if (deal.ClientId != clientId)
+                return DataServiceResult.Failed("Неизвестный пользователь");
+            if (deal.Status != DealStatuses.Confirmed)
+                return DataServiceResult.Failed("Действие запрещено");
+
+            deal.Feedback = feedback;
+            try
+            {
+                await repo.UpdateAsync(deal);
+                return DataServiceResult.Success();
+            }
+            catch (Exception e)
+            {
+                logger.Error($"Id: {deal.Id}. Ошибка при попытке оставить отзыв к сделке: {e.Message}");
+                return DataServiceResult.Failed("Внутренняя ошибка");
+            }
         }
     }
 }

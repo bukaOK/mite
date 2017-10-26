@@ -21,6 +21,12 @@ namespace Mite.Controllers
         public async Task<ActionResult> Show(long id)
         {
             var deal = await dealService.GetShowAsync(id);
+            var isAuthor = User.Identity.GetUserId() == deal.Author.Id;
+
+            deal.Chat.Name = "Диалог с " + (isAuthor ? deal.Client.UserName : deal.Author.UserName);
+            deal.Chat.CurrentUser = isAuthor ? deal.Author : deal.Client;
+            deal.Chat.Companion = isAuthor ? deal.Client : deal.Author;
+
             return View(deal);
         }
         [HttpPost]
@@ -29,7 +35,11 @@ namespace Mite.Controllers
         {
             var result = await dealService.PayAsync(model.Id, User.Identity.GetUserId());
             if (result.Succeeded)
-                return Ok();
+                return Json(JsonStatuses.Success, new
+                {
+                    payed = result.ResultData,
+                    next = DealStatuses.ExpectClient
+                });
             return Json(JsonStatuses.ValidationError, result.Errors);
         }
         [HttpPost]        
@@ -40,17 +50,64 @@ namespace Mite.Controllers
                 return Json(JsonStatuses.Success);
             return Json(JsonStatuses.ValidationError, result.Errors);
         }
-        public async Task<ActionResult> ToExpectClient(long id)
+        public async Task<ActionResult> CheckVkRepost(long id)
         {
-            var model = new DealModel
-            {
-                Status = DealStatuses.ExpectClient,
-                Author = new UserShortModel
+            var result = await dealService.CheckVkRepostAsync(id, User.Identity.GetUserId());
+            if (result.Succeeded)
+                return Json(JsonStatuses.Success, new
                 {
-                    Id = User.Identity.GetUserId()
-                }
-            };
-            return null;
+                    payed = result.ResultData,
+                    next = DealStatuses.ExpectClient
+                });
+                
+            return Json(JsonStatuses.ValidationError, result.Errors);
+        }
+        public async Task<ActionResult> ConfirmVkRepost(long id)
+        {
+            var result = await dealService.ConfirmVkRepostAsync(id, User.Identity.GetUserId());
+            if (result.Succeeded)
+                return Json(JsonStatuses.Success, new
+                {
+                    payed = result.ResultData,
+                    next = DealStatuses.ExpectClient
+                });
+            return Json(JsonStatuses.ValidationError, result.Errors);
+        }
+        public async Task<ActionResult> Rate(long id, byte value)
+        {
+            var result = await dealService.RateAsync(id, value, User.Identity.GetUserId());
+            if (result.Succeeded)
+                return Json(JsonStatuses.Success);
+            return Json(JsonStatuses.ValidationError, result.Errors);
+        }
+        public async Task<ActionResult> GiveFeedback(DealClientModel model)
+        {
+            var result = await dealService.GiveFeedbackAsync(model.Id, model.Feedback, User.Identity.GetUserId());
+            if (result.Succeeded)
+                return Json(JsonStatuses.Success);
+            return Json(JsonStatuses.ValidationError, result.Errors);
+        }
+        public async Task<ActionResult> Confirm(long id)
+        {
+            var result = await dealService.ClientConfirmAsync(id, User.Identity.GetUserId());
+            if (result.Succeeded)
+                return Json(JsonStatuses.Success);
+            return Json(JsonStatuses.ValidationError, result.Errors);
+        }
+        [Authorize(Roles = RoleNames.Moderator)]
+        public async Task<ActionResult> ModerConfirm(long id, bool confirm)
+        {
+            var result = await dealService.ModerConfirmAsync(id, confirm);
+            if (result.Succeeded)
+                return Json(JsonStatuses.Success);
+            return Json(JsonStatuses.ValidationError, result.Errors);
+        }
+        public async Task<ActionResult> OpenDispute(long id)
+        {
+            var result = await dealService.OpenDisputeAsync(id, User.Identity.GetUserId());
+            if (result.Succeeded)
+                return Json(JsonStatuses.Success);
+            return Json(JsonStatuses.ValidationError, result.Errors);
         }
         public ActionResult NewDealsCount()
         {

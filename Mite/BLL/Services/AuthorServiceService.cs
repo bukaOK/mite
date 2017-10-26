@@ -12,6 +12,9 @@ using NLog;
 using System.Web.Hosting;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.Mvc;
+using Mite.BLL.IdentityManagers;
+using Mite.DAL.Filters;
 
 namespace Mite.BLL.Services
 {
@@ -27,6 +30,8 @@ namespace Mite.BLL.Services
         /// <returns></returns>
         Task<DataServiceResult> RemoveAsync(Guid id, string ownerId);
         Task<AuthorServiceModel> GetAsync(Guid id);
+        Task<ServiceTopFilterModel> GetTopModelAsync(string userId);
+        Task<IEnumerable<ProfileServiceModel>> GetTopAsync(ServiceTopFilterModel filter);
         Task<AuthorServiceModel> GetNew();
         Task<IEnumerable<ProfileServiceModel>> GetByUserAsync(string userId);
         /// <summary>
@@ -41,12 +46,17 @@ namespace Mite.BLL.Services
         private readonly AuthorServiceRepository repo;
         private readonly ILogger logger;
         private readonly IAuthorServiceTypeService serviceTypeService;
+        private readonly ICityService cityService;
+        private readonly AppUserManager userManager;
 
-        public AuthorServiceService(IUnitOfWork database, ILogger logger, IAuthorServiceTypeService serviceTypeService) : base(database)
+        public AuthorServiceService(IUnitOfWork database, ILogger logger, IAuthorServiceTypeService serviceTypeService, 
+            ICityService cityService, AppUserManager userManager) : base(database)
         {
             repo = database.GetRepo<AuthorServiceRepository, AuthorService>();
             this.logger = logger;
             this.serviceTypeService = serviceTypeService;
+            this.cityService = cityService;
+            this.userManager = userManager;
         }
 
         public async Task<DataServiceResult> AddAsync(AuthorServiceModel model)
@@ -151,6 +161,38 @@ namespace Mite.BLL.Services
                 return null;
             var model = Mapper.Map<AuthorServiceShowModel>(authorService);
             return model;
+        }
+
+        public async Task<ServiceTopFilterModel> GetTopModelAsync(string userId)
+        {
+            var model = new ServiceTopFilterModel();
+            var cities = await Database.GetRepo<CitiesRepository, City>().GetAllAsync();
+            User user = null;
+            if (!string.IsNullOrEmpty(userId))
+                user = await userManager.FindByIdAsync(userId);
+            model.Cities = cities.Select(city => new SelectListItem
+            {
+                Text = city.Name,
+                Value = city.Id.ToString()
+            });
+            model.ServiceTypes = await serviceTypeService.GetSelectListAsync(Guid.Empty);
+            var tuple = await repo.GetMinMaxPricesAsync();
+            model.Min = (int)tuple.min;
+            model.Max = (int)tuple.max;
+
+            return model;
+        }
+
+        public async Task<IEnumerable<ProfileServiceModel>> GetTopAsync(ServiceTopFilterModel filterModel)
+        {
+            const int range = 20;
+
+            var filter = Mapper.Map<ServiceTopFilter>(filterModel);
+            filter.Range = range;
+            filter.Offset = range * (filterModel.Page - 1);
+
+            var result = await repo.GetByFilterAsync(filter);
+            return Mapper.Map<IEnumerable<ProfileServiceModel>>(result);
         }
     }
 }

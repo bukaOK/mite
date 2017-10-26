@@ -35,7 +35,7 @@ namespace Mite.DAL.Repositories
         public Task<Deal> GetWithServiceAsync(long id)
         {
             return Table.Include(x => x.Service).Include(x => x.Author)
-                .Include(x => x.Client).FirstOrDefaultAsync(x => x.Id == id);
+                .Include(x => x.Client).Include(x => x.Chat).FirstOrDefaultAsync(x => x.Id == id);
         }
         public int GetAuthorCounts(string authorId, DealStatuses dealType)
         {
