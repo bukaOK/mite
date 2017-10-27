@@ -8157,3 +8157,295 @@ SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(69bbab93-56c8-42a4-
 SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(69bbab93-56c8-42a4-9648-17096c5c12cc)
 SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(69bbab93-56c8-42a4-9648-17096c5c12cc)
 SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(69bbab93-56c8-42a4-9648-17096c5c12cc)
+SignalR.Transports.TransportHeartBeat Information: 0 : Connection 8a777e3f-a808-4742-bb69-fc8d5ee1ef3b is New.
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: 8a777e3f-a808-4742-bb69-fc8d5ee1ef3b, transport: WebSocketTransport, message: {"C":"d-4093BF9-B,0|C,0|D,0|E,1","S":1,"M":[]}
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: 8a777e3f-a808-4742-bb69-fc8d5ee1ef3b, transport: WebSocketTransport, message: {"C":"d-4093BF9-B,0|C,0|D,0|E,2|F,0","G":"A8wDJktzAdXoZrSfBMrz6y18fT1pZb1g1jeTb0331B+xoI3z9hCNTxtBEjt5cr1CG4RmVnVWnsGgTFi9B9cWeMU9q2+T1Xpr/QtTNPjfvaXY402ypOWGclSuPLiMKqiHahrpNiXodXzL/8FsYqFLgzOVx+MekGR6WP2HLCzbE9crQtMAFFSU1dT6wSEaGwVk","M":[]}
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.WebSocketTransport Information: 0 : CloseSocket(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : 8a777e3f-a808-4742-bb69-fc8d5ee1ef3b is dead
+SignalR.Transports.TransportHeartBeat Verbose: 0 : 8a777e3f-a808-4742-bb69-fc8d5ee1ef3b is dead
+SignalR.Transports.TransportHeartBeat Verbose: 0 : 8a777e3f-a808-4742-bb69-fc8d5ee1ef3b is dead
+SignalR.Transports.TransportHeartBeat Verbose: 0 : 8a777e3f-a808-4742-bb69-fc8d5ee1ef3b is dead
+SignalR.Transports.TransportHeartBeat Verbose: 0 : 8a777e3f-a808-4742-bb69-fc8d5ee1ef3b is dead
+SignalR.Transports.TransportHeartBeat Verbose: 0 : 8a777e3f-a808-4742-bb69-fc8d5ee1ef3b is dead
+SignalR.Transports.TransportHeartBeat Verbose: 0 : 8a777e3f-a808-4742-bb69-fc8d5ee1ef3b is dead
+SignalR.Transports.TransportHeartBeat Information: 0 : Removing connection 8a777e3f-a808-4742-bb69-fc8d5ee1ef3b
+SignalR.Transports.WebSocketTransport Information: 0 : Abort(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.WebSocketTransport Information: 0 : End(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.WebSocketTransport Verbose: 0 : Cancel(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.WebSocketTransport Verbose: 0 : DrainWrites(8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.WebSocketTransport Information: 0 : CompleteRequest (8a777e3f-a808-4742-bb69-fc8d5ee1ef3b)
+SignalR.Transports.TransportHeartBeat Information: 0 : Connection d05b83a0-674c-44f5-92dd-c63369558abb is New.
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: d05b83a0-674c-44f5-92dd-c63369558abb, transport: WebSocketTransport, message: {"C":"d-B527AC83-B,0|C,0|D,0|E,1","S":1,"M":[]}
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: d05b83a0-674c-44f5-92dd-c63369558abb, transport: WebSocketTransport, message: {"C":"d-B527AC83-B,0|C,0|D,0|E,2|F,0","G":"vRLczGR3GU4mQ+EoUPtxpCR6ZNnJyNwvFKcCgs6fuHBYXmPOEFRp+H0V0h5lrPCZ3Bn8eNVtyzKoUIBrbZx4c+ANLOgExdHUxhy+FhIDujN+TgmnaNhoaTvs+r1G1Bo80mWsyAFmrxCP32TeqC9qNQcwkcmQiWe92wd+7prS7eVkPhq3DYhhM8NB71xIIpE7","M":[]}
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d05b83a0-674c-44f5-92dd-c63369558abb)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d05b83a0-674c-44f5-92dd-c63369558abb)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d05b83a0-674c-44f5-92dd-c63369558abb)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d05b83a0-674c-44f5-92dd-c63369558abb)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d05b83a0-674c-44f5-92dd-c63369558abb)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d05b83a0-674c-44f5-92dd-c63369558abb)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d05b83a0-674c-44f5-92dd-c63369558abb)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d05b83a0-674c-44f5-92dd-c63369558abb)
+SignalR.Transports.TransportHeartBeat Information: 0 : Connection ce8695d0-cba6-4549-802b-1c3206a171ec is New.
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: ce8695d0-cba6-4549-802b-1c3206a171ec, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|C,0|D,0|E,1","S":1,"M":[]}
+SignalR.Transports.TransportHeartBeat Verbose: 0 : Connection ce8695d0-cba6-4549-802b-1c3206a171ec exists. Closing previous connection.
+SignalR.Transports.WebSocketTransport Information: 0 : End(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.WebSocketTransport Verbose: 0 : Cancel(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.WebSocketTransport Information: 0 : CloseSocket(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.ServerSentEventsTransport Verbose: 0 : Sending outgoing message. Connection id: ce8695d0-cba6-4549-802b-1c3206a171ec, transport: ServerSentEventsTransport, message: data: {"C":"d-6E208E6-B,0|C,0|D,0|E,2","S":1,"M":[]}
+
+
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: ce8695d0-cba6-4549-802b-1c3206a171ec, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|C,0|D,0|E,2","S":1,"M":[]}
+SignalR.Transports.ServerSentEventsTransport Verbose: 0 : Sending outgoing message. Connection id: ce8695d0-cba6-4549-802b-1c3206a171ec, transport: ServerSentEventsTransport, message: data: {"C":"d-6E208E6-B,0|C,0|D,0|E,3|F,0","G":"C6Boofv7dkgt8xBK1DevNpHTzZUpygpBD3EM7ZbtYQUosWBOGaNSr8XrnsrYuGYPCrhXn2WUm3OaRVAQM47gwBNjmszHeZfSjDzEFR0K1fXxlqMW+lP9aJQvzrw5xJwqoAmvOfABecCOjSV7PtJKB5EoCHRy8UV1cWknewmCuP0g4mFdQedJbaNZ8H2LjY9X","M":[]}
+
+
+SignalR.Transports.WebSocketTransport Verbose: 0 : DrainWrites(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.WebSocketTransport Information: 0 : CompleteRequest (ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.ServerSentEventsTransport Information: 0 : Abort(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.TransportHeartBeat Information: 0 : Removing connection ce8695d0-cba6-4549-802b-1c3206a171ec
+SignalR.Transports.ServerSentEventsTransport Verbose: 0 : DrainWrites(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.ServerSentEventsTransport Information: 0 : CompleteRequest (ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.ServerSentEventsTransport Information: 0 : End(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.ServerSentEventsTransport Verbose: 0 : DrainWrites(ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.ServerSentEventsTransport Information: 0 : CompleteRequest (ce8695d0-cba6-4549-802b-1c3206a171ec)
+SignalR.Transports.TransportHeartBeat Information: 0 : Connection 1b6d72de-603f-433c-a47a-43ff68a80acd is New.
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: 1b6d72de-603f-433c-a47a-43ff68a80acd, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|G,0|D,0|H,1","S":1,"M":[]}
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: 1b6d72de-603f-433c-a47a-43ff68a80acd, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|G,0|D,0|H,2|F,0","G":"gbnOiHkmXBP3FHVnPesJ0yO4aTA43MIiA737/Dggp8WkoOHIemVPxYWvCHv2liudZJUBFFLmDa/zxmoGxTxmeptjHurQUQR1Rh1OVz1Z1TOezEJ2FNTieEaGujca3+HU/sno1nV60YA4Dnng1o4IHbxikAdzLKgmDbIRVdfOa3wk3b/O0NkafJJr3UDnsy7j","M":[]}
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(1b6d72de-603f-433c-a47a-43ff68a80acd)
+SignalR.Transports.WebSocketTransport Information: 0 : CloseSocket(1b6d72de-603f-433c-a47a-43ff68a80acd)
+SignalR.Transports.WebSocketTransport Information: 0 : Abort(1b6d72de-603f-433c-a47a-43ff68a80acd)
+SignalR.Transports.TransportHeartBeat Information: 0 : Removing connection 1b6d72de-603f-433c-a47a-43ff68a80acd
+SignalR.Transports.WebSocketTransport Information: 0 : End(1b6d72de-603f-433c-a47a-43ff68a80acd)
+SignalR.Transports.WebSocketTransport Verbose: 0 : DrainWrites(1b6d72de-603f-433c-a47a-43ff68a80acd)
+SignalR.Transports.WebSocketTransport Information: 0 : CompleteRequest (1b6d72de-603f-433c-a47a-43ff68a80acd)
+SignalR.Transports.TransportHeartBeat Information: 0 : Connection 35565178-c152-48f0-b238-daa1b38730a0 is New.
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: 35565178-c152-48f0-b238-daa1b38730a0, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|I,0|D,0|J,1","S":1,"M":[]}
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: 35565178-c152-48f0-b238-daa1b38730a0, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|I,0|D,0|J,2|F,0","G":"CdyQ5tUL6w1SM1+TBLYHMa7nk+WmHDKky0KJzKMboSsc/3iRtocRitPtjpgftpZLDY6+avUfhmb4GdTVVJ1Fvx0nIuFuvJbZ+kT8erTljJJwD8RwmtooZ9AK7wphzRhcb/z+bSHuElLXXRIufghQoANCr2UAkyDMOUHYKN3pAUVyDKwy8YwI6azkoNSfyLmV","M":[]}
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.WebSocketTransport Information: 0 : CloseSocket(35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.WebSocketTransport Information: 0 : Abort(35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.TransportHeartBeat Information: 0 : Removing connection 35565178-c152-48f0-b238-daa1b38730a0
+SignalR.Transports.WebSocketTransport Information: 0 : End(35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.WebSocketTransport Verbose: 0 : DrainWrites(35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.WebSocketTransport Information: 0 : CompleteRequest (35565178-c152-48f0-b238-daa1b38730a0)
+SignalR.Transports.TransportHeartBeat Information: 0 : Connection 19368f98-2389-4dbe-b2e4-75b39d77ba8e is New.
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: 19368f98-2389-4dbe-b2e4-75b39d77ba8e, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|K,0|D,0|L,1","S":1,"M":[]}
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: 19368f98-2389-4dbe-b2e4-75b39d77ba8e, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|K,0|D,0|L,2|F,0","G":"r1PIK7MqwRyK3J/tg6m+fKdYHBwN31XNVBlUU1KMH26SdXzEkOdwSq3wLwYzKXzH5Z3CUHXuka0+HNu1iXUHJygVUt7ZrBKC7HsvtzvWjT7Ti50foIa6E1AoMFug6ChKRdbN/dcL9PEMsMQabggdo0DeSA+HRwb+T/Chg1UmhEVMh4B25Bf78/VY5yKiJ5vU","M":[]}
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(19368f98-2389-4dbe-b2e4-75b39d77ba8e)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(19368f98-2389-4dbe-b2e4-75b39d77ba8e)
+SignalR.Transports.WebSocketTransport Information: 0 : CloseSocket(19368f98-2389-4dbe-b2e4-75b39d77ba8e)
+SignalR.Transports.WebSocketTransport Information: 0 : Abort(19368f98-2389-4dbe-b2e4-75b39d77ba8e)
+SignalR.Transports.TransportHeartBeat Information: 0 : Removing connection 19368f98-2389-4dbe-b2e4-75b39d77ba8e
+SignalR.Transports.WebSocketTransport Information: 0 : End(19368f98-2389-4dbe-b2e4-75b39d77ba8e)
+SignalR.Transports.WebSocketTransport Verbose: 0 : DrainWrites(19368f98-2389-4dbe-b2e4-75b39d77ba8e)
+SignalR.Transports.WebSocketTransport Information: 0 : CompleteRequest (19368f98-2389-4dbe-b2e4-75b39d77ba8e)
+SignalR.Transports.TransportHeartBeat Information: 0 : Connection af4e98c5-26ca-45ee-a3b0-50b941a61669 is New.
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: af4e98c5-26ca-45ee-a3b0-50b941a61669, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|M,0|D,0|N,1","S":1,"M":[]}
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: af4e98c5-26ca-45ee-a3b0-50b941a61669, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|M,0|D,0|N,2|F,0","G":"/8J3Mx3hdLFSN+jNJYkF/ypV9c+hT7I9QoqtLk0XVxeQzysV3wzrj0/lQVY87lJBU9xSFOhN9O5tqpJ7CE7or3l+tmNDbmaBOmznDA2yJcLzsE9AjrBPrItn89N3qtc7L4xqyvm5dkGk4+kEYfmUZGDSDMNnkBkeYodbJcrNSCucSRi4HhdTyOvMqwIl10wE","M":[]}
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.WebSocketTransport Information: 0 : CloseSocket(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.WebSocketTransport Information: 0 : Abort(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.TransportHeartBeat Information: 0 : Removing connection af4e98c5-26ca-45ee-a3b0-50b941a61669
+SignalR.Transports.WebSocketTransport Information: 0 : End(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.WebSocketTransport Verbose: 0 : DrainWrites(af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.WebSocketTransport Information: 0 : CompleteRequest (af4e98c5-26ca-45ee-a3b0-50b941a61669)
+SignalR.Transports.TransportHeartBeat Information: 0 : Connection a7648652-57f0-4650-a12d-e1a9355b72ed is New.
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: a7648652-57f0-4650-a12d-e1a9355b72ed, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|O,0|D,0|P,1","S":1,"M":[]}
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: a7648652-57f0-4650-a12d-e1a9355b72ed, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|O,0|D,0|P,2|F,0","G":"rCLbt8IIjTx0DFQVjIiTQdHC4XPi62PCdch/izTd3G3pGtD/02LoZlRaPvPOBJjvlHGjheNeAgH5moBcXNUkGilaoqirdZnvqgS+rZpkRmPhMx4skRTeOlb09N9KLW3hiXxmlBvEuy0v0gaSY96AmXBUI4vOYx1aV0m8y3hwqYdoXsmNh+lA6qAm8TPrcjye","M":[]}
+SignalR.Transports.WebSocketTransport Information: 0 : Abort(a7648652-57f0-4650-a12d-e1a9355b72ed)
+SignalR.Transports.TransportHeartBeat Information: 0 : Removing connection a7648652-57f0-4650-a12d-e1a9355b72ed
+SignalR.Transports.WebSocketTransport Information: 0 : CloseSocket(a7648652-57f0-4650-a12d-e1a9355b72ed)
+SignalR.Transports.WebSocketTransport Information: 0 : End(a7648652-57f0-4650-a12d-e1a9355b72ed)
+SignalR.Transports.WebSocketTransport Verbose: 0 : DrainWrites(a7648652-57f0-4650-a12d-e1a9355b72ed)
+SignalR.Transports.WebSocketTransport Information: 0 : CompleteRequest (a7648652-57f0-4650-a12d-e1a9355b72ed)
+SignalR.Transports.TransportHeartBeat Information: 0 : Connection a2cd8d4c-3256-468b-950d-297a25e9cda5 is New.
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: a2cd8d4c-3256-468b-950d-297a25e9cda5, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|Q,0|D,0|R,1","S":1,"M":[]}
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: a2cd8d4c-3256-468b-950d-297a25e9cda5, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|Q,0|D,0|R,2|F,0","G":"ng2KwYUKBCuW5bTXuHoPWuFBB0baYbYpKaFe54bLSlecL/z3vEGZyyWD3+qr5yIuZBA/SL61yMtIVGhtP43TJEfUuWeT0bN6rVTpn09LhxLOaqmn+hkhc70N+CPYgN9WJLzVhQ5DKjog5Eq52dEY8Y343CdpfjTgzdKcfxplZ4UOnhe/ifX4YrUWGH+mYDtt","M":[]}
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(a2cd8d4c-3256-468b-950d-297a25e9cda5)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(a2cd8d4c-3256-468b-950d-297a25e9cda5)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(a2cd8d4c-3256-468b-950d-297a25e9cda5)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(a2cd8d4c-3256-468b-950d-297a25e9cda5)
+SignalR.Transports.WebSocketTransport Information: 0 : CloseSocket(a2cd8d4c-3256-468b-950d-297a25e9cda5)
+SignalR.Transports.WebSocketTransport Information: 0 : Abort(a2cd8d4c-3256-468b-950d-297a25e9cda5)
+SignalR.Transports.TransportHeartBeat Information: 0 : Removing connection a2cd8d4c-3256-468b-950d-297a25e9cda5
+SignalR.Transports.WebSocketTransport Information: 0 : End(a2cd8d4c-3256-468b-950d-297a25e9cda5)
+SignalR.Transports.WebSocketTransport Verbose: 0 : DrainWrites(a2cd8d4c-3256-468b-950d-297a25e9cda5)
+SignalR.Transports.WebSocketTransport Information: 0 : CompleteRequest (a2cd8d4c-3256-468b-950d-297a25e9cda5)
+SignalR.Transports.TransportHeartBeat Information: 0 : Connection 27e54072-733d-46e0-b7ab-d6f75a5123ed is New.
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: 27e54072-733d-46e0-b7ab-d6f75a5123ed, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|S,0|D,0|T,1","S":1,"M":[]}
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: 27e54072-733d-46e0-b7ab-d6f75a5123ed, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|S,0|D,0|T,2|F,0","G":"Py2mORUVaQKW3njrwXEEA8iSPjX65dkAxUuDMgq8y8QcJuvC4njlslTIf4FdOZ+TvEU2FJEpgzyjP2xSan7UaFPj9O9dq1Tijfo44MCl5RFbfZPnFjQQfcunJ5nbovXZneT4uCFNpZQE1LBbykoKSUIXTIM+8bSj586G9ACGomv1L6Gv8uJNNW/itZ+zImsu","M":[]}
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(27e54072-733d-46e0-b7ab-d6f75a5123ed)
+SignalR.Transports.WebSocketTransport Information: 0 : CloseSocket(27e54072-733d-46e0-b7ab-d6f75a5123ed)
+SignalR.Transports.WebSocketTransport Information: 0 : Abort(27e54072-733d-46e0-b7ab-d6f75a5123ed)
+SignalR.Transports.TransportHeartBeat Information: 0 : Removing connection 27e54072-733d-46e0-b7ab-d6f75a5123ed
+SignalR.Transports.WebSocketTransport Information: 0 : End(27e54072-733d-46e0-b7ab-d6f75a5123ed)
+SignalR.Transports.WebSocketTransport Verbose: 0 : DrainWrites(27e54072-733d-46e0-b7ab-d6f75a5123ed)
+SignalR.Transports.WebSocketTransport Information: 0 : CompleteRequest (27e54072-733d-46e0-b7ab-d6f75a5123ed)
+SignalR.Transports.TransportHeartBeat Information: 0 : Connection a3e8d720-02c9-43b7-b0c0-5554a35bf889 is New.
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: a3e8d720-02c9-43b7-b0c0-5554a35bf889, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|U,0|D,0|V,1","S":1,"M":[]}
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: a3e8d720-02c9-43b7-b0c0-5554a35bf889, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|U,0|D,0|V,2|F,0","G":"Jn6HSxB5cEReoeGvMUIKUPO4h8kxnP28SKZp2s/1bxQ2GKPinhy6mCA3L+vy9On8edRZRKIfDsZj0MrXmfPxnStc0V2aW+9/RZ4yJ+2VIG4wHnbl4e212AoTrxpO6hqlLblKc4sDw0yq9vmC0NQtLHgu43yyT0wJDmVUB5IGVAf1LqqMcbJQIM088t5+YTYs","M":[]}
+SignalR.Transports.WebSocketTransport Information: 0 : CloseSocket(a3e8d720-02c9-43b7-b0c0-5554a35bf889)
+SignalR.Transports.WebSocketTransport Information: 0 : Abort(a3e8d720-02c9-43b7-b0c0-5554a35bf889)
+SignalR.Transports.TransportHeartBeat Information: 0 : Removing connection a3e8d720-02c9-43b7-b0c0-5554a35bf889
+SignalR.Transports.WebSocketTransport Information: 0 : End(a3e8d720-02c9-43b7-b0c0-5554a35bf889)
+SignalR.Transports.WebSocketTransport Verbose: 0 : DrainWrites(a3e8d720-02c9-43b7-b0c0-5554a35bf889)
+SignalR.Transports.WebSocketTransport Information: 0 : CompleteRequest (a3e8d720-02c9-43b7-b0c0-5554a35bf889)
+SignalR.Transports.TransportHeartBeat Information: 0 : Connection d2cb0a51-09fc-4d37-8842-f9f1da8c42cd is New.
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: d2cb0a51-09fc-4d37-8842-f9f1da8c42cd, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|W,0|D,0|X,1","S":1,"M":[]}
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: d2cb0a51-09fc-4d37-8842-f9f1da8c42cd, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|W,0|D,0|X,2|F,0","G":"OnzEK/1D/iRRlGbGOiaIKtgzLaekL5mtXwSD5vf4yYuxDlQVXMxxayehTBz0XA0KBTGPpuof9zRiaFqLahoubt9v+nZH6qbpXSiPBE5gdn5dDgxqcPXVwwm4k1f5+7lQXgK+dwFpxRMZ+Q6cu2TNOLZkhXGYDazfL//mVgNmpJ2QIzWegjTmtK8/mMHnsqUO","M":[]}
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.WebSocketTransport Information: 0 : Abort(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.WebSocketTransport Information: 0 : CloseSocket(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Information: 0 : Removing connection d2cb0a51-09fc-4d37-8842-f9f1da8c42cd
+SignalR.Transports.WebSocketTransport Information: 0 : End(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.WebSocketTransport Verbose: 0 : DrainWrites(d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.WebSocketTransport Information: 0 : CompleteRequest (d2cb0a51-09fc-4d37-8842-f9f1da8c42cd)
+SignalR.Transports.TransportHeartBeat Information: 0 : Connection 9557a81b-d792-4b30-a346-d1419cae7fe4 is New.
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: 9557a81b-d792-4b30-a346-d1419cae7fe4, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|Y,0|D,0|Z,1","S":1,"M":[]}
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: 9557a81b-d792-4b30-a346-d1419cae7fe4, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|Y,0|D,0|Z,2|F,0","G":"2g+vRrpEL4RVUxYAjKak9b+twLtJixUKl25nnPmoDXhloTI1OhEwES0JZQMDmOajJ01wm43KoDab/jszTLnjzBho+khDd8IYY7VLilCU/jwDjeYZ15uZgQrTedt1JxWuRy5BTobXnaNeR7nQiwVMFT5jRK6170vdMX6zPEsCHreIYQYdsaKfWiJP5LF4jpMV","M":[]}
+SignalR.Transports.WebSocketTransport Information: 0 : CloseSocket(9557a81b-d792-4b30-a346-d1419cae7fe4)
+SignalR.Transports.WebSocketTransport Information: 0 : Abort(9557a81b-d792-4b30-a346-d1419cae7fe4)
+SignalR.Transports.TransportHeartBeat Information: 0 : Removing connection 9557a81b-d792-4b30-a346-d1419cae7fe4
+SignalR.Transports.WebSocketTransport Information: 0 : End(9557a81b-d792-4b30-a346-d1419cae7fe4)
+SignalR.Transports.WebSocketTransport Verbose: 0 : DrainWrites(9557a81b-d792-4b30-a346-d1419cae7fe4)
+SignalR.Transports.WebSocketTransport Information: 0 : CompleteRequest (9557a81b-d792-4b30-a346-d1419cae7fe4)
+SignalR.Transports.TransportHeartBeat Information: 0 : Connection e1dd4a6c-8c76-4293-89d3-d98904ad3990 is New.
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: e1dd4a6c-8c76-4293-89d3-d98904ad3990, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|a,0|D,0|b,1","S":1,"M":[]}
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: e1dd4a6c-8c76-4293-89d3-d98904ad3990, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|a,0|D,0|b,2|F,0","G":"10WJA4xiG7r6gcFH/Oh5c7yqADAyP1HYGtwWwC9UGPxACfU+6CLREoueQybLnqo42cMAIL252175CWOczHxMgRnE83KLIujZ3Ib519PPqsHGQ7xXvX2LDd5DxSGGpn02zyrMlxlwMMMf50/ekFLyjL6VUEAdf6EzcBKYeAeuiZEUU08nYfaqHwMKqPBOaWlA","M":[]}
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.WebSocketTransport Information: 0 : CloseSocket(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.WebSocketTransport Information: 0 : Abort(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Information: 0 : Removing connection e1dd4a6c-8c76-4293-89d3-d98904ad3990
+SignalR.Transports.WebSocketTransport Information: 0 : End(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.WebSocketTransport Verbose: 0 : DrainWrites(e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.WebSocketTransport Information: 0 : CompleteRequest (e1dd4a6c-8c76-4293-89d3-d98904ad3990)
+SignalR.Transports.TransportHeartBeat Information: 0 : Connection 8413dea8-ec10-48e9-8509-4b765a0a533a is New.
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: 8413dea8-ec10-48e9-8509-4b765a0a533a, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|c,0|D,0|d,1","S":1,"M":[]}
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: 8413dea8-ec10-48e9-8509-4b765a0a533a, transport: WebSocketTransport, message: {"C":"d-6E208E6-B,0|c,0|D,0|d,2|F,0","G":"QkysavfMmLkPyET7swlR6cVA8j8Bn6Y/UqfxDAVQngDWSI99Rp4Ri1H0Uswr1lYCR7Rz1AROjb4de7SvwjVrUB7We4tWgjHM0dJq0b3fL09dXtfVUptXjP8wOHNT9LyTNtSnXMvdW/0w6TEWDK/lcfelVkq7vmW7EfqRP+NRr73dSPU35f/8T6FTcFYGTJUU","M":[]}
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.WebSocketTransport Information: 0 : CloseSocket(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.WebSocketTransport Information: 0 : Abort(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.TransportHeartBeat Information: 0 : Removing connection 8413dea8-ec10-48e9-8509-4b765a0a533a
+SignalR.Transports.WebSocketTransport Information: 0 : End(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.WebSocketTransport Verbose: 0 : DrainWrites(8413dea8-ec10-48e9-8509-4b765a0a533a)
+SignalR.Transports.WebSocketTransport Information: 0 : CompleteRequest (8413dea8-ec10-48e9-8509-4b765a0a533a)

@@ -44,6 +44,7 @@
                 @Html.EditorFor(x => x.Password, new { InputIcon = "lock" })
                 <div class="ui message" style="display: none" id="pass-strength"></div>
                 @Html.EditorFor(x => x.ConfirmPassword, new { InputIcon = "mail forward" })
+                @Html.EditorFor(x => x.RegisterRole, new { Inline = true })
                 @Html.AntiForgeryToken()
                 <div class="field">
                     <div class="g-recaptcha" data-sitekey="6LcTGyUUAAAAAJoKAP_S5zSjEtEqdUpY4GiWg2Nx"></div>
@@ -60,6 +61,7 @@
 <script>
     $(function () {
         $('.ui.dropdown').dropdown();
+        $('.ui.checkbox').checkbox();
         @Html.Raw(Html.FormValidation<Mite.Models.RegisterModel>(".ui.register.form"))
         initPassStrength('#Password');
     });

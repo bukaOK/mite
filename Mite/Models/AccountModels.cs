@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Mite.Attributes.DataAnnotations;
+using Mite.Attributes.Validation;
+using Mite.CodeData;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -35,12 +38,18 @@ namespace Mite.Models
         [DisplayName("E-mail")]
         [UIHint("TextBox")]
         public string Email { get; set; }
+        [Required]
+        [UIHint("RadioButtonListOptional")]
+        [UIData(typeof(RegisterRoles))]
+        [DisplayName("Тип пользователя")]
+        public byte? RegisterRole { get; set; }
     }
     public class RegisterModel
     {
         [Required]
         [DisplayName("Ник")]
-        [RegularExpression(@"\w+", ErrorMessage = "Ник может содержать только английские буквы, цифры и знак подчеркивания")]
+        [RegularExpression(@"[a-zA-Z0-9-_]+", ErrorMessage = "Ник может содержать только английские буквы, цифры и знак подчеркивания")]
+        [MaxLength(30, ErrorMessage = "Слишком длинный ник")]
         [UIHint("TextBox")]
         public string UserName { get; set; }
         [Required]
@@ -49,6 +58,11 @@ namespace Mite.Models
         [DisplayName("E-mail")]
         [UIHint("TextBox")]
         public string Email { get; set; }
+        [Checked]
+        [UIHint("RadioButtonListOptional")]
+        [UIData(typeof(RegisterRoles))]
+        [DisplayName("Тип пользователя")]
+        public byte? RegisterRole { get; set; }
         [Required]
         [DataType("password")]
         [DisplayName("Пароль")]

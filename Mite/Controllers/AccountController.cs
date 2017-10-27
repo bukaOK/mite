@@ -244,7 +244,8 @@ namespace Mite.Controllers
             {
                 UserName = model.UserName,
                 Email = model.Email,
-                RefererId = Session["refid"] as string
+                RefererId = Session["refid"] as string,
+                RegisterRole = model.RegisterRole
             };
             var result = await userService.RegisterAsync(regModel, loginInfo);
             if (result.Succeeded)

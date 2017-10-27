@@ -6,6 +6,8 @@ using System.Web.Mvc;
 using System.Web.Mvc.Html;
 using System.Web.UI.WebControls;
 using Mite.Attributes.DataAnnotations;
+using Mite.Attributes.Validation;
+using System.ComponentModel;
 
 namespace Mite.Extensions
 {
@@ -14,7 +16,7 @@ namespace Mite.Extensions
         public static MvcHtmlString ValidationSum(this HtmlHelper htmlHelper, string divId = "validationSum")
         {
             if(htmlHelper.ViewData.ModelState.IsValid)
-                return new MvcHtmlString($"<div class=\"ui error message\" id=\"{divId}\" style=\"display:none\"></div>");
+                return new MvcHtmlString($"<div class=\"ui error message\" id=\"{divId}\"></div>");
             var errors = htmlHelper.ViewData.ModelState.Where(x => x.Value.Errors.Count > 0).ToList();
             var stringBuilder = new StringBuilder($"<div class=\"ui error message\" style=\"display: block\" id=\"{divId}\"><ul class=\"list\">");
             foreach (var error in errors)
@@ -35,12 +37,13 @@ namespace Mite.Extensions
         /// <param name="formSelector">Селектор формы</param>
         /// <param name="actionOn">На какое событие реагировать(список на semantic ui)</param>
         /// <returns></returns>
-        public static MvcHtmlString FormValidation<TModel>(this HtmlHelper<TModel> htmlHelper, string formSelector, string actionOn = "submit")
+        public static MvcHtmlString FormValidation<TModel>(this HtmlHelper<TModel> htmlHelper, string formSelector, string actionOn = "submit", bool inline = false)
         {
             var modelType = typeof(TModel);
             var modelProps = modelType.GetProperties();
+            var inlineStr = inline ? "true" : "false";
 
-            var str = new StringBuilder($"$('{formSelector}').form({{on: '{actionOn}', fields: {{");
+            var str = new StringBuilder($"$('{formSelector}').form({{on: '{actionOn}', inline: {inlineStr}, fields: {{");
             foreach(var prop in modelProps)
             {
                 if (prop.GetCustomAttribute<OffClientValidationAttribute>() != null)
@@ -48,12 +51,19 @@ namespace Mite.Extensions
 
                 var propType = prop.PropertyType;
                 var id = "#" + htmlHelper.Id(prop.Name);
+                var displayName = prop.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName;
+                if (displayName == null)
+                    displayName = propType.Name;
 
                 str.Append($"{prop.Name}:{{rules:[");
 
                 var reqAttr = prop.GetCustomAttribute<RequiredAttribute>();
                 if(reqAttr != null)
-                    str.Append( $"{{type: 'empty',prompt: $('{id}').data('valRequired')}},");
+                    str.Append($"{{type: 'empty',prompt: $('{id}').data('valRequired')}},");
+
+                var checkedAttr = prop.GetCustomAttribute<CheckedAttribute>();
+                if(checkedAttr != null)
+                    str.Append($"{{type: 'checked',prompt: '{checkedAttr.FormatErrorMessage(displayName)}'}},");
 
                 var regExpAttr = prop.GetCustomAttribute<RegularExpressionAttribute>();
                 if(regExpAttr != null)

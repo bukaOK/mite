@@ -14,10 +14,11 @@ using System.Linq;
 using Mite.BLL.Infrastructure;
 using Mite.BLL.Helpers;
 using System.Collections.Generic;
+using Mite.CodeData.Constants;
 
 namespace Mite.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = RoleNames.Author)]
     public class PostsController : BaseController
     {
         private readonly IServiceBuilder serviceBuilder;

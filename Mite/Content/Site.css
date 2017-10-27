@@ -197,6 +197,9 @@ article.ui.container{
     border-bottom-color: #fff;
     border-right-color: #fff;
 }
+#avatar-img img{
+    border: 5px solid #fff;
+}
 #avatar-img .dimmer, #avatar-img img{
     transform: rotate(-45deg);
 }

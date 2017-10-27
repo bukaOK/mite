@@ -15,6 +15,8 @@ using System.Text.RegularExpressions;
 using Mite.DAL.Repositories;
 using System.Web.Hosting;
 using Mite.BLL.Helpers;
+using Mite.CodeData;
+using Mite.CodeData.Constants;
 
 namespace Mite.BLL.Services
 {
@@ -109,10 +111,20 @@ namespace Mite.BLL.Services
             {
                 if (external)
                 {
-                    await userManager.AddLoginAsync(user.Id, loginInfo.Login);
+                    result = await userManager.AddLoginAsync(user.Id, loginInfo.Login);
                 }
                 await signInManager.SignInAsync(user, true, false);
-                await userManager.AddToRoleAsync(user.Id, "user");
+                switch ((RegisterRoles?)registerModel.RegisterRole)
+                {
+                    case RegisterRoles.Author:
+                        result = await userManager.AddToRoleAsync(user.Id, RoleNames.Author);
+                        break;
+                    case RegisterRoles.Client:
+                        result = await userManager.AddToRoleAsync(user.Id, RoleNames.Client);
+                        break;
+                    default:
+                        goto case RegisterRoles.Author;
+                }
             }
             return result;
         }

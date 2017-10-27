@@ -22,6 +22,7 @@
                 </div>
                 @Html.EditorFor(x => x.UserName, new { InputIcon = "hashtag" })
                 @Html.EditorFor(x => x.Email, new { InputIcon = "at" })
+                @Html.EditorFor(x => x.RegisterRole, new { Inline = true })
                 @Html.AntiForgeryToken()
                 <button type="submit" class="ui animated blue button">
                     <span class="visible content">Зарегистрироваться</span>

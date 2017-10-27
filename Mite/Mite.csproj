@@ -350,6 +350,7 @@
     <Compile Include="App_Start\Services.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Attributes\DataAnnotations\UIDataAttribute.cs" />
+    <Compile Include="Attributes\Validation\CheckedAttribute.cs" />
     <Compile Include="BLL\Core\CrudService.cs" />
     <Compile Include="BLL\Core\DataService.cs" />
     <Compile Include="BLL\Helpers\FilesHelper.cs" />
@@ -384,6 +385,7 @@
     <Compile Include="Controllers\Api\AuthorServiceTypesController.cs" />
     <Compile Include="Controllers\Api\DealsController.cs" />
     <Compile Include="Controllers\Api\MessageController.cs" />
+    <Compile Include="Controllers\ClientProfileController.cs" />
     <Compile Include="Controllers\FilesController.cs" />
     <Compile Include="Controllers\MessagesController.cs" />
     <Compile Include="Controllers\AuthorServicesController.cs" />
@@ -1000,6 +1002,7 @@
     <Content Include="Views\AuthorServices\Top.cshtml" />
     <Content Include="Views\Chats\_DealChat.cshtml" />
     <Content Include="Views\Deals\_Chat.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\RadioButtonListOptional.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
