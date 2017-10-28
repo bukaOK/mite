@@ -20,6 +20,11 @@ namespace Mite
                 defaults: new { controller = "UserProfile", action = "Index", type = UrlParameter.Optional }
             );
             routes.MapRoute(
+                name: "ClientProfile",
+                url: "Client/Profile/{name}/{action}",
+                defaults: new { controller = "ClientProfile", action = "Index" }
+            );
+            routes.MapRoute(
                 name: "UserSettings",
                 url: "User/Settings/{action}",
                 defaults: new {controller = "UserSettings", action = "Index"}

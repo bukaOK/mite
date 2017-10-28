@@ -11,6 +11,7 @@ using Mite.DAL.Repositories;
 using Mite.DAL.Entities;
 using Mite.BLL.Helpers;
 using System;
+using Mite.CodeData.Enums;
 
 namespace Mite.BLL.Services
 {
@@ -27,7 +28,7 @@ namespace Mite.BLL.Services
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        Task<List<UserShortModel>> GetFollowingsByUserAsync(string userName);
+        Task<List<UserShortModel>> GetFollowingsByUserAsync(string userName, SortFilter sort);
         Task<int> GetFollowersCountAsync(string userId);
     }
     public class FollowersService : DataService, IFollowersService
@@ -63,12 +64,12 @@ namespace Mite.BLL.Services
             return Database.GetRepo<FollowersRepository, Follower>().GetFollowersCount(userId);
         }
 
-        public async Task<List<UserShortModel>> GetFollowingsByUserAsync(string userName)
+        public async Task<List<UserShortModel>> GetFollowingsByUserAsync(string userName, SortFilter sort)
         {
             var user = await userManager.FindByNameAsync(userName);
             var repo = Database.GetRepo<FollowersRepository, Follower>();
 
-            var followings = await repo.GetFollowingsByUserAsync(user.Id);
+            var followings = await repo.GetFollowingsByUserAsync(user.Id, sort);
             var fModels = Mapper.Map<List<UserShortModel>>(followings.Select(x => x.FollowingUser));
             foreach(var following in fModels)
             {

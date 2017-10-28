@@ -1,0 +1,176 @@
+﻿@using Mite.Helpers
+@using Mite.CodeData.Enums
+@model Mite.Models.ClientProfileModel
+
+@{
+    ViewBag.Title = "Профиль " + Model.UserName;
+    var pageUserName = Model.UserName.ToLower();
+    var currentUserName = User.Identity.Name.ToLower();
+
+    var isMobileDevice = ViewHelper.IsMobileDevice(Request);
+}
+@section styles{
+    <style>
+        .center.aligned.statistics{
+            justify-content: center;
+        }
+        .tab.grid.segment{
+            height: auto;
+        }
+        p.about{
+            font-size: 1.1em;
+        }
+    </style>
+}
+<div class="ui stackable grid">
+    <div class="center aligned four wide column">
+        <div class="ui segment">
+            <img src="@Model.AvatarSrc" class="ui centered small circular image" />
+            <h2 class="ui header">@Model.UserName</h2>
+            <div class="ui center aligned small statistics">
+                <div class="statistic">
+                    <div class="value">@Model.Reliability</div>
+                    <div class="label">Надежность</div>
+                </div>
+                <div class="statistic">
+                    <div class="value">@Model.FollowingsCount</div>
+                    <div class="label">@ViewHelper.GetWordCase(Model.FollowingsCount, "Подписка", "Подписки", "Подписок")</div>
+                </div>
+            </div>
+            <div class="ui divider"></div>
+            <p class="about">@Model.About</p>
+            @SocialServicesHelper.RenderSocialLinksForProfile(Model.SocialLinks)
+        </div>
+    </div>
+    <div class="twelve wide column">
+        <div class="ui tabs menu" role="tablist">
+            <div class="active item" role="tab" data-tab="followings">Подписки</div>
+            <div class="right item">
+                <i class="filter icon"></i>
+                Сначала&nbsp;
+                <div class="ui right top inline dropdown" id="sortDropDown">
+                    <div class="text">новые</div>
+                    <i class="dropdown icon"></i>
+                    <div class="menu">
+                        <div class="active item" data-text="новые" data-value="@((byte)SortFilter.New)">Новые</div>
+                        <div class="item" data-text="высший рейтинг" data-value="@((byte)SortFilter.Popular)">Высший рейтинг</div>
+                        <div class="item" data-text="старые" data-value="@((byte)SortFilter.Old)">Старые</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ui loading basic active tab three column grid segment" data-tab="followings"></div>
+    </div>
+</div>
+<script id="followersTmpl" type="text/x-jsrender">
+    <div class="column">
+        <div class="ui compact segment follower-card grid" style="margin: 0px;">
+            <div class="five wide column">
+                <img src="{{:AvatarSrc}}" class="ui small circular image">
+                <span><i class="yellow star icon"></i>{{:Rating}}</span>
+            </div>
+            <div class="eleven wide column">
+                <h3 class="ui header">
+                    <span class="content">
+                        <a href="/user/profile/{{:UserName}}">{{:UserName}}</a>
+                        <span class="sub header">{{:Description}}</span>
+                    </span>
+                </h3>
+            </div>
+        </div>
+    </div>
+</script>
+<template id="emptyFollowingsTmpl">
+    <div class="column"></div>
+    <div class="column">
+        <h3 class="ui center aligned icon header" style="color: #6D6788">
+            <i class="users icon"></i>
+            @if (currentUserName == pageUserName)
+            {
+                <span class="content">
+                    Вы пока ни на кого не подписались.
+                </span>
+            }
+            else
+            {
+                <span class="content">
+                    Пользователь пока ни на кого не подписался.
+                </span>
+            }
+        </h3>
+    </div>
+</template>
+@section scripts{
+    @Scripts.Render("~/bundles/grid", "~/bundles/jsrender")
+    <script>
+        var isOwner = @((currentUserName == pageUserName).ToString().ToLower());
+        $(function () {
+            var grids = [
+                {
+                    tabName: 'followings',
+                    elem: $('.tab[data-tab="posts/published"]').masonry()
+                }
+            ];
+            var followingsTab = new Tab({
+                parentTab: null,
+                name: 'followings',
+                isActive: true,
+                tmplSelector: '#followersTmpl',
+                emptyTmplSelector: '#emptyFollowingsTmpl'
+            });
+            TabFilter.Tabs.items = [followingsTab];
+            TabFilter.Filters.add({
+                name: 'sort',
+                elem: $('#sortDropDown'),
+                getVal: function () {
+                    return this.elem.dropdown('get value') == ''
+                        ? '@((byte)SortFilter.New)'
+                        : this.elem.dropdown('get value');
+                },
+                updateState: function (newVal) {
+                    this.elem.dropdown('set selected', newVal);
+                }
+            });
+            TabFilter.init('@Url.Action("Index", "ClientProfile", new { name = Model.UserName })', {
+                beforeLoad: function(){
+                    $('.active.tab').addClass('loading');
+                },
+                onSuccess: function(resp, tab){
+                    var html;
+                    if(resp.length == 0 && TabFilter.page == 1){
+                        html = $(tab.emptyTmplSelector).html();
+                        tab.content.html(html);
+                    } else if(resp.length > 0) {
+                        var tmpl = $.templates(tab.tmplSelector);
+                        html = tmpl.render(resp);
+
+                        if(TabFilter.loadNextPage) {
+                            tab.content.append(html);
+                        } else{
+                            tab.content.html(html);
+                        }
+                    }
+                    $('.active.tab').removeClass('loading');
+                    for(var i = 0; i < grids.length; i++){
+                        if(tab.name == grids[i].tabName){
+                            grids[i].elem.masonry('reloadItems');
+                            grids[i].elem.imagesLoaded(function(){
+                                grids[i].elem.masonry('layout');
+                            }).progress(function(){
+                                grids[i].elem.masonry('layout');
+                            });
+                            break;
+                        }
+                    }
+                },
+                onError: function () {
+                    $('.active.tab').removeClass('loading');
+                },
+                ajax: {
+                    type: 'post'
+                }
+            });
+        });
+    </script>
+}
+

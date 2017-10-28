@@ -130,26 +130,7 @@ namespace Mite.Controllers
         [HttpPost]
         public async Task<JsonResult> Followings(string name, SortFilter sort)
         {
-            var userModels = await _followersService.GetFollowingsByUserAsync(name);
-
-            switch (sort)
-            {
-                case SortFilter.New:
-                    userModels = userModels.OrderByDescending(x => x.RegisterDate)
-                        .ThenByDescending(x => x.Rating).ToList();
-                    break;
-                case SortFilter.Old:
-                    userModels = userModels.OrderBy(x => x.RegisterDate)
-                        .ThenByDescending(x => x.Rating).ToList();
-                    break;
-                case SortFilter.Popular:
-                    userModels = userModels.OrderByDescending(x => x.Rating)
-                        .ThenBy(x => x.RegisterDate).ToList();
-                    break;
-                default:
-                    throw new NotImplementedException("Неизвестный тип сортировки");
-            }
-
+            var userModels = await _followersService.GetFollowingsByUserAsync(name, sort);
             return Json(JsonStatuses.Success, userModels, JsonRequestBehavior.AllowGet);
         }
         [HttpPost]

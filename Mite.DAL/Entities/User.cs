@@ -56,5 +56,9 @@ namespace Mite.DAL.Entities
         [ForeignKey("Referer")]
         public string RefererId { get; set; }
         public User Referer { get; set; }
+        /// <summary>
+        /// Надежность(зависит от сделок)
+        /// </summary>
+        public int Reliability { get; set; }
     }
 }

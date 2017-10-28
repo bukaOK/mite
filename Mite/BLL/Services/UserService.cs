@@ -37,7 +37,7 @@ namespace Mite.BLL.Services
         /// <param name="userId">Id пользователя</param>
         /// <returns></returns>
         Task<IdentityResult> UpdateUserAvatarAsync(string imagesFolder, string imageBase64, string userId);
-
+        Task<ClientProfileModel> GetClientProfileAsync(string name);
         Task<ProfileModel> GetUserProfileAsync(string name, string currentUserId);
         SocialLinksModel GetSocialLinks(string userId);
         Task<SocialLinksModel> GetSocialLinksAsync(string userId);
@@ -240,6 +240,20 @@ namespace Mite.BLL.Services
                 Mapper.Map(model, socialLinks);
                 await repo.UpdateAsync(socialLinks);
             }
+        }
+
+        public async Task<ClientProfileModel> GetClientProfileAsync(string name)
+        {
+            var followersRepo = Database.GetRepo<FollowersRepository, Follower>();
+            var user = await userManager.FindByNameAsync(name);
+            if (user == null)
+                return null;
+
+            var client = Mapper.Map<ClientProfileModel>(user);
+            client.SocialLinks = await GetSocialLinksAsync(user.Id);
+            client.FollowingsCount = await followersRepo.GetFollowersCount(user.Id);
+
+            return client;
         }
     }
 }

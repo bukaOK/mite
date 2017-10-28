@@ -21,6 +21,10 @@ namespace Mite.CodeData.Enums
         /// <summary>
         /// Старые
         /// </summary>
-        Old
+        Old,
+        /// <summary>
+        /// Надежные
+        /// </summary>
+        Reliable
     }
 }

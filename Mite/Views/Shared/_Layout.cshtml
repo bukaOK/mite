@@ -74,38 +74,6 @@
                 }
             }
             window.hubReady = $.connection.hub.start();
-            function initPostsBtnHelper() {
-                $.ajax({
-                    url: '@Url.Action("GetHelper", "UserHelpers")',
-                    dataType: 'json',
-                    type: 'post',
-                    success: function (resp) {
-                        if (resp.status == undefined) {
-                            resp = JSON.parse(resp);
-                        }
-                        if (!resp.data.PublicPostsBtn) {
-                            var $postsBtn = $('#publicPostsBtn');
-                            $postsBtn.popup({
-                                on: 'manual',
-                                position: 'right center',
-                                content: 'Публикации здесь =)',
-                                position: 'bottom left',
-                                variation: 'wide small'
-                            });
-                            $postsBtn.popup('show');
-                            $postsBtn.click(function (ev) {
-                                $postsBtn.popup('hide');
-                                $.ajax({
-                                    url: '@Url.Action("InitHelper", "UserHelpers")',
-                                    data: {
-                                        helperType: '@HelperTypes.PublicationsBtn'
-                                    }
-                                })
-                            });
-                        }
-                    }
-                });
-            }
         </script>
         <div class="ui right sidebar vertical borderless menu">
             <div class="acc-header">
@@ -159,8 +127,9 @@
     <div class="pusher">
         <header class="ui fixed borderless menu">
             <div class="ui container">
-                <a href="@Url.Action("Index", "Home")" class="header main item" id="publicPostsBtn">
-                    <img class="logo" src="/Content/images/mite-logo-icon.png" alt="Логотип"/>
+                <a href="@Url.Action("Index", "Home")" class="header main item" data-position="bottom left"
+                   data-tooltip="@Html.Raw(User.Identity.IsAuthenticated ? "Публикации" : "Главная")">
+                    <img class="logo" src="/Content/images/mite-logo-icon.png" alt="Логотип" />
                 </a>
                 <a href="/posts/top?tags=арт" class="computer tablet only item">Арт</a>
                 <a href="/posts/top?tags=литература" class="computer tablet only item">Литература</a>
@@ -229,9 +198,18 @@
                         <i class="user circle outline icon"></i>
                     </a>
                 }
-                <a href="/user/profile/@User.Identity.Name" class="violet user-profile item" data-content="Моя страница">
-                    <i class="user icon"></i>
-                </a>
+                @if (User.IsInRole(RoleNames.Client))
+                {
+                    <a href="/client/profile/@User.Identity.Name" class="violet user-profile item" data-content="Моя страница">
+                        <i class="user icon"></i>
+                    </a>
+                }
+                @if (User.IsInRole(RoleNames.Author))
+                {
+                    <a href="/user/profile/@User.Identity.Name" class="violet user-profile item" data-content="Моя страница">
+                        <i class="user icon"></i>
+                    </a>
+                }
                 <a class="violet notifications item">
                     <i class="feed icon"></i>
                     <div class="ui floating right violet label" style="display: none">
@@ -369,10 +347,6 @@
         }
         $(function () {
             $('article').css('margin-bottom', $('footer').height() + 50 + 'px');
-            @if (Request.IsAuthenticated)
-            {
-                <text>initPostsBtnHelper();</text>
-            }
             $('#addPostMenu').dropdown({
                 action: 'nothing'
             });

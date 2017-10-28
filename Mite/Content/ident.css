@@ -4,9 +4,6 @@
 .ui.grid{
 	height: 100%;
 }
-.ui.attached.segment {
-    border: 1px solid white;
-}
 .ui.two.bottom.attached.buttons {
     border: 1px solid white;
 }

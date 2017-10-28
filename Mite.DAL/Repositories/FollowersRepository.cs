@@ -7,6 +7,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Threading.Tasks;
 using System.Linq;
+using Mite.CodeData.Enums;
 
 namespace Mite.DAL.Repositories
 {
@@ -32,14 +33,34 @@ namespace Mite.DAL.Repositories
             Table.Remove(follower);
             await SaveAsync();
         }
-        public async Task<IEnumerable<Follower>> GetFollowingsByUserAsync(string userId)
+        public async Task<IEnumerable<Follower>> GetFollowingsByUserAsync(string userId, SortFilter sort)
         {
-            var followings = await Table.Where(x => x.UserId == userId).Include(x => x.FollowingUser).ToListAsync();
+            var folQuery = Table.Where(x => x.UserId == userId).Include(x => x.FollowingUser);
+            switch (sort)
+            {
+                case SortFilter.New:
+                    folQuery = folQuery.OrderByDescending(x => x.FollowingUser.RegisterDate)
+                        .ThenByDescending(x => x.FollowingUser.Rating);
+                    break;
+                case SortFilter.Old:
+                    folQuery = folQuery.OrderBy(x => x.FollowingUser.RegisterDate)
+                        .ThenByDescending(x => x.FollowingUser.Rating);
+                    break;
+                case SortFilter.Popular:
+                    folQuery = folQuery.OrderByDescending(x => x.FollowingUser.Rating)
+                        .ThenBy(x => x.FollowingUser.RegisterDate);
+                    break;
+            }
+            var followings = await folQuery.ToListAsync();
             return followings;
         }
         public async Task<int> GetFollowersCount(string followingId)
         {
             return await Table.CountAsync(x => x.FollowingUserId == followingId);
+        }
+        public Task<int> GetFollowingsCountAsync(string followerId)
+        {
+            return Table.CountAsync(x => x.UserId == followerId);
         }
     }
 }

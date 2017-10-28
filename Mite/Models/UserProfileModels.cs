@@ -91,4 +91,28 @@ namespace Mite.Models
         public int Rating { get; set; }
         public IEnumerable<string> Tags { get; set; }
     }
+    public class ClientProfileModel
+    {
+        public string UserId { get; set; }
+        public string UserName { get; set; }
+        private string avatarSrc;
+        public string AvatarSrc
+        {
+            get
+            {
+                return avatarSrc.Replace("\\", "/");
+            }
+            set
+            {
+                avatarSrc = value;
+            }
+        }
+        public string About { get; set; }
+        public int Reliability { get; set; }
+        /// <summary>
+        /// Кол-во подписок
+        /// </summary>
+        public int FollowingsCount { get; set; }
+        public SocialLinksModel SocialLinks { get; set; }
+    }
 }

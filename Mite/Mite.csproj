@@ -1003,6 +1003,7 @@
     <Content Include="Views\Chats\_DealChat.cshtml" />
     <Content Include="Views\Deals\_Chat.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\RadioButtonListOptional.cshtml" />
+    <Content Include="Views\ClientProfile\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
