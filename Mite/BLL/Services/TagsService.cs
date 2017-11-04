@@ -7,6 +7,7 @@ using Mite.BLL.Core;
 using Mite.BLL.DTO;
 using Mite.DAL.Repositories;
 using Mite.Models;
+using NLog;
 
 namespace Mite.BLL.Services
 {
@@ -23,7 +24,7 @@ namespace Mite.BLL.Services
     }
     public class TagsService : DataService, ITagsService
     {
-        public TagsService(IUnitOfWork unitOfWork) : base(unitOfWork)
+        public TagsService(IUnitOfWork unitOfWork, ILogger logger) : base(unitOfWork, logger)
         {
         }
 

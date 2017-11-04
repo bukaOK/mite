@@ -12,6 +12,7 @@ using Mite.DAL.Entities;
 using Mite.BLL.Helpers;
 using System;
 using Mite.CodeData.Enums;
+using NLog;
 
 namespace Mite.BLL.Services
 {
@@ -36,7 +37,7 @@ namespace Mite.BLL.Services
         private readonly string imagesFolder = HostingEnvironment.ApplicationVirtualPath + "Public/images/";
         private readonly AppUserManager userManager;
 
-        public FollowersService(IUnitOfWork database, AppUserManager userManager) : base(database)
+        public FollowersService(IUnitOfWork database, AppUserManager userManager, ILogger logger) : base(database, logger)
         {
             this.userManager = userManager;
         }

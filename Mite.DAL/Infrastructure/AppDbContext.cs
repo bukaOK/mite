@@ -7,6 +7,7 @@ namespace Mite.DAL.Infrastructure
     public class AppDbContext : IdentityDbContext<User>
     {
         public DbSet<Post> Posts { get; set; }
+        public DbSet<PostCollectionItem> PostCollectionItems { get; set; }
         public DbSet<Group> Groups { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Notification> Notifications { get; set; }

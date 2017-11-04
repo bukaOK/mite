@@ -26,7 +26,7 @@ namespace Mite.BLL.Services
         private readonly AuthorServiceTypeRepository repo;
         private readonly ILogger logger;
 
-        public AuthorServiceTypeService(IUnitOfWork database, ILogger logger) : base(database)
+        public AuthorServiceTypeService(IUnitOfWork database, ILogger logger) : base(database, logger)
         {
             repo = Database.GetRepo<AuthorServiceTypeRepository, AuthorServiceType>();
             this.logger = logger;

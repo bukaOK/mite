@@ -40,7 +40,7 @@ namespace Mite.BLL.Services
             }
             catch(Exception e)
             {
-                Logger.Error("Ошибка при попытке привязать город к пользователю: " + e.Message);
+                logger.Error("Ошибка при попытке привязать город к пользователю: " + e.Message);
                 return DataServiceResult.Failed("Ошибка");
             }
         }

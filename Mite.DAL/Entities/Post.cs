@@ -16,7 +16,7 @@ namespace Mite.DAL.Entities
         public Guid Id { get; set; }
         public string Title { get; set; }
         /// <summary>
-        /// Хранится путь к контенту
+        /// Хранится путь к контенту(в случае коллекции - главное изображение)
         /// </summary>
         public string Content { get; set; }
         /// <summary>
@@ -40,7 +40,7 @@ namespace Mite.DAL.Entities
         public List<Tag> Tags { get; set; }
         public List<Comment> Comments { get; set; }
         /// <summary>
-        /// Путь к обложке или к главному изображению(если коллекция)
+        /// Путь к обложке
         /// </summary>
         public string Cover { get; set; }
         /// <summary>
@@ -59,6 +59,10 @@ namespace Mite.DAL.Entities
         public PostTypes Type { get; set; }
         public PostContentTypes ContentType { get; set; }
         public List<Rating> Ratings { get; set; }
+        /// <summary>
+        /// Элементы коллекции(если работа - коллекция)
+        /// </summary>
+        public List<PostCollectionItem> Collection { get; set; }
         [ForeignKey("User")]
         public string UserId { get; set; }
         public User User { get; set; }

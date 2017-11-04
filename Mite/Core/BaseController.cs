@@ -61,9 +61,25 @@ namespace Mite.Core
         {
             return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
         }
+        protected HttpStatusCodeResult InternalServerError(string message)
+        {
+            return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, message);
+        }
+        protected HttpStatusCodeResult InternalServerError(object obj)
+        {
+            return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, JsonConvert.SerializeObject(obj));
+        }
         protected HttpStatusCodeResult BadRequest()
         {
             return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+        }
+        protected HttpStatusCodeResult BadRequest(string message)
+        {
+            return new HttpStatusCodeResult(HttpStatusCode.BadRequest, message);
+        }
+        protected HttpStatusCodeResult BadRequest(object obj)
+        {
+            return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, JsonConvert.SerializeObject(obj));
         }
         protected HttpStatusCodeResult NotFound()
         {

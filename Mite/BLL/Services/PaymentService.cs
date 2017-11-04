@@ -6,6 +6,7 @@ using Mite.BLL.IdentityManagers;
 using Mite.DAL.Entities;
 using Mite.CodeData.Enums;
 using Mite.DAL.Repositories;
+using NLog;
 
 namespace Mite.BLL.Services
 {
@@ -22,7 +23,7 @@ namespace Mite.BLL.Services
     {
         private readonly AppUserManager userManager;
 
-        public PaymentService(IUnitOfWork database, AppUserManager userManager) : base(database)
+        public PaymentService(IUnitOfWork database, AppUserManager userManager, ILogger logger) : base(database, logger)
         {
             this.userManager = userManager;
         }

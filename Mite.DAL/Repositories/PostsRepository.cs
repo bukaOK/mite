@@ -19,6 +19,10 @@ namespace Mite.DAL.Repositories
         public PostsRepository(AppDbContext db) : base(db)
         {
         }
+        public Task<Post> GetWithCollectionAsync(Guid id)
+        {
+            return Table.Include(x => x.Collection).FirstOrDefaultAsync(x => x.Id == id);
+        }
         public async override Task RemoveAsync(Guid id)
         {
             var query = "select \"UserId\" from dbo.\"Posts\" where \"Id\"=@id;";
@@ -69,7 +73,7 @@ namespace Mite.DAL.Repositories
         /// <returns></returns>
         public Task<Post> GetWithTagsAsync(Guid id)
         {
-            return DbContext.Posts.Include(x => x.Tags).FirstOrDefaultAsync(x => x.Id == id);
+            return DbContext.Posts.Include(x => x.Tags).Include(x => x.Collection).FirstOrDefaultAsync(x => x.Id == id);
         }
         /// <summary>
         /// Возвращает пост с тегами и комментариями
@@ -243,7 +247,7 @@ namespace Mite.DAL.Repositories
             bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range, DateTime maxDate)
         {
             var query = "select * from dbo.\"Posts\" inner join dbo.\"Users\" on dbo.\"Posts\".\"UserId\"=dbo.\"Users\".\"Id\" " +
-                $"where dbo.\"Posts\".\"Type\"=@postType and \"PublishDate\" > @minDate " +
+                "where dbo.\"Posts\".\"Type\"=@postType and \"PublishDate\" > @minDate " +
                 "and \"PublishDate\" < @maxDate and (setweight(to_tsvector('mite_ru', dbo.\"Posts\".\"Title\"), 'A') || " +
                 "setweight(to_tsvector('mite_ru', coalesce(dbo.\"Posts\".\"Description\", '')), 'B')) @@ plainto_tsquery(@postName)";
 
@@ -316,7 +320,8 @@ namespace Mite.DAL.Repositories
         }
         public async Task<IEnumerable<Post>> GetGalleryByUserAsync(string userId)
         {
-            return await Table.Where(x => x.UserId == userId && x.Type == PostTypes.Published && x.ContentType == PostContentTypes.Image)
+            return await Table.Where(x => x.UserId == userId && x.Type == PostTypes.Published && (x.ContentType == PostContentTypes.Image
+                || x.ContentType == PostContentTypes.ImageCollection))
                 .ToListAsync();
         }
     }

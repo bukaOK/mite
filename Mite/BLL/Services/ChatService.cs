@@ -22,13 +22,11 @@ namespace Mite.BLL.Services
     public class ChatService : DataService, IChatService
     {
         private readonly ChatRepository repo;
-        private readonly ILogger logger;
         private readonly AppUserManager userManager;
 
-        public ChatService(IUnitOfWork database, ILogger logger, AppUserManager userManager) : base(database)
+        public ChatService(IUnitOfWork database, ILogger logger, AppUserManager userManager) : base(database, logger)
         {
             repo = database.GetRepo<ChatRepository, Chat>();
-            this.logger = logger;
             this.userManager = userManager;
         }
 
@@ -48,8 +46,7 @@ namespace Mite.BLL.Services
             }
             catch(Exception e)
             {
-                logger.Error($"Ошибка при создании чата: {e.Message}");
-                return CommonError;
+                return CommonError("Ошибка при создании чата", e);
             }
         }
 

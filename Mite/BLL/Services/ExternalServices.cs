@@ -31,11 +31,8 @@ namespace Mite.BLL.Services
     }
     public class ExternalServices : DataService, IExternalServices
     {
-        private readonly ILogger logger;
-
-        public ExternalServices(IUnitOfWork database, ILogger logger) : base(database)
+        public ExternalServices(IUnitOfWork database, ILogger logger) : base(database, logger)
         {
-            this.logger = logger;
         }
 
         public async Task Add(string userId, string serviceType, string accessToken)

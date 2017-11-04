@@ -92,9 +92,14 @@
         }
         else if (Model.ContentType == PostContentTypes.ImageCollection)
         {
-            <div data-editable class="fifteen wide centered column">
-                <img src="@Model.Cover" class="ui centered image" id="post-content" alt="@ViewBag.Title" />
-                @Html.Raw(Model.Content)
+            <div class="fifteen wide centered center aligned column">
+                <img src="@Model.Content" class="ui centered image" id="post-content" alt="@ViewBag.Title" />
+                <div class="ui divider"></div>
+                @foreach(var item in Model.Collection)
+                {
+                    <img src="@item.Content" data-title="@item.Description" class="ui col-item centered image" alt="@item.Description" />
+                    <p>@item.Description</p>
+                }
             </div>
         }
     </div>
@@ -316,7 +321,7 @@
 </template>
 <script>
     var commentsCount = @Model.CommentsCount;
-    var isImage = @((Model.ContentType == PostContentTypes.Image).ToString().ToLower());
+    var isImage = @((Model.ContentType == PostContentTypes.Image || Model.ContentType == PostContentTypes.ImageCollection).ToString().ToLower());
     document.onselectstart = function(){return false;}
 
     function loadPostTime(){
@@ -603,6 +608,7 @@
         initFormValidation();
         if (isImage) {
             loadUserGallery();
+            MiteGallery.initCollection('.col-item');
         }
         $('.dimmer.modals.page').click(function(ev){
             $('#post-image-modal').modal('hide');

@@ -41,15 +41,13 @@ namespace Mite.ExternalServices.YandexMoney
     {
         private readonly AppUserManager userManager;
         private readonly IHttpClient httpClient;
-        private readonly ILogger logger;
         private Authenticator authenticator;
 
         public YandexMoneyService(IUnitOfWork unitOfWork, AppUserManager userManager, IHttpClient httpClient, 
-            ILogger logger, Authenticator authenticator) : base(unitOfWork)
+            ILogger logger, Authenticator authenticator) : base(unitOfWork, logger)
         {
             this.userManager = userManager;
             this.httpClient = httpClient;
-            this.logger = logger;
             this.authenticator = authenticator;
         }
         public async Task AuthorizeAsync(string userId, string code)

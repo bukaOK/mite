@@ -11,6 +11,7 @@ using AutoMapper;
 using Mite.CodeData.Enums;
 using Microsoft.AspNet.Identity;
 using Mite.DAL.Repositories;
+using NLog;
 
 namespace Mite.BLL.Services
 {
@@ -22,7 +23,7 @@ namespace Mite.BLL.Services
     }
     public class HelpersService : DataService, IHelpersService
     {
-        public HelpersService(IUnitOfWork database) : base(database)
+        public HelpersService(IUnitOfWork database, ILogger logger) : base(database, logger)
         {
         }
 

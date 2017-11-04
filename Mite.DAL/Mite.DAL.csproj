@@ -102,6 +102,7 @@
     <Compile Include="Entities\Order.cs" />
     <Compile Include="Entities\Payment.cs" />
     <Compile Include="Entities\Post.cs" />
+    <Compile Include="Entities\PostCollectionItem.cs" />
     <Compile Include="Entities\PostGroup.cs" />
     <Compile Include="Entities\ProfileView.cs" />
     <Compile Include="Entities\Rating.cs" />
@@ -165,9 +166,9 @@
     <Compile Include="Migrations\201710201938069_AddAttachments.Designer.cs">
       <DependentUpon>201710201938069_AddAttachments.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201710271620061_AddUserReliability.cs" />
-    <Compile Include="Migrations\201710271620061_AddUserReliability.Designer.cs">
-      <DependentUpon>201710271620061_AddUserReliability.cs</DependentUpon>
+    <Compile Include="Migrations\201711011628548_AddPostCollection.cs" />
+    <Compile Include="Migrations\201711011628548_AddPostCollection.Designer.cs">
+      <DependentUpon>201711011628548_AddPostCollection.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -239,8 +240,8 @@
     <EmbeddedResource Include="Migrations\201710201938069_AddAttachments.resx">
       <DependentUpon>201710201938069_AddAttachments.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201710271620061_AddUserReliability.resx">
-      <DependentUpon>201710271620061_AddUserReliability.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201711011628548_AddPostCollection.resx">
+      <DependentUpon>201711011628548_AddPostCollection.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

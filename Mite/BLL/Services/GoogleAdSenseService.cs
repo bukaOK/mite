@@ -44,12 +44,10 @@ namespace Mite.ExternalServices.Google
     public class GoogleAdSenseService : DataService, IGoogleAdSenseService
     {
         private readonly HttpClient httpClient;
-        private readonly ILogger logger;
 
-        public GoogleAdSenseService(IUnitOfWork database, HttpClient httpClient, ILogger logger) : base(database)
+        public GoogleAdSenseService(IUnitOfWork database, HttpClient httpClient, ILogger logger) : base(database, logger)
         {
             this.httpClient = httpClient;
-            this.logger = logger;
         }
 
         public async Task<string> AuthorizeAsync(string code, string redirectUri, string userId)

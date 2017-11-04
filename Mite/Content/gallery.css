@@ -1,4 +1,8 @@
-﻿.lg-outer .lg-item{
+﻿.col-item{
+    cursor: zoom-in;
+}
+/*lightgallery*/
+.lg-outer .lg-item{
     background: none;
 }
 .lg-outer .lg-item:after {

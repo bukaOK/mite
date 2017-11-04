@@ -44,16 +44,14 @@ namespace Mite.BLL.Services
     public class AuthorServiceService : DataService, IAuthorServiceService
     {
         private readonly AuthorServiceRepository repo;
-        private readonly ILogger logger;
         private readonly IAuthorServiceTypeService serviceTypeService;
         private readonly ICityService cityService;
         private readonly AppUserManager userManager;
 
         public AuthorServiceService(IUnitOfWork database, ILogger logger, IAuthorServiceTypeService serviceTypeService, 
-            ICityService cityService, AppUserManager userManager) : base(database)
+            ICityService cityService, AppUserManager userManager) : base(database, logger)
         {
             repo = database.GetRepo<AuthorServiceRepository, AuthorService>();
-            this.logger = logger;
             this.serviceTypeService = serviceTypeService;
             this.cityService = cityService;
             this.userManager = userManager;

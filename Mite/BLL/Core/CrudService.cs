@@ -45,12 +45,10 @@ namespace Mite.BLL.Core
         where TRepo : IRepository<TEntity>
     {
         protected readonly TRepo Repo;
-        protected readonly ILogger Logger;
 
-        public CrudService(IUnitOfWork database, ILogger logger) : base(database)
+        public CrudService(IUnitOfWork database, ILogger logger) : base(database, logger)
         {
             Repo = Database.GetRepo<TRepo, TEntity>();
-            Logger = logger;
         }
 
         public virtual async Task<DataServiceResult> AddAsync(TModel model)
@@ -63,7 +61,7 @@ namespace Mite.BLL.Core
             }
             catch(Exception e)
             {
-                Logger.Error($"Ошибка добавления {typeof(TEntity).Name}: {e.Message}");
+                logger.Error($"Ошибка добавления {typeof(TEntity).Name}: {e.Message}");
                 return DataServiceResult.Failed();
             }
         }
@@ -90,7 +88,7 @@ namespace Mite.BLL.Core
             }
             catch(Exception e)
             {
-                Logger.Error($"Ошибка удаления {typeof(TEntity).Name}: {e.Message}");
+                logger.Error($"Ошибка удаления {typeof(TEntity).Name}: {e.Message}");
                 return DataServiceResult.Failed("Ошибка при удалении");
             }
         }
@@ -105,7 +103,7 @@ namespace Mite.BLL.Core
             }
             catch(Exception e)
             {
-                Logger.Error($"Ошибка обновления {typeof(TEntity).Name}: {e.Message}");
+                logger.Error($"Ошибка обновления {typeof(TEntity).Name}: {e.Message}");
                 return DataServiceResult.Failed("Ошибка при обновлении");
             }
         }

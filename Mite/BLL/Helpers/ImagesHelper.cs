@@ -27,6 +27,34 @@ namespace Mite.BLL.Helpers
             var img = Image.FromFile(path);
             return img.GetFrameCount(new FrameDimension(img.FrameDimensionsList[0])) > 1;
         }
+        /// <summary>
+        /// Обновляем изображение
+        /// </summary>
+        /// <param name="oldVPath">Путь(вирт.) к старому оригинальному изображению</param>
+        /// <param name="oldCompressedVPath">Путь(вирт.) к старому сжатому изображению</param>
+        /// <param name="base64">Строка изображения с base64</param>
+        /// <returns>vPath - вирт. путь к изобр., compressedVPath - вирт. путь к сжатому изобр.</returns>
+        public static (string vPath, string compressedVPath) UpdateImage(string oldVPath, string oldCompressedVPath, string base64)
+        {
+            string vPath = null, compressedPath = null;
+            try
+            {
+                vPath = FilesHelper.CreateImage(ImagesFolder, base64);
+                var fullPath = HostingEnvironment.MapPath(vPath);
+                Compressed.Compress(fullPath);
+                compressedPath = Compressed.CompressedVirtualPath(fullPath);
+                //Удаляем старые
+                FilesHelper.DeleteFile(oldVPath);
+                FilesHelper.DeleteFile(oldCompressedVPath);
+                return (vPath, compressedPath);
+            }
+            catch(Exception e)
+            {
+                FilesHelper.DeleteFile(vPath);
+                FilesHelper.DeleteFile(compressedPath);
+                throw e;
+            }
+        }
         public static class Compressed
         {
             public static string CompressedVirtualPath(string path)
@@ -84,6 +112,11 @@ namespace Mite.BLL.Helpers
                 }
                 return null;
             }
+            /// <summary>
+            /// Сжимает изображение
+            /// </summary>
+            /// <param name="path">Полный путь к оригинальному изображению</param>
+            /// <returns></returns>
             public static DataServiceResult Compress(string path)
             {
                 var compressResult = DataServiceResult.Failed();

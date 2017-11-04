@@ -22,9 +22,9 @@ namespace Mite.BLL.Services
     public interface IPostsService : IDataService
     {
         Task<PostModel> GetPostAsync(Guid postId);
-        Task<IdentityResult> AddPostAsync(PostModel postModel, string userId);
+        Task<DataServiceResult> AddPostAsync(PostModel postModel, string userId);
         Task<DataServiceResult> DeletePostAsync(Guid postId);
-        Task<IdentityResult> UpdatePostAsync(PostModel postModel);
+        Task<DataServiceResult> UpdatePostAsync(PostModel postModel);
         Task<PostModel> GetWithTagsAsync(Guid postId);
         /// <summary>
         /// Возвращает вместе с тегами и владельцем поста
@@ -54,14 +54,12 @@ namespace Mite.BLL.Services
     public class PostsService : DataService, IPostsService
     {
         private readonly AppUserManager _userManager;
-        private readonly ILogger logger;
         private readonly string imagesFolder = HostingEnvironment.ApplicationVirtualPath + "Public/images/";
         private readonly string documentsFolder = HostingEnvironment.ApplicationVirtualPath + "Public/documents/";
 
-        public PostsService(IUnitOfWork unitOfWork, AppUserManager userManager, ILogger logger) : base(unitOfWork)
+        public PostsService(IUnitOfWork unitOfWork, AppUserManager userManager, ILogger logger) : base(unitOfWork, logger)
         {
             _userManager = userManager;
-            this.logger = logger;
         }
 
         public async Task<PostModel> GetPostAsync(Guid postId)
@@ -78,64 +76,21 @@ namespace Mite.BLL.Services
             };
             return postModel;
         }
-
-        public async Task<IdentityResult> AddPostAsync(PostModel postModel, string userId)
+        public async Task<DataServiceResult> AddPostAsync(PostModel postModel, string userId)
         {
             var repo = Database.GetRepo<PostsRepository, Post>();
             var tagsRepo = Database.GetRepo<TagsRepository, Tag>();
 
             if (string.IsNullOrEmpty(postModel.Content))
             {
-                return IdentityResult.Failed("Пустой контент");
+                return DataServiceResult.Failed("Пустой контент");
             }
-            switch (postModel.ContentType)
+            var tags = (List<Tag>)null;
+            if(postModel.Tags != null)
             {
-                case PostContentTypes.Image:
-                    postModel.Content = FilesHelper.CreateImage(imagesFolder, postModel.Content);
-                    ImagesHelper.Compressed.Compress(HostingEnvironment.MapPath(postModel.Content));
-                    break;
-                case PostContentTypes.ImageCollection:
-                    try
-                    {
-                        //В контенте будет лежать документ с коллекцией
-                        postModel.Content = FilesHelper.CreateDocument(PathConstants.VirtualDocumentFolder, postModel.Content);
-                    }
-                    catch (Exception e)
-                    {
-                        logger.Error("Ошибка при попытке создания документа с коллекцией: " + e.Message);
-                        return IdentityResult.Failed("Внутренняя ошибка");
-                    }
-                    try
-                    {
-                        //В обложке лежит главное изображение
-                        postModel.Cover = FilesHelper.CreateImage(PathConstants.VirtualImageFolder, postModel.Cover);
-                        ImagesHelper.Compressed.Compress(HostingEnvironment.MapPath(postModel.Cover));
-                    }
-                    catch (Exception e)
-                    {
-                        logger.Error("Ошибка при попытке создания главного изображения коллекции: " + e.Message);
-                        FilesHelper.DeleteFile(postModel.Content);
-                        FilesHelper.DeleteFileFull(ImagesHelper.Compressed.CompressedPath(postModel.Content));
-                        return IdentityResult.Failed("Внутренняя ошибка");
-                    }
-                    break;
-                case PostContentTypes.Document:
-                    if (!string.IsNullOrEmpty(postModel.Cover))
-                    {
-                        postModel.Cover = FilesHelper.CreateImage(imagesFolder, postModel.Cover);
-                        ImagesHelper.Compressed.Compress(postModel.Cover);
-                    }
-                    if (string.IsNullOrEmpty(postModel.Content))
-                    {
-                        return IdentityResult.Failed("Контент не может быть пустым.");
-                    }
-                    postModel.Content = FilesHelper.CreateDocument(documentsFolder, postModel.Content);
-                    break;
+                tags = Mapper.Map<List<Tag>>(postModel.Tags.Where(x => !string.IsNullOrWhiteSpace(x)));
+                postModel.Tags = null;
             }
-            postModel.Tags = postModel.Tags.Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
-            var tags = Mapper.Map<List<Tag>>(postModel.Tags);
-
-            postModel.Tags = null;
             var post = Mapper.Map<Post>(postModel);
 
             post.Id = Guid.NewGuid();
@@ -143,20 +98,125 @@ namespace Mite.BLL.Services
             post.LastEdit = DateTime.UtcNow;
             post.Rating = 0;
 
-            if(post.ContentType == PostContentTypes.Image)
-                post.Content_50 = ImagesHelper.Compressed.CompressedVirtualPath(post.Content);
-
-            if(!string.IsNullOrEmpty(post.Cover))
-                post.Cover_50 = ImagesHelper.Compressed.CompressedVirtualPath(post.Cover);
-
             if (post.Type == PostTypes.Published)
-            {
                 post.PublishDate = DateTime.UtcNow;
-            }
+            else
+                post.Type = PostTypes.Drafts;
 
-            await repo.AddAsync(post);
-            await tagsRepo.AddWithPostAsync(tags, post.Id);
-            return IdentityResult.Success;
+            var result = DataServiceResult.Failed("Внутренняя ошибка");
+            switch (post.ContentType)
+            {
+                case PostContentTypes.Image:
+                    result = CreateImage(post);
+                    break;
+                case PostContentTypes.ImageCollection:
+                    result = CreateImageCollection(post);
+                    break;
+                case PostContentTypes.Document:
+                    result = CreateDocument(post);
+                    break;
+            }
+            if (!result.Succeeded)
+                return result;
+            using(var transaction = repo.BeginTransaction())
+            {
+                try
+                {
+                    await repo.AddAsync(post);
+                    if(tags != null)
+                        await tagsRepo.AddWithPostAsync(tags, post.Id);
+                    transaction.Commit();
+                    return DataServiceResult.Success();
+                }
+                catch(Exception e)
+                {
+                    transaction.Rollback();
+                    return CommonError("Ошибка при добавлении работы", e);
+                }
+            }
+        }
+
+        private DataServiceResult CreateImageCollection(Post post)
+        {
+            post.Content = FilesHelper.CreateImage(imagesFolder, post.Content);
+            ImagesHelper.Compressed.Compress(HostingEnvironment.MapPath(post.Content));
+            post.Content_50 = ImagesHelper.Compressed.CompressedVirtualPath(post.Content);
+
+            var lastPost = 0;
+            foreach (var item in post.Collection)
+            {
+                try
+                {
+                    item.ContentSrc = FilesHelper.CreateImage(imagesFolder, item.ContentSrc);
+                    var fullCPath = HostingEnvironment.MapPath(item.ContentSrc);
+                    ImagesHelper.Compressed.Compress(fullCPath);
+                    item.ContentSrc_50 = ImagesHelper.Compressed.CompressedVirtualPath(fullCPath);
+                    lastPost++;
+                }
+                catch (Exception e)
+                {
+                    logger.Error($"Ошибка при добавлении изображений {e.Message}");
+                    FilesHelper.DeleteFile(post.Content);
+                    FilesHelper.DeleteFile(post.Content_50);
+                    for (var j = 0; j < lastPost; j++)
+                    {
+                        FilesHelper.DeleteFile(post.Collection[j].ContentSrc);
+                        FilesHelper.DeleteFile(post.Collection[j].ContentSrc_50);
+                    }
+                    return DataServiceResult.Failed("Ошибка при добавлении изображений");
+                }
+            }
+            return DataServiceResult.Success(post);
+        }
+
+        private DataServiceResult CreateDocument(Post post)
+        {
+            if (string.IsNullOrEmpty(post.Content))
+                return DataServiceResult.Failed("Контент не может быть пустым.");
+
+            if (!string.IsNullOrEmpty(post.Cover))
+            {
+                try
+                {
+                    post.Cover = FilesHelper.CreateImage(imagesFolder, post.Cover);
+                    var fullCPath = HostingEnvironment.MapPath(post.Cover);
+                    ImagesHelper.Compressed.Compress(fullCPath);
+                    post.Cover_50 = ImagesHelper.Compressed.CompressedVirtualPath(fullCPath);
+                }
+                catch(Exception e)
+                {
+                    return CommonError("Ошибка при создании документа", e);
+                }
+            }
+            try
+            {
+                post.Content = FilesHelper.CreateDocument(documentsFolder, post.Content);
+            }
+            catch(Exception e)
+            {
+                return CommonError("Ошибка при создании документа", e);
+            }
+            return Success;
+        }
+
+        private DataServiceResult CreateImage(Post post)
+        {
+            try
+            {
+                post.Content = FilesHelper.CreateImage(imagesFolder, post.Content);
+
+                var fullCPath = HostingEnvironment.MapPath(post.Content);
+                ImagesHelper.Compressed.Compress(fullCPath);
+                post.Content_50 = ImagesHelper.Compressed.CompressedVirtualPath(fullCPath);
+
+                return Success;
+            }
+            catch(Exception e)
+            {
+                FilesHelper.DeleteFile(post.Content);
+                FilesHelper.DeleteFile(post.Content_50);
+                return CommonError("Ошибка при создании изображения", e);
+            }
         }
 
         public async Task<DataServiceResult> DeletePostAsync(Guid postId)
@@ -173,62 +233,48 @@ namespace Mite.BLL.Services
                 if (!string.IsNullOrEmpty(post.Cover))
                 {
                     FilesHelper.DeleteFile(post.Cover);
-                    FilesHelper.DeleteFile(ImagesHelper.Compressed.CompressedVirtualPath(post.Cover));
+                    FilesHelper.DeleteFile(ImagesHelper.Compressed.CompressedVirtualPath(HostingEnvironment.MapPath(post.Cover)));
                 }
                 FilesHelper.DeleteFile(post.Content);
                 await repo.RemoveAsync(postId);
-                return DataServiceResult.Success();
+                return Success;
             }
             catch(Exception e)
             {
-                logger.Error("Ошибка при удалении поста: " + e.Message);
-                return DataServiceResult.Failed("Ошибка при удалении поста");
+                return CommonError("Ошибка при удалении поста", e);
             }
         }
         /// <summary>
         /// Обновляет пост, PostModel.Content может быть null(когда не было изменений), если это файл
         /// </summary>
         /// <param name="postModel">модель</param>
-        /// 
         /// <returns></returns>
-        public async Task<IdentityResult> UpdatePostAsync(PostModel postModel)
+        public async Task<DataServiceResult> UpdatePostAsync(PostModel postModel)
         {
             var repo = Database.GetRepo<PostsRepository, Post>();
 
             var currentPost = await repo.GetAsync(postModel.Id);
             if (currentPost.Type == PostTypes.Blocked)
+                return DataServiceResult.Failed("Заблокированный пост нельзя обновлять");
+
+            var result = DataServiceResult.Failed("Внутренняя ошибка");
+            switch (postModel.ContentType)
             {
-                return IdentityResult.Failed("Заблокированный пост нельзя обновлять");
+                case PostContentTypes.Image:
+                    result = UpdateImage(currentPost, postModel);
+                    break;
+                case PostContentTypes.Document:
+                    result = UpdateDocument(currentPost, postModel);
+                    break;
+                case PostContentTypes.ImageCollection:
+                    result = UpdateImageCollection(currentPost, postModel);
+                    break;
             }
             currentPost.Description = postModel.Description;
             currentPost.Title = postModel.Header;
-
-            if(postModel.ContentType == PostContentTypes.Document || postModel.ContentType == PostContentTypes.ImageCollection)
-            {
-                if(!string.IsNullOrWhiteSpace(postModel.Content))
-                    FilesHelper.UpdateDocument(currentPost.Content, postModel.Content);
-
-                //Заменяем обложку(главное изображение)
-                if(!string.IsNullOrWhiteSpace(postModel.Cover) && postModel.Cover != currentPost.Cover &&
-                    currentPost.Cover != null)
-                {
-                    FilesHelper.DeleteFile(currentPost.Cover);
-                    currentPost.Cover = FilesHelper.CreateImage(imagesFolder, postModel.Cover);
-                }
-                //Удаляем обложку(главное изображение)
-                else if (string.IsNullOrEmpty(postModel.Cover) && !string.IsNullOrEmpty(currentPost.Cover))
-                {
-                    FilesHelper.DeleteFile(currentPost.Cover);
-                    currentPost.Cover = null;
-                }
-                //Ставим новую(главное изображение)
-                else if (!string.IsNullOrEmpty(postModel.Cover) && string.IsNullOrEmpty(currentPost.Cover))
-                {
-                    currentPost.Cover = FilesHelper.CreateImage(imagesFolder, postModel.Cover);
-                }
-            }
             currentPost.LastEdit = DateTime.UtcNow;
-            if(currentPost.PublishDate == null && postModel.Type == PostTypes.Published)
+
+            if (currentPost.PublishDate == null && postModel.Type == PostTypes.Published)
             {
                 currentPost.PublishDate = DateTime.UtcNow;
                 currentPost.Type = PostTypes.Published;
@@ -240,7 +286,100 @@ namespace Mite.BLL.Services
             await Database.GetRepo<TagsRepository, Tag>().AddWithPostAsync(tags, currentPost.Id);
             await repo.UpdateAsync(currentPost);
 
-            return IdentityResult.Success;
+            return Success;
+        }
+        /// <summary>
+        /// Удаление, создание изображения
+        /// </summary>
+        /// <param name="post">Старый пост</param>
+        /// <param name="model">Модель с новыми данными</param>
+        /// <returns></returns>
+        private DataServiceResult UpdateImage(Post post, PostModel model)
+        {
+            if (post.Content != model.Content)
+            {
+                try
+                {
+                    var tuple = ImagesHelper.UpdateImage(post.Content, post.Content_50, model.Content);
+                    post.Content = tuple.vPath;
+                    post.Content_50 = tuple.compressedVPath;
+
+                    return Success;
+                }
+                catch(Exception e)
+                {
+                    return CommonError("Ошибка при обновлении изображения", e);
+                }
+            }
+            return Success;
+        }
+        /// <summary>
+        /// Обновляем контент документа, а также обложку
+        /// </summary>
+        /// <param name="post"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        private DataServiceResult UpdateDocument(Post post, PostModel model)
+        {
+            if (!string.IsNullOrWhiteSpace(model.Content))
+                FilesHelper.UpdateDocument(post.Content, model.Content);
+
+            if(model.Cover != post.Cover)
+            {
+                FilesHelper.DeleteFile(post.Cover);
+                try
+                {
+                    //Заменяем или добавляем обложку
+                    if ((!string.IsNullOrEmpty(model.Cover) && model.Cover != post.Cover) || 
+                        (!string.IsNullOrEmpty(model.Cover) && string.IsNullOrEmpty(post.Cover)))
+                    {
+                        post.Cover = FilesHelper.CreateImage(imagesFolder, model.Cover);
+                    }
+                    //Удаляем
+                    else if(string.IsNullOrEmpty(model.Cover) && !string.IsNullOrEmpty(post.Cover))
+                    {
+                        post.Cover = null;
+                    }
+                }
+                catch(Exception e)
+                {
+                    return CommonError("Ошибка при обновлении документа", e);
+                }
+            }
+            return Success;
+        }
+        /// <summary>
+        /// Обновляем элементы коллекции
+        /// </summary>
+        /// <param name="post"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        private DataServiceResult UpdateImageCollection(Post post, PostModel model)
+        {
+            foreach(var postItem in post.Collection)
+            {
+                foreach(var modelItem in model.Collection)
+                {
+                    if(postItem.Id == modelItem.Id)
+                    {
+                        postItem.Description = modelItem.Description;
+                        if(postItem.ContentSrc != modelItem.Content)
+                        {
+                            try
+                            {
+                                var tuple = ImagesHelper.UpdateImage(postItem.ContentSrc, postItem.ContentSrc_50, modelItem.Content);
+                                postItem.ContentSrc = tuple.vPath;
+                                postItem.ContentSrc_50 = tuple.compressedVPath;
+                            }
+                            catch(Exception e)
+                            {
+                                return CommonError("Ошибка при обновлении коллекции", e);
+                            }
+                        }
+                    }
+                }
+            }
+            return Success;
         }
         /// <summary>
         /// Получить пост с тегами(для редактирования поста)
@@ -252,7 +391,6 @@ namespace Mite.BLL.Services
             var repo = Database.GetRepo<PostsRepository, Post>();
             var post = await repo.GetWithTagsAsync(postId);
             post.Tags = post.Tags.Where(x => !string.IsNullOrEmpty(x.Name)).ToList();
-            //post.Tags = post.Tags.Where(x => x.IsConfirmed).ToList();
             
             var postModel = Mapper.Map<PostModel>(post);
             postModel.User = new UserShortModel
@@ -279,6 +417,11 @@ namespace Mite.BLL.Services
             var postModel = Mapper.Map<PostModel>(post);
             var userModel = Mapper.Map<UserShortModel>(user);
 
+            if (post.ContentType == PostContentTypes.Document)
+            {
+                //Заменяем путь к документу на содержание
+                post.Content = await FilesHelper.ReadDocumentAsync(post.Content);
+            }
             postModel.User = userModel;
             postModel.CommentsCount = await Database.GetRepo<CommentsRepository, Comment>().GetPostCommentsCountAsync(postId);
 
@@ -442,12 +585,6 @@ namespace Mite.BLL.Services
                 }
                 else
                 {
-                    //Если Cover не пустой, значит у нас коллекция изображений
-                    if (!string.IsNullOrEmpty(postModel.Cover))
-                    {
-                        //В Cover содержится главное изображение, поэтому меняем местами Content и Cover
-                        postModel.Content = postModel.Cover;
-                    }
                     fullImgPath = HostingEnvironment.MapPath(postModel.Content);
                     if (ImagesHelper.IsAnimatedImage(fullImgPath))
                     {

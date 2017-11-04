@@ -7,8 +7,7 @@
 }
 <div class="ui segment">
     <h2 class="ui dividing header">@ViewBag.Title</h2>
-    @using (Html.BeginForm("AddPost", "Posts", FormMethod.Post, new { @class = "ui stackable two column center aligned grid form", id = "imgPostForm" }))
-    {
+    <form class="ui stackable two column center aligned grid form" id="imgPostForm">
         <div class="column">
             <input type="file" id="img-download" style="display: none">
             <label for="img-download" class="ui labeled icon large primary button">
@@ -49,17 +48,17 @@
             </div>
         </div>
         <div class="ten wide column">
-            <div id="img-wrapper">
+            <div class="img-wrapper" id="img-wrapper">
                 @if (!string.IsNullOrEmpty(Model.Content))
                 {
-                    <img src="@Model.Content" alt="@Model.Header" style="max-width: 100%"/>
+                    <img src="@Model.Content" alt="@Model.Header" style="max-width: 100%" />
                 }
             </div>
             <button type="button" class="ui green button" id="save-btn">Сохранить</button>
             @Html.ValidationSum("result-msg")
             <div class="ui hidden error message" style="text-align: center" id="result-msg"></div>
         </div>
-    }
+    </form>
 </div>
 <div class="ui small modal" id="saveModal">
     <i class="close icon"></i>
@@ -156,9 +155,9 @@
                     forceSelection: false,
                     match: 'text',
                     maxSelections: 5,
-                    //onShow: function(){
-                    //    $(this).children('.menu').perfectScrollbar();
-                    //}
+                    onShow: function(){
+                        $(this).children('.menu').perfectScrollbar();
+                    }
                 });
             },
             error: function(jqXhr){

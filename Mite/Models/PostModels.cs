@@ -73,6 +73,7 @@ namespace Mite.Models
             }
         }
         public UserShortModel User { get; set; }
+        public IList<PostCollectionItemModel> Collection { get; set; }
     }
     public class WritingPostModel
     {
@@ -103,21 +104,8 @@ namespace Mite.Models
         [MaxLength(100, ErrorMessage = "Слишком большой заголовок")]
         [Required]
         public string Header { get; set; }
-
-        private string content;
         [Required(ErrorMessage = "Вы не загрузили изображение")]
-        public string Content
-        {
-            get
-            {
-                return content == null ? content : content.Replace('\\', '/');
-            }
-            set
-            {
-                content = value;
-            }
-        }
-
+        public string Content { get; set; }
         public PostTypes Type { get; set; }
         public bool IsPublished => Type == PostTypes.Published;
         [DisplayName("Описание")]
@@ -125,34 +113,9 @@ namespace Mite.Models
         [MaxLength(350, ErrorMessage = "Слишком длинное описание")]
         public string Description { get; set; }
         public bool Blocked { get; set; }
+        public PostContentTypes ContentType { get; set; }
         public List<string> Tags { get; set; }
-    }
-    public class ImageCollectionPostModel
-    {
-        public Guid Id { get; set; }
-        [UIHint("TextBox")]
-        [DisplayName("Заголовок")]
-        [MaxLength(100, ErrorMessage = "Слишком большой заголовок")]
-        [Required]
-        public string Header { get; set; }
-        /// <summary>
-        /// Контент(т.е. сама коллекция)
-        /// </summary>
-        [Required(ErrorMessage = "Вы не добавили контент")]
-        public string Content { get; set; }
-        public bool IsPublished { get; set; }
-        [DisplayName("Описание")]
-        [UIHint("TextArea")]
-        [MaxLength(350, ErrorMessage = "Слишком длинное описание")]
-        public string Description { get; set; }
-        /// <summary>
-        /// Главное изображение
-        /// </summary>
-        [Required(ErrorMessage = "Вы не загрузили главное изображение")]
-        public string Cover { get; set; }
-        public bool Blocked { get; set; }
-        public HelperModel Helper { get; set; }
-        public IEnumerable<string> Tags { get; set; }
+        public IList<PostCollectionItemModel> Collection { get; set; }
     }
     public class PostRatingModel
     {
@@ -163,6 +126,16 @@ namespace Mite.Models
         [Required]
         public Guid PostId { get; set; }
         public string UserId { get; set; }
+    }
+    public class PostCollectionItemModel
+    {
+        public Guid Id { get; set; }
+        [MaxLength(300)]
+        [DisplayName("Описание")]
+        public string Description { get; set; }
+        [DisplayName("Контент")]
+        public string Content { get; set; }
+        public Guid PostId { get; set; }
     }
     /// <summary>
     /// Модель изображения в галерее (когда показывают пост)

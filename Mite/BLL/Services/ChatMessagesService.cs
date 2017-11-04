@@ -37,14 +37,12 @@ namespace Mite.BLL.Services
         private readonly ChatMessagesRepository messagesRepository;
         private readonly ChatRepository chatRepository;
         private readonly AppUserManager userManager;
-        private readonly ILogger logger;
 
-        public ChatMessagesService(IUnitOfWork database, AppUserManager userManager, ILogger logger) : base(database)
+        public ChatMessagesService(IUnitOfWork database, AppUserManager userManager, ILogger logger) : base(database, logger)
         {
             messagesRepository = database.GetRepo<ChatMessagesRepository, ChatMessage>();
             chatRepository = database.GetRepo<ChatRepository, Chat>();
             this.userManager = userManager;
-            this.logger = logger;
         }
 
         public async Task<DataServiceResult> AddAsync(ChatMessageModel model)

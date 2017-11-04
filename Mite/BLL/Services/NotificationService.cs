@@ -10,6 +10,7 @@ using Mite.CodeData.Enums;
 using System.Text;
 using System.Linq;
 using Mite.DAL.Repositories;
+using NLog;
 
 namespace Mite.BLL.Services
 {
@@ -38,7 +39,7 @@ namespace Mite.BLL.Services
     }
     public class NotificationService : DataService, INotificationService
     {
-        public NotificationService(IUnitOfWork database) : base(database)
+        public NotificationService(IUnitOfWork database, ILogger logger) : base(database, logger)
         {
         }
 

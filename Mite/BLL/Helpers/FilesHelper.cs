@@ -100,14 +100,14 @@ namespace Mite.BLL.Helpers
             virtualPath += virtualPath[virtualPath.Length - 1] == '/' ? "" : "/";
             return Regex.Replace(virtualPath, "~", "") + fileName;
         }
-        public static void UpdateDocument(string filePath, string content)
+        public static void UpdateDocument(string fileVirtualPath, string content)
         {
-            filePath = HostingEnvironment.MapPath(filePath);
-
-            if (filePath == null)
+            if (fileVirtualPath == null)
                 throw new NullReferenceException("Вы не задали путь к файлу");
 
-            File.WriteAllText(filePath, content);
+            var path = HostingEnvironment.MapPath(fileVirtualPath);
+
+            File.WriteAllText(path, content);
         }
         /// <summary>
         /// Удаляем файл по относительному пути
@@ -115,8 +115,11 @@ namespace Mite.BLL.Helpers
         /// <param name="virtualPath"></param>
         public static void DeleteFile(string virtualPath)
         {
-            var path = HostingEnvironment.MapPath(virtualPath);
-            DeleteFileFull(path);
+            if (!string.IsNullOrEmpty(virtualPath))
+            {
+                var path = HostingEnvironment.MapPath(virtualPath);
+                DeleteFileFull(path);
+            }
         }
         /// <summary>
         /// Удаляем файл по полному пути
@@ -124,7 +127,7 @@ namespace Mite.BLL.Helpers
         /// <param name="path"></param>
         public static void DeleteFileFull(string path)
         {
-            if (File.Exists(path))
+            if (!string.IsNullOrEmpty(path) && File.Exists(path))
                 File.Delete(path);
         }
         /// <summary>

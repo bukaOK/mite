@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNet.Identity;
 using Mite.DAL.Infrastructure;
+using NLog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,12 +11,19 @@ namespace Mite.BLL.Core
     public abstract class DataService : IDataService
     {
         protected readonly IUnitOfWork Database;
+        protected readonly ILogger logger;
         protected DataServiceResult Success => DataServiceResult.Success();
-        protected DataServiceResult CommonError => DataServiceResult.Failed("Внутренняя ошибка");
 
-        protected DataService(IUnitOfWork database)
+        public DataService(IUnitOfWork database, ILogger logger)
         {
             Database = database;
+            this.logger = logger;
+        }
+
+        protected DataServiceResult CommonError(string message, Exception e)
+        {
+            logger.Error($"{message}: {e.Message}");
+            return DataServiceResult.Failed(message);
         }
     }
     public class DataServiceResult

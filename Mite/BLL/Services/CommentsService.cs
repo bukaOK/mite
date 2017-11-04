@@ -9,6 +9,7 @@ using Mite.DAL.Entities;
 using System.Linq;
 using Mite.DAL.Repositories;
 using Mite.BLL.Helpers;
+using NLog;
 
 namespace Mite.BLL.Services
 {
@@ -22,7 +23,7 @@ namespace Mite.BLL.Services
     }
     public class CommentsService : DataService, ICommentsService
     {
-        public CommentsService(IUnitOfWork database) : base(database)
+        public CommentsService(IUnitOfWork database, ILogger logger) : base(database, logger)
         {
         }
 

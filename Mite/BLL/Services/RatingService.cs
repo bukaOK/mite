@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Mite.DAL.Infrastructure;
 using AutoMapper;
 using Mite.DAL.Repositories;
+using NLog;
 
 namespace Mite.BLL.Services
 {
@@ -30,7 +31,7 @@ namespace Mite.BLL.Services
     }
     public class RatingService : DataService, IRatingService
     {
-        public RatingService(IUnitOfWork database) : base(database)
+        public RatingService(IUnitOfWork database, ILogger logger) : base(database, logger)
         {
         }
 

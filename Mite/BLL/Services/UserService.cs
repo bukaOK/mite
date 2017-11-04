@@ -47,14 +47,12 @@ namespace Mite.BLL.Services
     {
         private readonly AppUserManager userManager;
         private readonly AppSignInManager signInManager;
-        private readonly ILogger logger;
 
         public UserService(AppUserManager userManager, AppSignInManager signInManager, IUnitOfWork unitOfWork,
-            ILogger logger): base(unitOfWork)
+            ILogger logger): base(unitOfWork, logger)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
-            this.logger = logger;
         }
 
         public async Task<SignInStatus> LoginAsync(LoginModel model)

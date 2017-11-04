@@ -1,38 +1,46 @@
 ﻿var FileReaderHelper = {
+    /**
+     * Читаем файл
+     * @param {Event} evt событие чтения
+    */
     readFile: function (file, evt) {
-        var self = FileReaderHelper;
-        if (self.settings === undefined) {
-            self.settings = {
-                saveBtn: $('#save-btn'),
-                imgWrapper: $('#img-wrapper'),
-                field: $('#Content')
+        var self = FileReaderHelper,
+            settings = {
+                saveBtn: $('#saveBtn'),
+                imgWrapper: $(evt.target).parents('form').find('.img-wrapper'),
+                field: $(evt.target).parents('form').find('[name="Content"]')
             };
-        }
 
         var reader = new FileReader();
         reader.onprogress = function () {
-            $(evt).addClass('loading');
+            settings.saveBtn.addClass('loading');
         };
         reader.onloadend = function () {
-            $(evt).removeClass('loading');
+            settings.saveBtn.removeClass('loading');
         };
         reader.onload = function () {
-            self.settings.saveBtn.show();
-            self.settings.imgWrapper.html('<img src="' + reader.result + '" style="max-width: 100%"/>');
-            self.settings.field.val(reader.result);
+            settings.saveBtn.show();
+            settings.imgWrapper.html('<img src="' + reader.result + '" style="max-width: 100%"/>');
+            settings.field.val(reader.result);
         };
         if (file.size / 1024 / 1024 > 30) {
             isImageLarge = true;
         }
         reader.readAsDataURL(file);
     },
-    //Когда перемещаем файл мышкой и курсор над областью
+    /**
+     * Когда перемещаем файл мышкой и курсор над областью
+     * @param {Event} evt
+    */
     dragOverHandler: function (evt) {
         evt.stopPropagation();
         evt.preventDefault();
         evt.dataTransfer.dropEffect = "copy";
     },
-    //Когда переместили файл
+    /**
+     * Когда переместили файл
+     * @param {Event} evt
+    */
     dropHandler: function (evt) {
         var self = FileReaderHelper;
 
@@ -41,6 +49,10 @@
         var file = evt.dataTransfer.files[0];
         self.readFile(file, evt);
     },
+    /**
+     * Нажали на кнопку загрузки
+     * @param {Event} evt
+    */
     inputDownloadHandler: function (evt) {
         var self = FileReaderHelper;
 

@@ -912,6 +912,7 @@
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\Custom\password-strength.js" />
     <Content Include="Scripts\Mvc\Deals.js" />
+    <Content Include="Scripts\Mvc\Posts.js" />
     <Content Include="Scripts\perfect-scrollbar.js" />
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\respond.matchmedia.addListener.js" />

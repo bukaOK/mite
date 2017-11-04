@@ -59,11 +59,8 @@ namespace Mite.BLL.Services
     }
     public class CashService : DataService, ICashService
     {
-        private readonly ILogger logger;
-
-        public CashService(IUnitOfWork database, ILogger logger) : base(database)
+        public CashService(IUnitOfWork database, ILogger logger) : base(database, logger)
         {
-            this.logger = logger;
         }
 
         public async Task<IEnumerable<OperationModel>> GetPaymentsHistoryAsync(string userId)

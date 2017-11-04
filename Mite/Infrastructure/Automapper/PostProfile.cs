@@ -18,12 +18,6 @@ namespace Mite.Infrastructure.Automapper
             CreateMap<Post, PostModel>()
                 .ForMember(dest => dest.Header, opt => opt.MapFrom(src => src.Title))
                 .ForMember(dest => dest.CurrentRating, opt => opt.Ignore());
-                //Если это изображение и Cover не Null, значит перед нами коллекция изображений, и надо менять контент и Cover местами
-                //все для удобства
-                //.ForMember(dest => dest.Content, opt => opt.MapFrom(src =>
-                //    src.IsImage && !string.IsNullOrEmpty(src.Cover) ? src.Cover : src.Content))
-                //.ForMember(dest => dest.Cover, opt => opt.MapFrom(src =>
-                //    src.IsImage && !string.IsNullOrEmpty(src.Cover) ? src.Content : src.Cover));
 
             //Добавление поста юзером
             CreateMap<PostModel, Post>()
@@ -39,15 +33,24 @@ namespace Mite.Infrastructure.Automapper
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString("N")))
                 .ForMember(dest => dest.Header, opt => opt.MapFrom(src => src.Title))
                 .ForMember(dest => dest.IsPublished, opt => opt.MapFrom(src => src.PublishDate != null))
-                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content_50 ?? src.Content))
+                .ForMember(dest => dest.IsImage, opt => opt.MapFrom(src => src.ContentType == PostContentTypes.Image ||
+                    src.ContentType == PostContentTypes.ImageCollection))
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => string.IsNullOrEmpty(src.Content_50) ? src.Content : src.Content_50))
                 .ForMember(dest => dest.Cover, opt => opt.MapFrom(src => src.Cover_50 ?? src.Cover));
             CreateMap<Post, TopPostModel>()
                 .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content_50 ?? src.Content))
-                .ForMember(dest => dest.Cover, opt => opt.MapFrom(src => src.Cover_50 ?? src.Cover));
+                .ForMember(dest => dest.Cover, opt => opt.MapFrom(src => src.Cover_50 ?? src.Cover))
+                .ForMember(dest => dest.IsImage, opt => opt.MapFrom(src => src.ContentType == PostContentTypes.Image || 
+                    src.ContentType == PostContentTypes.ImageCollection));
 
             CreateMap<PostModel, ImagePostModel>();
             CreateMap<PostModel, WritingPostModel>();
-            CreateMap<PostModel, ImageCollectionPostModel>();
+
+            CreateMap<PostCollectionItem, PostCollectionItemModel>()
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.ContentSrc));
+            CreateMap<PostCollectionItemModel, PostCollectionItem>()
+                .ForMember(dest => dest.ContentSrc, opt => opt.MapFrom(src => src.Content));
+
             CreateMap<Post, GalleryItemModel>()
                 .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => src.Content.Replace('\\', '/')))
                 .ForMember(dest => dest.ImageCompressed, opt => opt.ResolveUsing(src =>

@@ -22,7 +22,7 @@ namespace Mite.BLL.Services
     {
         private readonly WMExpressPayment payment;
 
-        public WebMoneyService(IUnitOfWork database, ILogger logger, HttpClient client) : base(database)
+        public WebMoneyService(IUnitOfWork database, ILogger logger, HttpClient client) : base(database, logger)
         {
             payment = new WMExpressPayment(logger, client);
         }

@@ -18,5 +18,24 @@
                 prevHtml: '<i class="angle big left icon"></i>'
             });
         });
+    },
+    initCollection: function (itemSelector) {
+        var colItems = [];
+        $(itemSelector).each(function (i, elem) {
+            elem.dataset.index = i;
+            colItems.push({
+                src: $(elem).attr('src'),
+                subHtml: '<p>' + elem.dataset.title + '</p>'
+            });
+        }).click(function () {
+            $(this).lightGallery({
+                dynamic: true,
+                dynamicEl: colItems,
+                index: this.dataset.index,
+                download: false,
+                nextHtml: '<i class="angle big right icon"></i>',
+                prevHtml: '<i class="angle big left icon"></i>'
+            });
+        });
     }
 }

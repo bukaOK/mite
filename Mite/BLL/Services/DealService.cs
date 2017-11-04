@@ -121,11 +121,10 @@ namespace Mite.BLL.Services
         private readonly IExternalServices externalServices;
         private readonly HttpClient httpClient;
         private readonly AppUserManager userManager;
-        private readonly ILogger logger;
         private readonly DealRepository repo;
 
         public DealService(IUnitOfWork database, ILogger logger, IAuthorServiceService authorServiceService, IChatService chatService, 
-            ICashService cashService, IExternalServices externalServices, HttpClient httpClient, AppUserManager userManager) : base(database)
+            ICashService cashService, IExternalServices externalServices, HttpClient httpClient, AppUserManager userManager) : base(database, logger)
         {
             this.authorServiceService = authorServiceService;
             this.chatService = chatService;
@@ -133,7 +132,6 @@ namespace Mite.BLL.Services
             this.externalServices = externalServices;
             this.httpClient = httpClient;
             this.userManager = userManager;
-            this.logger = logger;
             repo = Database.GetRepo<DealRepository, Deal>();
         }
 
