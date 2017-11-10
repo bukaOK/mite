@@ -54,6 +54,10 @@
                     @Html.HiddenFor(x => x.Tags, new { Value = tagsRow })
                     <div class="default text">Теги</div>
                     <div class="menu">
+                        @foreach (var tagName in Model.AvailableTags)
+                        {
+                            <div class="item" data-value="@tagName">@tagName</div>
+                        }
                     </div>
                 </div>
                 <div class="ui blue icon message">
@@ -198,7 +202,10 @@
                 var validErrorStatus = @((byte)Mite.Core.JsonStatuses.ValidationError);
                 if(resp.status == validErrorStatus){
                     var errorStr = 'Ошибка при сохранении: ' + resp.message;
-                    swal('Упс!', errorStr, 'error');
+                    iziToast.error({
+                        title: 'Упс!',
+                        message: errorStr
+                    });
                 } else{
                     if(isPublished){
                         location.href = '/user/profile/@User.Identity.Name#posts/published';
@@ -209,7 +216,10 @@
             },
             error: function (jqXhr) {
                 $('.ct-ignition__button--edit').css('background', '#e74c3c');
-                swal('Упс!', 'Ошибка при сохранении', 'error');
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Ошибка при сохранении.'
+                });
             },
             complete: function (jqXhr) {
                 editorInstance.busy(false);
@@ -306,34 +316,10 @@
     $(function () {
         ViewHelper.activateSidebarItem('#editDocItem');
         ViewHelper.disableFormSubmitting('#writeEditForm');
+        $('#select-tags').dropdown();
+        new PerfectScrollbar('#select-tags>.menu');
 
         @Html.Raw(Html.FormValidation<Mite.Models.WritingPostModel>("#writeEditForm"))
-        $.ajax({
-            url: '/api/tags',
-            type: 'get',
-            success: function (data) {
-                var tagsMenu = $('#select-tags');
-                var tagsItems = '';
-                for (var i = 0; i < data.length; i++) {
-                    tagsItems += '<div class="item" data-value="' + data[i].Name + '">' + data[i].Name + '</div>'
-                }
-                tagsMenu.children('.menu').html(tagsItems);
-                tagsMenu.dropdown({
-                    allowAdditions: true,
-                    fullTextSearch: true,
-                    keys: {
-                        delimiter: false
-                    },
-                    showOnFocus: false,
-                    match: 'text',
-                    maxSelections: 5,
-                    forceSelection: false
-                });
-            },
-            error: function (jqXhr) {
-                alert('Ошибка инициализации тегов.');
-            }
-        });
         var editor = ContentTools.EditorApp.get();
 
         editor.init('*[data-editable]', 'data-name');
@@ -354,7 +340,10 @@
                 {
                     <text>
                 if (content == '' || content == null || content == undefined) {
-                    swal('Не все заполнили.', 'Контент не может быть пустым!', 'error');
+                    iziToast.error({
+                        title: 'Упс!',
+                        message: 'Контент не может быть пустым!'
+                    });
                     return false;
                 }
                 </text>

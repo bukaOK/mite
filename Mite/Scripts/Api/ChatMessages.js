@@ -238,7 +238,10 @@ var ChatMessages = {
                 type: 'delete',
                 url: '/api/message?' + ids,
                 error: function () {
-                    swal('Упс...', 'Ошибка при попытке удаления', 'error');
+                    iziToast.error({
+                        title: 'Упс!',
+                        message: 'Ошибка при попытке удаления.'
+                    });
                 }
             });
         }

@@ -3,6 +3,8 @@
 @model Mite.Models.ImagePostModel
 @{
     ViewBag.Title = "Добавить изображения";
+    var tagsRow = Model.Tags == null ? string.Empty : string.Join(",", Model.Tags);
+    var saveMode = Model.Header == null ? "add" : "edit";
 }
 @section styles{
     <style>
@@ -25,19 +27,25 @@
                 <h3 class="ui disabled grey">Перетащите сюда</h3>
             </div>
             <div class="field">
-                <div class="ui image img-wrapper"></div>
+                <div class="ui image img-wrapper">
+                    @if (!string.IsNullOrEmpty(Model.Content))
+                    {
+                        <img src="@Model.Content" />
+                    }
+                </div>
             </div>
         </div>
         <div class="left aligned column">
+            @Html.HiddenFor(x => x.Id)
             @Html.EditorFor(x => x.Header)
             @Html.HiddenFor(x => x.Content)
             @Html.EditorFor(x => x.Description)
             <div class="field">
                 <div class="ui fluid search multiple selection dropdown" id="post-dd">
-                    <input type="hidden" name="Tags" />
+                    <input type="hidden" name="Tags" value="@tagsRow" />
                     <div class="default text">Теги</div>
                     <div class="menu">
-                        @foreach (var tagName in Model.Tags)
+                        @foreach (var tagName in Model.AvailableTags)
                         {
                             <div class="item" data-value="@tagName">@tagName</div>
                         }
@@ -49,8 +57,44 @@
     </form>
     <div class="ui one column grid">
         <div class="center aligned column">
+            @if (Model.Collection != null && Model.Collection.Count > 0)
+            {
+                foreach (var colItem in Model.Collection)
+                {
+                    <form class="ui form p-item-form" data-id="@colItem.Id">
+                        <div class="ui divider"></div>
+                        <i title="Удалить" onclick="Posts.removeCollectionItem(this)" class="red link large close icon"></i>
+                        <div class="ui two column stackable center aligned grid">
+                            <div class="column">
+                                <label class="ui labeled icon large primary button">
+                                    Загрузить
+                                    <i class="cloud download icon"></i>
+                                    <input type="file" onchange="FileReaderHelper.inputDownloadHandler(event)" style="display: none" />
+                                </label>
+                                <div class="ui section divider horizontal">Или</div>
+                                <div class="ui dashed drop-zone segment" ondragover="FileReaderHelper.dragOverHandler(event)" ondrop="FileReaderHelper.dropHandler(event)">
+                                    <h3 class="ui disabled grey">Перетащите сюда</h3>
+                                </div>
+                            </div>
+                            <div class="left aligned column">
+                                <input type="hidden" name="Content" value="@colItem.Content" />
+                                <div class="field">
+                                    <label>Описание</label>
+                                    <textarea rows="2" placeholder="Описание" name="Description">@colItem.Description</textarea>
+                                </div>
+                                <div class="field">
+                                    <div class="ui image img-wrapper">
+                                        <img src="@colItem.Content" />
+                                    </div>
+                                </div>
+                                <div class="ui error message"></div>
+                            </div>
+                        </div>
+                    </form>
+                }
+            }
             <button class="ui primary button" style="margin-top: 10px" onclick="Posts.addCollectionItem(this)">Добавить элемент коллекции</button>
-            <button class="ui green button" onclick="Posts.Api.saveCollection(this)">Сохранить</button>
+            <button class="ui green button" onclick="Posts.Api.saveCollection(this, '@saveMode')">Сохранить</button>
         </div>
     </div>
 </div>
@@ -64,8 +108,8 @@
         </p>
     </div>
     <div class="actions">
-        <div class="ui approve button">Да</div>
-        <div class="ui cancel button">Нет</div>
+        <div class="ui ok green button">Да</div>
+        <div class="ui cancel red button">Нет</div>
     </div>
 </div>
 <template id="postItemFormTmpl">
@@ -83,14 +127,14 @@
                 <div class="ui dashed drop-zone segment" ondragover="FileReaderHelper.dragOverHandler(event)" ondrop="FileReaderHelper.dropHandler(event)">
                     <h3 class="ui disabled grey">Перетащите сюда</h3>
                 </div>
-                <div class="field">
-                    <div class="ui image img-wrapper"></div>
-                </div>
             </div>
             <div class="left aligned column">
                 <input type="hidden" name="Content" />
                 <div class="field">
                     <textarea rows="2" placeholder="Описание" name="Description"></textarea>
+                </div>
+                <div class="field">
+                    <div class="ui image img-wrapper"></div>
                 </div>
                 <div class="ui error message"></div>
             </div>
@@ -102,6 +146,7 @@
     <script>
         $(function () {
             @Html.Raw(Html.FormValidation<Mite.Models.ImagePostModel>(".p-form"))
+            new PerfectScrollbar('#post-dd>.menu');
             $('#post-dd').dropdown();
         });
     </script>

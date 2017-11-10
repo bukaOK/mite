@@ -1,26 +1,13 @@
 ﻿@using Mite.CodeData.Enums
 @using Mite.Extensions
+@using Microsoft.AspNet.Identity
 @model Mite.Models.DealClientModel
 
+@{ 
+    var userType = User.Identity.GetUserId() == Model.Client.Id ? "client" : "author";
+}
 @if (Model.Status == DealStatuses.New)
 {
-    <h3 class="ui header">Информация</h3>
-    <div class="ui relaxed large list" role="list">
-        <a class="item" role="listitem">
-            <i class="blue calendar large icon"></i>
-            <span class="content">
-                <span class="header">
-                    Дата окончания: @Html.Raw(Model.Deadline?.ToString("dd.MM.yyyy") ?? "Неизвестно(ожидаем автора)")
-                </span>
-            </span>
-        </a>
-        <a class="item" role="listitem">
-            <i class="green ruble large icon"></i>
-            <span class="content">
-                <span class="header">Цена: @Html.Raw(Model.Price?.ToString() ?? "Неизвестно(ожидаем автора)")</span>
-            </span>
-        </a>
-    </div>
     <h3 class="ui header">Параметры</h3>
     <form class="ui form" id="dealForm">
         @Html.HiddenFor(x => x.Id)
@@ -32,7 +19,7 @@
             <i class="close icon"></i>
             Закрыть сделку
         </button>
-        <button class="ui green button" type="button" onclick="DealsApi.update(this)">Сохранить</button>
+        <button class="ui green button" type="button" onclick="DealsApi.update(this, '@userType')">Сохранить</button>
         <div class="ui error message"></div>
     </form>
 }
@@ -42,7 +29,7 @@ else if (Model.Status == DealStatuses.ExpectPayment)
         @Html.AntiForgeryToken()
         <div class="field">@Html.HiddenFor(x => x.Id)</div>
         <div class="field">
-            <button class="ui red button" type="button" onclick="DealsMvc.close(this)">
+            <button class="ui red button" type="button" onclick="DealsMvc.close(this, '@Model.Id')">
                 <i class="close icon"></i>
                 Закрыть сделку
             </button>
@@ -86,7 +73,7 @@ else if(Model.Status == DealStatuses.ExpectClient)
         <div class="ui error message"></div>
     </form>
 }
-else if(Model.Status == DealStatuses.Confirmed)
+else if(Model.Status == DealStatuses.Confirmed || Model.Status == DealStatuses.ModerConfirmed)
 {
     <h3 class="ui header"><i class="check icon"></i>Заказ выполнен</h3>
     <form class="ui form" id="dealForm">
@@ -106,14 +93,9 @@ else if(Model.Status == DealStatuses.Confirmed)
         <div class="ui error message"></div>
     </form>
 }
-else if(Model.Status == DealStatuses.Rejected)
+else if(Model.Status == DealStatuses.Rejected || Model.Status == DealStatuses.ModerRejected)
 {
-    <h3 class="ui header">Заказ отклонен</h3>
-
-}
-else if(Model.Status == DealStatuses.Dispute)
-{
-    <h3 class="ui header">Диалог с модератором</h3>
+    <h3 class="ui header">Сделка закрыта</h3>
 }
 <script>
     $(function () {

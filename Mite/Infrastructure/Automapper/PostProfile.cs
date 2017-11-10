@@ -35,7 +35,7 @@ namespace Mite.Infrastructure.Automapper
                 .ForMember(dest => dest.IsPublished, opt => opt.MapFrom(src => src.PublishDate != null))
                 .ForMember(dest => dest.IsImage, opt => opt.MapFrom(src => src.ContentType == PostContentTypes.Image ||
                     src.ContentType == PostContentTypes.ImageCollection))
-                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => string.IsNullOrEmpty(src.Content_50) ? src.Content : src.Content_50))
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content_50 ?? src.Content))
                 .ForMember(dest => dest.Cover, opt => opt.MapFrom(src => src.Cover_50 ?? src.Cover));
             CreateMap<Post, TopPostModel>()
                 .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content_50 ?? src.Content))

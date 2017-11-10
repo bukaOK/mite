@@ -11,7 +11,10 @@
                 $container.html(self.tmpl.render(resp));
             },
             error: function (jqXhr) {
-                swal('Ошибка', 'Ошибка при инициализации', 'error');
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Города не загружены.'
+                });
             },
         })
     },
@@ -24,7 +27,10 @@
                 $container.prepend(CitiesApi.tmpl.render(resp));
             },
             error: function (jqXhr) {
-                swal('Ошибка', 'Ошибка при добавлении', 'error');
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Ошибка при добавлении.'
+                });
             },
             complete: function () {
                 $btn.removeClass('loading');
@@ -41,7 +47,10 @@
                 $tr.remove();
             },
             error: function (jqXhr) {
-                swal('Ошибка', 'Ошибка при удалении', 'error');
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Ошибка при удалении.'
+                });
             },
             complete: function () {
                 $btn.removeClass('loading');
@@ -60,7 +69,10 @@
             },
             data: $form.serialize(),
             error: function (jqXhr) {
-                swal('Ошибка', 'Ошибка при обновлении', 'error');
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Ошибка при обновлении.'
+                });
             },
             complete: function () {
                 $btn.removeClass('loading');
@@ -81,7 +93,6 @@
                 $.ajax({
                     url: '/api/cities',
                     success: function (resp) {
-                        swal('Успешно');
                         $('#cityChoseSelect').dropdown();
                         $('#cityChoseModal').modal('show');
                     }

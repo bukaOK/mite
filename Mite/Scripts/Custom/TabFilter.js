@@ -1,4 +1,10 @@
-﻿function Tab(settings) {
+﻿/**
+ * Класс таба
+ * @typedef {{parentTab: Tab, childrenTabs: Tab[], isActive: boolean, tmplSelector: string, emptyTmplSelector: string, content: JQuery<HTMLElement>, item: JQuery<HTMLElement>}} Tab
+ * @typedef {{name: string, $content: JQuery<HTMLElement>, parentTab: Tab, isActive: boolean, $item: JQuery<HTMLElement>}} TabSettings
+ * @param {TabSettings} settings
+ */
+function Tab(settings) {
     this.name = settings.name;
     if (settings.$item === undefined || settings.$item === null) {
         this.item = $('.item[data-tab="' + settings.name + '"]');

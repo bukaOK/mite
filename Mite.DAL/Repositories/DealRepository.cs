@@ -24,18 +24,34 @@ namespace Mite.DAL.Repositories
                 .ToListAsync();
             return deals;
         }
-        public async Task<IEnumerable<Deal>> GetOutgoingAsync(DealStatuses dealType, string clientId)
+        public async Task<IEnumerable<Deal>> GetOutgoingAsync(DealStatuses status, string clientId)
         {
-            var deals = await Table.Where(x => x.ClientId == clientId && x.Status == dealType)
+            var deals = await Table.Where(x => x.ClientId == clientId && x.Status == status)
                 .Include(x => x.Service)
                 .OrderByDescending(x => x.CreateDate)
                 .ToListAsync();
             return deals;
         }
+        public async Task<IEnumerable<Deal>> GetForModerAsync(DealStatuses status, string moderId)
+        {
+            var query = Table.Where(x => x.Status == status && x.ClientId != moderId && x.AuthorId != moderId);
+            switch (status)
+            {
+                case DealStatuses.Dispute:
+                    query = query.Where(x => x.ModerId == null);
+                    break;
+                default:
+                    query = query.Where(x => x.ModerId == moderId);
+                    break;
+            }
+            return await query.Include(x => x.Service)
+                .OrderByDescending(x => x.CreateDate)
+                .ToListAsync();
+        }
         public Task<Deal> GetWithServiceAsync(long id)
         {
-            return Table.Include(x => x.Service).Include(x => x.Author)
-                .Include(x => x.Client).Include(x => x.Chat).FirstOrDefaultAsync(x => x.Id == id);
+            return Table.Include(x => x.Service).Include(x => x.Author).Include(x => x.DisputeChat).Include(x => x.Moder)
+                .Include(x => x.Client).Include(x => x.Chat.Members).FirstOrDefaultAsync(x => x.Id == id);
         }
         public int GetAuthorCounts(string authorId, DealStatuses dealType)
         {

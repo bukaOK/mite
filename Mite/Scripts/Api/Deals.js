@@ -51,13 +51,29 @@
             }
         });
     },
-    update: function (btn) {
+    /**
+     * Обновляем параметры сделки
+     * @param {HTMLElement} btn кнопка сохранения
+     * @param {('client'|'author')} userRole тип пользователя
+    */
+    update: function (btn, userRole) {
         var $form = $(this.formSelector);
         var $msg = $form.find('.message');
 
         return this._send('put', function (resp) {
             $msg.removeClass('error').addClass('green');
             $msg.html('Успешно');
+            switch (userRole) {
+                case 'author':
+                    $('#deadline-item').text($('#DeadlineStr').val());
+                    $('#price-item').text($('#Price').val());
+                    break;
+                case 'client':
+                    $('#demands-item').text($('#Demands').val());
+                    break;
+                default:
+                    throw 'Unknown UserRole in Deals.update()';                    
+            }
         }, $(btn));
     },
     create: function () {
@@ -79,7 +95,10 @@
 
             },
             error: function () {
-                swal('Упс!', 'Не удалось удалить сделку', 'error');
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Не удалось удалить сделку.'
+                });
             }
         });
     }

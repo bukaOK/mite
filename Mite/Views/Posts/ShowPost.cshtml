@@ -246,7 +246,10 @@
                             });
                         },
                         error: function (jqXhr) {
-                            swal('Упс...', 'Ошибка инициализации тегов.', 'error');
+                            iziToast.error({
+                                title: 'Упс!',
+                                message: 'Теги не загружены.'
+                            });
                         }
                     });
                 })
@@ -364,7 +367,10 @@
                 scrollToComment();
             },
             error: function (jqXhr) {
-                swal('Упс...', 'Ошибка при инициализации комментариев.', 'error');
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Комментарии не загружены.'
+                });
             }
         });
     }
@@ -408,7 +414,10 @@
                 $('#comments-wrapper').prepend(html);
             },
             error: function (jqXhr) {
-                swal('Упс...', 'Ошибка во время отправки комментария.', 'error');
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Ошибка при отправке комментария.'
+                });
             }
         });
     }
@@ -425,7 +434,10 @@
                 $('#com' + commentId).remove();
             },
             error: function (jqXhr) {
-                swal('Упс...', 'Ошибка при удалении комментария!', 'error');
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Ошибка при удалении комментария.'
+                });
             }
         });
     }
@@ -455,7 +467,10 @@
                 sendNotification('@NotificationTypes.CommentRating', userId, '@Model.Id#com' + commentId);
             },
             error: function (jqXhr) {
-                swal('Упс...', 'Ошибка при оценке комментария.', 'error');
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Ошибка при оценке комментария.'
+                });
             }
         });
     }
@@ -506,7 +521,10 @@
                 });
             },
             error: function (jqXhr) {
-                swal('Упс...', 'Ошибка при отправке уведомления.', 'error');
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Ошибка при отправке уведомления.'
+                });
             }
         });
     }
@@ -532,7 +550,10 @@
                         sendNotification('@NotificationTypes.PostRating', '@Model.User.Id', '@Model.Id');
                     },
                     error: function (jqXhr) {
-                        swal('Упс...', 'Ошибка инициализации рейтинга.', 'error');
+                        iziToast.error({
+                            title: 'Упс!',
+                            message: 'Рейтинг не загружен.'
+                        });
                     }
                 });
             }

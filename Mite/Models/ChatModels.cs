@@ -13,8 +13,7 @@ namespace Mite.Models
         public Guid Id { get; set; }
         public string Name { get; set; }
         public UserShortModel CurrentUser { get; set; }
-        public UserShortModel Companion { get; set; }
-        public IList<string> Members { get; set; }
+        public IList<UserShortModel> Members { get; set; }
         public IList<EmojiGroup> Emojies { get; set; }
         public IEnumerable<ChatMessageModel> Messages { get; set; }
     }

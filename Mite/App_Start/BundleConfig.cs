@@ -18,7 +18,7 @@ namespace Mite
                 .Include("~/Scripts/jquery.address.js",
                 "~/Scripts/perfect-scrollbar.js",
                 "~/bower_components/simplebar/simplebar.js",
-                "~/bower_components/sweetalert2/dist/sweetalert2.min.js",
+                "~/bower_components/izitoast/dist/js/iziToast.min.js",
                 "~/Scripts/jquery.signalR-2.2.2.min.js")
                 .IncludeDirectory("~/Scripts/Custom/", "*.js"));
             bundles.Add(new ScriptBundle("~/bundles/inputmask").Include("~/Scripts/jquery.maskedinput.min.js"));
@@ -51,15 +51,14 @@ namespace Mite
 
             //CSS
             bundles.Add(new StyleBundle("~/Content/semantic").Include(
-                "~/bower_components/semantic/src/semantic.css",
-                "~/bower_components/semantic-ui-range/range.css"
+                "~/bower_components/semantic/src/semantic.css"
             ));
             bundles.Add(new StyleBundle("~/Content/landing").Include(
                 "~/Content/landing.css"
             ));
             bundles.Add(new StyleBundle("~/Content/css").Include(
                 "~/node_modules/croppie/croppie.css",
-                "~/bower_components/sweetalert2/dist/sweetalert2.css",
+                "~/bower_components/izitoast/dist/css/iziToast.min.css",
                 "~/Content/Site.css",
                 "~/Content/ident.css",
                 "~/Content/content-tools.min.css",

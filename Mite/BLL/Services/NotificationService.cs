@@ -24,6 +24,7 @@ namespace Mite.BLL.Services
         /// <param name="onlyNew">Только новые или все</param>
         /// <returns></returns>
         Task<List<NotificationModel>> GetByUserAsync(string userId, bool onlyNew);
+        IList<NotificationModel> GetByUser(string userId, bool onlyNew);
         /// <summary>
         /// Делаем новые уведомления устаревшими
         /// </summary>
@@ -60,60 +61,85 @@ namespace Mite.BLL.Services
             var repo = Database.GetRepo<NotificationRepository, Notification>();
             return repo.RemoveByUserAsync(userId);
         }
+
+        public IList<NotificationModel> GetByUser(string userId, bool onlyNew)
+        {
+            var repo = Database.GetRepo<NotificationRepository, Notification>();
+            var notifications = repo.GetByUser(userId, onlyNew);
+            var notificationModels = Mapper.Map<IList<NotificationModel>>(notifications);
+
+            var builder = new StringBuilder();
+            foreach (var notifyModel in notificationModels)
+            {
+                notifyModel.Content = GetContent(notifyModel, builder);
+                builder.Clear();
+            }
+            return notificationModels;
+        }
+
         public async Task<List<NotificationModel>> GetByUserAsync(string userId, bool onlyNew)
         {
             var repo = Database.GetRepo<NotificationRepository, Notification>();
 
             var notifications = await repo.GetByUserAsync(userId, onlyNew);
             var notificationModels = Mapper.Map<List<NotificationModel>>(notifications);
-            var content = new StringBuilder();
+            var builder = new StringBuilder();
             foreach(var notifyModel in notificationModels)
             {
-                content.AppendFormat("<a href=\"/user/profile/{0}\">{0}</a> ", notifyModel.NotifyUser.UserName);
-                switch (notifyModel.NotificationType)
-                {
-                    case NotificationTypes.CommentRating:
-                        if (!string.IsNullOrEmpty(notifyModel.SourceValue))
-                            //sourceValue like {postId}#com{commentId}
-                            content.Append($"оценил ваш <a href=\"/posts/showpost/{notifyModel.SourceValue}\">комментарий</a>.");
-                        else
-                            content.Append("оценил ваш комментарий.");
-                        break;
-                    case NotificationTypes.PostComment:
-                        if (!string.IsNullOrEmpty(notifyModel.SourceValue))
-                        {
-                            //sourceValue like {postId}#com{commentId}
-                            content.Append("прокомментировал вашу ");
-                            content.Append($"<a href=\"/posts/showpost/{notifyModel.SourceValue}\">работу</a>.");
-                        }
-                        else
-                        {
-                            content.Append("прокомментировал вашу работу.");
-                        }
-                        break;
-                    case NotificationTypes.PostRating:
-                        //sourceValue is post id
-                        content.Append("оценил вашу ");
-                        if (!string.IsNullOrEmpty(notifyModel.SourceValue))
-                            content.Append($"<a href=\"/posts/showpost/{notifyModel.SourceValue}\">работу</a>.");
-                        else
-                            content.Append("работу.");
-                        break;
-                    case NotificationTypes.Follower:
-                        content.Append("подписался на вас.");
-                        break;
-                    case NotificationTypes.CommentReply:
-                        content.Append($"ответил на ваш <a href=\"/posts/showpost/{notifyModel.SourceValue}\">комментарий</a>.");
-                        break;
-                    default:
-                        throw new NotImplementedException("Неизвестный тип уведомления");
-                }
-                notifyModel.Content = content.ToString();
-                content.Clear();
+                notifyModel.Content = GetContent(notifyModel, builder);
+                builder.Clear();
             }
             return notificationModels.OrderByDescending(x => x.NotifyDate).ToList();
         }
-        
+        /// <summary>
+        /// Контент уведомления
+        /// </summary>
+        /// <param name="notifyModel"></param>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        private string GetContent(NotificationModel notifyModel, StringBuilder builder)
+        {
+            builder.AppendFormat("<a href=\"/user/profile/{0}\">{0}</a> ", notifyModel.NotifyUser.UserName);
+            switch (notifyModel.NotificationType)
+            {
+                case NotificationTypes.CommentRating:
+                    if (!string.IsNullOrEmpty(notifyModel.SourceValue))
+                        //sourceValue like {postId}#com{commentId}
+                        builder.AppendFormat("оценил ваш <a href=\"/posts/showpost/{0}\">комментарий</a>.", notifyModel.SourceValue);
+                    else
+                        builder.Append("оценил ваш комментарий.");
+                    break;
+                case NotificationTypes.PostComment:
+                    if (!string.IsNullOrEmpty(notifyModel.SourceValue))
+                    {
+                        //sourceValue like {postId}#com{commentId}
+                        builder.Append("прокомментировал вашу ");
+                        builder.AppendFormat("<a href=\"/posts/showpost/{0}\">работу</a>.", notifyModel.SourceValue);
+                    }
+                    else
+                    {
+                        builder.Append("прокомментировал вашу работу.");
+                    }
+                    break;
+                case NotificationTypes.PostRating:
+                    //sourceValue is post id
+                    builder.Append("оценил вашу ");
+                    if (!string.IsNullOrEmpty(notifyModel.SourceValue))
+                        builder.AppendFormat("<a href=\"/posts/showpost/{0}\">работу</a>.", notifyModel.SourceValue);
+                    else
+                        builder.Append("работу.");
+                    break;
+                case NotificationTypes.Follower:
+                    builder.Append("подписался на вас.");
+                    break;
+                case NotificationTypes.CommentReply:
+                    builder.AppendFormat("ответил на ваш <a href=\"/posts/showpost/{0}\">комментарий</a>.", notifyModel.SourceValue);
+                    break;
+                default:
+                    throw new NotImplementedException("Неизвестный тип уведомления");
+            }
+            return builder.ToString();
+        }
         public Task ReadAsync(string userId)
         {
             var repo = Database.GetRepo<NotificationRepository, Notification>();

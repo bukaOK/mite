@@ -31,6 +31,10 @@
                     @Html.HiddenFor(x => x.Tags, new { Value = tagsRow })
                     <div class="default text">Теги</div>
                     <div class="menu">
+                        @foreach (var tagName in Model.AvailableTags)
+                        {
+                            <div class="item" data-value="@tagName">@tagName</div>
+                        }
                     </div>
                 </div>
             </div>
@@ -56,7 +60,7 @@
             </div>
             <button type="button" class="ui green button" id="save-btn">Сохранить</button>
             @Html.ValidationSum("result-msg")
-            <div class="ui hidden error message" style="text-align: center" id="result-msg"></div>
+            <div class="ui error message" id="result-msg"></div>
         </div>
     </form>
 </div>
@@ -83,7 +87,7 @@
         var $resultMsg = $('#result-msg');
         @{
             var url = string.IsNullOrEmpty(Model.Header)
-                ? Url.RouteUrl("AddPost", new { postType = (byte)PostContentTypes.Image })
+                ? Url.Action("AddPost", "Posts")
                 : Url.Action("UpdatePost", "Posts");
         }
         var postType = isPublished ? '@PostTypes.Published' : '@PostTypes.Drafts';
@@ -105,24 +109,19 @@
             type: 'post',
             dataType: 'json',
             success: function (resp) {
-                var validErrorStatus = @((byte)Mite.Core.JsonStatuses.ValidationError);
-                if(resp.status == validErrorStatus){
-                    $resultMsg.addClass('red').removeClass('green');
+                if (resp.status === Settings.apiStatuses.validationError) {
                     var errorStr = 'Ошибка при сохранении: ' + resp.message;
-                    $resultMsg.html(errorStr)
-                } else{
-                    $resultMsg.addClass('green').removeClass('red');
-                    $resultMsg.html('Работа успешно сохранена.');
-                    if(isPublished){
-                        location.href = "/user/profile/@User.Identity.Name";
-                    } else{
-                        location.href = "/user/profile/@User.Identity.Name#posts/drafts";
-                    }
+                    $('#imgPostForm').form('add errors', [errorStr]);
+                } else {
+                    iziToast.success({
+                        title: 'Успешно!',
+                        message: 'Работа сохранена.'
+                    });
+                    location.reload();
                 }
             },
             error: function (jqXhr) {
-                $resultMsg.addClass('red').removeClass('green');
-                $resultMsg.html('Ошибка во время добавления поста')
+                $('#imgPostForm').form('add errors', ['Ошибка во время добавления поста']);
             },
             complete: function (jqXhr) {
                 $saveBtn.removeClass('loading disabled');
@@ -135,35 +134,8 @@
         ViewHelper.activateSidebarItem('#editImageItem');
         ViewHelper.disableFormSubmitting('#imgPostForm');
         $('.ui.checkbox').checkbox();
-        $.ajax({
-            url: '/api/tags',
-            type: 'get',
-            success: function(data){
-                var tagsMenu = $('#select-tags');
-                var tagsItems = '';
-                for(var i = 0; i < data.length; i++){
-                    tagsItems += '<div class="item" data-value="' + data[i].Name + '">' + data[i].Name + '</div>'
-                }
-                tagsMenu.children('.menu').html(tagsItems);
-                tagsMenu.dropdown({
-                    allowAdditions: true,
-                    fullTextSearch: true,
-                    keys: {
-                        delimiter: false
-                    },
-                    showOnFocus: false,
-                    forceSelection: false,
-                    match: 'text',
-                    maxSelections: 5,
-                    onShow: function(){
-                        $(this).children('.menu').perfectScrollbar();
-                    }
-                });
-            },
-            error: function(jqXhr){
-                swal('Упс!', 'Ошибка инициализации тегов.', 'error');
-            }
-        });
+        $('#select-tags').dropdown();
+        new PerfectScrollbar('#select-tags>.menu')
         //Отправляем форму
         $('#save-btn').click(function(ev) {
             var $saveBtn = $(this);

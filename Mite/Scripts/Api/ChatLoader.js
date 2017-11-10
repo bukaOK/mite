@@ -83,10 +83,9 @@ ChatLoader.prototype.loadNext = function () {
                 ev.stopPropagation();
             }).addClass('initialized');
             if (!initialized) {
-                setTimeout(function () {
-                    self.msgPs.update();
-                    self.chat.parent().scrollTop(self.chat[0].offsetHeight);
-                }, 50);
+                self.msgPs.destroy();
+                self.msgPs = new PerfectScrollbar(self.chat[0].parentNode);
+                self.chat.parent().scrollTop(self.chat[0].offsetHeight);
             }
             self._page++;
         },

@@ -662,7 +662,10 @@ else
                 $btn.siblings().show();
             },
             error: function (jqXhr) {
-                swal('Упс!', 'Ошибка сервера', 'error');
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Ошибка сервера.'
+                });
             },
             complete: function(){
                 $btn.removeClass('loading disabled');

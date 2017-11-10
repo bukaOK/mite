@@ -83,26 +83,33 @@
         /**
          * Сохранить коллекцию
          * @param {HTMLElement} btn
+         * @param {('add'|'edit')} saveMode добавить или обновить
         */
-        saveCollection: function (btn) {
-            var self = Posts.Api;
+        saveCollection: function (btn, saveMode) {
+            var self = Posts.Api,
+                saveUrl = saveMode === 'add' ? '/posts/addpost' : '/posts/updatepost';
 
             if (!$('.p-form').form('validate form') || !$('.p-item-form:visible').form('validate form')) {
                 return;
             }
+            var $items = $('.p-item-form:visible');
+            if ($items.length === 0) {
+                iziToast.error({
+                    title: 'Нет элементов!',
+                    message: 'Для сохранения необходим хотя бы один элемент коллекции.'
+                });
+                return;
+            }
             $(btn).addClass('loading disabled');
             var model = {
+                Id: $('#Id').val(),
                 Header: $('#Header').val(),
                 Description: $('#Description').val(),
                 Content: $('#Content').val(),
                 ContentType: 'ImageCollection',
+                Tags: $('[name="Tags"]').val().split(','),
                 Collection: []
             };
-            var $items = $('.p-item-form:visible');
-            if ($items.length === 0) {
-                swal('Нет элементов!', 'Для сохранения необходим хотя бы один элемент коллекции', 'warning');
-                return;
-            }
             $('.p-item-form:visible').each(function (index, formEl) {
                 var item = {
                     Content: $(formEl).find('[name="Content"]').val(),
@@ -116,10 +123,10 @@
             $('#publishConfirmModal').modal({
                 onApprove: function () {
                     model.PublishDate = new Date().toISOString();
-                    self._send(model, '/posts/addpost', btn);
+                    self._send(model, saveUrl, btn);
                 },
                 onDeny: function () {
-                    self._send(model, '/posts/addpost', btn);
+                    self._send(model, saveUrl, btn);
                 }
             }).modal('show');
         }

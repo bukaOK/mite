@@ -23,6 +23,12 @@ namespace Mite.DAL.Repositories
                 .ToListAsync();
             return notifications;
         }
+        public IList<Notification> GetByUser(string userId, bool onlyNew)
+        {
+            return Table.Include(x => x.NotifyUser)
+                .Where(x => x.UserId == userId && (onlyNew ? x.IsNew : x.IsNew || !x.IsNew))
+                .OrderByDescending(x => x.NotifyDate).ToList();
+        }
         public Task ReadByUserAsync(string userId)
         {
             var query = "update dbo.\"Notifications\" set \"IsNew\"=false where \"UserId\"=@UserId and \"IsNew\"=true;";

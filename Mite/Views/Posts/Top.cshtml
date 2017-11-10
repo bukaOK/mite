@@ -329,7 +329,10 @@
                 });
             },
             onError: function () {
-                swal('Упс!', 'Ошибка сервера.', 'error');
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Ошибка сервера.'
+                });
                 $('.loader-wrapper').removeClass('active');
             },
             ajax: {

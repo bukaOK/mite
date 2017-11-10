@@ -1,0 +1,145 @@
+﻿@model Mite.Models.UserNotificationsModel
+@using Mite.CodeData.Enums
+@{
+    ViewBag.Title = "Уведомления";
+}
+
+<div class="ui grid">
+    <div class="ten wide computer eleven wide tablet sixteen wide mobile centered column">
+        <div class="ui stackable grid">
+            <div class="five wide column">
+                <div class="ui vertical menu" id="feedsFilter">
+                    <a class="active item" data-tab="all">Все</a>
+                    <a class="item" data-tab="comments">Комментарии</a>
+                    <a class="item" data-tab="followers">Подписки</a>
+                    <a class="item" data-tab="ratings">Оценки</a>
+                </div>
+                <button class="ui inverted fluid red button" onclick="cleanNotifications(this)">
+                    <i class="remove icon"></i>Очистить
+                </button>
+            </div>
+            <div class="eleven wide column">
+                <div class="ui center aligned segment">
+                    <h3 class="ui left aligned dividing header">
+                        Уведомления
+                    </h3>
+                    <div class="ui active basic segment feed tab" data-tab="all">
+                        @if (Model.All.Count() > 0)
+                        {
+                            foreach (var notification in Model.All)
+                            {
+                                <div class="event">
+                                    <div class="label">
+                                        <img src="@notification.NotifyUser.AvatarSrc">
+                                    </div>
+                                    <div class="content">
+                                        <div class="summary">
+                                            @Html.Raw(notification.Content)
+                                            <div class="date" data-utc-date="@notification.NotifyDate.ToString("o")"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <span>Уведомлений нет</span>
+                        }
+                    </div>
+                    <div class="ui basic segment feed tab" data-tab="comments">
+                        @if (Model.Comments.Count() > 0)
+                        {
+                            foreach (var notification in Model.Comments)
+                            {
+                                <div class="event">
+                                    <div class="label">
+                                        <img src="@notification.NotifyUser.AvatarSrc">
+                                    </div>
+                                    <div class="content">
+                                        <div class="summary">
+                                            @Html.Raw(notification.Content)
+                                            <div class="date" data-utc-date="@notification.NotifyDate.ToString("o")"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <span>Уведомлений нет</span>
+                        }
+                    </div>
+                    <div class="ui basic segment feed tab" data-tab="followers">
+                        @if (Model.Followers.Count() > 0)
+                        {
+                            foreach (var notification in Model.Followers)
+                            {
+                                <div class="event">
+                                    <div class="label">
+                                        <img src="@notification.NotifyUser.AvatarSrc">
+                                    </div>
+                                    <div class="content">
+                                        <div class="summary">
+                                            @Html.Raw(notification.Content)
+                                            <div class="date" data-utc-date="@notification.NotifyDate.ToString("o")"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <span>Уведомлений нет</span>
+                        }
+                    </div>
+                    <div class="ui basic segment feed tab" data-tab="ratings">
+                        @if (Model.Ratings.Count() > 0)
+                        {
+                            foreach (var notification in Model.Ratings)
+                            {
+                                <div class="event">
+                                    <div class="label">
+                                        <img src="@notification.NotifyUser.AvatarSrc">
+                                    </div>
+                                    <div class="content">
+                                        <div class="summary">
+                                            @Html.Raw(notification.Content)
+                                            <div class="date" data-utc-date="@notification.NotifyDate.ToString("o")"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <span>Уведомлений нет</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function cleanNotifications(btn) {
+        $(btn).addClass('loading disabled');
+        $.ajax({
+            type: 'delete',
+            url: '/api/notification',
+            success: function(){
+                var emptyMsg = '<span>Уведомлений нет</span>';
+                $('.tab.feed').html(emptyMsg);
+            },
+            error: function(){
+                alert('Ошибка сервера');
+            },
+            complete: function(){
+                $(btn).removeClass('loading disabled');
+            }
+        });
+    }
+    $(function () {
+        $('#notifications-item').addClass('active');
+        $('#feedsFilter .item').tab();
+    });
+</script>

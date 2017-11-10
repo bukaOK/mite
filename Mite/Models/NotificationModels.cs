@@ -29,4 +29,11 @@ namespace Mite.Models
         public DateTime NotifyDate { get; set; }
         public string NotifyDateStr { get; set; }
     }
+    public class UserNotificationsModel
+    {
+        public IEnumerable<NotificationModel> All { get; set; }
+        public IEnumerable<NotificationModel> Comments { get; set; }
+        public IEnumerable<NotificationModel> Followers { get; set; }
+        public IEnumerable<NotificationModel> Ratings { get; set; }
+    }
 }

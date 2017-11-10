@@ -170,6 +170,10 @@
     <Compile Include="Migrations\201711011628548_AddPostCollection.Designer.cs">
       <DependentUpon>201711011628548_AddPostCollection.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201711051241144_AddDisputeChat.cs" />
+    <Compile Include="Migrations\201711051241144_AddDisputeChat.Designer.cs">
+      <DependentUpon>201711051241144_AddDisputeChat.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\AuthorServiceRepository.cs" />
@@ -242,6 +246,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201711011628548_AddPostCollection.resx">
       <DependentUpon>201711011628548_AddPostCollection.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711051241144_AddDisputeChat.resx">
+      <DependentUpon>201711051241144_AddDisputeChat.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

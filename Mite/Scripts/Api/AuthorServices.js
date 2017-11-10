@@ -57,10 +57,16 @@
             type: 'delete',
             data: 'id=' + id,
             success: function () {
-                swal('Успешно!', 'Услуга успешно удалена.', 'success');
+                iziToast.success({
+                    title: 'Успешно!',
+                    message: 'Услуга удалена.'
+                });
             },
             error: function (jqXhr) {
-                swal('Упс!', 'Не удалось удалить услугу.', 'error');
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Не удалось удалить услугу.'
+                });
             }
         })
     }

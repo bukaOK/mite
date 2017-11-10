@@ -4,6 +4,7 @@
 @{
     ViewBag.Title = "Заказы";
     var isAuthor = User.IsInRole(RoleNames.Author);
+    var isModer = User.IsInRole(RoleNames.Moderator);
 }
 @section styles{
     <style>
@@ -17,11 +18,15 @@
 }
 <div class="ui segment">
     <h2 class="ui dividing header">Заказы</h2>
-    @if (isAuthor)
+    @if (isAuthor || isModer)
     {
         <div class="ui secondary stackable menu" role="tablist">
             <a class="active item" role="tab" data-tab="incoming">Входящие</a>
             <a class="item" role="tab" data-tab="outgoing">Исходящие</a>
+            @if (isModer)
+            {
+                <a class="item" role="tab" data-tab="moder">Модератору</a>
+            }
         </div>
         <div class="ui stackable grid tab" data-tab="incoming" role="tabpanel">
             <div class="three wide column">
@@ -31,7 +36,9 @@
                     <a class="item" role="tab" data-tab="expectclient">Ожидает подтверждения</a>
                     <a class="item" role="tab" data-tab="dispute">В споре</a>
                     <a class="item" role="tab" data-tab="confirmed">Подтвержденные</a>
+                    <a class="item" role="tab" data-tab="moderconfirmed">Подтв. модератором</a>
                     <a class="item" role="tab" data-tab="rejected">Отклоненные</a>
+                    <a class="item" role="tab" data-tab="moderrejected">Отклон. модератором</a>
                 </div>
             </div>
             <div class="twelve wide column">
@@ -40,7 +47,9 @@
                 <div class="ui tab" role="tabpanel" data-tab="expectclient"></div>
                 <div class="ui tab" role="tabpanel" data-tab="dispute"></div>
                 <div class="ui tab" role="tabpanel" data-tab="confirmed"></div>
+                <div class="ui tab" role="tabpanel" data-tab="moderconfirmed"></div>
                 <div class="ui tab" role="tabpanel" data-tab="rejected"></div>
+                <div class="ui tab" role="tabpanel" data-tab="moderrejected"></div>
                 <div class="dot-loader-wrapper">
                     <div class="dot-loader">
                         <div class="dot"></div>
@@ -58,7 +67,9 @@
                     <a class="item" role="tab" data-tab="expectclient">Ожидает подтверждения</a>
                     <a class="item" role="tab" data-tab="dispute">В споре</a>
                     <a class="item" role="tab" data-tab="confirmed">Подтвержденные</a>
+                    <a class="item" role="tab" data-tab="moderconfirmed">Подтв. модератором</a>
                     <a class="item" role="tab" data-tab="rejected">Отклоненные</a>
+                    <a class="item" role="tab" data-tab="moderrejected">Отклон. модератором</a>
                 </div>
             </div>
             <div class="twelve wide column">
@@ -67,7 +78,9 @@
                 <div class="ui tab" role="tabpanel" data-tab="expectclient"></div>
                 <div class="ui tab" role="tabpanel" data-tab="dispute"></div>
                 <div class="ui tab" role="tabpanel" data-tab="confirmed"></div>
+                <div class="ui tab" role="tabpanel" data-tab="moderconfirmed"></div>
                 <div class="ui tab" role="tabpanel" data-tab="rejected"></div>
+                <div class="ui tab" role="tabpanel" data-tab="moderrejected"></div>
                 <div class="dot-loader-wrapper">
                     <div class="dot-loader">
                         <div class="dot"></div>
@@ -77,6 +90,26 @@
                 </div>
             </div>
         </div>
+        if (isModer)
+        {
+            <div class="ui stackable grid tab" data-tab="moder" role="tabpanel">
+                <div class="three wide column">
+                    <div class="ui vertical secondary pointing menu" role="tablist">
+                        <a class="item" role="tab" data-tab="dispute">В споре</a>
+                    </div>
+                </div>
+                <div class="twelve wide column">
+                    <div class="ui tab" role="tabpanel" data-tab="dispute"></div>
+                    <div class="dot-loader-wrapper">
+                        <div class="dot-loader">
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
     }
     else
     {
@@ -86,14 +119,18 @@
             <a class="item" role="tab" data-tab="expectclient">Ожидает подтверждения</a>
             <a class="item" role="tab" data-tab="dispute">В споре</a>
             <a class="item" role="tab" data-tab="confirmed">Подтвержденные</a>
+            <a class="item" role="tab" data-tab="moderconfirmed">Подтв. модератором</a>
             <a class="item" role="tab" data-tab="rejected">Отклоненные</a>
+            <a class="item" role="tab" data-tab="moderrejected">Отклон. модератором</a>
         </div>
         <div class="ui tab" role="tabpanel" data-tab="new"></div>
         <div class="ui tab" role="tabpanel" data-tab="expectpayment"></div>
         <div class="ui tab" role="tabpanel" data-tab="expectclient"></div>
         <div class="ui tab" role="tabpanel" data-tab="dispute"></div>
         <div class="ui tab" role="tabpanel" data-tab="confirmed"></div>
+        <div class="ui tab" role="tabpanel" data-tab="moderconfirmed"></div>
         <div class="ui tab" role="tabpanel" data-tab="rejected"></div>
+        <div class="ui tab" role="tabpanel" data-tab="moderrejected"></div>
         <div class="dot-loader-wrapper">
             <div class="dot-loader">
                 <div class="dot"></div>
@@ -117,6 +154,11 @@
                     <span title="Осталось">{{:EndDate}}</span>
                 </div>
                 <div class="description">{{:Description}}</div>
+                {{if forModer}}
+                <div class="extra">
+                    <a class="ui violet compact button" href="@Url.Action("BindDeal", "Moder")/{{:Id}}">Разрешить</a>
+                </div>
+                {{/if}}
             </div>
         </div>
         {{/for}}
@@ -140,11 +182,12 @@
 @Scripts.Render("~/bundles/jsrender")
 <script>
     var isAuthor = @isAuthor.ToString().ToLower();
+    var isModer = @isModer.ToString().ToLower();
     $(function () {
         $('.deals.item').addClass('active');
         var tabs = [];
         TabFilter.range = 30;
-        if (isAuthor) {
+        if (isAuthor || isModer) {
             var incomingTab = new Tab({
                 name: 'incoming',
                 isActive: true,
@@ -178,10 +221,26 @@
                     $content: $('.tab[data-tab="outgoing"] .tab[data-tab="' + elem.dataset.tab + '"]')
                 }));
             });
+            if (isModer) {
+                var moderTab = new Tab({
+                    name: 'moder',
+                    parentTab: null
+                });
+                tabs.push(moderTab);
+                moderTab.content.find('.item[data-tab]').each(function (i, elem) {
+                    tabs.push(new Tab({
+                        name: elem.dataset.tab,
+                        parentTab: moderTab,
+                        $item: $(elem),
+                        $content: $('.tab[data-tab="moder"] .tab[data-tab="' + elem.dataset.tab + '"]')
+                    }));
+                });
+            }
         } else {
             $('.item[data-tab]').each(function (i, elem) {
                 var tabSettings = {
                     name: elem.dataset.tab,
+                    parentTab: null
                 };
                 if (i === 0) {
                     tabSettings.isActive = true;

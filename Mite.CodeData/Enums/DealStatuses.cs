@@ -31,9 +31,17 @@ namespace Mite.CodeData.Enums
         /// <summary>
         /// Отклонено модератором(в пользу клиента)
         /// </summary>
+        ModerRejected = 5,
+        /// <summary>
+        /// Закрыто
+        /// </summary>
         Rejected = 6,
         /// <summary>
-        /// Подтверждено клиентом(или модератором в пользу автора)
+        /// Подтверждено модератором(в пользу автора)
+        /// </summary>
+        ModerConfirmed = 7,
+        /// <summary>
+        /// Подтверждено клиентом
         /// </summary>
         [Display(Name = "Подтверждено")]
         Confirmed = 2

@@ -245,3 +245,4 @@ ModelManifest.xml
 .fake/
 /Mite/Public/images
 /Mite/Public/documents
+/Mite/bower_components/*

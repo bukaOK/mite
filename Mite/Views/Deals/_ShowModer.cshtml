@@ -1,0 +1,31 @@
+﻿@using Mite.CodeData.Enums
+@using Microsoft.AspNet.Identity
+@model Mite.Models.DealModel
+
+<h3 class="ui header">Информация</h3>
+<div class="ui relaxed large list" role="list">
+    <a class="item" role="listitem">
+        <i class="blue calendar large icon"></i>
+        <span class="content">
+            <span class="header">
+                Дата окончания: @Html.Raw(Model.Deadline?.ToString("dd.MM.yyyy") ?? "Неизвестно(ожидаем автора)")
+            </span>
+        </span>
+    </a>
+    <a class="item" role="listitem">
+        <i class="green ruble large icon"></i>
+        <span class="content">
+            <span class="header">Цена: @Html.Raw(Model.Price?.ToString() ?? "Неизвестно(ожидаем автора)")</span>
+        </span>
+    </a>
+    <a class="item" role="listitem">
+        <i class="green ruble large icon"></i>
+        <span class="content">
+            <span class="header">Требования: @Html.Raw(Model.Demands ?? "Неизвестно(ожидаем клиента)")</span>
+        </span>
+    </a>
+</div>
+@if(Model.Status == DealStatuses.Dispute && Model.Moder.Id == User.Identity.GetUserId())
+{
+    Html.RenderPartial("_Chat", Model.DisputeChat);
+}

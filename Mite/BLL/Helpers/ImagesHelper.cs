@@ -55,6 +55,31 @@ namespace Mite.BLL.Helpers
                 throw e;
             }
         }
+        public static (string vPath, string compressedVPath) CreateImage(string imagesFolder, string base64)
+        {
+            string vPath = null, compressedVPath = null;
+            try
+            {
+                vPath = FilesHelper.CreateImage(imagesFolder, base64);
+                var fullPath = HostingEnvironment.MapPath(vPath);
+                Compressed.Compress(fullPath);
+                compressedVPath = Compressed.CompressedVirtualPath(fullPath);
+            }
+            catch(Exception e)
+            {
+                FilesHelper.DeleteFile(vPath);
+                FilesHelper.DeleteFile(compressedVPath);
+                throw e;
+            }
+
+            return (vPath, compressedVPath);
+        }
+        public static void DeleteImage(string vPath, string compressedVPath)
+        {
+            var fullImgPath = HostingEnvironment.MapPath(vPath);
+            FilesHelper.DeleteFile(vPath);
+            FilesHelper.DeleteFile(Compressed.CompressedVirtualPath(fullImgPath));
+        }
         public static class Compressed
         {
             public static string CompressedVirtualPath(string path)

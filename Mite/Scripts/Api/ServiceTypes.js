@@ -17,7 +17,10 @@ var ServiceTypesApi = {
                 self.table.html(html);
             },
             error: function () {
-                swal('Упс!', 'Ошибка при инициализции типов услуг.', 'error');
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Типы услуг не загружены.'
+                });
             }
         })
     },
@@ -101,7 +104,10 @@ var ServiceTypesApi = {
                 $tr.remove();
             },
             error: function (jqXhr) {
-                swal('Ошибка', 'Ошибка при удалении', 'error');
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Ошибка при удалении.'
+                });
             }
         });
     }

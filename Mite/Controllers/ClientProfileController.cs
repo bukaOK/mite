@@ -10,6 +10,7 @@ using System.Web.Mvc;
 
 namespace Mite.Controllers
 {
+    [Route("client/profile/{name}/{action=Index}")]
     public class ClientProfileController : BaseController
     {
         private readonly IUserService userService;

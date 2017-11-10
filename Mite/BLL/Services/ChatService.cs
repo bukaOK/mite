@@ -36,7 +36,7 @@ namespace Mite.BLL.Services
             {
                 Members = model.Members.Select(x => new User
                 {
-                    Id = x
+                    Id = x.Id
                 }).ToList()
             };
             try

@@ -69,18 +69,18 @@ namespace Mite.Controllers
                 case PostContentTypes.Image:
                     return View("EditImagePost", new ImagePostModel
                     {
-                        Tags = tags
+                        AvailableTags = tags
                     });
                 case PostContentTypes.Document:
                     return View("EditWritePost", new WritingPostModel
                     {
                         Helper = helpersService.GetByUser(User.Identity.GetUserId()),
-                        Tags = tags
+                        AvailableTags = tags
                     });
                 case PostContentTypes.ImageCollection:
                     return View("EditImageCollection", new ImagePostModel
                     {
-                        Tags = tags
+                        AvailableTags = tags
                     });
                 default:
                     return NotFound();
@@ -91,14 +91,13 @@ namespace Mite.Controllers
             ViewBag.Title = "Редактирование работы";
 
             var post = await postsService.GetWithTagsAsync(id);
+
             if (User.Identity.GetUserId() != post.User.Id)
-            {
                 return Forbidden();
-            }
             if (!post.CanEdit)
-            {
                 return BadRequest();
-            }
+
+            post.AvailableTags = (await tagsService.GetForUserAsync()).ToList();
             switch (post.ContentType)
             {
                 case PostContentTypes.Image:

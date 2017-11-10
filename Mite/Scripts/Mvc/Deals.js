@@ -1,7 +1,16 @@
 ﻿var DealsMvc = {
     formSelector: '#dealForm',
     baseUrl: '/deals/',
-    _send: function (action, method, succCallback, $btn, data) {
+    /**
+     * Отправка запроса
+     * @param {string} action action url
+     * @param {string} method метод запроса
+     * @param {function} succCallback callback при успехе
+     * @param {JQuery<HTMLElement>} $btn кнопка сохранения
+     * @param {Object} data данные для запроса
+     * @param {boolean} validate нужна ли валидация полей
+    */
+    _send: function (action, method, succCallback, $btn, data, validate) {
         var url = this.baseUrl + action,
             $form = $(this.formSelector),
             $msg = $form.find('.message');
@@ -10,7 +19,7 @@
         if (data === undefined) {
             data = $form.serialize();
         }
-        if (!$form.form('validate form')) {
+        if (validate !== false && !$form.form('validate form')) {
             return false;
         }
         return $.ajax({
@@ -110,9 +119,9 @@
         }, $btn, null)
     },
     close: function (btn, id) {
-        return this._send('close', 'post', function (resp) {
-            location.href = '/user/deals';
-        }, $(btn));
+        return this._send('reject/' + id, 'post', function (resp) {
+            location.reload();
+        }, $(btn), null, false);
     },
     toExpectPayment: function (btn) {
         var $form = $(this.formSelector);

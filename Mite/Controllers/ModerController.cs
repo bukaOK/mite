@@ -1,4 +1,8 @@
 ﻿using AutoMapper;
+using Microsoft.AspNet.Identity;
+using Mite.BLL.IdentityManagers;
+using Mite.CodeData.Constants;
+using Mite.CodeData.Enums;
 using Mite.Core;
 using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
@@ -13,16 +17,18 @@ using System.Web.Mvc;
 
 namespace Mite.Controllers
 {
-    [Authorize(Roles = "moder")]
+    [Authorize(Roles = RoleNames.Moderator)]
     public class ModerController : BaseController
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly ILogger logger;
+        private readonly AppUserManager userManager;
 
-        public ModerController(IUnitOfWork unitOfWork, ILogger logger)
+        public ModerController(IUnitOfWork unitOfWork, ILogger logger, AppUserManager userManager)
         {
             this.unitOfWork = unitOfWork;
             this.logger = logger;
+            this.userManager = userManager;
         }
         public ViewResult Index()
         {
@@ -62,6 +68,37 @@ namespace Mite.Controllers
             await repo.UpdateAsync(tag);
         }
         /// <summary>
+        /// Привязать модератора к сделке
+        /// </summary>
+        /// <param name="id">id сделки</param>
+        /// <returns></returns>
+        public async Task<ActionResult> BindToDeal(long id)
+        {
+            var repo = unitOfWork.GetRepo<DealRepository, Deal>();
+            var chatRepo = unitOfWork.GetRepo<ChatRepository, Chat>();
+
+            var deal = await repo.GetAsync(id);
+            if (deal.DisputeChatId == null || deal.ModerId != null)
+                return Forbidden();
+            var moder = await userManager.FindByIdAsync(User.Identity.GetUserId());
+            var chat = await chatRepo.GetWithMembersAsync((Guid)deal.DisputeChatId);
+            if (chat.Members.Any(x => x.Id == moder.Id))
+                return Forbidden();
+            chat.Members.Add(moder);
+            try
+            {
+                deal.ModerId = User.Identity.GetUserId();
+                await repo.UpdateAsync(deal);
+                await chatRepo.UpdateAsync(chat);
+                return RedirectToAction("Show", "Deals", new { id = id });
+            }
+            catch(Exception e)
+            {
+                logger.Error($"Id: {id}. Ошибка при привязке сделки: {e.Message}");
+                return InternalServerError("Ошибка при привязке сделки");
+            }
+        }
+        /// <summary>
         /// Блокируем пост(за нарушения и пр.)
         /// </summary>
         /// <returns></returns>
@@ -69,7 +106,7 @@ namespace Mite.Controllers
         {
             var repo = unitOfWork.GetRepo<PostsRepository, Post>();
             var post = await repo.GetAsync(id);
-            post.Blocked = true;
+            post.Type = PostTypes.Blocked;
             try
             {
                 await repo.UpdateAsync(post);
@@ -86,7 +123,7 @@ namespace Mite.Controllers
             var repo = unitOfWork.GetRepo<PostsRepository, Post>();
 
             var post = await repo.GetAsync(id);
-            post.Blocked = false;
+            post.Type = PostTypes.Published;
             try
             {
                 await repo.UpdateAsync(post);

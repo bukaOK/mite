@@ -46,5 +46,12 @@ namespace Mite.DAL.Repositories
             var query = "delete from dbo.\"DialogMembers\" where Id=@id and UserId=@userId";
             return Db.ExecuteAsync(query, new { id, userId });
         }
+        public async Task AddMemberAsync(Guid id, User user)
+        {
+            var chat = await Table.Include(x => x.Members).FirstAsync(x => x.Id == id);
+            chat.Members.Add(user);
+            DbContext.Entry(chat).State = EntityState.Modified;
+            await SaveAsync();
+        }
     }
 }

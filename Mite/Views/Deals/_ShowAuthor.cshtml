@@ -1,15 +1,14 @@
 ﻿@using Mite.CodeData.Enums
 @using Mite.Extensions
+@using Microsoft.AspNet.Identity
 @model Mite.Models.DealAuthorModel
 
 @{ 
-    var demands = string.IsNullOrEmpty(Model.Demands) ? "Ожидаются..." : Model.Demands;
     var deadline = Model.Deadline ?? DateTime.UtcNow;
+    var userType = User.Identity.GetUserId() == Model.Client.Id ? "client" : "author";
 }
 @if (Model.Status == DealStatuses.New)
 {
-    <h3 class="ui header">Требования</h3>
-    <p>@demands</p>
     <h3 class="ui header">Параметры</h3>
     <form class="ui form" id="dealForm">
         @Html.HiddenFor(x => x.Id)
@@ -23,11 +22,11 @@
                 @Html.TextBoxFor(x => x.DeadlineStr, new { placeholder = deadline.ToString("dd.MM.yyyy") })
             </div>
         </div>
-        <button class="ui red button" type="button" onclick="DealsMvc.close(this)">
+        <button class="ui red button" type="button" onclick="DealsMvc.close(this, '@Model.Id')">
             <i class="close icon"></i>
             Закрыть сделку
         </button>
-        <button type="button" class="ui green button" onclick="DealsApi.update(this)">Сохранить</button>
+        <button type="button" class="ui green button" onclick="DealsApi.update(this, '@userType')">Сохранить</button>
         <div class="ui error message"></div>
     </form>
 }
@@ -67,11 +66,6 @@ else if (Model.Status == DealStatuses.Confirmed)
 else if (Model.Status == DealStatuses.Rejected)
 {
     <h3 class="ui header">Заказ отклонен</h3>
-
-}
-else if (Model.Status == DealStatuses.Dispute)
-{
-    <h3 class="ui header">Диалог с модератором</h3>
 }
 <script>
     $(function () {

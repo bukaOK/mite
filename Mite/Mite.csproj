@@ -387,7 +387,6 @@
     <Compile Include="Controllers\Api\MessageController.cs" />
     <Compile Include="Controllers\ClientProfileController.cs" />
     <Compile Include="Controllers\FilesController.cs" />
-    <Compile Include="Controllers\MessagesController.cs" />
     <Compile Include="Controllers\AuthorServicesController.cs" />
     <Compile Include="Controllers\CashController.cs" />
     <Compile Include="Controllers\Api\CitiesController.cs" />
@@ -395,13 +394,13 @@
     <Compile Include="Controllers\CitiesController.cs" />
     <Compile Include="Controllers\Api\CommentsController.cs" />
     <Compile Include="Controllers\DealsController.cs" />
+    <Compile Include="Controllers\NotificationController.cs" />
     <Compile Include="Controllers\UserDealsController.cs" />
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\FollowersController.cs" />
     <Compile Include="Controllers\GoogleController.cs" />
     <Compile Include="Controllers\ModerController.cs" />
     <Compile Include="Controllers\Api\NotificationController.cs" />
-    <Compile Include="Controllers\OrdersController.cs" />
     <Compile Include="Controllers\PaymentsController.cs" />
     <Compile Include="Controllers\PostsController.cs" />
     <Compile Include="Controllers\RatingController.cs" />
@@ -458,7 +457,7 @@
     <Compile Include="Models\GooglePlaces\AddressComponent.cs" />
     <Compile Include="Models\HelperModel.cs" />
     <Compile Include="Models\ModerModels.cs" />
-    <Compile Include="Models\NotificationModel.cs" />
+    <Compile Include="Models\NotificationModels.cs" />
     <Compile Include="Models\PaymentModel.cs" />
     <Compile Include="Models\PostModels.cs" />
     <Compile Include="Models\SitemapModels.cs" />
@@ -891,6 +890,7 @@
     <Content Include="Scripts\Custom\MiteTabs.js" />
     <Content Include="Scripts\Custom\SearchFilters.js" />
     <Content Include="Scripts\Custom\Settings.js" />
+    <Content Include="Scripts\iziToast.js" />
     <Content Include="Scripts\jquery-3.1.1.js" />
     <Content Include="Scripts\jquery-3.1.1.min.js" />
     <Content Include="Scripts\jquery-3.1.1.slim.js" />
@@ -970,7 +970,7 @@
     <Content Include="Views\Cash\Wallets.cshtml" />
     <Content Include="Views\Home\Donate.cshtml" />
     <Content Include="Views\Home\Help.cshtml" />
-    <Content Include="Views\UserProfile\Notifications.cshtml" />
+    <Content Include="Views\Notification\Notifications.cshtml" />
     <Content Include="Views\Posts\Top.cshtml" />
     <Content Include="Views\Cash\Index.cshtml" />
     <Content Include="Views\Cash\PayOutYandex.cshtml" />
@@ -1005,6 +1005,8 @@
     <Content Include="Views\Deals\_Chat.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\RadioButtonListOptional.cshtml" />
     <Content Include="Views\ClientProfile\Index.cshtml" />
+    <Content Include="Views\Deals\_ShowModer.cshtml" />
+    <Content Include="Views\Notification\_UserNotifications.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

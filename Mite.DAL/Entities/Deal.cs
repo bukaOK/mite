@@ -41,7 +41,7 @@ namespace Mite.DAL.Entities
         [MaxLength(800)]
         public string ImageResultSrc_50 { get; set; }
         /// <summary>
-        /// Выплачено ли
+        /// Выплачено ли(т.е. true - хранятся в системе, false - у клиента или автора)
         /// </summary>
         public bool Payed { get; set; }
         public byte Rating { get; set; }
@@ -60,6 +60,16 @@ namespace Mite.DAL.Entities
         [ForeignKey("Chat")]
         public Guid ChatId { get; set; }
         public Chat Chat { get; set; }
+        [ForeignKey("DisputeChat")]
+        public Guid? DisputeChatId { get; set; }
+        public Chat DisputeChat { get; set; }
+        /// <summary>
+        /// Привязанный к сделке модератор
+        /// </summary>
+        [ForeignKey("Moder")]
+
+        public string ModerId { get; set; }
+        public User Moder { get; set; }
         [ForeignKey("Client")]
         public string ClientId { get; set; }
         public User Client { get; set; }

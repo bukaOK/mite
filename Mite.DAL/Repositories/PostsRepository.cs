@@ -23,6 +23,33 @@ namespace Mite.DAL.Repositories
         {
             return Table.Include(x => x.Collection).FirstOrDefaultAsync(x => x.Id == id);
         }
+        public override async Task UpdateAsync(Post entity)
+        {
+            var existingPost = await GetWithCollectionAsync(entity.Id);
+            DbContext.Entry(existingPost).CurrentValues.SetValues(entity);
+
+            if(entity.Collection.Count > 0)
+            {
+                var itemsToUpdate = existingPost.Collection.Where(x => entity.Collection.Any(y => y.Id == x.Id));
+                var itemsToAdd = entity.Collection.Where(x => !existingPost.Collection.Any(y => y.Id == x.Id));
+                var itemsToDel = existingPost.Collection.Except(itemsToUpdate);
+
+                foreach (var item in itemsToUpdate)
+                {
+                    DbContext.Entry(existingPost.Collection.First(x => x.Id == item.Id)).CurrentValues.SetValues(item);
+                }
+                foreach(var item in itemsToDel)
+                {
+                    DbContext.Entry(item).State = EntityState.Deleted;
+                }
+                foreach(var item in itemsToAdd)
+                {
+                    existingPost.Collection.Add(item);
+                    DbContext.Entry(item).State = EntityState.Added;
+                }
+            }
+            await SaveAsync();
+        }
         public async override Task RemoveAsync(Guid id)
         {
             var query = "select \"UserId\" from dbo.\"Posts\" where \"Id\"=@id;";
@@ -83,7 +110,7 @@ namespace Mite.DAL.Repositories
         public async Task<Post> GetWithTagsCommentsAsync(Guid id)
         {
             var query = "select * from dbo.\"Posts\" left outer join dbo.\"TagPosts\" on dbo.\"TagPosts\".\"Post_Id\"=dbo.\"Posts\".\"Id\""
-                + " left outer join dbo.\"Tags\" on dbo.\"TagPosts\".\"Tag_Id\"=dbo.\"Tags\".\"Id\" left outer join dbo.\"Comments\""
+                + " full outer join dbo.\"Tags\" on dbo.\"TagPosts\".\"Tag_Id\"=dbo.\"Tags\".\"Id\" full outer join dbo.\"Comments\""
                 + $" on dbo.\"Comments\".\"Post_Id\"=dbo.\"Posts\".\"Id\" where dbo.\"Posts\".\"Id\"=@id;";
 
             return (await Db.QueryAsync<Post, Tag, Comment, Post>(query, (post, tag, comment) =>

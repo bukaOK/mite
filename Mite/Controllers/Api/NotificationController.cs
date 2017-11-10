@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 
-namespace Mite.Controllers
+namespace Mite.Controllers.Api
 {
     [Authorize]
     public class NotificationController : ApiController

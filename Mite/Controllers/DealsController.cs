@@ -4,6 +4,7 @@ using Mite.CodeData.Constants;
 using Mite.CodeData.Enums;
 using Mite.Core;
 using Mite.Models;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
@@ -20,12 +21,20 @@ namespace Mite.Controllers
         }
         public async Task<ActionResult> Show(long id)
         {
+            var currentUserId = User.Identity.GetUserId();
             var deal = await dealService.GetShowAsync(id);
+            if (!string.Equals(currentUserId, deal.Author.Id) && !string.Equals(currentUserId, deal.Client.Id))
+                return Forbidden();
             var isAuthor = User.Identity.GetUserId() == deal.Author.Id;
 
-            deal.Chat.Name = "Диалог с " + (isAuthor ? deal.Client.UserName : deal.Author.UserName);
-            deal.Chat.CurrentUser = isAuthor ? deal.Author : deal.Client;
-            deal.Chat.Companion = isAuthor ? deal.Client : deal.Author;
+            deal.Chat.Name = "Чат с " + deal.Chat.Members.First(x => !string.Equals(currentUserId, x.Id)).UserName;
+            deal.Chat.CurrentUser = deal.Chat.Members.First(x => string.Equals(currentUserId, x.Id));
+
+            if (deal.DisputeChat != null)
+            {
+                deal.DisputeChat.Name = "Чат спора";
+                deal.DisputeChat.CurrentUser = deal.Chat.Members.First(x => x.Id == currentUserId);
+            }
 
             return View(deal);
         }
@@ -89,15 +98,20 @@ namespace Mite.Controllers
         }
         public async Task<ActionResult> Confirm(long id)
         {
-            var result = await dealService.ClientConfirmAsync(id, User.Identity.GetUserId());
+            var result = await dealService.ConfirmAsync(id, User.Identity.GetUserId());
             if (result.Succeeded)
                 return Json(JsonStatuses.Success);
             return Json(JsonStatuses.ValidationError, result.Errors);
         }
+        public async Task<ActionResult> Reject(long id)
+        {
+            var result = await dealService.RejectAsync(id, User.Identity.GetUserId());
+            return result.Succeeded ? Json(JsonStatuses.Success) : Json(JsonStatuses.ValidationError, result.Errors);
+        }
         [Authorize(Roles = RoleNames.Moderator)]
         public async Task<ActionResult> ModerConfirm(long id, bool confirm)
         {
-            var result = await dealService.ModerConfirmAsync(id, confirm);
+            var result = confirm ? await dealService.ConfirmAsync(id) : await dealService.RejectAsync(id);
             if (result.Succeeded)
                 return Json(JsonStatuses.Success);
             return Json(JsonStatuses.ValidationError, result.Errors);

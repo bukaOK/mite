@@ -46,14 +46,7 @@ namespace Mite.BLL.Services
         /// <param name="clientId">Id клиента</param>
         /// <param name="confirm">Подтверждает или отклоняет</param>
         /// <returns></returns>
-        Task<DataServiceResult> ClientConfirmAsync(long id, string clientId);
-        /// <summary>
-        /// Подтверждение(в пользу автора)/отклонение(в пользу клиента) модератором
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="confirm"></param>
-        /// <returns></returns>
-        Task<DataServiceResult> ModerConfirmAsync(long id, bool confirm);
+        Task<DataServiceResult> ConfirmAsync(long id, string clientId = null);
         Task<DataServiceResult> RejectAsync(long id, string userId = null);
         /// <summary>
         /// Открыть спор
@@ -70,6 +63,7 @@ namespace Mite.BLL.Services
         Task<DealModel> GetShowAsync(long id);
         Task<IEnumerable<DealUserModel>> GetIncomingAsync(DealStatuses dealType, string authorId);
         Task<IEnumerable<DealUserModel>> GetOutgoingAsync(DealStatuses dealType, string clientId);
+        Task<IEnumerable<DealUserModel>> GetForModerAsync(DealStatuses status, string moderId);
         /// <summary>
         /// Оплата сделки клиентом
         /// </summary>
@@ -199,6 +193,11 @@ namespace Mite.BLL.Services
             return dealModels;
         }
 
+        public async Task<IEnumerable<DealUserModel>> GetForModerAsync(DealStatuses status, string moderId)
+        {
+            var deals = await repo.GetForModerAsync(status, moderId);
+            return Mapper.Map<IEnumerable<DealUserModel>>(deals, opts => opts.Items.Add("forModer", true));
+        }
         public async Task<DealModel> GetShowAsync(long id)
         {
             var deal = await repo.GetWithServiceAsync(id);
@@ -396,60 +395,45 @@ namespace Mite.BLL.Services
             }
         }
 
-        public async Task<DataServiceResult> ClientConfirmAsync(long id, string clientId)
+        public async Task<DataServiceResult> ConfirmAsync(long id, string clientId = null)
         {
+            var isModer = clientId == null;
+            var reliability = isModer ? -3 : 1;
+
             var deal = await repo.GetAsync(id);
             if (deal == null)
                 return DataServiceResult.Failed("Сделка не найдена");
-            if (deal.ClientId != clientId)
+            if (!isModer && deal.ClientId != clientId)
                 return DataServiceResult.Failed("Неизвестный пользователь");
             if (deal.Price != null && !deal.Payed)
                 return DataServiceResult.Failed("Сделка не оплачена");
 
+            var client = await userManager.FindByIdAsync(deal.ClientId);
+            var author = await userManager.FindByIdAsync(deal.AuthorId);
+
             using(var transaction = repo.BeginTransaction())
             {
-                deal.Status = DealStatuses.Confirmed;
+                deal.Status = isModer ? DealStatuses.ModerConfirmed : DealStatuses.Confirmed;
+                client.Reliability += reliability;
+                author.Reliability += reliability;
 
                 try
                 {
                     if (deal.Price != null)
                         await cashService.AddAsync(null, deal.AuthorId, (double)deal.Price, CashOperationTypes.Deal);
+                    deal.Payed = false;
                     await repo.UpdateAsync(deal);
+                    await userManager.UpdateAsync(client);
+                    await userManager.UpdateAsync(author);
+
                     transaction.Commit();
                     return DataServiceResult.Success();
                 }
                 catch (Exception e)
                 {
                     transaction.Rollback();
-                    logger.Error($"Id: {id}. Ошибка при подтверждении клиентом сделки: {e.Message}");
+                    logger.Error($"Id: {id}. Ошибка при подтверждении сделки: {e.Message}");
                     return DataServiceResult.Failed("Ошибка при подтверждении");
-                }
-            }
-        }
-
-        public async Task<DataServiceResult> ModerConfirmAsync(long id, bool confirm)
-        {
-            using(var transaction = repo.BeginTransaction())
-            {
-                var deal = await repo.GetAsync(id);
-                try
-                {
-                    deal.Status = confirm ? DealStatuses.Confirmed : DealStatuses.Rejected;
-                    if (deal.Price != null)
-                    {
-                        var to = confirm ? deal.AuthorId : deal.ClientId;
-                        await cashService.AddAsync(null, to, (double)deal.Price, CashOperationTypes.Deal);
-                    }
-                    await repo.UpdateAsync(deal);
-                    transaction.Commit();
-
-                    return DataServiceResult.Success();
-                }
-                catch(Exception e)
-                {
-                    transaction.Rollback();
-                    logger.Error($"Id: {deal.Id}. Ошибка при подтверждении/отклонении модератором сделки: {e.Message}");
-                    return DataServiceResult.Failed("Внутренняя ошибка, попробуйте позднее");
                 }
             }
         }
@@ -489,57 +473,75 @@ namespace Mite.BLL.Services
                 return DataServiceResult.Failed("Неизвестный пользователь");
 
             deal.Status = DealStatuses.Dispute;
-            try
+
+            var chatRepo = Database.GetRepo<ChatRepository, Chat>();
+            var disputeChat = new Chat
             {
-                await repo.UpdateAsync(deal);
-                return DataServiceResult.Success();
-            }
-            catch(Exception e)
+                Members = new List<User>
+                {
+                    new User { Id = deal.ClientId },
+                    new User { Id = deal.AuthorId }
+                }
+            };
+            deal.DisputeChatId = disputeChat.Id;
+            using(var transaction = repo.BeginTransaction())
             {
-                logger.Error($"Id: {deal.Id}. Ошибка при открытии спора: {e.Message}");
-                return DataServiceResult.Failed("Ошибка при открытии спора");
+                try
+                {
+                    await chatRepo.AddAsync(disputeChat);
+                    await repo.UpdateAsync(deal);
+                    transaction.Commit();
+                    return DataServiceResult.Success();
+                }
+                catch (Exception e)
+                {
+                    transaction.Rollback();
+                    logger.Error($"Id: {deal.Id}. Ошибка при открытии спора: {e.Message}");
+                    return DataServiceResult.Failed("Ошибка при открытии спора");
+                }
             }
         }
 
         public async Task<DataServiceResult> RejectAsync(long id, string userId = null)
         {
             var isModer = userId == null;
+            var reliability = isModer ? -3 : 1;
 
             var deal = await repo.GetAsync(id);
             if (!isModer && deal.ClientId != userId && deal.AuthorId != userId)
             {
                 return DataServiceResult.Failed("Неизвестный пользователь");
             }
-            deal.Status = DealStatuses.Rejected;
-            if (deal.Payed)
+            if(!isModer && deal.Payed)
             {
-                using(var transaction = repo.BeginTransaction())
+                return DataServiceResult.Failed("Оплаченную сделку нельзя закрыть");
+            }
+            var client = await userManager.FindByIdAsync(deal.ClientId);
+            var author = await userManager.FindByIdAsync(deal.AuthorId);
+            using (var transaction = repo.BeginTransaction())
+            {
+                deal.Status = isModer ? DealStatuses.ModerRejected : DealStatuses.Rejected;
+                client.Reliability += reliability;
+                author.Reliability += reliability;
+                try
                 {
-                    try
-                    {
-                        deal.Payed = false;
+                    if (deal.Price != null && deal.Payed)
                         await cashService.AddAsync(null, deal.ClientId, (double)deal.Price, CashOperationTypes.Deal);
-                        await repo.UpdateAsync(deal);
-                        transaction.Commit();
-                        return DataServiceResult.Success();
-                    }
-                    catch(Exception e)
-                    {
-                        transaction.Rollback();
-                        logger.Error($"Id: {deal.Id}. Ошибка при закрытии оплаченной сделки: {e.Message}");
-                        return DataServiceResult.Failed("Внутренняя ошибка");
-                    }
+
+                    deal.Payed = false;
+                    await repo.UpdateAsync(deal);
+                    await userManager.UpdateAsync(client);
+                    await userManager.UpdateAsync(author);
+
+                    transaction.Commit();
+                    return DataServiceResult.Success();
                 }
-            }
-            try
-            {
-                await repo.UpdateAsync(deal);
-                return DataServiceResult.Success();
-            }
-            catch(Exception e)
-            {
-                logger.Error($"Id: {deal.Id}. Ошибка при закрытии неоплаченной сделки: {e.Message}");
-                return DataServiceResult.Failed("Внутренняя ошибка");
+                catch (Exception e)
+                {
+                    transaction.Rollback();
+                    logger.Error($"Id: {deal.Id}. Ошибка при закрытии сделки: {e.Message}");
+                    return DataServiceResult.Failed("Внутренняя ошибка");
+                }
             }
         }
 

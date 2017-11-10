@@ -19,7 +19,13 @@ namespace Mite.Infrastructure.Automapper
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Service.Description))
                 .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => src.Service.ImageSrc_50))
                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price != null ? $"{src.Price} руб" : "цена ожидается"))
-                .ForMember(dest => dest.New, opt => opt.MapFrom(src => src.Price == null || src.Deadline == null));
+                .ForMember(dest => dest.New, opt => opt.MapFrom(src => src.Price == null || src.Deadline == null))
+                .ForMember(dest => dest.ForModer, opt => opt.ResolveUsing((src, dest, member, context) =>
+                {
+                    if (context.Items.TryGetValue("forModer", out object forModer) && (bool)forModer)
+                        return true;
+                    return false;
+                }));
 
             CreateMap<Deal, DealModel>()
                 .ForMember(dest => dest.DeadlineStr, opt => opt.MapFrom(src =>

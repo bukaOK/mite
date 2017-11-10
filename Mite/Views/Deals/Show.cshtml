@@ -1,12 +1,15 @@
 ﻿@using Microsoft.AspNet.Identity
 @using Mite.CodeData.Enums
+@using Mite.CodeData.Constants
 @using Mite.Extensions
 @using Mite.Helpers
 @model Mite.Models.DealModel
 
 @{
     ViewBag.Title = "Заказ " + Model.Id;
-    var isAuthor = User.Identity.GetUserId() == Model.Author.Id;
+    var userId = User.Identity.GetUserId();
+    var isAuthor = userId == Model.Author.Id;
+    var isClient = userId == Model.Client.Id;
 }
 
 @section styles{
@@ -22,42 +25,71 @@
                     {
                         <span class="ui red label">Просрочено</span>
                     }
+                    @if (Model.Status == DealStatuses.Dispute)
+                    {
+                        if (Model.Moder == null)
+                        {
+                            if (!isAuthor && !isClient && User.IsInRole(RoleNames.Moderator))
+                            {
+                                @Html.ActionLink("Разрешить спор", "BindToDeal", "Moder", new { id = Model.Id }, new { @class = "ui violet label" })
+                            }
+                            else
+                            {
+                                <span class="ui orange label">Ожидание модератора</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="ui orange label">В споре</span>
+                        }
+                    }
                 </h2>
                 <div class="ui tiny steps">
-                    <a class="step" data-step="@DealStatuses.New">
+                    <div class="step" data-step="@DealStatuses.New">
                         <i class="plus icon"></i>
                         <div class="content">
                             <div class="title">@ViewHelper.GetEnumDisplayName(DealStatuses.New)</div>
                             <div class="description">Выбор срока, цены и требований</div>
                         </div>
-                    </a>
-                    <a class="step" data-step="@DealStatuses.ExpectPayment">
+                    </div>
+                    <div class="step" data-step="@DealStatuses.ExpectPayment">
                         <i class="payment icon"></i>
                         <div class="content">
                             <div class="title">@ViewHelper.GetEnumDisplayName(DealStatuses.ExpectPayment)</div>
                             <div class="description">Оплата клиентом</div>
                         </div>
-                    </a>
-                    <a class="step" data-step="@DealStatuses.ExpectClient">
+                    </div>
+                    <div class="step" data-step="@DealStatuses.ExpectClient">
                         <i class="checkmark box icon"></i>
                         <div class="content">
                             <div class="title">@ViewHelper.GetEnumDisplayName(DealStatuses.ExpectClient)</div>
                             <div class="description">Подтверждение выполнения заказа</div>
                         </div>
-                    </a>
-                    <a class="step" data-step="@DealStatuses.Confirmed">
+                    </div>
+                    <div class="step" data-step="@DealStatuses.Confirmed">
                         <i class="flag checkered icon"></i>
                         <div class="content">
-                            <div class="title">@ViewHelper.GetEnumDisplayName(DealStatuses.Confirmed)</div>
-                            <div class="description">Заказ выполнен</div>
+                            <div class="title">Закрыто</div>
+                            <div class="description">Заказ выполнен (отклонен)</div>
                         </div>
-                    </a>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="two column row">
             <div class="column">
-                @{ Html.RenderPartial("_Chat", Model.Chat); }
+                @if (Model.Status == DealStatuses.Dispute && Model.Moder != null)
+                {
+                    Html.RenderPartial("_Chat", Model.DisputeChat);
+                }
+                else if (isAuthor || isClient)
+                {
+                    Html.RenderPartial("_Chat", Model.Chat);
+                }
+                else
+                {
+                    <h3 class="ui header">Чат только для участников сделки</h3>
+                }
             </div>
             <div class="column">
                 <div class="ui styled accordion">
@@ -72,16 +104,60 @@
                         <p>@Model.Service.Description</p>
                     </div>
                 </div>
+                <h3 class="ui header">Информация</h3>
+                <div class="ui relaxed large list" role="list">
+                    <a class="item" role="listitem">
+                        <i class="blue calendar large icon"></i>
+                        <span class="content">
+                            <span class="header">
+                                Дата окончания: <span id="deadline-item">@Html.Raw(Model.Deadline?.ToString("dd.MM.yyyy") ?? "Неизвестна (ожидаем автора)")</span>
+                            </span>
+                        </span>
+                    </a>
+                    <a class="item" role="listitem">
+                        <i class="green ruble large icon"></i>
+                        <span class="content">
+                            <span class="header">Цена: <span id="price-item">@Html.Raw(Model.Price?.ToString() ?? "Неизвестна (ожидаем автора)")</span>
+                            </span>
+                        </span>
+                    </a>
+                </div>
+                <h3 class="ui header">Требования</h3>
+                <p id="demands-item">@Html.Raw(Model.Demands ?? "Неизвестны (ожидаем клиента)")</p>
                 @if (isAuthor)
-            {
-                Html.RenderPartial("_ShowAuthor", AutoMapper.Mapper.Map<Mite.Models.DealAuthorModel>(Model));
-            }
-            else
-            {
-                Html.RenderPartial("_ShowClient", AutoMapper.Mapper.Map<Mite.Models.DealClientModel>(Model));
-            }
+                {
+                    Html.RenderPartial("_ShowAuthor", AutoMapper.Mapper.Map<Mite.Models.DealAuthorModel>(Model));
+                }
+                else if(isClient)
+                {
+                    Html.RenderPartial("_ShowClient", AutoMapper.Mapper.Map<Mite.Models.DealClientModel>(Model));
+                }
+                else if (User.IsInRole(RoleNames.Moderator))
+                {
+                    Html.RenderPartial("_ShowModer", Model);
+                }
             </div>
         </div>
+    </div>
+</div>
+<div class="ui tiny modal" id="expectPayModal">
+    <div class="header">Вы уверены?</div>
+    <div class="content">
+        <p>После изменения статуса Вы уже не сможете изменить цену и дату сделки.</p>
+    </div>
+    <div class="actions">
+        <button class="ui green ok button">Да</button>
+        <button class="ui red cancel button">Нет</button>
+    </div>
+</div>
+<div class="ui tiny modal" id="closeModal">
+    <div class="header">Вы уверены?</div>
+    <div class="content">
+        <p>При закрытии сделки все средства возвращаются клиенту.</p>
+    </div>
+    <div class="actions">
+        <button class="ui green ok button">Да</button>
+        <button class="ui red cancel button">Нет</button>
     </div>
 </div>
 @section scripts{
@@ -89,39 +165,39 @@
 }
 <script>
     function toExpectPayDialog(btn) {
-        swal({
-            type: 'warning',
-            title: 'Вы уверены?',
-            text: 'После изменения статуса Вы уже не сможете изменить цену и дату сделки.',
-            showCancelButton: true,
-            confirmButtonText: 'Да',
-            cancelButtonText: 'Нет',
-            confirmButtonClass: 'ui large green button',
-            cancelButtonClass: 'ui large red button',
-            buttonsStyling: false
-        }).then(function () {
-            DealsMvc.toExpectPayment(btn);
-        });
+        $('#expectPayModal').modal({
+            onApprove: function () {
+                DealsMvc.toExpectPayment(btn);
+            }
+        }).modal('show');
     }
     function closeDialog(btn) {
-        swal({
-            type: 'warning',
-            title: 'Вы уверены?',
-            text: 'При закрытии сделки все средства возвращаются клиенту.',
-            showCancelButton: true,
-            confirmButtonText: 'Да',
-            cancelButtonText: 'Нет',
-            confirmButtonClass: 'ui large green button',
-            cancelButtonClass: 'ui large red button',
-            buttonsStyling: false
-        }).then(function () {
-            DealsMvc.close(btn);
-        });
+        $('#closeModal').modal({
+            onApprove: function () {
+                DealsMvc.close(btn);
+            }
+        }).modal('show');
+    }
+    function choseStep() {
+        var currentStatus = '@Model.Status',
+            stepSelector;
+        switch (currentStatus) {
+            case '@DealStatuses.ModerRejected':
+            case '@DealStatuses.ModerConfirmed':
+            case '@DealStatuses.Rejected':
+            case '@DealStatuses.Confirmed':
+                stepSelector = '.step[data-step="@DealStatuses.Confirmed"]';
+                break;
+            default:
+                stepSelector = '.step[data-step="' + currentStatus + '"]';
+                break;
+        }
+        $(stepSelector).addClass('active');
     }
 
     $(function () {
         $('.accordion').accordion();
-        $('.step[data-step="@Model.Status"]').addClass('active');
+        choseStep();
         FileReaderHelper.settings = {
             saveBtn: $('#save-btn'),
             imgWrapper: $('#img-wrapper'),

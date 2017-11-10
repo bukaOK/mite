@@ -8,7 +8,7 @@ using Mite.Models;
 using Mite.DAL.Entities;
 using Mite.DAL.Repositories;
 
-namespace Mite.Controllers
+namespace Mite.Controllers.Api
 {
     [Authorize(Roles = "moder")]
     public class TagsController : ApiController

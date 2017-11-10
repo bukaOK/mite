@@ -12,6 +12,7 @@ using System.Web.Http;
 
 namespace Mite.Controllers.Api
 {
+    [Authorize]
     public class DealsController : ApiController
     {
         private readonly IDealService dealService;

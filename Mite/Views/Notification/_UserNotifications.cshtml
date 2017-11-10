@@ -1,0 +1,37 @@
+﻿@model IList<Mite.Models.NotificationModel>
+
+@if (Model.Count > 0)
+{
+    <div class="ui notify popup" id="notify-popup" style="min-width: 400px; min-height: 50px;">
+        <div class="ui feed">
+            @foreach (var notification in Model)
+            {
+                <div class="event">
+                    <div class="label">
+                        <img src="@notification.NotifyUser.AvatarSrc">
+                    </div>
+                    <div class="content">
+                        <div class="summary">
+                            @notification.Content
+                            <div class="date" data-utc-date="@notification.NotifyDate.ToString("o")"></div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="ui empty notify popup" id="notify-popup" style="min-width: 400px; min-height: 50px;">
+        У вас пока нет новых уведомлений. <a href="@Url.Action("Notifications", "UserProfile")">Посмотреть все.</a>
+    </div>
+}
+<script>
+    $(function () {
+        var newNotificationsCount = @Model.Count;
+        if (newNotificationsCount > 0) {
+            $('.notifications.item .label').html(newNotificationsCount).show();
+        }
+    });
+</script>

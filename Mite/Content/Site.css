@@ -7,10 +7,6 @@
 html, body{
     height: 100% !important;
 }
-.ui.selection.dropdown .menu {
-    width: calc(100% + 3px);
-    min-width: calc(100% + 3px);
-}
 .ui.margined.button{
     margin-bottom: 4px;
 }
