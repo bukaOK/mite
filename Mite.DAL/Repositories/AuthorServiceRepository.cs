@@ -31,7 +31,23 @@ namespace Mite.DAL.Repositories
         {
             var max = await Table.Where(x => x.Price != null).MaxAsync(x => x.Price);
             var min = await Table.Where(x => x.Price != null).MinAsync(x => x.Price);
-            return (min: (double)min, max: (double)max);
+            return (min: min ?? 0.0, max: max ?? 0.0);
+        }
+        /// <summary>
+        /// Получить надежность
+        /// </summary>
+        /// <param name="id">Id услуги</param>
+        /// <param name="badCoef">На сколько умножаем "плохие" статусы</param>
+        /// <param name="goodCoef">На сколько умножаем "хорошие" для надежности статусы</param>
+        /// <returns></returns>
+        public async Task<int> GetReliabilityAsync(Guid id, int badCoef, int goodCoef)
+        {
+            var badCount = await DbContext.Deals
+                .Where(x => x.ServiceId == id && (x.Status == DealStatuses.ModerRejected || x.Status == DealStatuses.ModerConfirmed))
+                .CountAsync();
+            var goodCount = await DbContext.Deals.Where(x => x.ServiceId == id && x.Status == DealStatuses.Confirmed)
+                .CountAsync();
+            return badCount * badCoef + goodCount * goodCoef;
         }
         public Task<IEnumerable<AuthorService>> GetByFilterAsync(ServiceTopFilter filter)
         {

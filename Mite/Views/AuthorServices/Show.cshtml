@@ -3,9 +3,20 @@
 @{ 
     ViewBag.Title = Model.Title;
 }
+@section styles{
+    @Styles.Render("~/Content/lgallery")
+    <style>
+        #service-img{
+            cursor: zoom-in;
+        }
+        .ui.list > .item > .vk.icon {
+            color: #4d7198 !important;
+        }
+    </style>
+}
 <div class="ui two column grid segment">
     <div class="column">
-        <img src="@Model.ImageSrc" class="ui image" alt="@Model.Title" />
+        <img src="@Model.ImageSrc" class="ui image" alt="@Model.Title" id="service-img" />
     </div>
     <div class="column">
         <h2 class="ui header">
@@ -14,10 +25,20 @@
         </h2>
         <form class="ui form" id="dealForm">
             @Html.HiddenFor(x => x.Id)
-            <button type="button" class="ui animated fade fluid primary button" onclick="DealsApi.create()">
-                <div class="hidden content"><i class="shop icon"></i></div>
-                <div class="visible content">Сделать заказ</div>
-            </button>
+            <div class="field">
+                <button type="button" class="ui animated fade fluid primary button" onclick="DealsApi.create()">
+                    <div class="hidden content"><i class="shop icon"></i></div>
+                    <div class="visible content">Сделать заказ</div>
+                </button>
+            </div>
+            @if (User.IsInRole(RoleNames.Moderator))
+            {
+                <div class="field">
+                    <button type="button" class="ui blue button" onclick="RatingMvc.recount('@Model.Id', '@RatingRecountTypes.AuthorService')">
+                        Пересчитать рейтинг
+                    </button>
+                </div>
+            }
             <div class="ui error message"></div>
         </form>        
         <h3 class="ui dividing header">Описание</h3>
@@ -28,6 +49,12 @@
                 <i class="blue calendar large icon"></i>
                 <div class="content">
                     <div class="header">Выполнит примерно за <b>@Model.Deadline</b></div>
+                </div>
+            </a>
+            <a class="item" role="listitem">
+                <i class="yellow star large icon"></i>
+                <div class="content">
+                    Рейтинг: @Model.Rating
                 </div>
             </a>
             @if (Model.Price != null)
@@ -46,27 +73,31 @@
             <div class="ui relaxed large list" role="list">
                 <a class="item" role="listitem">
                     <i class="vk icon"></i>
-                    Репост записи ВКонтакте
+                    <div class="content">
+                        <div class="header">Репост записи ВКонтакте</div>
+                    </div>
                 </a>
             </div>
         }
         <h3 class="ui dividing header">Автор</h3>
         <div class="ui items">
             <div class="item">
-                <a class="ui tiny image">
+                <a class="ui tiny circular image">
                     <img src="@Model.Author.AvatarSrc" />
                 </a>
                 <div class="content">
                     @Html.ActionLink(Model.Author.UserName, "Index", "UserProfile", new { name = Model.Author.UserName}, new { @class = "header"})
                     <p class="description" style="margin-top: 0">@Model.Author.Description</p>
-                    <div class="meta">
-                        <a class="ui primary compact button" href="#">Написать</a>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 @section scripts{
-    @Scripts.Render("~/bundles/api")
+    @Scripts.Render("~/bundles/api", "~/bundles/gallery")
+    <script>
+        $(function () {
+            AuthorServiceApi.loadGallery('@Model.Id', $('#service-img'));
+        });
+    </script>
 }

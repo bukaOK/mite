@@ -203,21 +203,21 @@
         }
         else
         {
-            <div class="ui tab three column grid basic segment" data-tab="published"></div>
-            <div class="ui tab three column basic segment grid" data-tab="drafts"></div>
-            <div class="ui tab three column basic segment grid" data-tab="blocked"></div>
+            <div class="ui tab four column grid basic segment" data-tab="published"></div>
+            <div class="ui tab four column basic segment grid" data-tab="drafts"></div>
+            <div class="ui tab four column basic segment grid" data-tab="blocked"></div>
         }
     </div>
     if (isMobileDevice)
     {
-        <div class="ui tab stackable two column basic segment grid" data-tab="followers"></div>
-        <div class="ui tab stackable two column basic segment grid" data-tab="followings"></div>
+        <div class="ui tab doubling three column basic segment grid" data-tab="followers"></div>
+        <div class="ui tab doubling three column basic segment grid" data-tab="followings"></div>
         <div class="ui tab stackable two column basic segment grid" data-tab="services"></div>
     }
     else
     {
-        <div class="ui tab three column basic segment grid" data-tab="followers"></div>
-        <div class="ui tab three column basic segment grid" data-tab="followings"></div>
+        <div class="ui tab four column basic segment grid" data-tab="followers"></div>
+        <div class="ui tab four column basic segment grid" data-tab="followings"></div>
         <div class="ui tab three column basic segment grid" data-tab="services"></div>
     }
     <div class="dot-loader-wrapper">
@@ -250,13 +250,13 @@ else
                 @if (isMobileDevice)
                 {
                     <div class="ui tab two column stackable basic segment grid" data-tab="posts/published"></div>
-                    <div class="ui stackable tab two column basic segment grid" data-tab="followers"></div>
+                    <div class="ui doubling tab three column basic segment grid" data-tab="followers"></div>
                     <div class="ui tab stackable two column basic segment grid" data-tab="services"></div>
                 }
                 else
                 {
                     <div class="ui tab three column basic segment grid" data-tab="posts/published"></div>
-                    <div class="ui tab three column basic segment grid" data-tab="followers"></div>
+                    <div class="ui tab four column basic segment grid" data-tab="followers"></div>
                     <div class="ui tab three column basic segment grid" data-tab="services"></div>
                 }
                 <div class="dot-loader-wrapper">
@@ -274,13 +274,13 @@ else
         if (isMobileDevice)
         {
             <div class="ui tab stackable two column basic segment grid" data-tab="posts/published"></div>
-            <div class="ui stackable tab two column basic segment grid" data-tab="followers"></div>
+            <div class="ui doubling tab three column basic segment grid" data-tab="followers"></div>
             <div class="ui tab stackable two column basic segment grid" data-tab="services"></div>
         }
         else
         {
             <div class="ui tab three column basic segment grid" data-tab="posts/published"></div>
-            <div class="ui tab three column basic segment grid" data-tab="followers"></div>
+            <div class="ui tab four column basic segment grid" data-tab="followers"></div>
             <div class="ui tab three column basic segment grid" data-tab="services"></div>
         }
         <div class="dot-loader-wrapper">
@@ -363,12 +363,12 @@ else
                 <img src="{{:AvatarSrc}}" class="ui small circular image">
             </div>
             <div class="eleven wide column">
-                <h3 class="ui header">
+                <h4 class="ui header">
                     <span class="content">
                         <a href="/user/profile/{{:UserName}}">{{:UserName}}</a> &bull; <i class="yellow star icon"></i>{{:Rating}}
                         <span class="sub header">{{:Description}}</span>
                     </span>
-                </h3>
+                </h4>
             </div>
         </div>
     </div>
@@ -381,25 +381,29 @@ else
             @if (currentUserName == pageUserName)
             {
                 <div class="extra content">
-                    <div class="ui floating user-actions dropdown compact button">
-                        <div class="text">Действия</div><i class="dropdown icon"></i>
-                        <div class="menu" role="menu"> 
-                            {{if IsPublished && CanEdit}}
+                    {{if IsPublished}}
+                    <div class="ui default floating compact dropdown button">
+                        Действия
+                        <i class="dropdown icon"></i>
+                        <div class="menu" role="menu">
+                            {{if CanEdit}}
                             <a class="item" href="@Url.Action("EditPost", "Posts")/{{:Id}}" role="menuitem"><i class="edit icon"></i>Редактировать</a>
-                            {{/if}}
-                            {{if !IsPublished}}
-                            <div class="item" onclick="publishPost('{{:Id}}')" role="menuitem"><i class="announcement icon"></i>Опубликовать</div>
                             {{/if}}
                             <div class="item" onclick="showDeletePostModal('{{:Id}}')" role="menuitem"><i class="remove icon"></i>Удалить</div>
                         </div>
                     </div>
-                    <div class="right">
-                        {{if IsPublished}}
-                        <a class="ui primary compact button" href="@Url.Action("ShowPost", "Posts")/{{:Id}}">Смотреть</a>
-                        {{else}}
-                        <a class="ui blue compact button" href="@Url.Action("EditPost", "Posts")/{{:Id}}">Редактировать</a>
-                        {{/if}}
+                    {{else}}
+                    <div class="ui primary buttons">
+                        <a class="ui compact button" href="@Url.Action("EditPost", "Posts")/{{:Id}}">Редактировать</a>
+                        <div class="ui compact floating dropdown icon button">
+                            <i class="dropdown icon"></i>
+                            <div class="menu" role="menu">
+                                <div class="item" onclick="publishPost('{{:Id}}')" role="menuitem"><i class="announcement icon"></i>Опубликовать</div>
+                                <div class="item" onclick="showDeletePostModal('{{:Id}}')" role="menuitem"><i class="remove icon"></i>Удалить</div>
+                            </div>
+                        </div>
                     </div>
+                    {{/if}}
                 </div>
                 <div class="ui {{if !IsImage && Cover != null}}inverted {{/if}} divider"></div>
             }
@@ -510,8 +514,7 @@ else
     </div>
 </script>
 <template id="emptyPostTmpl">
-    <div class="column"></div>
-    <div class="column">
+    <div class="sixteen wide column">
         <h2 class="ui center aligned icon header" style="color: #6D6788; margin-top: 20px;">
             <i class="frown icon"></i>
             @if (currentUserName != pageUserName)
@@ -530,8 +533,7 @@ else
     </div>
 </template>
 <template id="emptyBlockedTmpl">
-    <div class="column"></div>
-    <div class="column">
+    <div class="sixteen wide column">
         <h2 class="ui center aligned icon header" style="color: #6D6788">
             <i class="smile icon"></i>
             <span class="content">У вас нет заблокированных работ.</span>
@@ -539,8 +541,7 @@ else
     </div>
 </template>
 <template id="emptyFollowersTmpl">
-    <div class="column"></div>
-    <div class="column">
+    <div class="sixteen wide column">
         <h3 class="ui center aligned icon header" style="color: #6D6788">
             <i class="users icon"></i>
             @if (currentUserName == pageUserName)
@@ -559,8 +560,7 @@ else
     </div>
 </template>
 <template id="emptyFollowingsTmpl">
-    <div class="column"></div>
-    <div class="column">
+    <div class="sixteen wide column">
         <h3 class="ui center aligned icon header" style="color: #6D6788">
             <i class="users icon"></i>
             <span class="content">
@@ -570,8 +570,7 @@ else
     </div>
 </template>
 <template id="emptyServicesTmpl">
-    <div class="column"></div>
-    <div class="column">
+    <div class="sixteen wide column">
         <h3 class="ui center aligned icon header" style="color: #6D6788">
             <i class="suitcase icon"></i>
             <span class="content">
@@ -887,8 +886,9 @@ else
                             grids[i].elem.masonry('layout');
                             $('.dot-loader-wrapper').removeClass('active');
                             resp.forEach(function(elem){
-                                $('.column[data-post-id="' + elem.Id + '"] .user-actions.dropdown').dropdown({
-                                    action: 'hide'
+                                $('.column[data-post-id="' + elem.Id + '"] .dropdown').dropdown({
+                                    action: 'hide',
+                                    on: 'hover'
                                 });
                             });
                         }).progress(function(){
@@ -900,6 +900,10 @@ else
             },
             onError: function () {
                 $('.dot-loader-wrapper').removeClass('active');
+                iziToast.error({
+                    title: 'Упс...',
+                    message: 'Ошибка при загрузке работ'
+                });
             },
             ajax: {
                 type: 'post'

@@ -15,6 +15,7 @@
     <a class="active item" data-tab="tagunchecked">Непроверенные теги</a>
     <a class="item" data-tab="tagchecked">Проверенные теги</a>
     <a class="item" data-tab="cities">Города</a>
+    <a class="item" data-tab="servicetypes" role="tab">Типы услуг</a>
 </nav>
 <div class="ui loading basic segment tab" data-tab="tagunchecked">
     <table class="ui celled table unchecked">
@@ -58,6 +59,9 @@
         </thead>
         <tbody></tbody>
     </table>
+</div>
+<div class="ui tab" data-tab="servicetypes" role="tabpanel">
+    @{ Html.RenderPartial("AuthorServiceTypes", new Mite.Models.ServiceTypeModel()); }
 </div>
 <script id="tagRowTmpl" type="text/x-jsrender">
     <tr data-id="{{:Id}}" data-name="{{:Name}}" data-confirmed="{{:IsConfirmed}}" data-checked="{{:Checked}}">

@@ -13,6 +13,7 @@ using Mite.BLL.Helpers;
 using System;
 using Mite.CodeData.Enums;
 using NLog;
+using Mite.CodeData.Constants.Automapper;
 
 namespace Mite.BLL.Services
 {
@@ -23,7 +24,7 @@ namespace Mite.BLL.Services
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        Task<List<UserShortModel>> GetFollowersByUserAsync(string userName);
+        Task<List<UserShortModel>> GetFollowersByUserAsync(string userName, SortFilter sort);
         /// <summary>
         /// Получить пользователей, на которых текущий подписан
         /// </summary>
@@ -42,21 +43,18 @@ namespace Mite.BLL.Services
             this.userManager = userManager;
         }
 
-        public async Task<List<UserShortModel>> GetFollowersByUserAsync(string userName)
+        public async Task<List<UserShortModel>> GetFollowersByUserAsync(string userName, SortFilter sort)
         {
             var user = await userManager.FindByNameAsync(userName);
             var repo = Database.GetRepo<FollowersRepository, Follower>();
 
-            var followers = await repo.GetFollowersByUserAsync(user.Id);
-            var fModels = Mapper.Map<List<UserShortModel>>(followers.Select(x => x.User));
-            foreach(var follower in fModels)
+            var followers = await repo.GetFollowersByUserAsync(user.Id, sort);
+            var fModels = Mapper.Map<List<UserShortModel>>(followers.Select(x => x.User), opts =>
             {
-                var fullPath = HostingEnvironment.MapPath(follower.AvatarSrc);
-                if (ImagesHelper.Compressed.CompressedExists(fullPath))
-                {
-                    follower.AvatarSrc = ImagesHelper.Compressed.CompressedVirtualPath(fullPath);
-                }
-            }
+                opts.Items.Add(UserProfileConstants.MaxNameLength, 13);
+                opts.Items.Add(UserProfileConstants.MaxAboutLength, 70);
+            });
+
             return fModels;
         }
 
@@ -71,15 +69,12 @@ namespace Mite.BLL.Services
             var repo = Database.GetRepo<FollowersRepository, Follower>();
 
             var followings = await repo.GetFollowingsByUserAsync(user.Id, sort);
-            var fModels = Mapper.Map<List<UserShortModel>>(followings.Select(x => x.FollowingUser));
-            foreach(var following in fModels)
+            var fModels = Mapper.Map<List<UserShortModel>>(followings.Select(x => x.FollowingUser), opts =>
             {
-                var fullPath = HostingEnvironment.MapPath(following.AvatarSrc);
-                if (ImagesHelper.Compressed.CompressedExists(fullPath))
-                {
-                    following.AvatarSrc = ImagesHelper.Compressed.CompressedVirtualPath(fullPath);
-                }
-            }
+                opts.Items.Add(UserProfileConstants.MaxNameLength, 13);
+                opts.Items.Add(UserProfileConstants.MaxAboutLength, 70);
+            });
+
             return fModels;
         }
     }

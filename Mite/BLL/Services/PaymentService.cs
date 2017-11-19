@@ -39,8 +39,15 @@ namespace Mite.BLL.Services
                 Date = DateTime.UtcNow,
                 PaymentType = paymentType
             };
-            await repo.AddAsync(payment);
-            return DataServiceResult.Success(payment);
+            try
+            {
+                await repo.AddAsync(payment);
+                return DataServiceResult.Success(payment);
+            }
+            catch(Exception e)
+            {
+                return CommonError("Ошибка при добавлении платежа", e);
+            }
         }
     }
 }

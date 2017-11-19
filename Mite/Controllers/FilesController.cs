@@ -23,9 +23,8 @@ namespace Mite.Controllers
 
             if (!match || !string.Equals(pathExt, nameExt))
                 return Forbidden();
-            var content = System.IO.File.ReadAllText(HostingEnvironment.MapPath(path), Encoding.ASCII);
-            var bytes = Convert.FromBase64String(Regex.Replace(content, @"^data:.+/.+;base64,", ""));
-            return File(bytes, System.Net.Mime.MediaTypeNames.Application.Octet, name);
+            var content = System.IO.File.ReadAllBytes(HostingEnvironment.MapPath(path));
+            return File(content, System.Net.Mime.MediaTypeNames.Application.Octet, name);
         }
     }
 }

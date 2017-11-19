@@ -13,25 +13,32 @@
         </div>
     </div>
     <div class="ui msg-chat-wrapper segment">
-        <div class="active dot-loader-wrapper" style="height: 20px">
-            <div class="dot-loader">
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
+        <div class="ui chat feed" data-id="@Model.Id">
+            <div class="active dot-loader-wrapper" style="height: 20px; min-height: 20px;">
+                <div class="dot-loader">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
             </div>
         </div>
-        <div class="ui chat feed" data-id="@Model.Id"></div>
     </div>
     <form class="ui clearing form segment" id="chat-form" data-chat-id="@Model.Id">
         <input type="file" multiple id="att-input" style="display: none" />
-        <div class="ui attachments five column grid segment"></div>
+        <div class="ui attachments three column grid segment"></div>
         <div class="field">
-            <div contenteditable="true" id="dialogArea" data-state="begin" oninput="ChatMessages.inputHandle('@Model.Id', this)"></div>
+            <div class="dialog-area" contenteditable="true" data-state="begin" oninput="ChatMessages.inputHandle('@Model.Id', this)"></div>
         </div>
         <button type="button" class="ui right floated compact labeled icon primary button" id="msgSendBtn">
             <i class="send outline icon"></i>
             Отправить
         </button>
+        <div class="ui popup">
+            <ul class="ui list">
+                <li><b>Shift + Enter</b> для переноса строки</li>
+                <li><b>Enter</b> для отправки сообщения</li>
+            </ul>
+        </div>
         <label for="att-input" class="ui compact blue icon circular button">
             <i class="attach icon"></i>
         </label>
@@ -102,7 +109,7 @@
         </div>
         <div class="content">
             <div class="summary">
-                <a class="user">{{:Sender.UserName}}</a>
+                <a href="/user/profile/{{:Sender.UserName}}" class="user">{{:Sender.UserName}}</a>
                 <span class="date">{{:Time}}</span>
                 <span class="status" title="{{:Status.title}}"><i class="{{:Status.class}} violet icon"></i></span>
             </div>
@@ -177,12 +184,22 @@
     {{/if}}
 </script>
 <script>
-
     $(function () {
         $('#emoji-btn').popup({
             inline: true,
             hoverable: true,
             position: 'top center'
+        });
+        $('.dialog-area').keydown(function (ev) {
+            var self = this;
+            if (ev.which === 13 && ev.shiftKey === false) {
+                ChatMessages.Api.add('@Model.Id', {
+                    AvatarSrc: '@Model.CurrentUser.AvatarSrc',
+                    Id: '@Model.CurrentUser.Id',
+                    UserName: '@Model.CurrentUser.UserName'
+                }, $(self).html());
+                return false;
+            }
         });
         MsgFiles.init('att-input');
         $('.emoji .tabs .item').tab();
@@ -195,21 +212,29 @@
                 AvatarSrc: '@Model.CurrentUser.AvatarSrc',
                 Id: '@Model.CurrentUser.Id',
                 UserName: '@Model.CurrentUser.UserName'
-            }, $('#dialogArea').html());
+            }, $('.dialog-area').html());
+        }).popup({
+            inline: true,
+            delay: {
+                show: 150,
+                hide: 0
+            },
+            position: 'bottom center'
         });
         var emPs = new PerfectScrollbar('.em-wrapper', {
             useBothWheelAxes: true
         });
+        window.chats = {
+            '@Model.Id': new ChatLoader('@Model.Id')
+        };
         $('.em-col').click(function () {
-            EmojiHelper.addToArea('#dialogArea', this.childNodes[0].cloneNode());
+            EmojiHelper.addToArea('.dialog-area', this.childNodes[0].cloneNode());
         }).mousedown(function (e) {
             e.preventDefault();
             e.stopPropagation();
-            });
+        });
         ChatMessages.initHub('@Model.Id');
         ChatMessages.chatId = '@Model.Id';
-        var chatLoader = new ChatLoader('@Model.Id');
-        chatLoader.loadNext();
-        console.log(chatLoader);
+        chats['@Model.Id'].loadNext();
     });
 </script>

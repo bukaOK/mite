@@ -22,7 +22,7 @@
                         $msg.removeClass('error');
                         $msg.addClass('green');
 
-                        if (onSuccess !== null)
+                        if (onSuccess !== undefined && onSuccess !== null)
                             onSuccess(resp);
                     }
                 },

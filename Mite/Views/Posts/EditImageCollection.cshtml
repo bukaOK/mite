@@ -41,7 +41,7 @@
             @Html.HiddenFor(x => x.Content)
             @Html.EditorFor(x => x.Description)
             <div class="field">
-                <div class="ui fluid search multiple selection dropdown" id="post-dd">
+                <div class="ui fluid search multiple selection dropdown" id="select-tags">
                     <input type="hidden" name="Tags" value="@tagsRow" />
                     <div class="default text">Теги</div>
                     <div class="menu">
@@ -146,8 +146,17 @@
     <script>
         $(function () {
             @Html.Raw(Html.FormValidation<Mite.Models.ImagePostModel>(".p-form"))
-            new PerfectScrollbar('#post-dd>.menu');
-            $('#post-dd').dropdown();
+            new PerfectScrollbar('#select-tags>.menu');
+            $('#select-tags').dropdown({
+                allowAdditions: true,
+                fullTextSearch: true,
+                keys: {
+                    delimiter: 13
+                },
+                showOnFocus: false,
+                forceSelection: false,
+                match: 'text'
+            });
         });
     </script>
 }

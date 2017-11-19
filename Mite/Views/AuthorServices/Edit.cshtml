@@ -42,7 +42,7 @@
             </div>
             <div class="fields">
                 <div class="ten wide field">
-                    <label>@Html.DisplayNameFor(x => x.ServiceTypeId) (<a onclick="$('#serviceTypeModal').modal('show')">Предложить новый</a>)</label>
+                    <label>@Html.DisplayNameFor(x => x.ServiceTypeId) (<a class="link" onclick="$('#serviceTypeModal').modal('show')">Предложить новый</a>)</label>
                     @Html.DropDownListFor(x => x.ServiceTypeId, Model.ServiceTypes, new { @class = "ui selection dropdown" })
                 </div>
                 <div class="six wide field">
@@ -85,7 +85,7 @@
             </div>
             <h3 class="ui header">Дополнительные условия оплаты</h3>
             <div class="field">
-                <label>@Html.DisplayNameFor(x => x.VkPostCode) (<a onclick="$('#vkRepostHelpModal').modal('show')">Как добавить код?</a>)</label>
+                <label>@Html.DisplayNameFor(x => x.VkPostCode) (<a class="link" onclick="$('#vkRepostHelpModal').modal('show')">Как добавить код?</a>)</label>
                 @Html.TextAreaFor(x => x.VkPostCode, new { placeholder = "Код для вставки", onchange = "$('#vkCodeWrapper').html(this.value)" })
             </div>
             <div class="ui error message" id="serviceEditMsg"></div>

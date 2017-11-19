@@ -42,7 +42,7 @@ namespace Mite.Controllers
                 return InternalServerError();
             }
         }
-        public async Task<JsonResult> GetHelper()
+        public async Task<ActionResult> GetHelper()
         {
             var result = await helpersService.GetByUserAsync(User.Identity.GetUserId());
             return Json(JsonStatuses.Success, result);

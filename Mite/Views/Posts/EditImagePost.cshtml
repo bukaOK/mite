@@ -20,9 +20,6 @@
             </div>
         </div>
         <div class="left aligned column">
-            <div class="field">
-                <button class="ui fluid inverted blue button" type="button" onclick="$('#publishGuideModal').modal('show')">Гайд по публикации</button>
-            </div>
             @Html.EditorFor(x => x.Header)
             @Html.HiddenFor(x => x.Content)
             @Html.EditorFor(x => x.Description)
@@ -78,8 +75,6 @@
         <button class="ui green ok button">Да</button>
     </div>
 </div>
-
-@{ Html.RenderPartial("~/Views/Guides/_PublicationGuide.cshtml"); }
 <script>
     function savePost(isPublished){
         var $saveBtn = $('#save-btn');
@@ -134,7 +129,16 @@
         ViewHelper.activateSidebarItem('#editImageItem');
         ViewHelper.disableFormSubmitting('#imgPostForm');
         $('.ui.checkbox').checkbox();
-        $('#select-tags').dropdown();
+        $('#select-tags').dropdown({
+            allowAdditions: true,
+            fullTextSearch: true,
+            keys: {
+                delimiter: 13
+            },
+            showOnFocus: false,
+            forceSelection: false,
+            match: 'text'
+        });
         new PerfectScrollbar('#select-tags>.menu')
         //Отправляем форму
         $('#save-btn').click(function(ev) {
@@ -158,7 +162,6 @@
                 savePost(true);
             }
         });
-        $('#publishGuidModal').modal();
         //Настраиваем загрузку файлов
         var dropZone = document.getElementById("drop-zone");
         dropZone.ondragover = FileReaderHelper.dragOverHandler;

@@ -1,0 +1,35 @@
+﻿.scroll-rail-y {
+    position: absolute;
+    right: 2px;
+    width: 8px;
+}
+.scroll-rail-x {
+    position: absolute;
+    bottom: 2px;
+    height: 6px;
+}
+.scroll-thumb-y {
+    width: 6px;
+}
+.scroll-thumb-x {
+    height: 6px;
+}
+.scroll-thumb-y, .scroll-thumb-x {
+    border-radius: 10px;
+    position: absolute;
+    background-color: #c4c4c4;
+    transition: background-color .3s ease 0s;
+}
+.scroll-thumb-y:hover, .scroll-thumb-x:hover {
+    background-color: #b3b3b3;
+}
+.scroll-outer {
+    overflow: hidden;
+    width: inherit;
+    height: inherit;
+}
+.scroll-inner {
+    overflow: auto;
+    width: inherit;
+    height: calc(100% - 16px);
+}

@@ -185,11 +185,11 @@
             </div>
             <div class="ui divider"></div>
             <div class="extra content">
-                <span class="serv-popup" data-content="Срок выполнения"><i class="calendar violet icon"></i>{{:Deadline}}</span>
-                <span class="serv-popup" data-content="Рейтинг"><i class="yellow star icon"></i>{{:Rating}}</span>
+                <span title="Срок выполнения"><i class="calendar violet icon"></i>{{:Deadline}}</span>
+                <span title="Рейтинг"><i class="yellow star icon"></i>{{:Rating}}</span>
                 {{if Price != null && Price > 0}}
                 <div class="right">
-                    <span class="serv-popup" data-content="Цена"><i class="ruble green icon"></i>{{:Price}}</span>
+                    <span title="Цена"><i class="ruble green icon"></i>{{:Price}}</span>
                 </div>
                 {{/if}}
             </div>
@@ -286,12 +286,6 @@
                         });
                     }
                 });
-                $('.serv-popup:not(.initialized)').popup({
-                    variation: 'small',
-                    onShow: function (item) {
-                        $(item).addClass('inititalized');
-                    }
-                })
             },
             onError: function () {
                 iziToast.error({

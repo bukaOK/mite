@@ -4,9 +4,8 @@
 .segment.chat-header > .column.msg-actions {
     padding: 10px 5px;
 }
-.ui.segment.msg-chat-wrapper {
+.ui.segment.msg-chat-wrapper{
     height: 450px;
-    
 }
 .msg-chat-wrapper .ps__rail-y {
     margin: 10px 0;
@@ -17,9 +16,10 @@
 .ui.grid>.msg-actions.column.active{
     display: block;
 }
-.chat.feed{
+.ui.chat.feed{
+    min-height: 450px;
     display: flex;
-    flex-direction: column;
+    flex-direction:column;
     justify-content: flex-end;
 }
 .chat.feed .event {
@@ -56,6 +56,10 @@
 .chat.feed>.event>.content>.meta>a{
     display: block;
     margin-left: 0;
+}
+/*dialog-area*/
+.dialog-area {
+    min-height: 40px;
 }
 /*attachments*/
 #attModal .basic.segment{
@@ -94,6 +98,7 @@ img.em-img{
 }
 .emoji.popup .tabs.menu{
     min-width: max-content;
+    min-width: -moz-max-content;
     font-size: 1em;
 }
 .emoji.popup .tabs.menu .item {
@@ -121,10 +126,12 @@ img.em-img{
 .ui.emoji.popup .tab > .grid {
     margin: 0;
 }
-.em-wrapper{
+.em-wrapper {
     position: relative;
     overflow-x: hidden;
     width: 220px;
+    display: -ms-grid;
+    -ms-grid-columns: max-content;
 }
 .ui.image.onion-img{
     width: 50px;

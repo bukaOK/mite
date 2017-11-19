@@ -105,8 +105,8 @@ namespace Mite
 
             app.UseVkontakteAuthentication(new VkAuthenticationOptions
             {
-                AppId = "6013159",
-                AppSecret = "bfVzsqk5oyHvlGUwLM8P",
+                AppId = VkSettings.AppId,
+                AppSecret = VkSettings.Secret,
                 AuthenticationType = VkSettings.DefaultAuthType,
                 Caption = "Вконтакте",
                 Scope = "offline",

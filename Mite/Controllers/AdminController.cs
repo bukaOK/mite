@@ -66,9 +66,5 @@ namespace Mite.Controllers
             model.PostsCount = repo.GetCount();
             return PartialView(model);
         }
-        public PartialViewResult ServiceTypes()
-        {
-            return PartialView("AuthorServiceTypes", new ServiceTypeModel());
-        }
     }
 }

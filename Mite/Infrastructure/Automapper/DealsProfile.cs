@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Mite.CodeData.Enums;
+using Mite.DAL.DTO;
 using Mite.DAL.Entities;
 using Mite.Helpers;
 using Mite.Models;
@@ -35,6 +36,8 @@ namespace Mite.Infrastructure.Automapper
 
             CreateMap<DealModel, DealClientModel>();
             CreateMap<DealModel, DealAuthorModel>();
+
+            CreateMap<DealGalleryItemDTO, GalleryItemModel>();
         }
         private DateTime GetEndDate(int deadlineNum, DurationTypes durationType)
         {

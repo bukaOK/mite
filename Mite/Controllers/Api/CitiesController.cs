@@ -24,14 +24,10 @@ namespace Mite.Controllers.Api
             this.logger = logger;
         }
         [HttpGet]
-        public async Task<IEnumerable<System.Web.Mvc.SelectListItem>> GetAll()
+        public async Task<IEnumerable<CityModel>> GetAll()
         {
             var entities = await repo.GetAllAsync();
-            return entities.Select(x => new System.Web.Mvc.SelectListItem
-            {
-                Text = $"{x.Name}, {x.Region}",
-                Value = x.Id.ToString()
-            });
+            return Mapper.Map<IEnumerable<CityModel>>(entities);
         }
         [HttpPost]
         public async Task<IHttpActionResult> Add([FromBody]CityModel model)

@@ -40,7 +40,7 @@
                 </div>
             </div>
             <div class="ui tab" data-tab="payOut">
-                <div class="ui tab" data-tab="payOut/yandex">
+                <div class="ui active tab" data-tab="payOut/yandex">
                     @if (Model.IsYandexAuthorized)
                     {
                         Html.RenderPartial("PayOutYandex", new YaPayOutModel());
@@ -64,13 +64,19 @@
             <nav class="ui secondary stackable tabs menu" style="border: none">
                 <a class="active item" data-tab="payhistory">История операций</a>
                 <a class="item" data-tab="referals">Рефералы</a>
-                <a class="item" data-tab="ad">Реклама</a>
+                @if (User.IsInRole(RoleNames.Author))
+                {
+                    <a class="item" data-tab="ad">Реклама</a>
+                }
             </nav>
             <div class="ui active loading tab" data-tab="payhistory"></div>
             <div class="ui loading tab" data-tab="referals"></div>
-            <div class="ui tab" data-tab="ad">
-                @{Html.RenderAction("Advertising");}
-            </div>
+            @if (User.IsInRole(RoleNames.Author))
+            {
+                <div class="ui tab" data-tab="ad">
+                    @{Html.RenderAction("Advertising");}
+                </div>
+                        }
         </div>
     </div>
 </div>

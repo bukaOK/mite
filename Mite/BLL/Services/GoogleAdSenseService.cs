@@ -114,12 +114,11 @@ namespace Mite.ExternalServices.Google
         {
             if (string.IsNullOrEmpty(captchaResponse))
                 return false;
-            var reqParams = new Dictionary<string, string>
+            var content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
                 { "secret", GoogleCaptchaSettings.ReCaptchaSecret },
                 { "response", captchaResponse }
-            };
-            var content = new FormUrlEncodedContent(reqParams);
+            });
             var result = await httpClient.PostAsync("https://www.google.com/recaptcha/api/siteverify", content);
 
             var resultData = JObject.Parse(await result.Content.ReadAsStringAsync());

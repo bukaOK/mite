@@ -1,7 +1,6 @@
 ﻿@using Microsoft.AspNet.Identity
 @using Mite.CodeData.Enums
 @using Mite.CodeData.Constants
-@using Mite.Extensions
 @using Mite.Helpers
 @model Mite.Models.DealModel
 
@@ -10,10 +9,11 @@
     var userId = User.Identity.GetUserId();
     var isAuthor = userId == Model.Author.Id;
     var isClient = userId == Model.Client.Id;
+    var canSeeDisputeChat = isAuthor || isClient || Model.Moder?.Id == userId;
 }
 
 @section styles{
-    @Styles.Render("~/Content/datepicker", "~/Content/dialog", "~/Content/gallery")
+    @Styles.Render("~/Content/datepicker", "~/Content/dialog", "~/Content/lgallery")
 }
 <div class="ui segment">
     <div class="ui stackable grid">
@@ -21,7 +21,7 @@
             <div class="center aligned column">
                 <h2 class="ui left aligned dividing header">
                     Заказ № @Model.Id
-                    @if (Model.Deadline != null && Model.Deadline.Value < DateTime.UtcNow)
+                    @if (Model.Deadline != null && Model.Deadline.Value < DateTime.UtcNow && Model.Status == DealStatuses.ExpectClient)
                     {
                         <span class="ui red label">Просрочено</span>
                     }
@@ -29,7 +29,7 @@
                     {
                         if (Model.Moder == null)
                         {
-                            if (!isAuthor && !isClient && User.IsInRole(RoleNames.Moderator))
+                            if (!isAuthor && !isClient && Model.Moder == null && User.IsInRole(RoleNames.Moderator))
                             {
                                 @Html.ActionLink("Разрешить спор", "BindToDeal", "Moder", new { id = Model.Id }, new { @class = "ui violet label" })
                             }
@@ -78,7 +78,7 @@
         </div>
         <div class="two column row">
             <div class="column">
-                @if (Model.Status == DealStatuses.Dispute && Model.Moder != null)
+                @if (Model.Status == DealStatuses.Dispute && Model.Moder != null && canSeeDisputeChat)
                 {
                     Html.RenderPartial("_Chat", Model.DisputeChat);
                 }
@@ -198,14 +198,5 @@
     $(function () {
         $('.accordion').accordion();
         choseStep();
-        FileReaderHelper.settings = {
-            saveBtn: $('#save-btn'),
-            imgWrapper: $('#img-wrapper'),
-            field: $('#ImageSrc')
-        };
-        var imgInput = document.getElementById('img-download');
-        if (imgInput !== null) {
-            imgInput.onchange = FileReaderHelper.inputDownloadHandler;
-        }
     });
 </script>

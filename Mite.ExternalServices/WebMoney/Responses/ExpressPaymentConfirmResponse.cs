@@ -7,23 +7,27 @@ namespace Mite.ExternalServices.WebMoney.Responses
     [XmlRoot("merchant.response")]
     public class ExpressPaymentConfirmResponse : WMResponse
     {
+        [XmlElement("operation")]
         public ExpressConfirmOperation Operation { get; set; }
     }
     public class ExpressConfirmOperation
     {
         [XmlElement("amount")]
-        public int Amount { get; set; }
+        public double Amount { get; set; }
+        /// <summary>
+        /// Формат даты такой - (yyyymmdd hh:MM:ss)
+        /// </summary>
         [XmlElement("operdate")]
-        public DateTime OperationDate { get; set; }
+        public string OperationDate { get; set; }
         [XmlElement("purpose")]
         public string Purpose { get; set; }
         [XmlElement("pursefrom")]
         public string ClientPurse { get; set; }
         [XmlElement("wmidfrom")]
         public string ClientWmid { get; set; }
-        [XmlElement("wmtransid")]
+        [XmlAttribute("wmtransid")]
         public int TransactionId { get; set; }
-        [XmlElement("wminvoiceid")]
+        [XmlAttribute("wminvoiceid")]
         public int InvoiceId { get; set; }
     }
 }

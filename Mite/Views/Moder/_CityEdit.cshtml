@@ -5,11 +5,11 @@
     <div class="content" role="document">
         <form class="ui form" id="cityForm">
             @Html.HiddenFor(x => x.Id)
-            @Html.EditorFor(x => x.Name)
-            @Html.EditorFor(x => x.District)
-            @Html.EditorFor(x => x.Region)
-            @Html.EditorFor(x => x.TimeZone)
-            @Html.EditorFor(x => x.Population)
+            @Html.EditorFor(x => x.Name, new { WithLabel = true })
+            @Html.EditorFor(x => x.District, new { WithLabel = true })
+            @Html.EditorFor(x => x.Region, new { WithLabel = true })
+            @Html.EditorFor(x => x.TimeZone, new { WithLabel = true })
+            @Html.EditorFor(x => x.Population, new { WithLabel = true })
         </form>
     </div>
     <div class="actions">

@@ -17,10 +17,25 @@ namespace Mite.DAL.Repositories
         {
         }
 
-        public async Task<IEnumerable<Follower>> GetFollowersByUserAsync(string userId)
+        public async Task<IEnumerable<Follower>> GetFollowersByUserAsync(string userId, SortFilter sort)
         {
-            var followers = await Table.Where(x => x.FollowingUserId == userId).Include(x => x.User).ToListAsync();
-            return followers;
+            var folQuery = Table.Where(x => x.FollowingUserId == userId).Include(x => x.User);
+            switch (sort)
+            {
+                case SortFilter.New:
+                    folQuery = folQuery.OrderByDescending(x => x.FollowingUser.RegisterDate)
+                        .ThenByDescending(x => x.FollowingUser.Rating);
+                    break;
+                case SortFilter.Old:
+                    folQuery = folQuery.OrderBy(x => x.FollowingUser.RegisterDate)
+                        .ThenByDescending(x => x.FollowingUser.Rating);
+                    break;
+                case SortFilter.Popular:
+                    folQuery = folQuery.OrderByDescending(x => x.FollowingUser.Rating)
+                        .ThenBy(x => x.FollowingUser.RegisterDate);
+                    break;
+            }
+            return await folQuery.ToListAsync();
         }
         public async Task<bool> IsFollower(string followerId, string followingId)
         {

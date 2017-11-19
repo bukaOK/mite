@@ -35,11 +35,6 @@ namespace Mite
                 defaults: new { controller = "AuthorServices", action = "Index", id = UrlParameter.Optional }
             );
             routes.MapRoute(
-                name: "AddPost",
-                url: "posts/add/{postType}",
-                defaults: new { controller = "Posts", Action = "AddPost" }
-            );
-            routes.MapRoute(
                 name: "UserDeals",
                 url: "user/deals/{action}/{type}",
                 defaults: new { controller = "UserDeals", Action = "Index", type = UrlParameter.Optional }

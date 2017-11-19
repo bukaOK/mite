@@ -15,6 +15,7 @@ using System.Linq;
 using System.Web.Mvc;
 using Mite.BLL.IdentityManagers;
 using Mite.DAL.Filters;
+using Mite.DAL.DTO;
 
 namespace Mite.BLL.Services
 {
@@ -40,6 +41,7 @@ namespace Mite.BLL.Services
         /// <param name="id"></param>
         /// <returns></returns>
         Task<AuthorServiceShowModel> GetShowAsync(Guid id);
+        Task<IEnumerable<GalleryItemModel>> GetGalleryAsync(Guid id);
     }
     public class AuthorServiceService : DataService, IAuthorServiceService
     {
@@ -60,10 +62,10 @@ namespace Mite.BLL.Services
         public async Task<DataServiceResult> AddAsync(AuthorServiceModel model)
         {
             var authorService = Mapper.Map<AuthorService>(model);
-
-            authorService.ImageSrc = FilesHelper.CreateImage(PathConstants.VirtualImageFolder, model.ImageBase64);
-            ImagesHelper.Compressed.Compress(HostingEnvironment.MapPath(authorService.ImageSrc));
-            authorService.ImageSrc_50 = ImagesHelper.Compressed.CompressedVirtualPath(authorService.ImageSrc);
+            var tuple = ImagesHelper.CreateImage(PathConstants.VirtualImageFolder, model.ImageBase64);
+            authorService.ImageSrc = tuple.vPath;
+            authorService.ImageSrc_50 = tuple.compressedVPath;
+            authorService.CreateDate = DateTime.UtcNow;
 
             try
             {
@@ -191,6 +193,13 @@ namespace Mite.BLL.Services
 
             var result = await repo.GetByFilterAsync(filter);
             return Mapper.Map<IEnumerable<ProfileServiceModel>>(result);
+        }
+
+        public async Task<IEnumerable<GalleryItemModel>> GetGalleryAsync(Guid id)
+        {
+            var dealRepo = Database.GetRepo<DealRepository, Deal>();
+            var items = await dealRepo.GetServiceGalleryAsync(id);
+            return Mapper.Map<IEnumerable<GalleryItemModel>>(items);
         }
     }
 }

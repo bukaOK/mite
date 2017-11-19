@@ -12,7 +12,6 @@
     <a class="active item" data-tab="moderregister" role="tab">Добавление модератора</a>
     <a class="item" data-tab="extapps" role="tab">Авторизовать приложения</a>
     <a class="item" data-tab="statistic" role="tab">Статистика</a>
-    <a class="item" data-tab="servicetypes" role="tab">Типы услуг</a>
 </nav>
 <div class="ui active tab" data-tab="moderregister" role="tabpanel">
     @{Html.RenderAction("ModerRegister");}
@@ -31,9 +30,6 @@
 </div>
 <div class="ui tab" data-tab="statistic" role="tabpanel">
     @{Html.RenderAction("Statistic");}
-</div>
-<div class="ui tab" data-tab="servicetypes" role="tabpanel">
-    @{ Html.RenderAction("ServiceTypes"); }
 </div>
 @section scripts{
     @Scripts.Render("~/bundles/api", "~/bundles/jsrender")

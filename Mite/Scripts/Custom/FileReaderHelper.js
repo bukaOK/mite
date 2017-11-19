@@ -1,15 +1,23 @@
-﻿var FileReaderHelper = {
+﻿/**
+ * Хелпер для чтения файлов
+ * @typedef {{saveBtn: JQuery<HTMLElement>, imgWrapper: JQuery<HTMLElement>, field: JQuery<HTMLElement>}} ReaderSettings
+ */
+var FileReaderHelper = {
     /**
      * Читаем файл
      * @param {Event} evt событие чтения
+     * @param {File} file
+     * @param {ReaderSettings} settings
     */
-    readFile: function (file, evt) {
-        var self = FileReaderHelper,
+    readFile: function (file, evt, settings) {
+        var self = FileReaderHelper;
+        if (settings === undefined || settings === null) {
             settings = {
                 saveBtn: $('#saveBtn'),
                 imgWrapper: $(evt.target).parents('form').find('.img-wrapper'),
                 field: $(evt.target).parents('form').find('[name="Content"]')
             };
+        }
 
         var reader = new FileReader();
         reader.onprogress = function () {
@@ -52,11 +60,12 @@
     /**
      * Нажали на кнопку загрузки
      * @param {Event} evt
+     * @param {ReaderSettings} settings
     */
-    inputDownloadHandler: function (evt) {
+    inputDownloadHandler: function (evt, settings) {
         var self = FileReaderHelper;
 
         var file = evt.target.files[0];
-        self.readFile(file, evt);
+        self.readFile(file, evt, settings);
     }
 }

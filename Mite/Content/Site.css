@@ -7,6 +7,9 @@
 html, body{
     height: 100% !important;
 }
+.ui.header>.sub.header {
+    overflow: hidden;
+}
 .ui.margined.button{
     margin-bottom: 4px;
 }
@@ -31,8 +34,19 @@ html, body{
 .help.word{
     cursor: help;
 }
-/*Labels*/
-
+a.link{
+    cursor: pointer;
+}
+/*Dropdown*/
+.ui.dropdown.selection .menu{
+    min-width: calc(100% + 3px);
+    width: calc(100% + 3px);
+    border-width: 2px;
+}
+.ui.dropdown.multiple.selection .menu {
+    min-width: calc(100% + 4px);
+    width: calc(100% + 4px);
+}
 /*Шапка*/
 header.ui.fixed.menu .item>.button{
     padding: 8px 15px;
@@ -484,7 +498,10 @@ p.docs{
 }
 /*Карточка подписчика/подписки*/
 .post-item .sub.header, .follower-card{
-    overflow: hidden;
+    overflow-x: hidden;
+}
+.ui.grid.follower-card>.column:first-child{
+    padding-right: 0;
 }
 /*Кнопка скроллинга*/
 .ui.button.scroll{

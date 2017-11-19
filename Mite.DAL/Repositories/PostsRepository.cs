@@ -10,6 +10,8 @@ using Mite.CodeData.Enums;
 using System.Text;
 using Mite.DAL.Infrastructure;
 using System.Data.Entity;
+using Mite.DAL.Filters;
+using Mite.DAL.DTO;
 
 namespace Mite.DAL.Repositories
 {
@@ -72,25 +74,43 @@ namespace Mite.DAL.Repositories
         /// <param name="userId">Id пользователя</param>
         /// <param name="postType">Тип поста</param>
         /// <returns></returns>
-        public async Task<IEnumerable<Post>> GetByUserAsync(string userId, PostTypes postType, SortFilter sort)
+        public async Task<IEnumerable<PostDTO>> GetByUserAsync(string userId, PostTypes postType, SortFilter sort)
         {
-            var query = "select * from dbo.\"Posts\" where \"UserId\"=@userId and \"Type\"=@postType ";
+            var query = "select posts.*, (select count(*) from dbo.\"Comments\" as comments where comments.\"PostId\"=posts.\"Id\") " +
+                "as \"CommentsCount\", tags.* from dbo.\"Posts\" as posts " +
+                "left outer join dbo.\"TagPosts\" as tag_posts on tag_posts.\"Post_Id\"=posts.\"Id\" " +
+                "left outer join dbo.\"Tags\" as tags on tags.\"Id\"=tag_posts.\"Tag_Id\" " +
+                "where posts.\"UserId\"=@userId and posts.\"Type\"=@postType ";
             switch (sort)
             {
                 case SortFilter.Popular:
-                    query += "order by \"Rating\" desc";
+                    query += "order by posts.\"Rating\" desc";
                     break;
                 case SortFilter.New:
-                    query += "order by \"PublishDate\" desc";
+                    query += "order by posts.\"PublishDate\" desc";
                     break;
                 case SortFilter.Old:
-                    query += "order by \"PublishDate\" asc";
+                    query += "order by posts.\"PublishDate\" asc";
                     break;
                 default:
                     throw new ArgumentException("Неизвестный тип сортировки");
             }
             query += ";";
-            var posts = await Db.QueryAsync<Post>(query, new { postType, userId });
+            var posts = new List<PostDTO>();
+            await Db.QueryAsync<PostDTO, Tag, PostDTO>(query, (post, tag) =>
+            {
+                var dto = posts.FirstOrDefault(x => x.Id == post.Id);
+                if (dto == null)
+                {
+                    post.Tags = new List<Tag>();
+                    if (tag != null)
+                        post.Tags.Add(tag);
+                    posts.Add(post);
+                }
+                else if (tag != null)
+                    dto.Tags.Add(tag);
+                return post;
+            }, new { postType, userId });
             return posts;
         }
         /// <summary>
@@ -139,206 +159,78 @@ namespace Mite.DAL.Repositories
             DbContext.Entry(post).Property(x => x.PublishDate).IsModified = true;
             await SaveAsync();
         }
-        /// <summary>
-        /// Получить посты по тегам
-        /// </summary>
-        /// <param name="tagIds">Список Id тегов</param>
-        /// <param name="minDate">Дата, с которой начинается отбор постов</param>
-        /// <param name="onlyFollowings">Выбрать только из тех на кого подписан</param>
-        /// <param name="currentUserId">Id текущего пользователя</param>
-        /// <param name="sortType">Как сортировать</param>
-        /// <param name="offset">Сколько строк пропустить, прежде чем начать отбор</param>
-        /// <param name="range">Сколько постов достать</param>
-        /// <returns></returns>
-        public async Task<IEnumerable<Post>> GetByTagsAsync(string[] tagsNames, DateTime minDate, 
-            bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range, DateTime maxDate)
+        public async Task<IEnumerable<PostDTO>> GetByFilterAsync(PostTopFilter filter)
         {
-            var tagNamesStr = new StringBuilder();
-            for (var i = 0; i < tagsNames.Length; i++)
+            filter.PostType = PostTypes.Published;
+
+            var query = "select posts.*, (select count(*) from dbo.\"Comments\" as comments where comments.\"PostId\"=posts.\"Id\") " +
+                "as \"CommentsCount\", users.*, tags.* from dbo.\"Posts\" as posts " +
+                "inner join dbo.\"Users\" as users on posts.\"UserId\"=users.\"Id\" " +
+                "left outer join dbo.\"TagPosts\" as tag_posts on tag_posts.\"Post_Id\"=posts.\"Id\" " +
+                "left outer join dbo.\"Tags\" as tags on tags.\"Id\"=tag_posts.\"Tag_Id\" " +
+                "where posts.\"Type\"=@PostType and \"PublishDate\" is not null and \"PublishDate\" > @MinDate and \"PublishDate\" < @MaxDate ";
+            if (!string.IsNullOrEmpty(filter.PostName))
             {
-                tagNamesStr.AppendFormat("dbo.\"Tags\".\"Name\" like N'%{0}%' ", tagsNames[i]);
-                if (i < tagsNames.Length - 1)
-                    tagNamesStr.Append("or ");
+                query += "and (setweight(to_tsvector('mite_ru', posts.\"Title\"), 'A') || " +
+                    "setweight(to_tsvector('mite_ru', coalesce(posts.\"Description\", '')), 'B')) @@ plainto_tsquery(@PostName) ";
             }
-            //Запрос для получения кол-ва совпадений тегов для каждого поста
-            var tagsCountQuery = "select COUNT(\"Tag_Id\") as \"TagsCount\", \"Post_Id\" from dbo.\"Tags\" inner join dbo.\"TagPosts\" " +
-                    $"on dbo.\"Tags\".\"Id\"=dbo.\"TagPosts\".\"Tag_Id\" where {tagNamesStr.ToString()} group by \"Post_Id\";";
-            var tagsCountRes = await Db.QueryAsync(tagsCountQuery);
-            //Чтобы у поста было точное кол-во совпадений с тегами(т.е. написали в запросе 2 тега - должно совпасть 2 тега)
-            var postsIds = tagsCountRes.Where(x => (int)x.TagsCount >= tagsNames.Length)
-                .Select<dynamic, Guid>(x => Guid.Parse(x.Post_Id.ToString())).ToList();
-
-            var query = "select * from dbo.\"Posts\" inner join dbo.\"Users\" on dbo.\"Users\".\"Id\"=dbo.\"Posts\".\"UserId\" " +
-                "where dbo.\"Posts\".\"Id\" = any(@postsIds) and dbo.\"Posts\".\"Type\"=@postType and " +
-                "\"PublishDate\" > @minDate and \"PublishDate\" < @maxDate ";
-
-            var followings = new List<string>();
-            var postType = PostTypes.Published;
-
-            if (onlyFollowings)
+            if(filter.Tags != null && filter.Tags.Length > 0)
             {
-                var followingsQuery = "select \"FollowingUserId\" from dbo.\"Followers\" where \"UserId\"=@currentUserId;";
-                followings = (await Db.QueryAsync<string>(followingsQuery, new { currentUserId })).ToList();
-                query += "and dbo.\"Users\".\"Id\" = any(@followings) ";
+                var tagNamesStr = new StringBuilder();
+                for (var i = 0; i < filter.Tags.Length; i++)
+                {
+                    tagNamesStr.AppendFormat("tags.\"Name\"='{0}' ", filter.Tags[i]);
+                    if (i < filter.Tags.Length - 1)
+                        tagNamesStr.Append("or ");
+                }
+                //Запрос для получения кол-ва совпадений тегов для каждого поста
+                var tagsCountQuery = "select COUNT(\"Tag_Id\") as \"TagsCount\", \"Post_Id\" from dbo.\"Tags\" as tags " +
+                        "inner join dbo.\"TagPosts\" as tag_posts on tags.\"Id\"=tag_posts.\"Tag_Id\" " +
+                        $"where {tagNamesStr.ToString()} group by \"Post_Id\";";
+
+                var tagsCountRes = await Db.QueryAsync(tagsCountQuery);
+                //Чтобы у поста было точное кол-во совпадений с тегами(т.е. написали в запросе 2 тега - должно совпасть 2 тега или больше)
+                filter.PostIds = tagsCountRes.Where(x => (int)x.TagsCount >= filter.Tags.Length)
+                    .Select(x => (Guid)x.Post_Id).ToList();
+
+                query += "and posts.\"Id\"=any(@PostIds) ";
             }
-            switch (sortType)
+            if (filter.OnlyFollowings)
+            {
+                filter.Followings = await DbContext.Followers.Where(x => x.UserId == filter.CurrentUserId)
+                    .Select(x => x.FollowingUserId).ToListAsync();
+                query += "and users.\"Id\" = any(@followings) ";
+            }
+            switch (filter.SortType)
             {
                 case SortFilter.Popular:
-                    query += "order by dbo.\"Posts\".\"Rating\" desc";
+                    query += "order by posts.\"Rating\" desc, posts.\"PublishDate\" desc";
                     break;
                 case SortFilter.New:
-                    query += "order by dbo.\"Posts\".\"PublishDate\" desc";
+                    query += "order by posts.\"PublishDate\" desc";
                     break;
                 case SortFilter.Old:
-                    query += "order by dbo.\"Posts\".\"PublishDate\" asc";
+                    query += "order by posts.\"PublishDate\" asc";
                     break;
             }
-            query += $" offset {offset} limit {range};";
-            var posts = await Db.QueryAsync<Post, User, Post>(query, (post, user) =>
+            query += $" limit {filter.Range} offset {filter.Offset};";
+
+            var posts = new List<PostDTO>();
+            await Db.QueryAsync<PostDTO, User, Tag, PostDTO>(query, (post, user, tag) =>
             {
-                post.User = user;
+                var dto = posts.FirstOrDefault(x => x.Id == post.Id);
+                if (dto == null)
+                {
+                    post.User = user;
+                    post.Tags = new List<Tag>();
+                    if (tag != null)
+                        post.Tags.Add(tag);
+                    posts.Add(post);
+                }
+                else if (tag != null)
+                    dto.Tags.Add(tag);
                 return post;
-            }, new { postsIds, minDate, followings, maxDate, postType });
-            return posts;
-        }
-        /// <summary>
-        /// Получить посты по имени и списку тегов
-        /// </summary>
-        /// <param name="postName">Название работы</param>
-        /// <param name="tagsNames">Список имен тегов</param>
-        /// <param name="minDate">Дата, скоторой начинается отбор</param>
-        /// <param name="onlyFollowings">Выбрать только из тех на кого подписан</param>
-        /// <param name="currentUserId">Id текущего пользователя</param>
-        /// <param name="sortType">Как сортировать</param>
-        /// <param name="offset">Сколько строк пропустить, прежде чем начать отбор</param>
-        /// <param name="range">Сколько нужно взять</param>
-        /// <param name="maxDate">Дата, после которой не берутся посты(чтобы не раздваивались)</param>
-        /// <returns></returns>
-        public async Task<IEnumerable<Post>> GetByPostNameAndTagsAsync(string postName, string[] tagsNames, DateTime minDate,
-            bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range, DateTime maxDate)
-        {
-            var tagNamesStr = new StringBuilder();
-            for (var i = 0; i < tagsNames.Length; i++)
-            {
-                tagNamesStr.AppendFormat("dbo.\"Tags\".\"Name\" like N'%{0}%' ", tagsNames[i]);
-                if (i < tagsNames.Length - 1)
-                    tagNamesStr.Append("or ");
-            }
-            //Запрос для получения кол-ва совпадений тегов для каждого поста
-            var tagsCountQuery = "select COUNT(\"Tag_Id\") as \"TagsCount\", \"Post_Id\" from dbo.\"Tags\" inner join dbo.\"TagPosts\" " +
-                    $"on dbo.\"Tags\".\"Id\"=dbo.\"TagPosts\".\"Tag_Id\" where {tagNamesStr.ToString()} group by \"Post_Id\"";
-            var tagsCountRes = await Db.QueryAsync(tagsCountQuery);
-            //Чтобы у поста было точное кол-во совпадений с тегами(т.е. написали в запросе 2 тега - должно совпасть 2 тега или больше)
-            var postsIds = tagsCountRes.Where(x => (int)x.TagsCount >= tagsNames.Length)
-                .Select(x => (Guid)x.Post_Id).ToList();
-
-            var query = "select * from dbo.\"Posts\" inner join dbo.\"Users\" on dbo.\"Users\".\"Id\"=dbo.\"Posts\".\"UserId\" " +
-                "where dbo.\"Posts\".\"Id\" = any(@postsIds) and \"PublishDate\" is not null " +
-                "and dbo.\"Posts\".\"Type\"=@postType and \"PublishDate\" > @minDate and \"PublishDate\" < @maxDate ";
-
-            query += "and (setweight(to_tsvector('mite_ru', dbo.\"Posts\".\"Title\"), 'A') || " +
-                "setweight(to_tsvector('mite_ru', coalesce(dbo.\"Posts\".\"Description\", '')), 'B')) @@ plainto_tsquery(@postName)";
-
-            var postType = PostTypes.Published;
-            var followings = new List<string>();
-
-            if (onlyFollowings)
-            {
-                var followingsQuery = "select \"FollowingUserId\" from dbo.\"Followers\" where \"UserId\"=@currentUserId ";
-                followings = (await Db.QueryAsync<string>(followingsQuery, new { currentUserId })).ToList();
-                query += "and dbo.\"Users\".\"Id\" = any(@followings) ";
-            }
-            switch (sortType)
-            {
-                case SortFilter.Popular:
-                    query += "order by dbo.\"Posts\".\"Rating\" desc";
-                    break;
-                case SortFilter.New:
-                    query += "order by dbo.\"Posts\".\"PublishDate\" desc";
-                    break;
-                case SortFilter.Old:
-                    query += "order by dbo.\"Posts\".\"PublishDate\" asc";
-                    break;
-            }
-            //Получаем по диапазону
-            query += $" limit {range} offset {offset};";
-            
-            var posts = await Db.QueryAsync<Post, User, Post>(query, (post, user) =>
-            {
-                post.User = user;
-                return post;
-            }, new { minDate, postsIds, followings, postName, maxDate, postType });
-            return posts;
-        }
-        public async Task<IEnumerable<Post>> GetByPostNameAsync(string postName, DateTime minDate,
-            bool onlyFollowings, string currentUserId, SortFilter sortType, int offset, int range, DateTime maxDate)
-        {
-            var query = "select * from dbo.\"Posts\" inner join dbo.\"Users\" on dbo.\"Posts\".\"UserId\"=dbo.\"Users\".\"Id\" " +
-                "where dbo.\"Posts\".\"Type\"=@postType and \"PublishDate\" > @minDate " +
-                "and \"PublishDate\" < @maxDate and (setweight(to_tsvector('mite_ru', dbo.\"Posts\".\"Title\"), 'A') || " +
-                "setweight(to_tsvector('mite_ru', coalesce(dbo.\"Posts\".\"Description\", '')), 'B')) @@ plainto_tsquery(@postName)";
-
-            var postType = PostTypes.Published;
-            var followings = new List<string>();
-            if (onlyFollowings)
-            {
-                var followingsQuery = "select \"FollowingUserId\" from dbo.\"Followers\" where \"UserId\"=@currentUserId;";
-                followings = (await Db.QueryAsync<string>(followingsQuery, new { currentUserId })).ToList();
-                query += "and dbo.\"Users\".\"Id\" = any(@followings) ";
-            }
-            switch (sortType)
-            {
-                case SortFilter.Popular:
-                    query += "order by dbo.\"Posts\".\"Rating\" desc";
-                    break;
-                case SortFilter.New:
-                    query += "order by dbo.\"Posts\".\"PublishDate\" desc";
-                    break;
-                case SortFilter.Old:
-                    query += "order by dbo.\"Posts\".\"PublishDate\" asc";
-                    break;
-            }
-            query += $" limit {range} offset {offset};";
-            var posts = await Db.QueryAsync<Post, User, Post>(query, (post, user) =>
-            {
-                post.User = user;
-                return post;
-            }, new { minDate, postName, followings, maxDate, postType });
-            return posts;
-        }
-        public async Task<IEnumerable<Post>> GetByFilterAsync(DateTime minDate, bool onlyFollowings, 
-            string currentUserId, SortFilter sortType, int offset, int range, DateTime maxDate)
-        {
-            var query = "select * from dbo.\"Posts\" inner join dbo.\"Users\" on dbo.\"Users\".\"Id\"=dbo.\"Posts\".\"UserId\"" +
-                $"where dbo.\"Posts\".\"Type\"=@postType and \"PublishDate\" > @minDate " +
-                "and \"PublishDate\" < @maxDate ";
-            var postType = PostTypes.Published;
-            var followings = new List<string>();
-            if (onlyFollowings)
-            {
-                var followingsQuery = "select \"FollowingUserId\" from dbo.\"Followers\" where \"UserId\"=@currentUserId;";
-                followings = (await Db.QueryAsync<string>(followingsQuery, new { currentUserId })).ToList();
-                query += "and dbo.\"Users\".\"Id\" = any(@followings) ";
-            }
-            switch (sortType)
-            {
-                case SortFilter.Popular:
-                    query += "order by dbo.\"Posts\".\"Rating\" desc, dbo.\"Posts\".\"PublishDate\" desc";
-                    break;
-                case SortFilter.New:
-                    query += "order by dbo.\"Posts\".\"PublishDate\" desc";
-                    break;
-                case SortFilter.Old:
-                    query += "order by dbo.\"Posts\".\"PublishDate\" asc";
-                    break;
-            }
-            query += $" limit {range} offset {offset};";
-
-            var posts = await Db.QueryAsync<Post, User, Post>(query, (post, user) =>
-            {
-                post.User = user;
-                return post;
-            }, new { minDate, maxDate, postType, followings });
+            }, filter);
             return posts;
         }
         public Task<List<Guid>> GetAllIdsAsync()

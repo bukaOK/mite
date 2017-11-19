@@ -59,6 +59,8 @@ namespace Mite
             bundles.Add(new StyleBundle("~/Content/css").Include(
                 "~/node_modules/croppie/croppie.css",
                 "~/bower_components/izitoast/dist/css/iziToast.min.css",
+                "~/Content/dotloader.css",
+                "~/Content/scrollbar.css",
                 "~/Content/Site.css",
                 "~/Content/ident.css",
                 "~/Content/content-tools.min.css",
@@ -68,15 +70,11 @@ namespace Mite
             ));
             bundles.Add(new StyleBundle("~/Content/datepicker").Include(
                 "~/bower_components/air-datepicker/dist/css/datepicker.css"));
-            bundles.Add(new StyleBundle("~/Content/gallery").Include(
-                "~/Content/gallery/css/lightgallery.min.css",
+            bundles.Add(new StyleBundle("~/Content/lgallery").Include(
+                "~/Content/gallery/css/lightgallery.css",
                 "~/Content/gallery.css"
             ));
             bundles.Add(new StyleBundle("~/Content/dialog").Include("~/Content/dialogs.css"));
-            //LESS
-            bundles.Add(new LessBundle("~/Content/less").Include(
-                "~/Content/DotLoader.less"
-            ));
         }
     }
 }

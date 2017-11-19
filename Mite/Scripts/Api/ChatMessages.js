@@ -51,9 +51,10 @@ var ChatMessages = {
             msg.IsoDate = date;
             msg.Status = ChatMessages.Api.statuses.readed;
 
-            var tmpl = $.templates('#messageTmpl');
-            $('.chat').append(tmpl.render(msg));
-
+            var tmpl = $.templates('#messageTmpl'),
+                chatLoader = window.chats[msg.ChatId];
+            chatLoader.scrollbar.settings.endFixed = true;
+            chatLoader.chat.append(tmpl.render(msg));
             if (document.hasFocus()) {
                 chatHub.server.readMessage(msg.Id);
             } else {
@@ -134,6 +135,18 @@ var ChatMessages = {
          * @param {string} message контент сообщения
         */
         add: function (chatId, targetUser, message) {
+            var dialogArea = $('.dialog-area');
+            if (dialogArea.html() === '' && MsgFiles.files.length === 0) {
+                return false;
+            }
+            var attSize = 0;
+            MsgFiles.files.forEach(function (file) {
+                attSize += file.Size;
+            });
+            if (attSize / 1024 / 1024 > 80) {
+                $('#chat-form').form('add errors', ['Суммарный размер файлов не должен превышать 80 мбайт.']);
+                return false;
+            }
             var self = ChatMessages.Api,
                 $btn = $('#msgSendBtn').addClass('loading'),
                 now = new Date(),
@@ -149,72 +162,79 @@ var ChatMessages = {
                     Date: DateTimeHelper.toDateString(now, 'short')
                 },
                 tmpl = $.templates('#messageTmpl'),
-                lastMsgDate = $('.chat .event').last()[0].dataset.date;
-
-            if (lastMsgDate !== msgData.Date) {
+                lastMsgDate = $('.chat .event').length > 0 ? $('.chat .event').last()[0].dataset.date : null;
+            
+            if (lastMsgDate !== null && lastMsgDate !== msgData.Date) {
                 msgData.DividerDate = 'Сегодня';
             }
-            var formData = {
-                Recipient: {
-                    Id: targetUser.Id
-                },
-                ChatId: chatId,
-                Message: message,
-                Attachments: []
-            };
-            MsgFiles.files.forEach(function (file) {
-                formData.Attachments.push({
-                    Src: file.Data,
-                    Name: file.Name
-                });
+            formData.append('Recipient.Id', targetUser.Id);
+            formData.append('ChatId', chatId);
+            formData.append('Message', message);
+            MsgFiles.files.forEach(function (file, i) {
+                formData.append('StreamAttachments[' + i + ']', file.Stream);
             });
-            return new Promise(function (resolve, reject) {
-                resolve(JSON.stringify(formData));
-            }).then(function (data) {
-                console.log('then');
-                $.ajax({
-                    url: self.url,
-                    type: 'post',
-                    dataType: 'json',
-                    contentType: 'application/json',
-                    data: data,
-                    success: function (resp) {
-                        msgData.images = [];
-                        msgData.documents = [];
-                        if (resp.Attachments !== null && resp.Attachments.length > 0) {
-                            resp.Attachments.forEach(function (att, j) {
-                                att.Index = j;
-                                if (att.Type === 0) {
-                                    msgData.images.push(att);
-                                } else {
-                                    msgData.documents.push(att);
-                                }
-                            });
-                        }
-                        msgData.Id = resp.Id;
-                        $('#dialogArea').html('');
-                        MsgFiles.files = [];
-                        $('.attachments.grid').removeClass('active').html('');
-                        $('.chat').append(tmpl.render(msgData));
-                        window.hubReady.done(function () {
-                            $.connection.chatHub.server.addMessage(resp);
-                        });
-                    },
-                    error: function (jqXhr) {
-                        var errMsg = 'Внутренняя ошибка';
-                        if (jqXhr.status === 400) {
-                            errMsg = jqXhr.responseText;
-                        }
-                        console.log(jqXhr);
-                        $('#chat-form').form('add errors', [errMsg]);
-                    },
-                    complete: function () {
-                        $btn.removeClass('loading');
+            return $.ajax({
+                url: '/messages/add',
+                type: 'post',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (resp) {
+                    if (resp.status === undefined) {
+                        resp = JSON.parse(resp);
                     }
-                });
-                }, function (ev) {
-                    console.log(ev);
-                });
+                    resp = resp.data;
+                    msgData.images = [];
+                    msgData.documents = [];
+                    if (resp.Attachments !== null && resp.Attachments.length > 0) {
+                        resp.Attachments.forEach(function (att, j) {
+                            att.Index = j;
+                            if (att.Type === 0) {
+                                msgData.images.push(att);
+                            } else {
+                                msgData.documents.push(att);
+                            }
+                        });
+                    }
+                    msgData.Id = resp.Id;
+                    dialogArea.html('');
+                    MsgFiles.files = [];
+                    $('.attachments.grid').removeClass('active').html('');
+                    var chatLoader = window.chats[resp.ChatId];
+                    chatLoader.scrollbar.settings.endFixed = true;
+                    chatLoader.chat.append(tmpl.render(msgData));
+                    window.hubReady.done(function () {
+                        $.connection.chatHub.server.addMessage(resp);
+                    });
+                },
+                error: function (jqXhr) {
+                    var errMsg = 'Внутренняя ошибка';
+                    if (jqXhr.status === 400) {
+                        errMsg = jqXhr.responseText;
+                    }
+                    console.log(jqXhr);
+                    $('#chat-form').form('add errors', [errMsg]);
+                },
+                complete: function () {
+                    $btn.removeClass('loading');
+                }
+            });
+            //var xhr = new XMLHttpRequest();
+            //xhr.open('post', '/messages/add', true);
+            //xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            //xhr.send(formData);
+            //xhr.onreadystatechange = function () {
+            //    if (xhr.readyState === 4) {
+            //        switch (xhr.status) {
+            //            case 200:
+            //                var resp = JSON.parse(xhr.responseText);
+                            
+            //                break;
+            //            default:
+            //        }
+                    
+            //    }
+            //}
         },
         /**
          * Удаляем выделенные сообщения

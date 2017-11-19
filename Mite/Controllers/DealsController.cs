@@ -23,17 +23,23 @@ namespace Mite.Controllers
         {
             var currentUserId = User.Identity.GetUserId();
             var deal = await dealService.GetShowAsync(id);
-            if (!string.Equals(currentUserId, deal.Author.Id) && !string.Equals(currentUserId, deal.Client.Id))
+            if (deal == null)
+                return NotFound();
+            if (!string.Equals(currentUserId, deal.Author.Id) && !string.Equals(currentUserId, deal.Client.Id) 
+                && !User.IsInRole(RoleNames.Moderator))
                 return Forbidden();
             var isAuthor = User.Identity.GetUserId() == deal.Author.Id;
 
-            deal.Chat.Name = "Чат с " + deal.Chat.Members.First(x => !string.Equals(currentUserId, x.Id)).UserName;
-            deal.Chat.CurrentUser = deal.Chat.Members.First(x => string.Equals(currentUserId, x.Id));
-
-            if (deal.DisputeChat != null)
+            if (deal.Status == DealStatuses.Dispute && deal.Moder != null && deal.DisputeChat != null)
             {
                 deal.DisputeChat.Name = "Чат спора";
-                deal.DisputeChat.CurrentUser = deal.Chat.Members.First(x => x.Id == currentUserId);
+                deal.DisputeChat.CurrentUser = deal.DisputeChat.Members.FirstOrDefault(x => x.Id == currentUserId);
+            }
+            else
+            {
+                deal.Chat.Name = "Чат с " + deal.Chat.Members.First(x => !string.Equals(currentUserId, x.Id)).UserName;
+                //null возможен, когда модератор зашел на страницу сделки, но ещё не начал его разрешать
+                deal.Chat.CurrentUser = deal.Chat.Members.FirstOrDefault(x => string.Equals(currentUserId, x.Id));
             }
 
             return View(deal);
@@ -54,6 +60,8 @@ namespace Mite.Controllers
         [HttpPost]        
         public async Task<ActionResult> LoadImage(DealModel model)
         {
+            if (string.IsNullOrEmpty(model.ImageSrc))
+                return Json(JsonStatuses.ValidationError, new[] { "Изображение не выбрано" });
             var result = await dealService.SaveResultImgAsync(model.Id, model.ImageSrc, User.Identity.GetUserId());
             if (result.Succeeded)
                 return Json(JsonStatuses.Success);

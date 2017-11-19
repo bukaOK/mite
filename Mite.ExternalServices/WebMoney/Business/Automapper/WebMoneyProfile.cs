@@ -14,6 +14,11 @@ namespace Mite.ExternalServices.WebMoney.Business.Automapper
                 .ForMember(dest => dest.ConfirmType, opt => opt.MapFrom(src => (byte)src.ConfirmType))
                 .ForMember(dest => dest.EmulatedFlag, opt => opt.MapFrom(src => src.EmulatedFlag ? 1 : 0));
             CreateMap<ExpressPaymentConfirmParams, ExpressPaymentConfirmRequest>();
+
+            CreateMap<SettingTrustParams, SettingTrustRequest>()
+                .ForMember(dest => dest.ClientPhone, opt => opt.MapFrom(src => src.ClientPhone.ToString()))
+                .ForMember(dest => dest.LoginType, opt => opt.MapFrom(src => (byte)src.LoginType))
+                .ForMember(dest => dest.ConfirmType, opt => opt.MapFrom(src => (byte)src.ConfirmType));
         }
     }
 }

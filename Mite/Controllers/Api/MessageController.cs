@@ -11,6 +11,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Hosting;
 using System.Web.Http;
 
 namespace Mite.Controllers.Api
@@ -40,21 +41,22 @@ namespace Mite.Controllers.Api
                 return BadRequest(e.Message);
             }
         }
-        [HttpPost]
-        public async Task<IHttpActionResult> Add(ChatMessageModel model)
-        {
-            model.Sender = new UserShortModel
-            {
-                Id = User.Identity.GetUserId()
-            };
-            var result = await messagesService.AddAsync(model);
-            if (result.Succeeded)
-            {
-                var message = (ChatMessageModel)result.ResultData;
-                return Ok(message);
-            }
-            return Content(HttpStatusCode.ServiceUnavailable, result.Errors);
-        }
+        //[HttpPost]
+        //public async Task<IHttpActionResult> Add(ChatMessageModel model)
+        //{
+        //    model.Sender = new UserShortModel
+        //    {
+        //        Id = User.Identity.GetUserId()
+        //    };
+        //    return InternalServerError();
+        //    var result = await messagesService.AddAsync(model);
+        //    if (result.Succeeded)
+        //    {
+        //        var message = (ChatMessageModel)result.ResultData;
+        //        return Ok(message);
+        //    }
+        //    return Content(HttpStatusCode.ServiceUnavailable, result.Errors);
+        //}
         [HttpDelete]
         public async Task<IHttpActionResult> Remove([FromUri]Guid[] ids)
         {

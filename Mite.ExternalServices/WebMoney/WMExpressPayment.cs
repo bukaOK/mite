@@ -23,22 +23,16 @@ namespace Mite.ExternalServices.WebMoney
         public async Task<WmPaymentResult> PayInAsync(ExpressPaymentParams paymentParams)
         {
             var request = Mapper.Map<ExpressPaymentRequest>(paymentParams);
-
-            request.Language = "ru-RU";
             request.StorePurse = WmrPurse;
             //request.Description = "Пополнение счёта MiteGroup.";
             request.Description = "X20 test payment";
-            request.EmulatedFlag = 1;
-            request.WmId = MasterWmId;
-            request.Sign = Signer.Sign(request.SignMessage);
-
+            //request.EmulatedFlag = 1;
             try
             {
                 var resp = await PostAsync<ExpressPaymentResponse>(request);
-
                 if(resp.ErrorCode != 0)
                 {
-                    Logger.Warn("Webmoney: Ошибка при попытке пополнить счёт: " + resp.ErrorDescription);
+                    Logger.Warn($"Webmoney: Ошибка при попытке пополнить счёт. Код: {resp.ErrorCode}. Описание: {resp.ErrorDescription}");
                     return WmPaymentResult.Failed(resp.UserDescription);
                 }
                 return WmPaymentResult.Success(resp.Operation.InvoiceId);
@@ -52,12 +46,7 @@ namespace Mite.ExternalServices.WebMoney
         public async Task<WmPaymentResult> ConfirmPayInAsync(ExpressPaymentConfirmParams paymentParams)
         {
             var request = Mapper.Map<ExpressPaymentConfirmRequest>(paymentParams);
-
-            request.Language = "ru-RU";
             request.StorePurse = WmrPurse;
-            request.WmId = MasterWmId;
-            request.Sign = Signer.Sign(request.SignMessage);
-
             try
             {
                 var resp = await PostAsync<ExpressPaymentConfirmResponse>(request);
@@ -66,7 +55,7 @@ namespace Mite.ExternalServices.WebMoney
                     Logger.Warn("Webmoney: Ошибка при попытке пополнить счёт: " + resp.ErrorDescription);
                     return WmPaymentResult.Failed(resp.UserDescription);
                 }
-                return WmPaymentResult.Success();
+                return WmPaymentResult.Success(resp);
             }
             catch(Exception e)
             {

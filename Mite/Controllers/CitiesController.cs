@@ -24,7 +24,7 @@ namespace Mite.Controllers
             this.cityService = cityService;
         }
         [HttpPost]
-        public async Task<JsonResult> BindCity(string cityName)
+        public async Task<ActionResult> BindCity(string cityName)
         {
             var city = await cityService.GetByNameAsync(cityName);
             if(city != null)

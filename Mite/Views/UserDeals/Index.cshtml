@@ -113,29 +113,35 @@
     }
     else
     {
-        <div class="ui vertical secondary pointing menu" role="tablist">
-            <a class="active item" role="tab" data-tab="new">Новые</a>
-            <a class="item" role="tab" data-tab="expectpayment">Ожидает оплаты</a>
-            <a class="item" role="tab" data-tab="expectclient">Ожидает подтверждения</a>
-            <a class="item" role="tab" data-tab="dispute">В споре</a>
-            <a class="item" role="tab" data-tab="confirmed">Подтвержденные</a>
-            <a class="item" role="tab" data-tab="moderconfirmed">Подтв. модератором</a>
-            <a class="item" role="tab" data-tab="rejected">Отклоненные</a>
-            <a class="item" role="tab" data-tab="moderrejected">Отклон. модератором</a>
-        </div>
-        <div class="ui tab" role="tabpanel" data-tab="new"></div>
-        <div class="ui tab" role="tabpanel" data-tab="expectpayment"></div>
-        <div class="ui tab" role="tabpanel" data-tab="expectclient"></div>
-        <div class="ui tab" role="tabpanel" data-tab="dispute"></div>
-        <div class="ui tab" role="tabpanel" data-tab="confirmed"></div>
-        <div class="ui tab" role="tabpanel" data-tab="moderconfirmed"></div>
-        <div class="ui tab" role="tabpanel" data-tab="rejected"></div>
-        <div class="ui tab" role="tabpanel" data-tab="moderrejected"></div>
-        <div class="dot-loader-wrapper">
-            <div class="dot-loader">
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
+        <div class="ui stackable grid">
+            <div class="three wide column">
+                <div class="ui vertical secondary pointing menu" role="tablist">
+                    <a class="active item" role="tab" data-tab="new">Новые</a>
+                    <a class="item" role="tab" data-tab="expectpayment">Ожидает оплаты</a>
+                    <a class="item" role="tab" data-tab="expectclient">Ожидает подтверждения</a>
+                    <a class="item" role="tab" data-tab="dispute">В споре</a>
+                    <a class="item" role="tab" data-tab="confirmed">Подтвержденные</a>
+                    <a class="item" role="tab" data-tab="moderconfirmed">Подтв. модератором</a>
+                    <a class="item" role="tab" data-tab="rejected">Отклоненные</a>
+                    <a class="item" role="tab" data-tab="moderrejected">Отклон. модератором</a>
+                </div>
+            </div>
+            <div class="twelve wide column">
+                <div class="ui tab" role="tabpanel" data-tab="new"></div>
+                <div class="ui tab" role="tabpanel" data-tab="expectpayment"></div>
+                <div class="ui tab" role="tabpanel" data-tab="expectclient"></div>
+                <div class="ui tab" role="tabpanel" data-tab="dispute"></div>
+                <div class="ui tab" role="tabpanel" data-tab="confirmed"></div>
+                <div class="ui tab" role="tabpanel" data-tab="moderconfirmed"></div>
+                <div class="ui tab" role="tabpanel" data-tab="rejected"></div>
+                <div class="ui tab" role="tabpanel" data-tab="moderrejected"></div>
+                <div class="dot-loader-wrapper">
+                    <div class="dot-loader">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </div>
             </div>
         </div>
     }
@@ -187,6 +193,7 @@
         $('.deals.item').addClass('active');
         var tabs = [];
         TabFilter.range = 30;
+
         if (isAuthor || isModer) {
             var incomingTab = new Tab({
                 name: 'incoming',
@@ -237,10 +244,18 @@
                 });
             }
         } else {
+            var outgoingTab = new Tab({
+                name: 'outgoing',
+                parentTab: null,
+                isActive: true
+            });
+            tabs.push(outgoingTab);
             $('.item[data-tab]').each(function (i, elem) {
                 var tabSettings = {
                     name: elem.dataset.tab,
-                    parentTab: null
+                    parentTab: outgoingTab,
+                    $item: $(elem),
+                    $content: $('.tab[data-tab="' + elem.dataset.tab + '"]')
                 };
                 if (i === 0) {
                     tabSettings.isActive = true;

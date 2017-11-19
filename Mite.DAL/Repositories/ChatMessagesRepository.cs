@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Mite.DAL.Infrastructure;
 using Dapper;
 using System.Data.Entity;
+using System.Data;
 
 namespace Mite.DAL.Repositories
 {
@@ -28,6 +29,8 @@ namespace Mite.DAL.Repositories
         }
         public void ReadUnreaded(Guid chatId, string userId)
         {
+            if (Db.State != ConnectionState.Closed)
+                return;
             var query = "select messages.\"Id\" from dbo.\"ChatMessageUsers\" as message_users inner join dbo.\"ChatMessages\" as messages " +
                 "on messages.\"Id\"=message_users.\"MessageId\" where messages.\"ChatId\"=@chatId and message_users.\"UserId\"=@userId " +
                 "and message_users.\"Read\"=false group by messages.\"Id\";";
@@ -51,7 +54,7 @@ namespace Mite.DAL.Repositories
                 "as msges inner join dbo.\"Users\" as senders on senders.\"Id\"=msges.\"SenderId\" " +
                 "full outer join dbo.\"ChatMessageUsers\" as msg_users on msg_users.\"MessageId\"=msges.\"Id\" full outer join " +
                 "dbo.\"ChatMessageAttachments\" as atts on atts.\"MessageId\"=msges.\"Id\" where msges.\"Id\"=any(" +
-                "select msges1.\"Id\" from dbo.\"ChatMessages\" as msges1 right outer join dbo.\"ChatMessageUsers\" as msg_users1 on " +
+                "select msges1.\"Id\" from dbo.\"ChatMessages\" as msges1 left outer join dbo.\"ChatMessageUsers\" as msg_users1 on " +
                 "msges1.\"Id\" = msg_users1.\"MessageId\" where msg_users1.\"UserId\"=@userId and msges1.\"ChatId\"=@chatId " +
                 $"group by msges1.\"Id\" order by msges1.\"SendDate\" desc limit {range} offset {offset}) order by msges.\"SendDate\" asc;";
             var msgList = new List<ChatMessage>();

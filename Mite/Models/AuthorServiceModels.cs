@@ -80,10 +80,19 @@ namespace Mite.Models
         public string Title { get; set; }
         public string Description { get; set; }
         public string ImageSrc { get; set; }
+        public int Rating { get; set; }
         public string Deadline { get; set; }
         public string VkRepostCode { get; set; }
         public double? Price { get; set; }
         public ServiceTypeModel ServiceType { get; set; }
         public UserShortModel Author { get; set; }
+    }
+    public class ServiceFeedbackModel
+    {
+        /// <summary>
+        /// Кто оставил
+        /// </summary>
+        public UserShortModel User { get; set; }
+        public string Content { get; set; }
     }
 }

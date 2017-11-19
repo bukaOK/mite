@@ -3,14 +3,16 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web.Http;
 using Mite.BLL.Services;
 using Microsoft.AspNet.Identity;
+using Mite.Core;
+using System.Web.Mvc;
+using Mite.CodeData.Enums;
 
 namespace Mite.Controllers
 {
     [Authorize]
-    public class RatingController : ApiController
+    public class RatingController : BaseController
     {
         private readonly IRatingService _ratingService;
 
@@ -19,7 +21,7 @@ namespace Mite.Controllers
             _ratingService = ratingService;
         }
         [HttpPost]
-        public async Task<IHttpActionResult> RatePost(PostRatingModel postModel)
+        public async Task<ActionResult> RatePost(PostRatingModel postModel)
         {
             if (!ModelState.IsValid)
             {
@@ -36,8 +38,8 @@ namespace Mite.Controllers
                 return InternalServerError();
             }
         }
-        [HttpPut]
-        public async Task<IHttpActionResult> RateComment(CommentRatingModel commentModel)
+        [HttpPost]
+        public async Task<ActionResult> RateComment(CommentRatingModel commentModel)
         {
             //Фиксированная оцена комментария
             const int maxRateVal = 1;
@@ -56,6 +58,14 @@ namespace Mite.Controllers
             {
                 return InternalServerError();
             }
+        }
+        [HttpPost]
+        public async Task<ActionResult> Recount(Guid id, RatingRecountTypes recountType)
+        {
+            var result = await _ratingService.RecountAsync(id, recountType);
+            if (result.Succeeded)
+                return Ok();
+            return InternalServerError();
         }
     }
 }

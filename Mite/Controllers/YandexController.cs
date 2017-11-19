@@ -46,7 +46,7 @@ namespace Mite.Controllers
             return View(success);
         }
         [HttpPost]
-        public async Task<JsonResult> ConfirmExternalPayment()
+        public async Task<ActionResult> ConfirmExternalPayment()
         {
             var sessionPayment = (ExternalPayment)Session[SessionKeys.YaMoneyExternal];
 

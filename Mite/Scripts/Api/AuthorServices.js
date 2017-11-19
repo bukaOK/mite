@@ -69,5 +69,24 @@
                 });
             }
         })
+    },
+    /**
+     * Грузим результаты услуги
+     * @param {string} id id услуги
+     * @param {JQuery<HTMLElement>} $img изображение услуги
+    */
+    loadGallery: function (id, $img) {
+        return $.ajax({
+            url: '/authorservices/servicegallery/' + id,
+            success: function (resp) {
+                if (resp.status === undefined) {
+                    resp = JSON.parse(resp);
+                }
+                resp.data.unshift({
+                    ImageSrc: $img.attr('src')
+                });
+                MiteGallery.initService(resp.data, $img);
+            }
+        });
     }
 }

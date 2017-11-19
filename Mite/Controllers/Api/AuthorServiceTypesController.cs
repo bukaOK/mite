@@ -9,7 +9,7 @@ using Mite.CodeData.Constants;
 
 namespace Mite.Controllers.Api
 {
-    [Authorize(Roles = RoleNames.Admin)]
+    [Authorize(Roles = RoleNames.Moderator)]
     public class AuthorServiceTypesController : ApiController
     {
         private readonly IAuthorServiceTypeService serviceTypeService;
@@ -31,7 +31,7 @@ namespace Mite.Controllers.Api
             if (string.IsNullOrEmpty(model.Name))
                 return BadRequest(ModelState);
 
-            if (User.IsInRole(RoleNames.Admin))
+            if (User.IsInRole(RoleNames.Moderator))
                 model.Confirmed = true;
             else
                 model.Confirmed = false;

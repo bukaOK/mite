@@ -282,6 +282,7 @@ var TabFilter = {
         }
         this.ajax.data = this.Filters.getStringParams();
         this.loading = true;
+        this.ajax.url += '?ajax=1';
         return $.ajax(this.ajax);
     },
     //Получаем URL из текущего таба и фильтра(не зависит от URL страницы)

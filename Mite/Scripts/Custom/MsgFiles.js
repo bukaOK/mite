@@ -1,6 +1,6 @@
 ﻿var MsgFiles = {
     /**
-     * @typedef {{Id: number, Name: string, Size: number[], Name: string}} Attachment
+     * @typedef {{Id: number, Data: string, Size: number, Name: string}} Attachment
      * @type {Attachment[]}
     */
     files: [],
@@ -30,6 +30,7 @@
     */
     init: function (inputId) {
         this.input = document.getElementById(inputId);
+        this.label = $('[for="' + inputId + '"]');
         this.input.onchange = MsgFiles.read;
         this.grid = $('.attachments.grid').masonry();
         this.tmpl = $.templates('#attTmpl');
@@ -44,18 +45,20 @@
             tmpl = self.tmpl,
             grid = self.grid,
             index = self.files.length - 1;
-
+        var loaded = 0;
+        self.label.addClass('loading disabled');
         for (var i = 0, file; file = files[i]; i++) {
             index++;
             var reader = new FileReader();
-
             reader.onload = (function (_file, _index) {
                 return function (e) {
+                    loaded++;
                     MsgFiles.files.push({
                         Id: index,
                         Data: e.target.result,
                         Name: _file.name,
-                        Size: _file.size
+                        Size: _file.size,
+                        Stream: _file
                     });
                     grid.addClass('active')
                         .append(tmpl.render({
@@ -68,7 +71,9 @@
                         });
                     grid.find('.column:not(.initialized)>.image,.column:not(.initialized)>.segment').dimmer({
                         on: 'hover'
-                    }).addClass('initialized')
+                    }).addClass('initialized');
+                    if (loaded >= files.length)
+                        self.label.removeClass('loading disabled');
                 }
             })(file, index);
             reader.readAsDataURL(file);

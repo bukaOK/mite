@@ -31,8 +31,7 @@ namespace Mite.BLL.Services
     public class ChatMessagesService : DataService, IChatMessagesService
     {
         private const string SecKey = "AOgdKZhNixsujiLUWhqmeCYTqu7FWB5Q";
-        private const string AttachmentsImagesFolder = "~/Public/attachments/images";
-        private const string AttachmentsDocumentsFolder = "~/Public/attachments/documents";
+        private const string AttachmentsFolder = "~/Public/attachments";
 
         private readonly ChatMessagesRepository messagesRepository;
         private readonly ChatRepository chatRepository;
@@ -74,36 +73,26 @@ namespace Mite.BLL.Services
                     return re;
                 }).ToList()
             };
-            if(model.Attachments.Count > 0)
+            if(model.StreamAttachments != null && model.StreamAttachments.Count() > 0)
             {
-                message.Attachments = model.Attachments.Select(attModel =>
+                message.Attachments = model.StreamAttachments.Select(file =>
                 {
                     var att = new ChatMessageAttachment
                     {
-                        Type = FilesHelper.AttachmentTypeBase64(attModel.Src),
+                        Type = FilesHelper.AttachmentTypeMime(file.ContentType),
                         MessageId = message.Id,
-                        Name = attModel.Name.Length <= 150 ? attModel.Name : $"{attModel.Name.Substring(0, 146)}.{attModel.Name.Split('.').Last()}"
+                        Name = file.FileName.Length <= 150 
+                            ? file.FileName : $"{file.FileName.Substring(0, 146)}.{file.FileName.Split('.').Last()}"
                     };
                     switch (att.Type)
                     {
                         case AttachmentTypes.Image:
-                            att.Src = FilesHelper.CreateImage(AttachmentsImagesFolder, attModel.Src);
-                            ImagesHelper.Compressed.Compress(HostingEnvironment.MapPath(att.Src));
-                            att.CompressedSrc = ImagesHelper.Compressed.CompressedVirtualPath(HostingEnvironment.MapPath(att.Src));
+                            var tuple = ImagesHelper.CreateImage(AttachmentsFolder, file);
+                            att.Src = tuple.vPath;
+                            att.CompressedSrc = tuple.compressedVPath;
                             break;
                         default:
-                            try
-                            {
-                                var ext = att.Name.Split('.').Last();
-                                if(!string.IsNullOrEmpty(ext))
-                                    att.Src = FilesHelper.CreateDocument(AttachmentsDocumentsFolder, attModel.Src, ext);
-                                else
-                                    att.Src = FilesHelper.CreateDocument(AttachmentsDocumentsFolder, attModel.Src);
-                            }
-                            catch (InvalidOperationException)
-                            {
-                                att.Src = FilesHelper.CreateDocument(AttachmentsDocumentsFolder, attModel.Src);
-                            }
+                            att.Src = FilesHelper.CreateFile(AttachmentsFolder, file);
                             break;
                     }
                     return att;
@@ -120,6 +109,7 @@ namespace Mite.BLL.Services
                 {
                     Id = x.Id
                 }).ToList();
+                model.StreamAttachments = null;
                 return DataServiceResult.Success(model);
             }
             catch(Exception e)

@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Constants\Automapper\UserProfileConstants.cs" />
     <Compile Include="Constants\ClaimConstants.cs" />
     <Compile Include="Constants\CookieKeys.cs" />
     <Compile Include="Constants\FacebookSettings.cs" />
@@ -61,10 +62,8 @@
     <Compile Include="Enums\DealStatuses.cs" />
     <Compile Include="Enums\DialogTypes.cs" />
     <Compile Include="Enums\DurationTypes.cs" />
-    <Compile Include="Enums\FollowersFilter.cs" />
     <Compile Include="Enums\Genders.cs" />
     <Compile Include="Enums\HelperTypes.cs" />
-    <Compile Include="Enums\ImageSizes.cs" />
     <Compile Include="Enums\MessageAttachmentTypes.cs" />
     <Compile Include="Enums\NotificationTypes.cs" />
     <Compile Include="Enums\OrderTypes.cs" />
@@ -73,6 +72,7 @@
     <Compile Include="Enums\PostTimeFilter.cs" />
     <Compile Include="Enums\PostTypes.cs" />
     <Compile Include="Enums\PostUserFilter.cs" />
+    <Compile Include="Enums\RatingRecountTypes.cs" />
     <Compile Include="Enums\ServiceSortFilter.cs" />
     <Compile Include="Enums\SocialServiceTypes.cs" />
     <Compile Include="Enums\SortFilter.cs" />

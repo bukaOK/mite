@@ -10,34 +10,33 @@ using System;
 using Mite.CodeData.Enums;
 using System.Threading.Tasks;
 using Mite.ExternalServices.WebMoney.Business;
+using Mite.ExternalServices.WebMoney.Responses;
 
 namespace Mite.BLL.Services
 {
     public interface IWebMoneyService : IDataService
     {
         Task<DataServiceResult> PayInAsync(string clientPhone, double sum);
-        Task<DataServiceResult> ConfirmPayInAsync(int invoiceId, string confirmationCode);
+        Task<DataServiceResult> ConfirmPayInAsync(int invoiceId, string confirmationCode, string userId);
     }
     public class WebMoneyService : DataService, IWebMoneyService
     {
         private readonly WMExpressPayment payment;
+        private readonly IPaymentService paymentService;
 
-        public WebMoneyService(IUnitOfWork database, ILogger logger, HttpClient client) : base(database, logger)
+        public WebMoneyService(IUnitOfWork database, ILogger logger, HttpClient client, IPaymentService paymentService) : base(database, logger)
         {
             payment = new WMExpressPayment(logger, client);
+            this.paymentService = paymentService;
         }
         public async Task<DataServiceResult> PayInAsync(string clientPhone, double sum)
         {
             var paymentsRepo = Database.GetRepo<PaymentsRepository, Payment>();
-            var random = new Random();
-            int orderId;
-            Payment existingPayment;
-            //Находим уникальный orderId
-            do
-            {
-                orderId = random.Next(0, int.MaxValue);
-                existingPayment = await paymentsRepo.GetByOperationAsync(orderId.ToString(), PaymentType.WebMoney);
-            } while (existingPayment != null);
+            //Id нового запроса всегда должен быть больше предыдущего, находим последнюю операцию
+            var lastOperation = await paymentsRepo.GetLastOperationAsync(PaymentType.WebMoney);
+            var orderId = lastOperation == null 
+                ? 0 : int.Parse(lastOperation.OperationId);
+            orderId++;
             var result = await payment.PayInAsync(new ExpressPaymentParams
             {
                 OrderId = orderId,
@@ -50,7 +49,7 @@ namespace Mite.BLL.Services
             }
             return DataServiceResult.Failed(result.ErrorMessage);
         }
-        public async Task<DataServiceResult> ConfirmPayInAsync(int invoiceId, string confirmationCode)
+        public async Task<DataServiceResult> ConfirmPayInAsync(int invoiceId, string confirmationCode, string userId)
         {
             var result = await payment.ConfirmPayInAsync(new ExpressPaymentConfirmParams
             {
@@ -59,7 +58,11 @@ namespace Mite.BLL.Services
             });
             if (result.Succeeded)
             {
-                return DataServiceResult.Success(result.ResultData);
+                var response = result.ResultData as ExpressPaymentConfirmResponse;
+                var payResult = await 
+                    paymentService.AddAsync(response.Operation.Amount, response.Operation.TransactionId.ToString(), userId, PaymentType.WebMoney);
+                if(payResult.Succeeded)
+                    return DataServiceResult.Success(response.UserDescription);
             }
             return DataServiceResult.Failed(result.ErrorMessage);
         }

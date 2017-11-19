@@ -24,6 +24,8 @@ namespace Mite.Models
         }
         public int Rating { get; set; }
         public int FollowersCount { get; set; }
+        public int FollowingsCount { get; set; }
+        public int Reliability { get; set; }
         /// <summary>
         /// Блок "О себе"
         /// </summary>
@@ -33,6 +35,7 @@ namespace Mite.Models
         /// пользователя страницы
         /// </summary>
         public bool IsFollowing { get; set; }
+        public bool IsAuthor { get; set; }
         public int PostsCount { get; set; }
         public string YandexWalId { get; set; }
         public bool ShowAd { get; set; }

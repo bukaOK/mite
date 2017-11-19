@@ -15,16 +15,23 @@ namespace Mite.BLL.Helpers
 {
     public static class FilesHelper
     {
-        public static AttachmentTypes AttachmentTypeBase64(string base64Data)
+        /// <summary>
+        /// Тип вложения по его mime типу
+        /// </summary>
+        public static AttachmentTypes AttachmentTypeMime(string contentType)
         {
-            var fileType = Regex.Match(base64Data, @"^data:(?<type>[a-z]+)\/(?<format>.+);").Groups["type"].Value;
-
+            var fileType = contentType.Split('/').First();
             switch (fileType)
             {
                 case "image":
                     return AttachmentTypes.Image;
+                case "audio":
+                    return AttachmentTypes.Audio;
+                case "video":
+                    return AttachmentTypes.Video;
+                case "text":
                 default:
-                    return AttachmentTypes.Document;
+                    return AttachmentTypes.Text;
             }
         }
         /// <summary>
@@ -61,26 +68,33 @@ namespace Mite.BLL.Helpers
             virtualPath += virtualPath[virtualPath.Length - 1] == '/' ? "" : "/";
             return Regex.Replace(virtualPath, "~", "") + imageName;
         }
-        public static string CreateImage(string virtualPath, HttpPostedFileBase image)
+        public static string CreateFile(string virtualPath, string base64, string ext)
         {
-            var path = HostingEnvironment.MapPath(virtualPath);
-            var imageNameArr = image.FileName.Split('.');
-            var imgFormat = imageNameArr[imageNameArr.Length - 1];
-            if (imgFormat != "gif" && imgFormat != "jpg" && imgFormat != "png")
-                return null;
-
-            string imageName;
-            string imagePath;
-            //Проверяем на то, есть ли уже изображения с таким именем
+            if (string.IsNullOrEmpty(virtualPath))
+                throw new ArgumentNullException("Virtual path is null");
+            base64 = Regex.Replace(base64, @"^data:.+;base64,", string.Empty);
+            string fullFolder = HostingEnvironment.MapPath(virtualPath),
+                filePath;
             do
             {
-                imageName = Guid.NewGuid() + "." + imgFormat;
-                imagePath = path[path.Length - 1] == '\\' ? path + imageName : path + "\\" + imageName;
-            } while (File.Exists(imagePath));
+                filePath = Path.Combine(fullFolder, $"{Guid.NewGuid()}.{ext}");
+            } while (File.Exists(filePath));
 
-            image.SaveAs(imagePath);
-            virtualPath += virtualPath[virtualPath.Length - 1] == '/' ? "" : "/";
-            return Regex.Replace(virtualPath, "~", "") + imageName;
+            File.WriteAllBytes(filePath, Convert.FromBase64String(base64));
+            return filePath.Replace(HostingEnvironment.ApplicationPhysicalPath, "/");
+        }
+        public static string CreateFile(string virtualFolder, HttpPostedFileBase file)
+        {
+            string fullFolder = HostingEnvironment.MapPath(virtualFolder), 
+                ext = file.FileName.Split('.').Last(),
+                filePath;
+            do
+            {
+                filePath = Path.Combine(fullFolder, $"{Guid.NewGuid()}.{ext}");
+            } while (File.Exists(filePath));
+
+            file.SaveAs(filePath);
+            return filePath.Replace(HostingEnvironment.ApplicationPhysicalPath, "/").Replace('\\', '/');
         }
         public static string CreateDocument(string virtualPath, string content, string ext = "dat")
         {
@@ -180,6 +194,20 @@ namespace Mite.BLL.Helpers
             var reader = new StreamReader(HostingEnvironment.MapPath(path));
             var str = await reader.ReadToEndAsync();
             reader.Close();
+            return HandleReading(str, path, charsCount);
+        }
+        public static string ReadDocument(string path, int charsCount)
+        {
+            if (!File.Exists(HostingEnvironment.MapPath(path)))
+                return "";
+
+            var reader = new StreamReader(HostingEnvironment.MapPath(path));
+            var str = reader.ReadToEnd();
+            reader.Close();
+            return HandleReading(str, path, charsCount);
+        }
+        private static string HandleReading(string str, string path, int charsCount)
+        {
             //После удаляем картинки, т.к. они будут некорректно отображаться
             str = Regex.Replace(str, @"<img.+(>|\/>)", "");
             str = Regex.Replace(str, @"<table>.+</table>", "");
@@ -188,7 +216,7 @@ namespace Mite.BLL.Helpers
 
             //Удаляем все недооткрытые(вроде <p) в конце теги
             substr = Regex.Replace(substr, @"(<|<\/|<(h3|h2|p|i|b)[^>]*>*)$", "");
-            
+
             substr = Regex.Replace(substr, @"(<h3[^>]*|h2[^>]*)", "<p");
 
             var tags = new[] { "p", "i", "b" };
@@ -221,22 +249,11 @@ namespace Mite.BLL.Helpers
                     closeTagsStack.Push(tag);
                 }
             }
-            foreach(var closeTag in closeTagsStack)
+            foreach (var closeTag in closeTagsStack)
             {
                 substr += $"</{closeTag}>";
             }
             return substr;
         }
-        public static string ReadDocument(string path, int charsCount)
-        {
-            var reader = new StreamReader(HostingEnvironment.MapPath(path));
-            var buffer = new char[charsCount];
-            reader.Read(buffer, 0, charsCount);
-            reader.Close();
-            return new string(buffer);
-        }
-        //public static Image ResizeImage(Image sourceImg, int width, int height = 0)
-        //{
-        //}
     }
 }

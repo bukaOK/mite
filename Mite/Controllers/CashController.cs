@@ -56,7 +56,7 @@ namespace Mite.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<JsonResult> UpdateWallets(WalletsSettingsModel model)
+        public async Task<ActionResult> UpdateWallets(WalletsSettingsModel model)
         {
             var user = await userManager.FindByIdAsync(User.Identity.GetUserId());
             var isPasswordValid = await userManager.CheckPasswordAsync(user, model.Password);
@@ -68,13 +68,13 @@ namespace Mite.Controllers
             return Json(JsonStatuses.Success, "Яндекс кошелек успешно добавлен/обновлен");
         }
         [HttpPost]
-        public async Task<JsonResult> PaymentsHistory()
+        public async Task<ActionResult> PaymentsHistory()
         {
             var payments = await cashService.GetPaymentsHistoryAsync(User.Identity.GetUserId());
             return Json(JsonStatuses.Success, payments);
         }
         [HttpPost]
-        public async Task<JsonResult> Referals()
+        public async Task<ActionResult> Referals()
         {
             var referals = await cashService.GetReferalsByUserAsync(User.Identity.GetUserId());
             return Json(JsonStatuses.Success, referals);
@@ -96,7 +96,8 @@ namespace Mite.Controllers
             });
         }
         [HttpPost]
-        public async Task<JsonResult> AdConfirm(CashAdvertisingModel model)
+        [Authorize(Roles = RoleNames.Author)]
+        public async Task<ActionResult> AdConfirm(CashAdvertisingModel model)
         {
             var user = await userManager.FindByIdAsync(User.Identity.GetUserId());
             user.ShowAd = model.AllowShowAd;

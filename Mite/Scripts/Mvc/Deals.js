@@ -44,7 +44,7 @@
             },
             error: function (jqXhr) {
                 $msg.addClass('error').removeClass('green');
-                $msg.html('Внутренняя ошибка');
+                $form.form('add errors', ['Внутренняя ошибка']);
             },
             complete: function () {
                 $btn.removeClass('loading disabled');
@@ -130,6 +130,18 @@
         return this._send('toexpectpayment', 'post', function (resp) {
             $msg.removeClass('error').addClass('green');
             $msg.html('Успешно. Обновите страницу для применения изменений.');
+        }, $(btn));
+    },
+    /**
+     * Загрузить результат работы(изображение)
+     * @param {HTMLElement} btn кнопка сохранения
+    */
+    loadImage: function (btn) {
+        var $msg = $(this.formSelector).find('.message');
+
+        return this._send('loadimage', 'post', function (resp) {
+            $msg.removeClass('error').addClass('green');
+            $msg.html('Успешно');
         }, $(btn));
     }
 }

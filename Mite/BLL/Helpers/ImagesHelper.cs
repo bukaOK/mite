@@ -3,6 +3,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Web;
 using System.Web.Hosting;
 
 namespace Mite.BLL.Helpers
@@ -36,22 +37,21 @@ namespace Mite.BLL.Helpers
         /// <returns>vPath - вирт. путь к изобр., compressedVPath - вирт. путь к сжатому изобр.</returns>
         public static (string vPath, string compressedVPath) UpdateImage(string oldVPath, string oldCompressedVPath, string base64)
         {
-            string vPath = null, compressedPath = null;
+            string vPath = null, compressedVPath = null;
             try
             {
                 vPath = FilesHelper.CreateImage(ImagesFolder, base64);
                 var fullPath = HostingEnvironment.MapPath(vPath);
                 Compressed.Compress(fullPath);
-                compressedPath = Compressed.CompressedVirtualPath(fullPath);
+                compressedVPath = Compressed.CompressedVirtualPath(fullPath);
                 //Удаляем старые
                 FilesHelper.DeleteFile(oldVPath);
                 FilesHelper.DeleteFile(oldCompressedVPath);
-                return (vPath, compressedPath);
+                return (vPath, compressedVPath);
             }
             catch(Exception e)
             {
-                FilesHelper.DeleteFile(vPath);
-                FilesHelper.DeleteFile(compressedPath);
+                DeleteImage(vPath, compressedVPath);
                 throw e;
             }
         }
@@ -64,21 +64,41 @@ namespace Mite.BLL.Helpers
                 var fullPath = HostingEnvironment.MapPath(vPath);
                 Compressed.Compress(fullPath);
                 compressedVPath = Compressed.CompressedVirtualPath(fullPath);
+
+                return (vPath, compressedVPath);
             }
             catch(Exception e)
             {
-                FilesHelper.DeleteFile(vPath);
-                FilesHelper.DeleteFile(compressedVPath);
+                DeleteImage(vPath, compressedVPath);
                 throw e;
             }
+        }
+        public static (string vPath, string compressedVPath) CreateImage(string imagesFolder, HttpPostedFileBase image)
+        {
+            string vPath = null, compressedVPath = null;
+            try
+            {
+                vPath = FilesHelper.CreateFile(imagesFolder, image);
+                var fullPath = HostingEnvironment.MapPath(vPath);
+                Compressed.Compress(fullPath);
+                compressedVPath = Compressed.CompressedVirtualPath(fullPath);
 
-            return (vPath, compressedVPath);
+                return (vPath, compressedVPath);
+            }
+            catch(Exception e)
+            {
+                DeleteImage(vPath, compressedVPath);
+                throw e;
+            }
         }
         public static void DeleteImage(string vPath, string compressedVPath)
         {
             var fullImgPath = HostingEnvironment.MapPath(vPath);
             FilesHelper.DeleteFile(vPath);
-            FilesHelper.DeleteFile(Compressed.CompressedVirtualPath(fullImgPath));
+            if (string.IsNullOrEmpty(compressedVPath))
+                FilesHelper.DeleteFile(Compressed.CompressedVirtualPath(fullImgPath));
+            else
+                FilesHelper.DeleteFile(compressedVPath);
         }
         public static class Compressed
         {

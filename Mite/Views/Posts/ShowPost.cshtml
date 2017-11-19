@@ -38,9 +38,9 @@
     @ViewHelper.GenerateMeta(openGraphMeta)
 }
 @section styles{
-    @Styles.Render("~/Content/gallery")
+    @Styles.Render("~/Content/lgallery")
 }
-@Scripts.Render("~/bundles/scroll", "~/bundles/gallery")
+@Scripts.Render("~/bundles/scroll", "~/bundles/gallery", "~/bundles/api")
 <div class="ui segment grid">
     <div class="stackable two column row">
         <div class="column">
@@ -149,81 +149,31 @@
                         </div>
                     </div>
                     <div class="field">
-                        <button type="button" class="ui primary button" onclick="updateTags()">Обновить</button>
+                        <div class="ui blue compact floating dropdown labeled icon button" id="moderActionsDropdown">
+                            <i class="wrench icon"></i>
+                            <span class="text">Действия</span>
+                            <div class="menu">
+                                <a class="item" onclick="ModerMvc.updateTags()">Обновить теги</a>
+                                @if (Model.Type == PostTypes.Blocked)
+                                {
+                                    <a class="item" onclick="ModerMvc.unblockPost(this, '@Model.Id')">Разблокировать</a>
+                                }
+                                else
+                                {
+                                    <a class="item" onclick="ModerMvc.blockPost(this, '@Model.Id')">Заблокировать</a>
+                                }
+                                <a class="item" onclick="RatingMvc.recount('@Model.Id', '@RatingRecountTypes.Post', this)">Пересчитать рейтинг</a>
+                            </div>
+                        </div>
                     </div>
-                    <div class="field">
-                        @if (Model.Type == PostTypes.Blocked)
-                        {
-                            <button type="button" class="ui green button" onclick="unblockPost()">Разблокировать</button>
-                        }
-                        else
-                        {
-                            <button type="button" class="ui red button" onclick="blockPost()">Заблокировать</button>
-                        }
-                    </div>
-                    <div class="ui message" id="moderActionMsg" hidden></div>
+                    <div class="ui error message" id="moderActionMsg"></div>
                 </div>
             </div>
             <script>
-                function updateTags(){
-                    var $msg = $('#moderActionMsg');
-                    $.ajax({
-                        url: '@Url.Action("UpdatePostTags", "Moder")',
-                        type: 'post',
-                        data:{
-                            postId: '@Model.Id',
-                            tagsNames: $('#Tags').val().split(',')
-                        },
-                        success: function(){
-                            $msg.addClass('green').removeClass('red');
-                            $msg.html('Теги успешно обновлены');
-                        },
-                        error: function(){
-                            $msg.addClass('red').removeClass('green');
-                            $msg.html('Ошибка');
-                        },
-                        complete: function(){
-                            $msg.show();
-                        }
+                $(function () {
+                    $('#moderActionsDropdown').dropdown({
+                        action: 'hide'
                     });
-                }
-                function blockPost(){
-                    var $msg = $('#moderActionMsg');
-                    $.ajax({
-                        url: '@Url.Action("BlockPost", "Moder", new { id = Model.Id })',
-                        type: 'get',
-                        success: function(){
-                            $msg.addClass('green').removeClass('red');
-                            $msg.html('Успешно блокировано');
-                        },
-                        error: function(){
-                            $msg.addClass('red').removeClass('green');
-                            $msg.html('Ошибка при блокировании');
-                        },
-                        complete: function(){
-                            $msg.show();
-                        }
-                    });
-                }
-                function unblockPost(){
-                    var $msg = $('#moderActionMsg');
-                    $.ajax({
-                        url: '@Url.Action("UnblockPost", "Moder", new { id = Model.Id })',
-                        type: 'get',
-                        success: function(){
-                            $msg.addClass('green').removeClass('red');
-                            $msg.html('Успешно разблокировано');
-                        },
-                        error: function(){
-                            $msg.addClass('red').removeClass('green');
-                            $msg.html('Ошибка при разблокировании');
-                        },
-                        complete: function(){
-                            $msg.show();
-                        }
-                    });
-                }
-                $(function(){
                     $.ajax({
                         url: '/api/tags',
                         type: 'get',
@@ -291,7 +241,7 @@
         </div>
     </div>
 </div>
-<template id="commentTmpl">
+<script id="commentTmpl" type="text/x-jsrender">
     <div class="comment" id="com{{:Id}}" data-reply-user-id="{{:User.Id}}">
         <a class="ui circular avatar image">
             <img src="{{:User.AvatarSrc}}" alt="{{:User.UserName}}" />
@@ -313,19 +263,18 @@
                     <a data-comment-id="{{:Id}}" onclick="deleteComment(this)">Удалить</a>
                     {{/if}}
                     {{if CurrentRating == null || CurrentRating.Value == 0}}
-                    <a data-is-rate="false" title="Нравится!" onclick="rateComment(this, '{{:Id}}', '{{:User.Id}}')"><i class="thumbs outline up violet icon"></i><span class="rating">{{:Rating}}</span></a>
+                    <a data-is-rate="false" title="Нравится!" onclick="RatingMvc.rateComment(this, '{{:Id}}', '{{:User.Id}}', '@NotificationTypes.CommentRating', '@Model.Id')"><i class="thumbs outline up violet icon"></i><span class="rating">{{:Rating}}</span></a>
                     {{else}}
-                    <a data-is-rate="true" title="Нравится!" onclick="rateComment(this, '{{:Id}}', '{{:User.Id}}')"><i class="thumbs up violet icon"></i><span class="rating">{{:Rating}}</span></a>
+                    <a data-is-rate="true" title="Нравится!" onclick="RatingMvc.rateComment(this, '{{:Id}}', '{{:User.Id}}', '@NotificationTypes.CommentRating', '@Model.Id')"><i class="thumbs up violet icon"></i><span class="rating">{{:Rating}}</span></a>
                     {{/if}}
                 </div>
             }
         </div>
     </div>
-</template>
+</script>
 <script>
     var commentsCount = @Model.CommentsCount;
     var isImage = @((Model.ContentType == PostContentTypes.Image || Model.ContentType == PostContentTypes.ImageCollection).ToString().ToLower());
-    document.onselectstart = function(){return false;}
 
     function loadPostTime(){
         var options = {
@@ -441,39 +390,6 @@
             }
         });
     }
-    function rateComment(ev, commentId, userId){
-        var isRate = $(ev).data('isRate');
-        var commentRating = $(ev).find('.rating')[0];
-        var rateValue = isRate ? 0 : 1;
-
-        $.ajax({
-            type: 'put',
-            url: '/api/rating',
-            data: {
-                CommentId: commentId,
-                UserId: userId,
-                Value: rateValue
-            },
-            success: function(resp){
-                var commentRateIcon = $(ev).find('.thumbs');
-                if(isRate){
-                    commentRateIcon.addClass('outline');
-                    commentRating.innerHTML--;
-                } else{
-                    commentRateIcon.removeClass('outline');
-                    commentRating.innerHTML++;
-                }
-                $(ev).data('isRate', !isRate);
-                sendNotification('@NotificationTypes.CommentRating', userId, '@Model.Id#com' + commentId);
-            },
-            error: function (jqXhr) {
-                iziToast.error({
-                    title: 'Упс!',
-                    message: 'Ошибка при оценке комментария.'
-                });
-            }
-        });
-    }
     function loadUserGallery(){
         return $.ajax({
             url: '@Url.Action("UserGallery", "Posts")',
@@ -492,17 +408,17 @@
         });
     }
     function addReply(userName, replyCommentId, replyUserId){
-        $('#reply-user').html('<i class="reply icon"></i>' + userName);
-        $('#reply-user').attr('href', '/User/Profile/' + userName);
-        $('#remove-reply').css('display', 'inline');
-        $('#CommentContent').data('replyComment', replyCommentId);
-        $('#CommentContent').data('replyUserId', replyUserId);
+        $('#reply-user').attr('href', '/User/Profile/' + userName)
+            .html('<i class="reply icon"></i>' + userName);
+        $('#remove-reply').show();
+        $('#CommentContent').data('replyComment', replyCommentId)
+            .data('replyUserId', replyUserId);
     }
     function removeReply(){
         $('#reply-user').html('');
-        $('#remove-reply').css('display', 'none');
-        $('#CommentContent').removeData('replyComment');
-        $('#CommentContent').removeData('replyUserId');
+        $('#remove-reply').hide();
+        $('#CommentContent').removeData('replyComment')
+            .removeData('replyUserId');
     }
     function sendNotification(notificType, targetUserId, sourceValue){
         $.ajax({
@@ -531,31 +447,7 @@
     function initRating(){
         $('.ui.rating').rating({
             onRate: function (rateValue) {
-                $.ajax({
-                    type: "post",
-                    data: {
-                        Id: $("#CurrentRating_Id").val(),
-                        Value: rateValue,
-                        PostId: $("#CurrentRating_PostId").val()
-                    },
-                    url: "/api/rating",
-                    success: function (data) {
-                        var currentPostRating = +$("#post-rating").data('rating');
-                        var newRating = rateValue - lastRateValue;
-
-                        var newPostRating = currentPostRating + newRating;
-                        $("#post-rating").text("(" + newPostRating + ")").data('rating', currentPostRating + newRating);
-
-                        lastRateValue = rateValue;
-                        sendNotification('@NotificationTypes.PostRating', '@Model.User.Id', '@Model.Id');
-                    },
-                    error: function (jqXhr) {
-                        iziToast.error({
-                            title: 'Упс!',
-                            message: 'Рейтинг не загружен.'
-                        });
-                    }
-                });
+                RatingMvc.ratePost(rateValue, '@NotificationTypes.PostRating', '@Model.User.Id', '@Model.Id');
             }
         });
     }
@@ -573,24 +465,6 @@
             },
             inline: true
         });
-    }
-    function resizeModalImage(){
-        var $modal = $('#post-image-modal');
-        if($modal.length == 0){
-            return;
-        }
-        var img = $modal.find('img')[0];
-        if(img.naturalWidth > $modal.width()){
-            $(img).css({
-                width: '100%',
-                height: '100%'
-            });
-        }else{
-            $(img).css({
-                width: '',
-                height: ''
-            });
-        }
     }
     function initVkWidget(){
         document.getElementById('vk_share').innerHTML = VK.Share.button({
@@ -614,14 +488,9 @@
     }
     $(function () {
         initVkWidget();
-        $('#post-image-modal img').on('load',function(){
-            resizeModalImage();
-            $("#post-image-modal").modal('refresh');
-        });
         $('.modal').click(function(){
             return false;
         });
-        resizeModalImage();
         loadPostTime();
         lastRateValue = $(".ui.rating").data("rating");
         initComments('@Model.Id', @((byte)SortFilter.Old));
@@ -631,8 +500,5 @@
             loadUserGallery();
             MiteGallery.initCollection('.col-item');
         }
-        $('.dimmer.modals.page').click(function(ev){
-            $('#post-image-modal').modal('hide');
-        });
     });
 </script>

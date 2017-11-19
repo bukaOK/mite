@@ -7,6 +7,8 @@ using Mite.DAL.Infrastructure;
 using AutoMapper;
 using Mite.DAL.Repositories;
 using NLog;
+using Mite.CodeData.Enums;
+using Mite.BLL.IdentityManagers;
 
 namespace Mite.BLL.Services
 {
@@ -28,11 +30,15 @@ namespace Mite.BLL.Services
         Task<CommentRatingModel> GetByCommentAndUserAsync(Guid commentId, string userId);
         Task RatePostAsync(PostRatingModel model);
         Task RateCommentAsync(CommentRatingModel model);
+        Task<DataServiceResult> RecountAsync(Guid itemId, RatingRecountTypes recountType);
     }
     public class RatingService : DataService, IRatingService
     {
-        public RatingService(IUnitOfWork database, ILogger logger) : base(database, logger)
+        private readonly AppUserManager userManager;
+
+        public RatingService(IUnitOfWork database, ILogger logger, AppUserManager userManager) : base(database, logger)
         {
+            this.userManager = userManager;
         }
 
         public async Task<CommentRatingModel> GetByCommentAndUserAsync(Guid commentId, string userId)
@@ -62,28 +68,17 @@ namespace Mite.BLL.Services
             var rating = Mapper.Map<Rating>(model);
             rating.RateDate = DateTime.UtcNow;
 
-            if (rating.Id != Guid.Empty)
+            var existingRating = await repo.GetByUserAndCommentAsync(rating.CommentId, rating.UserId);
+            //Если существует, обновляем рейтинг, иначе добавляем новый
+            if (existingRating != null)
             {
-                await repo.UpdateAsync(rating);
+                await repo.UpdateAsync(existingRating, rating.Value);
             }
             else
             {
-                var existingRating =
-                    await repo.GetByUserAndCommentAsync(rating.CommentId, rating.UserId);
-
-                //Если существует, обновляем рейтинг, иначе добавляем новый
-                if (existingRating != default(Rating))
-                {
-                    rating.Id = existingRating.Id;
-                    rating.OwnerId = existingRating.OwnerId;
-                    await repo.UpdateAsync(rating);
-                }
-                else
-                {
-                    var comment = await Database.GetRepo<CommentsRepository, Comment>().GetAsync((Guid)rating.CommentId);
-                    rating.OwnerId = comment.UserId;
-                    await repo.AddAsync(rating);
-                }
+                var comment = await Database.GetRepo<CommentsRepository, Comment>().GetAsync((Guid)rating.CommentId);
+                rating.OwnerId = comment.UserId;
+                await repo.AddAsync(rating);
             }
         }
 
@@ -93,31 +88,51 @@ namespace Mite.BLL.Services
             rating.RateDate = DateTime.UtcNow;
             var repo = Database.GetRepo<RatingRepository, Rating>();
 
-            if (rating.Id != Guid.Empty)
+            var existingRating = await repo.GetByUserAndPostAsync((Guid)rating.PostId, rating.UserId);
+            //Если существует, обновляем рейтинг, иначе добавляем новый
+            if (existingRating != null)
             {
-                var existingRating = await repo.GetAsync(rating.Id);
-                rating.OwnerId = existingRating.OwnerId;
-                await repo.UpdateAsync(rating);
+                await repo.UpdateAsync(existingRating, rating.Value);
             }
             else
             {
-                var existingRating =
-                    await repo.GetByUserAndPostAsync((Guid)rating.PostId, rating.UserId);
+                var post = await Database.GetRepo<PostsRepository, Post>().GetAsync((Guid)rating.PostId);
+                rating.OwnerId = post.UserId;
+                await repo.AddAsync(rating);
+            }
+        }
 
-                //Если существует, обновляем рейтинг, иначе добавляем новый
-                if (existingRating != default(Rating))
+        public async Task<DataServiceResult> RecountAsync(Guid itemId, RatingRecountTypes recountType)
+        {
+            var repo = Database.GetRepo<RatingRepository, Rating>();
+            try
+            {
+                switch (recountType)
                 {
-                    rating.Id = existingRating.Id;
-                    rating.OwnerId = existingRating.OwnerId;
-                    await repo.UpdateAsync(rating);
+                    case RatingRecountTypes.AuthorService:
+                        var service = await Database.GetRepo<AuthorServiceRepository, AuthorService>().GetAsync(itemId);
+                        await repo.RecountAsync(service);
+                        break;
+                    case RatingRecountTypes.Comment:
+                        var comment = await Database.GetRepo<CommentsRepository, Comment>().GetAsync(itemId);
+                        await repo.RecountAsync(comment);
+                        break;
+                    case RatingRecountTypes.Post:
+                        var post = await Database.GetRepo<PostsRepository, Post>().GetAsync(itemId);
+                        await repo.RecountAsync(post);
+                        break;
+                    case RatingRecountTypes.User:
+                        var user = await userManager.FindByIdAsync(itemId.ToString());
+                        await repo.RecountAsync(user);
+                        break;
+                    default:
+                        return DataServiceResult.Failed("Неизвестный тип для пересчета рейтинга");
                 }
-                else
-                {
-                    var post = await Database.GetRepo<PostsRepository, Post>().GetAsync((Guid)rating.PostId);
-                    rating.OwnerId = post.UserId;
-                    await repo.AddAsync(rating);
-                }
-                    
+                return DataServiceResult.Success();
+            }
+            catch(Exception e)
+            {
+                return CommonError("Ошибка при пересчете рейтинга", e);
             }
         }
     }

@@ -24,12 +24,10 @@ namespace Mite.BLL.Services
     public class AuthorServiceTypeService : DataService, IAuthorServiceTypeService
     {
         private readonly AuthorServiceTypeRepository repo;
-        private readonly ILogger logger;
 
         public AuthorServiceTypeService(IUnitOfWork database, ILogger logger) : base(database, logger)
         {
             repo = Database.GetRepo<AuthorServiceTypeRepository, AuthorServiceType>();
-            this.logger = logger;
         }
 
         public async Task<DataServiceResult> AddAsync(ServiceTypeModel model)

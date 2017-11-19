@@ -31,8 +31,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AutoMapper, Version=6.1.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
-      <HintPath>..\packages\AutoMapper.6.1.1\lib\net45\AutoMapper.dll</HintPath>
+    <Reference Include="AutoMapper, Version=6.2.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.6.2.1\lib\net45\AutoMapper.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -42,6 +42,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -84,13 +85,21 @@
     <Compile Include="WebMoney\Core\WMPayment.cs" />
     <Compile Include="WebMoney\Core\WmPaymentResult.cs" />
     <Compile Include="WebMoney\Core\WMResponse.cs" />
+    <Compile Include="WebMoney\Params\ConfirmTrustParams.cs" />
     <Compile Include="WebMoney\Params\ExpressPaymentConfirmParams.cs" />
     <Compile Include="WebMoney\Params\ExpressPaymentParams.cs" />
     <Compile Include="WebMoney\Core\WMRequest.cs" />
+    <Compile Include="WebMoney\Params\SettingTrustParams.cs" />
+    <Compile Include="WebMoney\Params\TrustPaymentParams.cs" />
+    <Compile Include="WebMoney\Requests\ConfirmTrustRequest.cs" />
     <Compile Include="WebMoney\Requests\ExpressPaymentConfirmRequest.cs" />
     <Compile Include="WebMoney\Requests\ExpressPaymentRequest.cs" />
+    <Compile Include="WebMoney\Requests\SettingTrustRequest.cs" />
+    <Compile Include="WebMoney\Responses\ConfirmTrustResponse.cs" />
     <Compile Include="WebMoney\Responses\ExpressPaymentConfirmResponse.cs" />
     <Compile Include="WebMoney\Responses\ExpressPaymentResponse.cs" />
+    <Compile Include="WebMoney\Responses\SettingTrustResponse.cs" />
+    <Compile Include="WebMoney\WMTrustPayment.cs" />
     <Compile Include="WebMoney\WMExpressPayment.cs" />
     <Compile Include="YandexGeocoder\Requests\YaGeocoderRequest.cs" />
     <Compile Include="YandexGeocoder\ResponseModels\Address.cs" />

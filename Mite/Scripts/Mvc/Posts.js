@@ -87,13 +87,16 @@
         */
         saveCollection: function (btn, saveMode) {
             var self = Posts.Api,
-                saveUrl = saveMode === 'add' ? '/posts/addpost' : '/posts/updatepost';
+                saveUrl = saveMode === 'add' ? '/posts/addpost' : '/posts/updatepost',
+                $form = $('.p-form'),
+                reqSize = 0;
 
-            if (!$('.p-form').form('validate form') || !$('.p-item-form:visible').form('validate form')) {
+            if (!$form.form('validate form') || !$('.p-item-form:visible').form('validate form')) {
                 return;
             }
             var $items = $('.p-item-form:visible');
             if ($items.length === 0) {
+                $form.form('add errors', ['Для сохранения необходим хотя бы один элемент коллекции.']);
                 iziToast.error({
                     title: 'Нет элементов!',
                     message: 'Для сохранения необходим хотя бы один элемент коллекции.'
@@ -110,16 +113,26 @@
                 Tags: $('[name="Tags"]').val().split(','),
                 Collection: []
             };
+            reqSize += model.Content.length + model.Header.length + model.Description.length;
             $('.p-item-form:visible').each(function (index, formEl) {
                 var item = {
                     Content: $(formEl).find('[name="Content"]').val(),
                     Description: $(formEl).find('[name="Description"]').val(),
                 };
+                reqSize += item.Content.length + item.Description.length;
                 if (formEl.dataset.id !== '') {
                     item.Id = formEl.dataset.id;
                 }
                 model.Collection.push(item);
             });
+            if (reqSize / 1024 / 1024 > 30) {
+                $form.form('add errors', ['Суммарный размер контента превышает 30 мбайт, пожалуйста загрузите изображения с меньшим размером']);
+                iziToast.error({
+                    title: 'Слишком большой контент',
+                    message: 'Подробности в первой форме'
+                });
+                return;
+            }
             $('#publishConfirmModal').modal({
                 onApprove: function () {
                     model.PublishDate = new Date().toISOString();

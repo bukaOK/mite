@@ -7,6 +7,7 @@
     "@types/semantic-ui": "^2.2.5"
   },
   "dependencies": {
+    "baron": "^3.0.1",
     "gulp": "^3.9.1",
     "jsrender": "^0.9.83",
     "quill": "^1.1.9",

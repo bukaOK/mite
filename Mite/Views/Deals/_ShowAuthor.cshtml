@@ -59,11 +59,30 @@ else if(Model.Status == DealStatuses.ExpectClient)
         <div class="ui error message"></div>
     </form>
 }
-else if (Model.Status == DealStatuses.Confirmed)
+else if (Model.Status == DealStatuses.Confirmed || Model.Status == DealStatuses.ModerConfirmed)
 {
     <h3 class="ui header"><i class="check icon"></i>Заказ выполнен</h3>
+    <form class="ui form" id="dealForm">
+        @Html.HiddenFor(x => x.ImageSrc)
+        @Html.HiddenFor(x => x.Id)
+        <label class="ui labeled margined icon primary button">
+            Загрузить результат
+            <i class="cloud download icon"></i>
+            <input type="file" id="service-img-inp" style="display: none" />
+        </label>
+        <button class="ui green button" type="button" onclick="DealsMvc.loadImage(this)">Сохранить</button>
+        <div class="field">
+            <div class="ui image img-wrapper">
+                @if (!string.IsNullOrEmpty(Model.ImageSrc))
+                {
+                    <img src="@Model.ImageSrc" />
+                }
+            </div>
+        </div>
+        <div class="ui error message"></div>
+    </form>
 }
-else if (Model.Status == DealStatuses.Rejected)
+else if (Model.Status == DealStatuses.Rejected || Model.Status == DealStatuses.ModerRejected)
 {
     <h3 class="ui header">Заказ отклонен</h3>
 }
@@ -72,6 +91,13 @@ else if (Model.Status == DealStatuses.Rejected)
         @Html.Raw(Html.FormValidation<Mite.Models.DealAuthorModel>("#dealForm"))
         $('#DeadlineStr').datepicker({
             minDate: new Date()
+        });
+        $('#service-img-inp').change(function (ev) {
+            FileReaderHelper.inputDownloadHandler(ev, {
+                saveBtn: $(this).parent(),
+                imgWrapper: $('#dealForm .img-wrapper'),
+                field: $('#ImageSrc')
+            });
         });
     });
 </script>

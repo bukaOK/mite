@@ -10,12 +10,12 @@ using Mite.Models;
 using Mite.BLL.IdentityManagers;
 using Mite.CodeData.Enums;
 using System.Collections.Generic;
-using Microsoft.AspNet.Identity;
 using System.Web.Hosting;
 using NLog;
 using Mite.DAL.Repositories;
 using Mite.BLL.Helpers;
 using Mite.CodeData.Constants;
+using Mite.DAL.Filters;
 
 namespace Mite.BLL.Services
 {
@@ -181,7 +181,7 @@ namespace Mite.BLL.Services
             {
                 try
                 {
-                    var tuple = ImagesHelper.CreateImage(imagesFolder, post.Content);
+                    var tuple = ImagesHelper.CreateImage(imagesFolder, post.Cover);
                     post.Cover = tuple.vPath;
                     post.Cover_50 = tuple.compressedVPath;
                 }
@@ -301,6 +301,7 @@ namespace Mite.BLL.Services
             }).ToList();
             if(tags != null)
                 await Database.GetRepo<TagsRepository, Tag>().AddWithPostAsync(tags, currentPost.Id);
+            currentPost.Tags = null;
             await repo.UpdateAsync(currentPost);
 
             return Success;
@@ -341,20 +342,28 @@ namespace Mite.BLL.Services
             if (!string.IsNullOrWhiteSpace(model.Content))
                 FilesHelper.UpdateDocument(post.Content, model.Content);
 
-            if(model.Cover != post.Cover)
+            if(!string.Equals(model.Cover, post.Cover))
             {
-                FilesHelper.DeleteFile(post.Cover);
                 try
                 {
-                    //Заменяем или добавляем обложку
-                    if ((!string.IsNullOrEmpty(model.Cover) && model.Cover != post.Cover) || 
-                        (!string.IsNullOrEmpty(model.Cover) && string.IsNullOrEmpty(post.Cover)))
+                    //Заменяем
+                    if (!string.IsNullOrEmpty(model.Cover) && !string.IsNullOrEmpty(post.Cover))
                     {
-                        post.Cover = FilesHelper.CreateImage(imagesFolder, model.Cover);
+                        var tuple = ImagesHelper.UpdateImage(post.Cover, post.Cover_50, model.Cover);
+                        post.Cover = tuple.vPath;
+                        post.Cover_50 = tuple.compressedVPath;
+                    }
+                    //Добавляем
+                    else if (!string.IsNullOrEmpty(model.Cover) && string.IsNullOrEmpty(post.Cover))
+                    {
+                        var tuple = ImagesHelper.CreateImage(imagesFolder, model.Cover);
+                        post.Cover = tuple.vPath;
+                        post.Cover_50 = tuple.compressedVPath;
                     }
                     //Удаляем
                     else if(string.IsNullOrEmpty(model.Cover) && !string.IsNullOrEmpty(post.Cover))
                     {
+                        ImagesHelper.DeleteImage(post.Cover, post.Cover_50);
                         post.Cover = null;
                     }
                 }
@@ -450,7 +459,7 @@ namespace Mite.BLL.Services
             if (post.ContentType == PostContentTypes.Document)
             {
                 //Заменяем путь к документу на содержание
-                post.Content = await FilesHelper.ReadDocumentAsync(post.Content);
+                postModel.Content = await FilesHelper.ReadDocumentAsync(post.Content);
             }
             postModel.User = userModel;
             postModel.CommentsCount = await Database.GetRepo<CommentsRepository, Comment>().GetPostCommentsCountAsync(postId);
@@ -460,55 +469,19 @@ namespace Mite.BLL.Services
         public async Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userName, string currentUserId, SortFilter sort, PostTypes type)
         {
             var repo = Database.GetRepo<PostsRepository, Post>();
-            var tagsRepo = Database.GetRepo<TagsRepository, Tag>();
-            var commentsRepo = Database.GetRepo<CommentsRepository, Comment>();
 
             var user = await _userManager.FindByNameAsync(userName);
-            var currentUser = string.IsNullOrEmpty(currentUserId) ? null : await _userManager.FindByIdAsync(currentUserId);
             var posts = await repo.GetByUserAsync(user.Id, type, sort);
 
-            var postModels = Mapper.Map<IEnumerable<ProfilePostModel>>(posts);
-            var postsWithCommentsCount = await commentsRepo.GetPostsCommentsCountAsync(postModels.Select(x => x.Id));
-            var postTags = await tagsRepo.GetByPostsAsync(posts.Select(x => x.Id).ToList());
-
+            var currentUser = string.IsNullOrEmpty(currentUserId) ? null : await _userManager.FindByIdAsync(currentUserId);
             const int minChars = 400;
-            foreach (var postModel in postModels)
+
+            var postModels = Mapper.Map<IEnumerable<ProfilePostModel>>(posts, opts =>
             {
-                if(postModel.ContentType == PostContentTypes.Document)
-                {
-                    try
-                    {
-                        postModel.Content = await FilesHelper.ReadDocumentAsync(postModel.Content, minChars);
-                    }
-                    catch (Exception e)
-                    {
-                        logger.Error($"Ошибка при чтении файла в топе, имя файла: {postModel.Content}, Ошибка : {e.Message}");
-                        postModel.Content = "Ошибка при чтении файла.";
-                    }
-                }
-                var fullPath = HostingEnvironment.MapPath(postModel.Content);
-                if (postModel.IsImage)
-                {
-                    if (ImagesHelper.IsAnimatedImage(fullPath))
-                    {
-                        postModel.IsGif = true;
-                        postModel.FullPath = postModel.Content;
-                    }
-                    if (ImagesHelper.Compressed.CompressedExists(fullPath))
-                    {
-                        postModel.Content = ImagesHelper.Compressed.CompressedVirtualPath(fullPath);
-                    }
-                }
-                postModel.Tags = postTags.Where(x => x.Posts.Any(y => y.Id == postModel.Id)).Select(x => x.Name);
-
-                var hasComments = postsWithCommentsCount.TryGetValue(postModel.Id, out int commentsCount);
-                postModel.CommentsCount = hasComments ? commentsCount : 0;
-
-                if ((currentUser != null && currentUser.Age >= 18) || !postModel.Tags.Any(tag => tag == "18+"))
-                {
-                    postModel.ShowAdultContent = true;
-                }
-            }
+                opts.Items.Add("currentUser", currentUser);
+                opts.Items.Add("minChars", minChars);
+            });
+            
             return postModels;
         }
 
@@ -536,104 +509,44 @@ namespace Mite.BLL.Services
             var tagsRepo = Database.GetRepo<TagsRepository, Tag>();
             var commentsRepo = Database.GetRepo<CommentsRepository, Comment>();
 
+            const int range = 25;
+            var repoFilter = new PostTopFilter(range, filter.Page)
+            {
+                MaxDate = filter.InitialDate,
+                OnlyFollowings = PostUserFilter.OnlyFollowings == filter.PostUserFilter,
+                PostName = filter.PostName,
+                Tags = filter.Tags?.Split(',')
+            };
+
             var currentDate = DateTime.UtcNow;
-            DateTime minDate;
-            var onlyFollowings = PostUserFilter.OnlyFollowings == filter.PostUserFilter;
-
-            const int range = 12;
-            var offset = (filter.Page - 1) * range;
-
             switch (filter.PostTimeFilter)
             {
                 case PostTimeFilter.All:
-                    minDate = new DateTime(1800, 1, 1);
+                    repoFilter.MinDate = new DateTime(1800, 1, 1);
                     break;
                 case PostTimeFilter.Day:
-                    minDate = currentDate.AddDays(-1);
+                    repoFilter.MinDate = currentDate.AddDays(-1);
                     break;
                 case PostTimeFilter.Month:
-                    minDate = currentDate.AddMonths(-1);
+                    repoFilter.MinDate = currentDate.AddMonths(-1);
                     break;
                 case PostTimeFilter.Week:
-                    minDate = currentDate.AddDays(-7);
+                    repoFilter.MinDate = currentDate.AddDays(-7);
                     break;
                 default:
                     throw new NullReferenceException("Не задан фильтр времени при поиске поста");
             }
 
-            IEnumerable<Post> posts;
-            if (!string.IsNullOrWhiteSpace(filter.PostName) && filter.TagNames.Length > 0)
-            {
-                //Находим посты по тегам и имени работы
-                posts = await Database.GetRepo<PostsRepository, Post>().GetByPostNameAndTagsAsync(filter.PostName, filter.TagNames, minDate, 
-                    onlyFollowings, currentUserId, filter.SortFilter, offset, range, filter.InitialDate);
-            }
-            else if (!string.IsNullOrEmpty(filter.PostName))
-            {
-                posts = await repo.GetByPostNameAsync(filter.PostName, minDate,
-                    onlyFollowings, currentUserId, filter.SortFilter, offset, range, filter.InitialDate);
-            }
-            else if(filter.TagNames.Length > 0)
-            {
-                posts = await repo.GetByTagsAsync(filter.TagNames, minDate,
-                    onlyFollowings, currentUserId, filter.SortFilter, offset, range, filter.InitialDate);
-            }
-            else
-            {
-                posts = await repo.GetByFilterAsync(minDate, onlyFollowings, currentUserId,
-                    filter.SortFilter, offset, range, filter.InitialDate);
-            }
-
-            var postModels = Mapper.Map<IEnumerable<TopPostModel>>(posts);
-            var postTags = await tagsRepo.GetByPostsAsync(posts.Select(x => x.Id).ToList());
-            var postsWithCommentsCount = await commentsRepo.GetPostsCommentsCountAsync(postModels.Select(x => x.Id));
+            var posts = await repo.GetByFilterAsync(repoFilter);
             var currentUser = string.IsNullOrEmpty(currentUserId) ? null : await _userManager.FindByIdAsync(currentUserId);
-
             const int minChars = 400;
-            string fullImgPath;
 
-            foreach (var postModel in postModels)
+            var postModels = Mapper.Map<IEnumerable<TopPostModel>>(posts, opts =>
             {
-                if (!postModel.IsImage)
-                {
-                    try
-                    {
-                        postModel.Content = await FilesHelper.ReadDocumentAsync(postModel.Content, minChars);
-                    }
-                    catch(Exception e)
-                    {
-                        logger.Error($"Ошибка при чтении файла в топе, имя файла: {postModel.Content}, Ошибка : {e.Message}");
-                        postModel.Content = "Ошибка при чтении файла.";
-                    }
-                }
-                else
-                {
-                    fullImgPath = HostingEnvironment.MapPath(postModel.Content);
-                    if (ImagesHelper.IsAnimatedImage(fullImgPath))
-                    {
-                        postModel.IsGif = true;
-                        postModel.FullPath = postModel.Content;
-                    }
-
-                    if (ImagesHelper.Compressed.CompressedExists(fullImgPath))
-                    {
-                        postModel.Content = ImagesHelper.Compressed.CompressedVirtualPath(fullImgPath);
-                    }
-                }
-                fullImgPath = HostingEnvironment.MapPath(postModel.User.AvatarSrc);
-                if (ImagesHelper.Compressed.CompressedExists(fullImgPath))
-                {
-                    postModel.User.AvatarSrc = ImagesHelper.Compressed.CompressedVirtualPath(fullImgPath);
-                }
-                postModel.Tags = postTags.Where(x => x.Posts.Any(y => y.Id == postModel.Id)).Select(x => x.Name);
-
-                var hasComments = postsWithCommentsCount.TryGetValue(postModel.Id, out int commentsCount);
-                postModel.CommentsCount = hasComments ? commentsCount : 0;
-                if ((currentUser != null && currentUser.Age >= 18) || !postModel.Tags.Any(tag => tag == "18+"))
-                {
-                    postModel.ShowAdultContent = true;
-                }
-            }
+                opts.Items.Add("currentUser", currentUser);
+                opts.Items.Add("minChars", minChars);
+            });
+            
             return postModels;
         }
 

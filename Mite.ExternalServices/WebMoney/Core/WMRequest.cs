@@ -15,5 +15,7 @@ namespace Mite.ExternalServices.WebMoney.Core
         public string WmId { get; set; }
         [XmlElement("sign")]
         public string Sign { get; set; }
+        [XmlElement("lang")]
+        public string Language { get; set; }
     }
 }

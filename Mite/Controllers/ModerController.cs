@@ -35,7 +35,7 @@ namespace Mite.Controllers
             return View();
         }
         [HttpPost]
-        public async Task<JsonResult> Tags()
+        public async Task<ActionResult> Tags()
         {
             var repo = unitOfWork.GetRepo<TagsRepository, Tag>();
             var tags = await repo.GetAllAsync();

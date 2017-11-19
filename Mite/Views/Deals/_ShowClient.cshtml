@@ -76,6 +76,10 @@ else if(Model.Status == DealStatuses.ExpectClient)
 else if(Model.Status == DealStatuses.Confirmed || Model.Status == DealStatuses.ModerConfirmed)
 {
     <h3 class="ui header"><i class="check icon"></i>Заказ выполнен</h3>
+    if (!string.IsNullOrEmpty(Model.ImageSrc))
+    {
+        <img class="ui image" src="@Model.ImageSrc" />
+    }
     <form class="ui form" id="dealForm">
         @Html.HiddenFor(x => x.Id)
         <div class="field">

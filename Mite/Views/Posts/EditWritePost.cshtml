@@ -4,6 +4,7 @@
 
 @{
     var tagsRow = Model.Tags == null ? string.Empty : string.Join(",", Model.Tags);
+    var isEdit = !string.IsNullOrEmpty(Model.Header);
 }
 @Scripts.Render("~/bundles/editor")
 <div class="ui edit post segment">
@@ -17,9 +18,6 @@
                 </label>
                 <button class="ui centered margined red button" onclick="removeCover()">
                     Удалить обложку
-                </button>
-                <button class="ui inverted blue button" type="button" onclick="$('#publishGuideModal').modal('show')">
-                    Гайд по публикации
                 </button>
             </div>
         </div>
@@ -48,6 +46,7 @@
         <div class="two fields">
             <div class="field">
                 @Html.TextAreaFor(x => x.Description, new { @placeholder = Html.DisplayNameFor(y => y.Description) })
+                <div class="ui error message"></div>
             </div>
             <div class="field">
                 <div class="ui fluid search multiple selection dropdown" id="select-tags">
@@ -85,7 +84,7 @@
         <div style="clear: both" data-editable data-name="@Html.NameFor(x => x.Content)">
             @if (string.IsNullOrEmpty(Model.Content))
             {
-                <p data-ce-placeholder="Начинаем =)"></p>
+                <p id="initial-content"></p>
             }
             else
             {
@@ -108,7 +107,6 @@
         <button class="ui green ok button">Да</button>
     </div>
 </div>
-@{ Html.RenderPartial("~/Views/Guides/_PublicationGuide.cshtml"); }
 <script>
     function initEditPopup(){
         var $editBtn = $('.ct-ignition__button--edit');
@@ -174,7 +172,7 @@
             $('#img-wrapper').parent('.row').show();
             $('#Cover').val(reader.result);
         }
-        isCoverLarge = file.size / 1024 / 1024 > 10;
+        isCoverLarge = file.size / 1024 / 1024 > 20;
         reader.readAsDataURL(file);
     }
     function inputDownloadHandler(evt) {
@@ -201,10 +199,10 @@
                 }
                 var validErrorStatus = @((byte)Mite.Core.JsonStatuses.ValidationError);
                 if(resp.status == validErrorStatus){
-                    var errorStr = 'Ошибка при сохранении: ' + resp.message;
+                    $('#writeEditForm').form('add errors', resp.data);
                     iziToast.error({
                         title: 'Упс!',
-                        message: errorStr
+                        message: 'Ошибка при сохранении, подрбности в форме.'
                     });
                 } else{
                     if(isPublished){
@@ -262,13 +260,9 @@
     ]);
     ContentTools.Tools.Heading.tagName = "h2";
     ContentTools.Tools.Subheading.tagName = "h3";
-    $.ajax({
-        type: 'get',
-        url: '/bower_components/ContentTools/translations/ru.json',
-        success: function (data) {
-            ContentEdit.addTranslations('ru', data);
-            ContentEdit.LANGUAGE = 'ru';
-        }
+    $.getJSON('/bower_components/ContentTools/translations/ru.json', function (data) {
+        ContentEdit.addTranslations('ru', data);
+        ContentEdit.LANGUAGE = 'ru';
     });
     ContentTools.IMAGE_UPLOADER = articleImageUploader;
 
@@ -316,37 +310,45 @@
     $(function () {
         ViewHelper.activateSidebarItem('#editDocItem');
         ViewHelper.disableFormSubmitting('#writeEditForm');
-        $('#select-tags').dropdown();
+        $('#select-tags').dropdown({
+            allowAdditions: true,
+            fullTextSearch: true,
+            keys: {
+                delimiter: 13
+            },
+            showOnFocus: false,
+            forceSelection: false,
+            match: 'text'
+        });
         new PerfectScrollbar('#select-tags>.menu');
 
         @Html.Raw(Html.FormValidation<Mite.Models.WritingPostModel>("#writeEditForm"))
         var editor = ContentTools.EditorApp.get();
 
         editor.init('*[data-editable]', 'data-name');
+        $('#initial-content').popup({
+            content: 'Нажмите сюда, чтобы начать!',
+        });
 
         editor.inspector().show = function () { return false; }
         editor.addEventListener('saved',
             function (ev) {
                 if (!$('#writeEditForm').form('validate form')) {
-                    $('.ct-ignition__button--edit').css('background', '#e74c3c');
                     return false;
                 }
+                var isEditMode = @isEdit.ToString().ToLower();
                 var content = ev.detail().regions.Content;
                 if (isCoverLarge) {
                     alert('Обложка не может иметь размер больше 10 мбайт.');
                     return false;
                 }
-                @if (string.IsNullOrEmpty(Model.Header))
-                {
-                    <text>
-                if (content == '' || content == null || content == undefined) {
+                if (content === '' || (!isEditMode && content === undefined)) {
+                    $('#writeEditForm').form('add errors', ['Заполните контент.'])
                     iziToast.error({
                         title: 'Упс!',
-                        message: 'Контент не может быть пустым!'
+                        message: 'Заполните контент.'
                     });
                     return false;
-                }
-                </text>
                 }
                 formData = {
                     Content: content,
@@ -372,7 +374,6 @@
                 savePost(true, editor);
             }
         });
-        $('#publishGuidModal').modal();
         var wrapperInput = document.getElementById("wrapperImg");
         wrapperInput.onchange = inputDownloadHandler;
         @if (!Model.Helper.EditDocBtn)

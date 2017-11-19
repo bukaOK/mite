@@ -20,7 +20,7 @@ namespace Mite.ExternalServices.VkApi.Objects
         public byte IsClosed { get; set; }
         [JsonProperty("deactivated")]
         public string Deactivated { get; set; }
-        [JsonProperty("deactivated")]
+        [JsonProperty("is_admin")]
         [JsonConverter(typeof(BoolConverter))]
         public bool? IsAdmin { get; set; }
         [JsonProperty("admin_level")]

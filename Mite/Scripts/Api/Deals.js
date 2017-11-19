@@ -83,6 +83,7 @@
         return this._send('post', function () {
             $msg.removeClass('error').addClass('green');
             $msg.html('Успешно')
+            location.href = '/user/deals/outgoing/new';
         });
     },
     remove: function (id) {

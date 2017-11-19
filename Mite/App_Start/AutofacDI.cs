@@ -36,6 +36,7 @@ namespace Mite
             builder.RegisterControllers(executingAssembly);
             builder.RegisterApiControllers(executingAssembly);
             builder.RegisterHubs(Assembly.GetExecutingAssembly());
+            //builder.RegisterFilterProvider();
             RegisterComponents(builder, app);
 
             var container = builder.Build();
@@ -54,27 +55,26 @@ namespace Mite
         {
             var dataProtectionProvider = app.GetDataProtectionProvider();
 
-            builder.RegisterType<AppDbContext>().InstancePerLifetimeScope();
-            builder.RegisterType<UnitOfWork>().As<IUnitOfWork>().InstancePerLifetimeScope();
+            builder.RegisterType<AppDbContext>();
+            builder.RegisterType<UnitOfWork>().As<IUnitOfWork>();
 
-            builder.Register(c => HttpContext.Current.GetOwinContext().Authentication).As<IAuthenticationManager>().InstancePerLifetimeScope();
+            builder.Register(c => HttpContext.Current.GetOwinContext().Authentication).As<IAuthenticationManager>();
             builder.Register(c => new AppUserManager(new UserStore<User>(c.Resolve<AppDbContext>()),
-                dataProtectionProvider)).InstancePerLifetimeScope();
+                dataProtectionProvider));
             builder.RegisterType<AppSignInManager>();
             builder.RegisterType<AppRoleManager>();
 
-            builder.RegisterType<ServiceBuilder>().As<IServiceBuilder>();
             builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
                 .AssignableTo<IDataService>()
                 .AsImplementedInterfaces();
 
             builder.RegisterType<HttpClient>().SingleInstance();
             builder.RegisterType<YaHttpClient>().As<IHttpClient>();
-            builder.RegisterType<Authenticator>().InstancePerLifetimeScope();
+            builder.RegisterType<Authenticator>();
 
             builder.Register(c => LogManager.GetLogger("LOGGER")).As<ILogger>().SingleInstance();
 
-            builder.RegisterType<GeoMiddleware>().InstancePerLifetimeScope();
+            builder.RegisterType<GeoMiddleware>();
         }
     }
 }

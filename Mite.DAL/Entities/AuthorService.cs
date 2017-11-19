@@ -53,6 +53,7 @@ namespace Mite.DAL.Entities
         [MaxLength(600)]
         public string VkRepostConditions { get; set; }
         public AuthorServiceType ServiceType { get; set; }
+        //[Required] - вместе с другой миграцией надо добавить
         [ForeignKey("Author")]
         public string AuthorId { get; set; }
         public User Author { get; set; }

@@ -24,25 +24,29 @@ namespace Mite.Controllers
 
         private readonly AppUserManager userManager;
         private readonly ILogger logger;
-        private readonly IServiceBuilder serviceBuilder;
+        private readonly IYandexMoneyService yaService;
+        private readonly IPaymentService paymentService;
+        private readonly IExternalServices externalServices;
+        private readonly ICashService cashService;
+        private readonly IWebMoneyService wmService;
 
-        public PaymentsController(AppUserManager userManager, ILogger logger, IServiceBuilder serviceBuilder)
+        public PaymentsController(AppUserManager userManager, ILogger logger, IYandexMoneyService yaService, 
+            IPaymentService paymentService, IExternalServices externalServices, ICashService cashService, IWebMoneyService wmService)
         {
             this.userManager = userManager;
             this.logger = logger;
-            this.serviceBuilder = serviceBuilder;
+            this.yaService = yaService;
+            this.paymentService = paymentService;
+            this.externalServices = externalServices;
+            this.cashService = cashService;
+            this.wmService = wmService;
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<JsonResult> PayInYandex(YaPayInModel model)
+        public async Task<ActionResult> PayInYandex(YaPayInModel model)
         {
             var sum = (double)model.YaPayInSum;
             var userId = User.Identity.GetUserId();
-
-            var yaService = serviceBuilder.Build<IYandexMoneyService>();
-            var paymentService = serviceBuilder.Build<IPaymentService>();
-            var externalServices = serviceBuilder.Build<IExternalServices>();
-
             try
             {
                 var result = await yaService.PayInAsync(sum, userId);
@@ -69,18 +73,13 @@ namespace Mite.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<JsonResult> PayOutYandex(YaPayOutModel model)
+        public async Task<ActionResult> PayOutYandex(YaPayOutModel model)
         {
-            var cashService = serviceBuilder.Build<ICashService>();
-            var yaService = serviceBuilder.Build<IYandexMoneyService>();
-            var paymentService = serviceBuilder.Build<IPaymentService>();
-            var externalServices = serviceBuilder.Build<IExternalServices>();
-
             if (model.PayOutSum == 0 || model.PayOutSum == null)
             {
                 return Json(JsonStatuses.ValidationError, new[] { "Сумма не может быть 0." });
             }
-            if(model.PayOutSum < 500)
+            if(model.PayOutSum < 500 && !User.IsInRole(RoleNames.Moderator))
             {
                 return Json(JsonStatuses.ValidationError, new[] { "Минимальная сумма для вывода - 500 руб." });
             }
@@ -143,9 +142,8 @@ namespace Mite.Controllers
         /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<JsonResult> PayInBank(BankPayInModel model)
+        public async Task<ActionResult> PayInBank(BankPayInModel model)
         {
-            var yaService = serviceBuilder.Build<IYandexMoneyService>();
             var sum = (double)model.BankPayInSum;
             var userId = User.Identity.GetUserId();
 
@@ -170,37 +168,35 @@ namespace Mite.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<JsonResult> PayInWebMoney(WmPayInModel model)
+        public async Task<ActionResult> PayInWebMoney(WmPayInModel model)
         {
             if (!ModelState.IsValid)
             {
                 return Json(JsonStatuses.ValidationError, GetModelErrors());
             }
-            //return Json(JsonStatuses.Success);
-            var wmService = serviceBuilder.Build<IWebMoneyService>();
             var result = await wmService.PayInAsync(model.WmPhoneNumber, (double)model.WmPayInSum);
             if (result.Succeeded)
             {
                 if (result.ResultData == null)
                     return Json(JsonStatuses.Error);
                 Session[SessionKeys.WebMoneyExpressInvoiceId] = (int)result.ResultData;
+                return Json(JsonStatuses.Success);
             }
             return Json(JsonStatuses.ValidationError, result.Errors);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<JsonResult> ConfirmPayInWebmoney(WmPayInConfirmModel model)
+        public async Task<ActionResult> ConfirmPayInWebmoney(WmPayInConfirmModel model)
         {
             if (!ModelState.IsValid)
             {
                 return Json(JsonStatuses.ValidationError, GetModelErrors());
             }
-            //return Json(JsonStatuses.Success);
-            var wmService = serviceBuilder.Build<IWebMoneyService>();
-            var result = await wmService.ConfirmPayInAsync((int)Session[SessionKeys.WebMoneyExpressInvoiceId], model.WmConfirmCode);
+            var result = await wmService.ConfirmPayInAsync((int)Session[SessionKeys.WebMoneyExpressInvoiceId], model.WmConfirmCode, User.Identity.GetUserId());
             if (result.Succeeded)
             {
-                return Json(JsonStatuses.Success);
+                //В ResultData лежит сообщение от webmoney
+                return Json(JsonStatuses.Success, result.ResultData as string);
             }
             return Json(JsonStatuses.ValidationError, result.Errors);
 

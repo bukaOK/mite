@@ -73,9 +73,8 @@
     <Reference Include="Autofac.Integration.WebApi.Owin, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.WebApi2.Owin.4.0.0\lib\net45\Autofac.Integration.WebApi.Owin.dll</HintPath>
     </Reference>
-    <Reference Include="AutoMapper, Version=6.1.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
-      <HintPath>..\packages\AutoMapper.6.1.1\lib\net45\AutoMapper.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="AutoMapper, Version=6.2.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.6.2.1\lib\net45\AutoMapper.dll</HintPath>
     </Reference>
     <Reference Include="BouncyCastle.Crypto, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
       <HintPath>..\packages\BouncyCastle.1.8.1\lib\BouncyCastle.Crypto.dll</HintPath>
@@ -88,12 +87,18 @@
       <HintPath>..\packages\Dapper.Contrib.1.50.0\lib\net45\Dapper.Contrib.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="dotless.Core, Version=1.5.2.0, Culture=neutral, PublicKeyToken=96b446c9e63eae34, processorArchitecture=MSIL">
-      <HintPath>..\packages\dotless.1.5.2\lib\dotless.Core.dll</HintPath>
-    </Reference>
     <Reference Include="Duke.Owin.VkontakteMiddleware, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Duke.Owin.VkontakteMiddleware.1.2.0.0\lib\net45\Duke.Owin.VkontakteMiddleware.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="EcmaScript.NET, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\EcmaScript.Net.1.0.1.0\lib\net20\EcmaScript.NET.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework6.Npgsql, Version=3.1.1.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework6.Npgsql.3.1.1\lib\net45\EntityFramework6.Npgsql.dll</HintPath>
@@ -221,8 +226,7 @@
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.Security.Cryptography.Algorithms, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.0\lib\net461\System.Security.Cryptography.Algorithms.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.1\lib\net461\System.Security.Cryptography.Algorithms.dll</HintPath>
     </Reference>
     <Reference Include="System.Security.Cryptography.Encoding, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Security.Cryptography.Encoding.4.3.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
@@ -232,8 +236,8 @@
       <HintPath>..\packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.1\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
+    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.2, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.2\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.1.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Threading.Tasks.Extensions.4.4.0\lib\portable-net45+win8+wp8+wpa81\System.Threading.Tasks.Extensions.dll</HintPath>
@@ -260,10 +264,6 @@
     </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Abstractions" />
-    <Reference Include="System.Web.Optimization.Less, Version=1.3.0.0, Culture=neutral, PublicKeyToken=9b7581e0240fe480, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Web.Optimization.Less.1.3.4\lib\net40\System.Web.Optimization.Less.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Web.Routing" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
@@ -311,18 +311,15 @@
       <HintPath>..\packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Yahoo.Yui.Compressor, Version=2.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\YUICompressor.NET.2.7.0.0\lib\NET20\Yahoo.Yui.Compressor.dll</HintPath>
+    </Reference>
     <Reference Include="Yandex.Money.Api.Sdk, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Yandex.Money.Api.Sdk.1.4.5\lib\net45\Yandex.Money.Api.Sdk.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="EntityFramework">
-      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
-    </Reference>
-    <Reference Include="EntityFramework.SqlServer">
-      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.AspNet.Identity.Core">
       <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
     </Reference>
@@ -353,6 +350,7 @@
     <Compile Include="Attributes\Validation\CheckedAttribute.cs" />
     <Compile Include="BLL\Core\CrudService.cs" />
     <Compile Include="BLL\Core\DataService.cs" />
+    <Compile Include="BLL\DTO\VkRepostDTO.cs" />
     <Compile Include="BLL\Helpers\FilesHelper.cs" />
     <Compile Include="BLL\Helpers\ImagesHelper.cs" />
     <Compile Include="BLL\IdentityManagers\AppRoleManager.cs" />
@@ -385,7 +383,6 @@
     <Compile Include="Controllers\Api\AuthorServiceTypesController.cs" />
     <Compile Include="Controllers\Api\DealsController.cs" />
     <Compile Include="Controllers\Api\MessageController.cs" />
-    <Compile Include="Controllers\ClientProfileController.cs" />
     <Compile Include="Controllers\FilesController.cs" />
     <Compile Include="Controllers\AuthorServicesController.cs" />
     <Compile Include="Controllers\CashController.cs" />
@@ -394,6 +391,7 @@
     <Compile Include="Controllers\CitiesController.cs" />
     <Compile Include="Controllers\Api\CommentsController.cs" />
     <Compile Include="Controllers\DealsController.cs" />
+    <Compile Include="Controllers\MessagesController.cs" />
     <Compile Include="Controllers\NotificationController.cs" />
     <Compile Include="Controllers\UserDealsController.cs" />
     <Compile Include="Controllers\ErrorController.cs" />
@@ -467,7 +465,6 @@
     <Compile Include="Models\UserSettingsModels.cs" />
     <Compile Include="Models\UserShortModel.cs" />
     <Compile Include="Models\WalletsSettingsModel.cs" />
-    <Compile Include="Modules\ErrorsFilter.cs" />
     <Compile Include="Modules\GeoMiddleware.cs" />
     <Compile Include="Modules\ReferalModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -476,6 +473,7 @@
   <ItemGroup>
     <Content Include="Content\content-tools.min.css" />
     <Content Include="Content\dialogs.css" />
+    <Content Include="Content\dotloader.css" />
     <Content Include="Content\emojies\Airplane_Emoji.png" />
     <Content Include="Content\emojies\Alien_Emoji.png" />
     <Content Include="Content\emojies\Angry_Devil_Emoji_Icon.png" />
@@ -697,12 +695,15 @@
     <Content Include="Content\emojies\Smiling_Face_with_Tightly_Closed_Eyes.png" />
     <Content Include="Content\emojies\Smiling_with_Sweat_Emoji.png" />
     <Content Include="Content\emojies\Smirk_Face_Emoji.png" />
+    <Content Include="Content\emojies\Snake_Emoji.png" />
     <Content Include="Content\emojies\Snowflake_Emoji_In_PNG.png" />
     <Content Include="Content\emojies\Snowman_Emoji.png" />
     <Content Include="Content\emojies\Soup_Without_Handle_Emoji_Icon.png" />
     <Content Include="Content\emojies\Sparkling_Pink_Heart_Emoji_Icon.png" />
+    <Content Include="Content\emojies\Speak_No_Evil_Monkey_Emoji.png" />
     <Content Include="Content\emojies\Speech_Bubble_Emoji.png" />
     <Content Include="Content\emojies\Spiral_Shell_Emoji_In_PNG.png" />
+    <Content Include="Content\emojies\Spouting_Whale_Emoji.png" />
     <Content Include="Content\emojies\Star_Emoji.png" />
     <Content Include="Content\emojies\Strawberry_Cake_Emoji.png" />
     <Content Include="Content\emojies\Sunflower_Emoji_In_PNG.png" />
@@ -728,6 +729,7 @@
     <Content Include="Content\emojies\Top_Magic_Hat_Emoji.png" />
     <Content Include="Content\emojies\Tropical_Fish_Emoji_In_PNG.png" />
     <Content Include="Content\emojies\Tulip_Emoji_Icon_In_PNG.png" />
+    <Content Include="Content\emojies\Turtle_Emoji.png" />
     <Content Include="Content\emojies\Two_Pink_Hearts_Emoji_Icon.png" />
     <Content Include="Content\emojies\Umbrella_Emoji.png" />
     <Content Include="Content\emojies\Umbrella_Rain_Drops_Emoji.png" />
@@ -841,8 +843,11 @@
     <Content Include="Content\images\video.svg" />
     <Content Include="Content\landing.css" />
     <Content Include="Content\ripple-loader.css" />
+    <Content Include="Content\scrollbar.css" />
     <Content Include="Content\semantic.css" />
     <Content Include="Content\UserMenu.css" />
+    <Content Include="ErrorPages\404-1.htm" />
+    <Content Include="ErrorPages\404.html" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
@@ -865,6 +870,7 @@
     <Content Include="Content\gallery\fonts\lg.woff" />
     <Content Include="Content\emojies\emojies.json" />
     <Content Include="Files\validExtensions.json" />
+    <Content Include="Content\emojies\data.json" />
     <None Include="NLog.xsd">
       <SubType>Designer</SubType>
     </None>
@@ -882,6 +888,7 @@
     <Content Include="Scripts\BrowserSupport.js" />
     <Content Include="Scripts\content-tools.js" />
     <Content Include="Scripts\content-tools.min.js" />
+    <Content Include="Scripts\Custom\MiteScrollbar.js" />
     <Content Include="Scripts\Custom\MsgFiles.js" />
     <Content Include="Scripts\Custom\DateTimeHelper.js" />
     <Content Include="Scripts\Custom\EmojiHelper.js" />
@@ -907,12 +914,13 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\masonry.pkgd.min.js" />
-    <Content Include="Scripts\Custom\MiteApi.js" />
     <Content Include="Scripts\Custom\MiteUtilities.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\Custom\password-strength.js" />
     <Content Include="Scripts\Mvc\Deals.js" />
+    <Content Include="Scripts\Mvc\Moder.js" />
     <Content Include="Scripts\Mvc\Posts.js" />
+    <Content Include="Scripts\Mvc\Rating.js" />
     <Content Include="Scripts\perfect-scrollbar.js" />
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\respond.matchmedia.addListener.js" />
@@ -923,6 +931,8 @@
     <Content Include="Scripts\Custom\TabFilter.js" />
     <Content Include="Scripts\Custom\ViewHelpers.js" />
     <Content Include="Scripts\_references.js" />
+    <Content Include="Views\ErrorPages\404.html" />
+    <Content Include="Views\ErrorPages\500.html" />
     <Content Include="Views\UserProfile\Index.cshtml" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
@@ -992,7 +1002,7 @@
     <Content Include="Views\Cash\PayInWebmoney.cshtml" />
     <Content Include="Views\Cash\PayInBankCard.cshtml" />
     <Content Include="Views\Cash\PayInWebmoneyConfirm.cshtml" />
-    <Content Include="Views\Admin\AuthorServiceTypes.cshtml" />
+    <Content Include="Views\Moder\AuthorServiceTypes.cshtml" />
     <Content Include="Views\AuthorServices\_AddServiceType.cshtml" />
     <Content Include="Views\AuthorServices\Show.cshtml" />
     <Content Include="Views\UserDeals\Index.cshtml" />
@@ -1004,7 +1014,7 @@
     <Content Include="Views\Chats\_DealChat.cshtml" />
     <Content Include="Views\Deals\_Chat.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\RadioButtonListOptional.cshtml" />
-    <Content Include="Views\ClientProfile\Index.cshtml" />
+    <Content Include="Views\UserProfile\ClientIndex.cshtml" />
     <Content Include="Views\Deals\_ShowModer.cshtml" />
     <Content Include="Views\Notification\_UserNotifications.cshtml" />
   </ItemGroup>
@@ -1013,9 +1023,6 @@
     <Folder Include="bower_components\" />
     <Folder Include="Scripts\Page\" />
     <Folder Include="ViewModels\" />
-    <Folder Include="Views\Base\" />
-    <Folder Include="Views\Order\" />
-    <Folder Include="Views\UserHelpers\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />

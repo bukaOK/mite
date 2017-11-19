@@ -8,38 +8,38 @@ namespace Mite.Core
 {
     public abstract class BaseController : Controller
     {
-        protected JsonResult Json(JsonStatuses status)
+        protected ContentResult Json(JsonStatuses status)
         {
-            return Json(new { status = status }, "application/json");
+            return Content(JsonConvert.SerializeObject(new { status = status }), "application/json");
         }
-        protected JsonResult Json(JsonStatuses status, string message, object data, JsonRequestBehavior behavior = JsonRequestBehavior.DenyGet)
+        protected ContentResult Json(JsonStatuses status, string message, object data)
         {
-            return Json(JsonConvert.SerializeObject(new
+            return Content(JsonConvert.SerializeObject(new
             {
                 status = status,
                 message = message,
                 data = data
-            }), "application/json", behavior);
+            }), "application/json");
         }
 
-        protected JsonResult Json(JsonStatuses status, object data, JsonRequestBehavior behavior = JsonRequestBehavior.DenyGet)
+        protected ContentResult Json(JsonStatuses status, object data)
         {
-            return Json(JsonConvert.SerializeObject(new
+            return Content(JsonConvert.SerializeObject(new
             {
                 status = status,
                 data = data
-            }), "application/json", behavior);
+            }), "application/json");
         }
 
-        protected JsonResult Json(JsonStatuses status, string message, JsonRequestBehavior behavior = JsonRequestBehavior.DenyGet)
+        protected ContentResult Json(JsonStatuses status, string message)
         {
             if (status == JsonStatuses.Error)
                 Response.StatusCode = 500;
-            return Json(new
+            return Content(JsonConvert.SerializeObject(new
             {
                 status = status,
                 message = message
-            }, "application/json", behavior);
+            }), "application/json");
         }
         protected ActionResult RedirectToLocal(string returnUrl)
         {

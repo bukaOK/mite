@@ -3,6 +3,9 @@ using System.Xml.Serialization;
 
 namespace Mite.ExternalServices.WebMoney.Requests
 {
+    /// <summary>
+    /// Интерфейс Х20(первый запрос)
+    /// </summary>
     [XmlRoot("merchant.request")]
     public class ExpressPaymentRequest : WMRequest
     {
@@ -21,8 +24,6 @@ namespace Mite.ExternalServices.WebMoney.Requests
         public byte LoginType { get; set; }
         [XmlElement("lmi_sms_type")]
         public byte ConfirmType { get; set; }
-        [XmlElement("lang")]
-        public string Language { get; set; }
         [XmlElement("emulated_flag")]
         public byte EmulatedFlag { get; set; }
         public override string SignMessage => $"{WmId}{StorePurse}{OrderId}{ClientPhone}{LoginType}";

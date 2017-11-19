@@ -13,7 +13,7 @@ namespace Mite.Models
     }
     public class TopPostModel
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         public string Title { get; set; }
 
         private string content;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -16,6 +17,8 @@ namespace Mite.Controllers
         public ActionResult NotFound()
         {
             Response.StatusCode = 404;
+            if (Request.IsAjaxRequest())
+                return new HttpStatusCodeResult(404);
             ViewBag.Title = "Страница не найдена";
             ViewBag.ErrorImg = "/Content/images/404err.png";
             return View(ErrorTemplate);
@@ -23,6 +26,8 @@ namespace Mite.Controllers
         public ActionResult InternalError()
         {
             Response.StatusCode = 500;
+            if (Request.IsAjaxRequest())
+                return new HttpStatusCodeResult(500);
             ViewBag.Title = "Внутренняя ошибка сервера";
             ViewBag.ErrorImg = "/Content/images/500err.png";
             return View(ErrorTemplate);

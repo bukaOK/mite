@@ -12,6 +12,7 @@ using Mite.Core;
 using Mite.CodeData.Constants;
 using Mite.Attributes.Filters;
 using Mite.ExternalServices.Google;
+using System.Security.Claims;
 
 namespace Mite.Controllers
 {
@@ -52,7 +53,6 @@ namespace Mite.Controllers
                 ModelState.AddModelError("", "Ошибка ReCaptcha.");
             }
 #endif
-
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -69,7 +69,7 @@ namespace Mite.Controllers
                     {
                         return RedirectToLocal(returnUrl);
                     }
-                    return Redirect($"/user/profile/{model.UserName}");
+                    return RedirectToAction("Top", "Posts");
                 case SignInStatus.LockedOut:
                     return View("Lockout");
                 case SignInStatus.RequiresVerification:
@@ -91,7 +91,7 @@ namespace Mite.Controllers
         [OnlyGuests]
         public ActionResult InitExternalAuth(string provider, string returnUrl)
         {
-            return new ChallengeResult(provider, Url.Action("ExternalRegister", "Account", new { ReturnUrl = returnUrl }));
+            return new ChallengeResult(provider, Url.Action("ExternalRegister", "Account", new { returnUrl = returnUrl }));
         }
         public async Task<ActionResult> ExternalRegister(string returnUrl)
         {
@@ -108,10 +108,12 @@ namespace Mite.Controllers
                 case SignInStatus.Success:
                     //Обновляем записи о сервисе
                     var accessToken = loginInfo.ExternalIdentity.FindFirstValue(ClaimConstants.ExternalServiceToken);
-                    var expires = loginInfo.ExternalIdentity.FindFirstValue(ClaimConstants.ExternalServiceExpires);
+                    //var expires = loginInfo.ExternalIdentity.FindFirstValue(ClaimConstants.ExternalServiceExpires);
                     await externalServices.Update(loginInfo.Login.ProviderKey, loginInfo.Login.LoginProvider, accessToken);
 
-                    return RedirectToLocal(returnUrl);
+                    if(!string.IsNullOrEmpty(returnUrl))
+                        return RedirectToLocal(returnUrl);
+                    return RedirectToAction("Top", "Posts");
                 case SignInStatus.LockedOut:
                     return View("Lockout");
                 case SignInStatus.RequiresVerification:
@@ -144,7 +146,7 @@ namespace Mite.Controllers
             var result = await userService.LoginAsync(model);
             switch (result)
             {
-                //Если все ок, добавляем внешний сервис в базу
+                //Если все ок, добавляем токен соц. сети в базу
                 case SignInStatus.Success:
                     var loginInfo = await authManager.GetExternalLoginInfoAsync();
                     var user = await userManager.FindByNameAsync(model.UserName);
@@ -157,7 +159,9 @@ namespace Mite.Controllers
                         var expires = loginInfo.ExternalIdentity.FindFirstValue(ClaimConstants.ExternalServiceExpires);
                         await externalServices.Add(user.Id, loginInfo.Login.LoginProvider, accessToken);
                     }
-                    return RedirectToLocal(returnUrl);
+                    if(!string.IsNullOrEmpty(returnUrl))
+                        return RedirectToLocal(returnUrl);
+                    return RedirectToAction("Top", "Posts");
                 case SignInStatus.LockedOut:
                     return View("Lockout");
                 case SignInStatus.RequiresVerification:
@@ -187,7 +191,8 @@ namespace Mite.Controllers
                     "landenor",
                     "dindon",
                     "lex",
-                    "lex7"
+                    "lex7",
+                    "lex_client"
                 };
                 if (!allowedList.Contains(model.UserName.ToLower()))
                 {
@@ -217,7 +222,7 @@ namespace Mite.Controllers
 
                 await userManager.SendEmailAsync(user.Id, "MiteGroup.Подтверждение почты.", $"Для подтверждения вашего аккаунта перейдите по <a href=\"{callbackUrl}\">ссылке.</a> MiteGroup.");
                 if (string.IsNullOrEmpty(returnUrl))
-                    return Redirect($"/user/profile/{model.UserName}");
+                    return RedirectToAction("Top", "Posts");
                 else
                     return RedirectToLocal(returnUrl);
             }
@@ -228,7 +233,7 @@ namespace Mite.Controllers
         [HttpPost]
         [OnlyGuests]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> ExternalRegister(ShortRegisterModel model)
+        public async Task<ActionResult> ExternalRegister(ShortRegisterModel model, string returnUrl)
         {
             if (!ModelState.IsValid)
             {
@@ -260,7 +265,9 @@ namespace Mite.Controllers
                 var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, "http");
 
                 await userManager.SendEmailAsync(user.Id, "MiteGroup.Подтверждение почты.", $"Для подтверждения вашего аккаунта перейдите по <a href=\"{callbackUrl}\">ссылке.</a> MiteGroup.");
-                return Redirect($"/user/profile/{model.UserName}");
+                if (!string.IsNullOrEmpty(returnUrl))
+                    return Redirect(returnUrl);
+                return RedirectToAction("Top", "Posts");
             }
             AddErrors(result.Errors);
             //Если что то пошло не так, отображаем форму заново(вместе с ошибками)

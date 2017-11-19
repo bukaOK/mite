@@ -20,10 +20,9 @@ namespace Mite.DAL.Repositories
             var payments = await Table.Where(x => x.UserId == userId).OrderByDescending(x => x.Date).ToListAsync();
             return payments;
         }
-        public async Task<Payment> GetByOperationAsync(string operationId, PaymentType paymentType)
+        public Task<Payment> GetLastOperationAsync(PaymentType paymentType)
         {
-            var payment = await Table.FirstOrDefaultAsync(x => x.OperationId == operationId && x.PaymentType == paymentType);
-            return payment;
+            return Table.Where(x => x.PaymentType == paymentType).OrderByDescending(x => x.OperationId).FirstOrDefaultAsync();
         }
     }
 }

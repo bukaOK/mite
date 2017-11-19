@@ -9,6 +9,7 @@ using Microsoft.Owin;
 using Microsoft.Owin.Security.DataProtection;
 using Mite.BLL.IdentityManagers;
 using Mite.BLL.Services;
+using Mite.CodeData.Constants;
 using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
 using Mite.ExternalServices.Google;
@@ -84,7 +85,7 @@ namespace Mite
         public bool Authorize([NotNull] DashboardContext context)
         {
             var owinContext = new OwinContext(context.GetOwinEnvironment());
-            return owinContext.Authentication.User.IsInRole("admin");
+            return owinContext.Authentication.User.IsInRole(RoleNames.Admin);
         }
     }
 }

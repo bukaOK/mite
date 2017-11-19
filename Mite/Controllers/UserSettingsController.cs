@@ -42,7 +42,7 @@ namespace Mite.Controllers
             return PartialView();
         }
         [HttpPost]
-        public async Task<JsonResult> ChangeAvatar(string base64Str)
+        public async Task<ActionResult> ChangeAvatar(string base64Str)
         {
             if (string.IsNullOrEmpty(base64Str))
             {
@@ -75,7 +75,7 @@ namespace Mite.Controllers
             return PartialView(model);
         }
         [HttpPost]
-        public async Task<JsonResult> UserProfile(ProfileSettingsModel settings)
+        public async Task<ActionResult> UserProfile(ProfileSettingsModel settings)
         {
             if (!ModelState.IsValid)
             {
@@ -103,7 +103,7 @@ namespace Mite.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<JsonResult> ChangePassword(ChangePassModel model)
+        public async Task<ActionResult> ChangePassword(ChangePassModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -146,7 +146,7 @@ namespace Mite.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<JsonResult> ChangeEmail(EmailSettingsModel model)
+        public async Task<ActionResult> ChangeEmail(EmailSettingsModel model)
         {
             if (!ModelState.IsValid)
             {

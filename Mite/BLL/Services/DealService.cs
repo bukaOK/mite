@@ -11,12 +11,13 @@ using Mite.CodeData.Enums;
 using AutoMapper;
 using Mite.BLL.Helpers;
 using Mite.CodeData.Constants;
-using System.Web.Hosting;
 using Mite.ExternalServices.VkApi.Wall;
 using System.Net.Http;
 using System.Linq;
 using Mite.BLL.IdentityManagers;
-using Mite.ExternalServices.VkApi.Core;
+using Newtonsoft.Json;
+using Mite.BLL.DTO;
+using Microsoft.AspNet.Identity;
 
 namespace Mite.BLL.Services
 {
@@ -38,7 +39,7 @@ namespace Mite.BLL.Services
         /// <param name="imageBase64"></param>
         /// <param name="authorId"></param>
         /// <returns></returns>
-        Task<DataServiceResult> SaveResultImgAsync(long id, string imageBase64, string clientId);
+        Task<DataServiceResult> SaveResultImgAsync(long id, string imageBase64, string authorId);
         /// <summary>
         /// Подтверждение клиентом
         /// </summary>
@@ -183,7 +184,7 @@ namespace Mite.BLL.Services
 
         public int GetNewCount(string userId)
         {
-            return repo.GetAuthorCounts(userId, DealStatuses.New) + repo.GetClientCounts(userId);
+            return userManager.IsInRole(userId, RoleNames.Author) ? repo.GetAuthorCounts(userId) : repo.GetClientCounts(userId);
         }
 
         public async Task<IEnumerable<DealUserModel>> GetOutgoingAsync(DealStatuses dealType, string clientId)
@@ -299,6 +300,9 @@ namespace Mite.BLL.Services
         public async Task<DataServiceResult> CheckVkRepostAsync(long id, string clientId)
         {
             var deal = await repo.GetAsync(id);
+            var authorService = await Database.GetRepo<AuthorServiceRepository, AuthorService>().GetAsync(deal.ServiceId);
+            var vkRepost = JsonConvert.DeserializeObject<VkRepostDTO>(authorService.VkRepostConditions);
+
             if (deal.ClientId != clientId)
                 return DataServiceResult.Failed("Неизвестный пользователь");
             if (deal.VkReposted == true || deal.VkReposted == null)
@@ -317,7 +321,9 @@ namespace Mite.BLL.Services
                 const int count = 1000;
                 var req = new GetRepostsRequest(httpClient, vkService.AccessToken)
                 {
-                    Count = count
+                    Count = count,
+                    OwnerId = vkRepost.OwnerId,
+                    PostId = vkRepost.PostId
                 };
                 var result = await req.PerformAsync();
                 var profile = result.Profiles.FirstOrDefault(x => x.Id == vkLogin.ProviderKey);
@@ -330,8 +336,15 @@ namespace Mite.BLL.Services
                 }
                 return true;
             }
-
-            var repostExists = await FindVkRepost(0);
+            var repostExists = false;
+            try
+            {
+                repostExists = await FindVkRepost(0);
+            }
+            catch(Exception e)
+            {
+                return CommonError("Ошибка при проверке репоста ВКонтакте", e);
+            }
             if (repostExists)
             {
                 deal.VkReposted = true;
@@ -367,29 +380,26 @@ namespace Mite.BLL.Services
             return false;
         }
 
-        public async Task<DataServiceResult> SaveResultImgAsync(long id, string imageBase64, string clientId)
+        public async Task<DataServiceResult> SaveResultImgAsync(long id, string imageBase64, string authorId)
         {
             var deal = await repo.GetAsync(id);
             if (deal == null)
                 return DataServiceResult.Failed("Сделка не найдена");
-            if (deal.Status != DealStatuses.Confirmed || deal.Status != DealStatuses.Rejected || deal.ClientId != clientId)
-                return DataServiceResult.Failed("Запрещено");
+            if (deal.AuthorId != authorId)
+                return DataServiceResult.Failed("Неизвестный пользователь");
+            if (string.Equals(deal.ImageResultSrc, imageBase64))
+                return DataServiceResult.Failed("Внесите изменения");
             try
             {
-                deal.ImageResultSrc = FilesHelper.CreateImage(PathConstants.VirtualImageFolder, imageBase64);
-                ImagesHelper.Compressed.Compress(deal.ImageResultSrc);
-                deal.ImageResultSrc_50 = ImagesHelper.Compressed.CompressedVirtualPath(HostingEnvironment.MapPath(deal.ImageResultSrc));
+                var tuple = ImagesHelper.CreateImage(PathConstants.VirtualImageFolder, imageBase64);
+                deal.ImageResultSrc = tuple.vPath;
+                deal.ImageResultSrc_50 = tuple.compressedVPath;
+
                 await repo.UpdateAsync(deal);
                 return DataServiceResult.Success();
             }
             catch(Exception e)
             {
-                FilesHelper.DeleteFile(deal.ImageResultSrc);
-                FilesHelper.DeleteFile(deal.ImageResultSrc_50);
-                deal.ImageResultSrc = null;
-                deal.ImageResultSrc_50 = null;
-                await repo.UpdateAsync(deal);
-
                 logger.Error($"Сделка № {deal.Id}. Ошибка при сохранении результата заказа: {e.Message}");
                 return DataServiceResult.Failed("Ошибка при сохранении результата заказа");
             }
@@ -398,7 +408,6 @@ namespace Mite.BLL.Services
         public async Task<DataServiceResult> ConfirmAsync(long id, string clientId = null)
         {
             var isModer = clientId == null;
-            var reliability = isModer ? -3 : 1;
 
             var deal = await repo.GetAsync(id);
             if (deal == null)
@@ -407,24 +416,42 @@ namespace Mite.BLL.Services
                 return DataServiceResult.Failed("Неизвестный пользователь");
             if (deal.Price != null && !deal.Payed)
                 return DataServiceResult.Failed("Сделка не оплачена");
+            deal.Status = isModer ? DealStatuses.ModerConfirmed : DealStatuses.Confirmed;
+            return await CloseDealAsync(deal);
+            
+        }
+        /// <summary>
+        /// Действия по закрытию сделки(обновление надежности и пр.)
+        /// </summary>
+        /// <param name="transaction"></param>
+        /// <param name="deal"></param>
+        /// <returns></returns>
+        private async Task<DataServiceResult> CloseDealAsync(Deal deal)
+        {
+            var serviceRepo = Database.GetRepo<AuthorServiceRepository, AuthorService>();
+            var userRepo = Database.GetRepo<UserRepository, User>();
+
+            const int goodCoef = 1;
+            const int badCoef = -3;
 
             var client = await userManager.FindByIdAsync(deal.ClientId);
             var author = await userManager.FindByIdAsync(deal.AuthorId);
-
-            using(var transaction = repo.BeginTransaction())
+            var service = await serviceRepo.GetAsync(deal.ServiceId);
+            using (var transaction = repo.BeginTransaction())
             {
-                deal.Status = isModer ? DealStatuses.ModerConfirmed : DealStatuses.Confirmed;
-                client.Reliability += reliability;
-                author.Reliability += reliability;
-
                 try
                 {
                     if (deal.Price != null)
                         await cashService.AddAsync(null, deal.AuthorId, (double)deal.Price, CashOperationTypes.Deal);
                     deal.Payed = false;
                     await repo.UpdateAsync(deal);
+
+                    client.Reliability = await userRepo.GetReliabilityAsync(client.Id, goodCoef, badCoef, false);
+                    author.Reliability = await userRepo.GetReliabilityAsync(author.Id, goodCoef, badCoef, true);
+                    service.Reliability = await serviceRepo.GetReliabilityAsync(service.Id, badCoef, goodCoef);
                     await userManager.UpdateAsync(client);
                     await userManager.UpdateAsync(author);
+                    await serviceRepo.UpdateAsync(service);
 
                     transaction.Commit();
                     return DataServiceResult.Success();
@@ -432,12 +459,11 @@ namespace Mite.BLL.Services
                 catch (Exception e)
                 {
                     transaction.Rollback();
-                    logger.Error($"Id: {id}. Ошибка при подтверждении сделки: {e.Message}");
+                    logger.Error($"Id: {deal.Id}. Ошибка при подтверждении сделки: {e.Message}");
                     return DataServiceResult.Failed("Ошибка при подтверждении");
                 }
             }
         }
-
         public async Task<DataServiceResult> ConfirmVkRepostAsync(long id, string authorId)
         {
             var deal = await repo.GetAsync(id);
@@ -505,44 +531,15 @@ namespace Mite.BLL.Services
         public async Task<DataServiceResult> RejectAsync(long id, string userId = null)
         {
             var isModer = userId == null;
-            var reliability = isModer ? -3 : 1;
-
             var deal = await repo.GetAsync(id);
+
             if (!isModer && deal.ClientId != userId && deal.AuthorId != userId)
-            {
                 return DataServiceResult.Failed("Неизвестный пользователь");
-            }
             if(!isModer && deal.Payed)
-            {
                 return DataServiceResult.Failed("Оплаченную сделку нельзя закрыть");
-            }
-            var client = await userManager.FindByIdAsync(deal.ClientId);
-            var author = await userManager.FindByIdAsync(deal.AuthorId);
-            using (var transaction = repo.BeginTransaction())
-            {
-                deal.Status = isModer ? DealStatuses.ModerRejected : DealStatuses.Rejected;
-                client.Reliability += reliability;
-                author.Reliability += reliability;
-                try
-                {
-                    if (deal.Price != null && deal.Payed)
-                        await cashService.AddAsync(null, deal.ClientId, (double)deal.Price, CashOperationTypes.Deal);
 
-                    deal.Payed = false;
-                    await repo.UpdateAsync(deal);
-                    await userManager.UpdateAsync(client);
-                    await userManager.UpdateAsync(author);
-
-                    transaction.Commit();
-                    return DataServiceResult.Success();
-                }
-                catch (Exception e)
-                {
-                    transaction.Rollback();
-                    logger.Error($"Id: {deal.Id}. Ошибка при закрытии сделки: {e.Message}");
-                    return DataServiceResult.Failed("Внутренняя ошибка");
-                }
-            }
+            deal.Status = isModer ? DealStatuses.ModerRejected : DealStatuses.Rejected;
+            return await CloseDealAsync(deal);
         }
 
         public async Task<DataServiceResult> RateAsync(long id, byte rateVal, string clientId)
@@ -555,10 +552,9 @@ namespace Mite.BLL.Services
             if (deal.Status != DealStatuses.Confirmed)
                 return DataServiceResult.Failed("Действие запрещено");
 
-            deal.Rating = rateVal;
             try
             {
-                await repo.UpdateAsync(deal);
+                await repo.RateAsync(deal, rateVal);
                 return DataServiceResult.Success();
             }
             catch(Exception e)

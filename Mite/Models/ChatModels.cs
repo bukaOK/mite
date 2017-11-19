@@ -23,6 +23,7 @@ namespace Mite.Models
         public Guid Id { get; set; }
         public UserShortModel Sender { get; set; }
         public IList<MessageAttachmentModel> Attachments { get; set; }
+        public IEnumerable<HttpPostedFileBase> StreamAttachments { get; set; }
         public IList<UserShortModel> Recipients { get; set; }
         /// <summary>
         /// Прочитано ли кем либо из получателей(кроме текущего пользователя)

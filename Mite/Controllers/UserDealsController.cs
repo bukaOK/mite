@@ -28,18 +28,18 @@ namespace Mite.Controllers
         public async Task<ActionResult> Incoming(DealStatuses type)
         {
             var deals = await dealService.GetIncomingAsync(type, User.Identity.GetUserId());
-            return Json(JsonStatuses.Success, deals, JsonRequestBehavior.AllowGet);
+            return Json(JsonStatuses.Success, deals);
         }
         public async Task<ActionResult> Outgoing(DealStatuses type)
         {
             var deals = await dealService.GetOutgoingAsync(type, User.Identity.GetUserId());
-            return Json(JsonStatuses.Success, deals, JsonRequestBehavior.AllowGet);
+            return Json(JsonStatuses.Success, deals);
         }
         [Authorize(Roles = RoleNames.Moderator)]
         public async Task<ActionResult> Moder(DealStatuses type)
         {
             var deals = await dealService.GetForModerAsync(type, User.Identity.GetUserId());
-            return Json(JsonStatuses.Success, deals, JsonRequestBehavior.AllowGet);
+            return Json(JsonStatuses.Success, deals);
         }
     }
 }

@@ -1,13 +1,17 @@
 ﻿//AuthorServiceTypes
 var ServiceTypesApi = {
     url: '/api/authorservicetypes',
-    form: $('#serviceTypeForm'),
-    formButton: $('#serviceTypeBtn'),
-    table: $('.tab[data-tab="servicetypes"] tbody'),
-    tmpl: $.templates('#serviceTypeRowTmpl'),
+    form: null,
+    formButton: null,
+    table: null,
+    tmpl: null,
 
     init: function () {
         var self = ServiceTypesApi;
+        self.form = $('#serviceTypeForm');
+        self.formButton = $('#serviceTypeBtn');
+        self.table = $('.tab[data-tab="servicetypes"] tbody');
+        self.tmpl = $.templates('#serviceTypeRowTmpl');
 
         return $.ajax({
             url: self.url,
@@ -26,6 +30,10 @@ var ServiceTypesApi = {
     },
     _send: function (method, onSuccess, onError) {
         var self = ServiceTypesApi;
+        self.form = $('#serviceTypeForm');
+        self.formButton = $('#serviceTypeBtn');
+        self.table = $('.tab[data-tab="servicetypes"] tbody');
+        self.tmpl = $.templates('#serviceTypeRowTmpl');
 
         if (self.form.form('validate form')) {
             self.formButton.addClass('loading');

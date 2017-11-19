@@ -37,21 +37,23 @@ namespace Mite.Controllers
         [HttpGet]
         public async Task<ActionResult> Index(string name)
         {
-            var profile = await _userService.GetUserProfileAsync(name ?? User.Identity.Name, User.Identity.GetUserId());
-
+            var profile = await _userService.GetUserProfileAsync(name, User.Identity.GetUserId());
             if (profile == null)
                 return NotFound();
 
-            profile.SocialLinks = await _userService.GetSocialLinksAsync(profile.UserId.ToString());
-            return View("Index", profile);
+            return profile.IsAuthor ? View("Index", profile) : View("ClientIndex", profile);
         }
+        /// <summary>
+        /// Для мини-карточки пользователя
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public async Task<ActionResult> GetUserProfile(string name)
         {
-            if (string.IsNullOrEmpty(name))
-                return NotFound();
-
             name = name.Replace(" ", string.Empty);
             var profile = await _userService.GetUserProfileAsync(name, User.Identity.GetUserId());
+            if (profile == null)
+                return NotFound();
             profile.SocialLinks = await _userService.GetSocialLinksAsync(profile.UserId.ToString());
             //Обрезаем описание(всё для красоты)
             if(!string.IsNullOrEmpty(profile.About) && profile.About.Length > 50)
@@ -69,7 +71,7 @@ namespace Mite.Controllers
                 }
                 profile.About = about + "...";
             }
-            return Json(JsonStatuses.Success, profile, JsonRequestBehavior.AllowGet);
+            return Json(JsonStatuses.Success, profile);
         }
         public ViewResult Notifications()
         {
@@ -80,28 +82,10 @@ namespace Mite.Controllers
             return Index(name);
         }
         [HttpPost]
-        public async Task<JsonResult> Followers(string name, SortFilter sort)
+        public async Task<ActionResult> Followers(string name, SortFilter sort)
         {
-            var userModels = await _followersService.GetFollowersByUserAsync(name);
-
-            switch (sort)
-            {
-                case SortFilter.New:
-                    userModels = userModels.OrderByDescending(x => x.RegisterDate)
-                        .ThenByDescending(x => x.Rating).ToList();
-                    break;
-                case SortFilter.Old:
-                    userModels = userModels.OrderBy(x => x.RegisterDate)
-                        .ThenByDescending(x => x.Rating).ToList();
-                    break;
-                case SortFilter.Popular:
-                    userModels = userModels.OrderByDescending(x => x.Rating)
-                        .ThenBy(x => x.RegisterDate).ToList();
-                    break;
-                default:
-                    throw new NotImplementedException("Неизвестный тип сортировки");
-            }
-            return Json(JsonStatuses.Success, userModels, JsonRequestBehavior.AllowGet);
+            var followers = await _followersService.GetFollowersByUserAsync(name, sort);
+            return Json(JsonStatuses.Success, followers);
         }
         public Task<ActionResult> Posts(string name)
         {
@@ -128,13 +112,13 @@ namespace Mite.Controllers
             return Index(name);
         }
         [HttpPost]
-        public async Task<JsonResult> Followings(string name, SortFilter sort)
+        public async Task<ActionResult> Followings(string name, SortFilter sort)
         {
-            var userModels = await _followersService.GetFollowingsByUserAsync(name, sort);
-            return Json(JsonStatuses.Success, userModels, JsonRequestBehavior.AllowGet);
+            var followings = await _followersService.GetFollowingsByUserAsync(name, sort);
+            return Json(JsonStatuses.Success, followings);
         }
         [HttpPost]
-        public async Task<JsonResult> Services(string name, SortFilter sort)
+        public async Task<ActionResult> Services(string name, SortFilter sort)
         {
             var user = await userManager.FindByNameAsync(name);
             if (user == null)

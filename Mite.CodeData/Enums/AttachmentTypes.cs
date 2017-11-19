@@ -9,6 +9,8 @@ namespace Mite.CodeData.Enums
     public enum AttachmentTypes
     {
         Image = 0,
-        Document = 1
+        Text = 1,
+        Audio = 2,
+        Video = 3
     }
 }

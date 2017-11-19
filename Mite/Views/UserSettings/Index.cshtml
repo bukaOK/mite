@@ -34,15 +34,6 @@
 <script>
     $(function () {
         $('.user-settings.item').addClass('active');
-        //$('.ui.tabs.menu .item').tab({
-        //    history: true,
-        //    historyType: 'state',
-        //    path: '/user/settings',
-        //    onFirstLoad: function (tabPath, parameterArray, historyEvent) {
-        //        var path = location.pathname.replace('/user/settings/', '');
-        //        $('.ui.tabs.menu .item').tab('change tab', path);
-        //    }
-        //});
         var tabs = new MiteTab('.ui.tabs.menu .item', '/user/settings');
         ViewHelper.disableFormSubmitting('form');
     });

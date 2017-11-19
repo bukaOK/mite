@@ -5,6 +5,9 @@ using System.Xml.Serialization;
 
 namespace Mite.ExternalServices.WebMoney.Requests
 {
+    /// <summary>
+    /// Интерфейс Х20(подтверждение запроса)
+    /// </summary>
     [XmlRoot("merchant.request")]
     public class ExpressPaymentConfirmRequest : WMRequest
     {

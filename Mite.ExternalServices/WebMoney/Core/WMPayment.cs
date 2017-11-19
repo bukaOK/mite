@@ -32,6 +32,9 @@ namespace Mite.ExternalServices.WebMoney.Core
             where TResponse : class
         {
             var serializer = new XmlSerializer(request.GetType());
+            request.Language = "ru-RU";
+            request.WmId = MasterWmId;
+            request.Sign = Signer.Sign(request.SignMessage);
 
             using (var memoryStream = new MemoryStream())
             {
@@ -44,6 +47,8 @@ namespace Mite.ExternalServices.WebMoney.Core
                 var response = await Client.PostAsync(request.RequestUri, content);
 
                 var respSerializer = new XmlSerializer(typeof(TResponse));
+                var contentStr = await response.Content.ReadAsStringAsync();
+                Logger.Info($"WmContent: {contentStr}");
                 return respSerializer.Deserialize(await response.Content.ReadAsStreamAsync()) as TResponse;
             }
         }

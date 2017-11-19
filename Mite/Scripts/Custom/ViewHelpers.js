@@ -73,5 +73,20 @@
         var $item = $(itemSelector);
         $item.siblings().removeClass('active');
         $item.addClass('active');
+    },
+    detectBrowser: function () {
+        if ((!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0)
+            return 'opera';
+        else if (typeof InstallTrigger !== 'undefined')
+            return 'firefox';
+        else if (/constructor/i.test(window.HTMLElement) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || (typeof safari !== 'undefined' && safari.pushNotification)))
+            return 'safari';
+        else if (/*@cc_on!@*/false || !!document.documentMode)
+            return 'ie';
+        else if (!!window.StyleMedia)
+            return 'edge';
+        else if (!!window.chrome && !!window.chrome.webstore)
+            return 'chrome'
+        return 'chrome';
     }
 }

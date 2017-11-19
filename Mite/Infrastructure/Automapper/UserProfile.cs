@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Mite.BLL.Helpers;
+using Mite.CodeData.Constants.Automapper;
 using Mite.DAL.Entities;
 using Mite.Models;
 using System;
@@ -35,6 +36,20 @@ namespace Mite.Infrastructure.Automapper
                     if (ImagesHelper.Compressed.CompressedExists(srcPath))
                         return ImagesHelper.Compressed.CompressedVirtualPath(srcPath);
                     return src.AvatarSrc;
+                }))
+                .ForMember(dest => dest.Description, opt => opt.ResolveUsing((src, dest, val, context) =>
+                {
+                    var exist = context.Items.TryGetValue(UserProfileConstants.MaxAboutLength, out object maxAboutLength);
+                    if (exist && src.Description != null && src.Description.Length > (int)maxAboutLength)
+                        return src.Description.Substring(0, (int)maxAboutLength - 3) + "...";
+                   return src.Description;
+                }))
+                .ForMember(dest => dest.UserName, opt => opt.ResolveUsing((src, dest, val, context) =>
+                {
+                    var exist = context.Items.TryGetValue(UserProfileConstants.MaxNameLength, out object maxNameLength);
+                    if (exist && src.UserName.Length > (int)maxNameLength)
+                        return src.UserName.Substring(0, (int)maxNameLength - 3) + "...";
+                    return src.UserName;
                 }));
         }
     }

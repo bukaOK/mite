@@ -47,7 +47,7 @@ namespace Mite.Controllers
                 return NotFound();
 
             var post = await postsService.GetWithTagsUserAsync(postId);
-            if (post == null || post.Type != PostTypes.Published)
+            if (post == null || post.Type != PostTypes.Published && post.Type != PostTypes.Blocked)
             {
                 return NotFound();
             }
@@ -59,6 +59,7 @@ namespace Mite.Controllers
             await postsService.AddViews(postId);
             return View(post);
         }
+        [Route("posts/add/{postType}", Name = "AddPost")]
         public async Task<ActionResult> AddPost(PostContentTypes postType)
         {
             ViewBag.Title = "Добавление работы";
@@ -86,6 +87,7 @@ namespace Mite.Controllers
                     return NotFound();
             }
         }
+        [Route("posts/edit/{id}", Name = "EditPost")]
         public async Task<ActionResult> EditPost(Guid id)
         {
             ViewBag.Title = "Редактирование работы";
@@ -117,10 +119,12 @@ namespace Mite.Controllers
             }
         }
         [HttpPost]
-        public async Task<JsonResult> AddPost(PostModel model)
+        public async Task<ActionResult> AddPost(PostModel model)
         {
+            if (string.IsNullOrEmpty(model.Content))
+                return Json(JsonStatuses.ValidationError, "Заполните контент.");
             if (!ModelState.IsValid)
-                return Json(JsonStatuses.ValidationError, "Проверьте правильность заполнения полей");
+                return Json(JsonStatuses.ValidationError, GetModelErrors());
             if (!string.IsNullOrEmpty(model.Description) && Regex.IsMatch(model.Description, @"<\s*(a|script)\s+"))
                 return Json(JsonStatuses.ValidationError, "Обнаружены опасные символы в описании");
 
@@ -128,12 +132,9 @@ namespace Mite.Controllers
                 model.Type = PostTypes.Published;
             else
                 model.Type = PostTypes.Drafts;
-
-            //Если изображение, сохраняем на сервере, в контент ставим путь к папке
+            
             if (!string.IsNullOrEmpty(model.Content) && Regex.IsMatch(model.Content, @"<\s*(a|script)\s+"))
-            {
                 return Json(JsonStatuses.ValidationError, "Обнаружены опасные данные внутри запроса");
-            }
             var result = await postsService.AddPostAsync(model, User.Identity.GetUserId());
             if (!result.Succeeded)
             {
@@ -143,14 +144,12 @@ namespace Mite.Controllers
             return Json(JsonStatuses.Success, "Пост успешно добавлен");
         }
         [HttpPost]
-        public async Task<JsonResult> UpdatePost(PostModel model)
+        public async Task<ActionResult> UpdatePost(PostModel model)
         {
             //Здесь не применяется ModelState, потому что Content может быть null
-            if (model.Header == null)
-            {
+            if (string.IsNullOrEmpty(model.Header))
                 return Json(JsonStatuses.ValidationError, "Заголовок не может быть пустым");
-            }
-            if (model.Content != null && Regex.IsMatch(model.Content, @"<\s*(script|a)"))
+            if (!string.IsNullOrEmpty(model.Content) && Regex.IsMatch(model.Content, @"<\s*(script|a)"))
                 return Json(JsonStatuses.ValidationError, "Обнаружены опасные данные внутри запроса");
 
             var result = await postsService.UpdatePostAsync(model);
@@ -191,12 +190,12 @@ namespace Mite.Controllers
         /// <param name="userId">Id пользователя</param>
         /// <returns></returns>
         [AllowAnonymous]
-        public async Task<JsonResult> UserGallery(string userId, Guid postId)
+        public async Task<ActionResult> UserGallery(string userId, Guid postId)
         {
             var result = await postsService.GetGalleryByUserAsync(userId);
             result.InitialIndex = Array.IndexOf(result.Items, result.Items.First(x => string.Equals(x.Id, postId.ToString())));
 
-            return Json(JsonStatuses.Success, result, JsonRequestBehavior.AllowGet);
+            return Json(JsonStatuses.Success, result);
         }
         [AllowAnonymous]
         public async Task<ViewResult> Top()
@@ -213,7 +212,7 @@ namespace Mite.Controllers
         }
         [HttpPost]
         [AllowAnonymous]
-        public async Task<JsonResult> Top(PostTopFilterModel filter)
+        public async Task<ActionResult> Top(PostTopFilterModel filter)
         {
             //Плюс зарезервированный символ url, поэтому заменяется пробелом
             if(!string.IsNullOrEmpty(filter.Tags))

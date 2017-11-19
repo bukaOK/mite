@@ -22,6 +22,6 @@ namespace Mite.CodeData.Enums
         [Display(Name = "Банковская карта")]
         BankCard,
         WebMoney,
-        QIWI
+        //QIWI
     }
 }

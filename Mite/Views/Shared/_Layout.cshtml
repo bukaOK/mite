@@ -32,7 +32,7 @@
     {
         <noscript><meta http-equiv="refresh" content="0;URL=/home/badjs" /></noscript>
     }
-    @Styles.Render("~/Content/semantic", "~/Content/css", "~/Content/less")
+    @Styles.Render("~/Content/semantic", "~/Content/css")
     @RenderSection("styles", false)
     <title>@ViewBag.Title</title>
     <script src='https://www.google.com/recaptcha/api.js'></script>
@@ -138,7 +138,7 @@
                         {
                             <a class="item menu-btn"><i class="list layout icon"></i>Меню</a>
                         }
-                        else
+                        else if(User.IsInRole(RoleNames.Author))
                         {
                             <div class="item">
                                 <div class="ui dropdown top right pointing violet button" id="addPostMenu">
@@ -194,18 +194,9 @@
                         <i class="user circle outline icon"></i>
                     </a>
                 }
-                @if (User.IsInRole(RoleNames.Client))
-                {
-                    <a href="/client/profile/@User.Identity.Name" class="violet user-profile item" data-content="Пользователь">
-                        <i class="user icon"></i>
-                    </a>
-                }
-                @if (User.IsInRole(RoleNames.Author))
-                {
-                    <a href="/user/profile/@User.Identity.Name" class="violet user-profile item" data-content="Пользователь">
-                        <i class="user icon"></i>
-                    </a>
-                }
+                <a href="@Url.Action("Index", "UserProfile", new { name = User.Identity.Name })" class="violet user-profile item" data-content="Пользователь">
+                    <i class="user icon"></i>
+                </a>
                 <a class="violet notifications item">
                     <i class="feed icon"></i>
                     <div class="ui floating right violet label" style="display: none">
@@ -213,9 +204,6 @@
                     </div>
                 </a>
                 @{ Html.RenderAction("UserNotifications", "Notification", new { onlyNew = true }); }
-                <div class="ui notify popup" id="notify-popup" style="min-width: 400px; min-height: 50px;">
-                    <div class="ui active loader"></div>
-                </div>
                 <a href="@Url.Action("Index", "UserSettings")" class="violet user-settings item" data-content="Настройки">
                     <i class="settings icon"></i>
                 </a>
@@ -346,7 +334,6 @@
                 inline: true
             });
             initNotifications();
-            var nPs = new PerfectScrollbar('.notify.popup');
         });
     </script>
 </body>

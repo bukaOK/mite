@@ -31,7 +31,7 @@ namespace Mite.DAL.Repositories
         }
         public Task<Chat> GetByMembersAsync(IEnumerable<string> userIds)
         {
-            return Table.FirstOrDefaultAsync(x => x.Members.All(y => userIds.Contains(y.Id)));
+            return Table.FirstOrDefaultAsync(x => userIds.Count() == x.Members.Count && x.Members.All(y => userIds.Contains(y.Id)));
         }
         public Task<Chat> GetWithMembersAsync(Guid id)
         {
@@ -51,6 +51,7 @@ namespace Mite.DAL.Repositories
             var chat = await Table.Include(x => x.Members).FirstAsync(x => x.Id == id);
             chat.Members.Add(user);
             DbContext.Entry(chat).State = EntityState.Modified;
+            DbContext.Entry(user).State = EntityState.Added;
             await SaveAsync();
         }
     }
