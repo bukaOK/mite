@@ -17,7 +17,6 @@ namespace Mite
             bundles.Add(new ScriptBundle("~/bundles/site")
                 .Include("~/Scripts/jquery.address.js",
                 "~/Scripts/perfect-scrollbar.js",
-                "~/bower_components/simplebar/simplebar.js",
                 "~/bower_components/izitoast/dist/js/iziToast.min.js",
                 "~/Scripts/jquery.signalR-2.2.2.min.js")
                 .IncludeDirectory("~/Scripts/Custom/", "*.js"));
@@ -64,7 +63,6 @@ namespace Mite
                 "~/Content/Site.css",
                 "~/Content/ident.css",
                 "~/Content/content-tools.min.css",
-                "~/bower_components/simplebar/simplebar.css",
                 "~/node_modules/perfect-scrollbar/css/perfect-scrollbar.css",
                 "~/Content/UserMenu.css"
             ));
@@ -75,6 +73,7 @@ namespace Mite
                 "~/Content/gallery.css"
             ));
             bundles.Add(new StyleBundle("~/Content/dialog").Include("~/Content/dialogs.css"));
+            bundles.UseCdn = true;
         }
     }
 }

@@ -10,6 +10,8 @@ using System.Data.Entity;
 using Mite.CodeData.Enums;
 using Mite.DAL.Filters;
 using Dapper;
+using System.Collections;
+using Mite.DAL.DTO;
 
 namespace Mite.DAL.Repositories
 {
@@ -21,6 +23,17 @@ namespace Mite.DAL.Repositories
         public Task<AuthorService> GetWithServiceTypeAsync(Guid id)
         {
             return Table.Include(x => x.ServiceType).Include(x => x.Author).FirstOrDefaultAsync(x => x.Id == id);
+        }
+        public async Task<IList<FeedbackDTO>> GetFeedbacksAsync(Guid serviceId)
+        {
+            var feedbacks = await DbContext.Deals.Include(x => x.Client)
+                .Where(x => x.ServiceId == serviceId && x.Feedback != null)
+                .Select(x => new FeedbackDTO
+                {
+                    Content = x.Feedback,
+                    User = x.Client
+                }).ToListAsync();
+            return feedbacks;
         }
         public async Task<IEnumerable<AuthorService>> GetByUserAsync(string userId)
         {

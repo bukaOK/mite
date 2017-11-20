@@ -86,6 +86,7 @@ namespace Mite.Models
         public double? Price { get; set; }
         public ServiceTypeModel ServiceType { get; set; }
         public UserShortModel Author { get; set; }
+        public IList<ServiceFeedbackModel> Feedbacks { get; set; }
     }
     public class ServiceFeedbackModel
     {

@@ -3,6 +3,10 @@
 @using Mite.Helpers
 @using Mite.CodeData.Enums
 
+@{ 
+    var isMobile = ViewHelper.IsMobileDevice(Request);
+    var newDealsCount = int.Parse(Html.Action("NewDealsCount", "Deals").ToString());
+}
 <!DOCTYPE html>
 <html style="height: 100% !important" lang="ru">
 <head>
@@ -89,18 +93,26 @@
             <a href="/user/profile/@User.Identity.Name" class="violet user-profile item">
                 <i class="user icon"></i>Моя страница
             </a>
-            <a href="@Url.RouteUrl("AddPost", new { postType = PostContentTypes.Image.ToString().ToLower() })" class="violet item" id="editImageItem">
-                <i class="image icon"></i>Добавить изобр.
-            </a>
-            <a href="@Url.RouteUrl("AddPost", new { postType = PostContentTypes.Document.ToString().ToLower() })" class="violet item" id="editDocItem">
-                <i class="newspaper icon"></i>Добавить документ
-            </a>
-            <a href="@Url.RouteUrl("AddPost", new { postType = PostContentTypes.ImageCollection.ToString().ToLower() })" class="item">
-                <i class="file image outline icon"></i>Коллекцию
-            </a>
-            <a href="@Url.Action("Add", "AuthorServices")" class="item">
-                <i class="suitcase icon"></i>Услугу
-            </a>
+            <div class="ui item accordion">
+                <i class="dropdown icon"></i>
+                <div class="title">Добавить</div>
+                <div class="content">
+                    <div class="vertical menu">
+                        <a href="@Url.RouteUrl("AddPost", new { postType = PostContentTypes.Image.ToString().ToLower() })" class="violet item" id="editImageItem">
+                            <i class="image icon"></i>Изображение
+                        </a>
+                        <a href="@Url.RouteUrl("AddPost", new { postType = PostContentTypes.Document.ToString().ToLower() })" class="violet item" id="editDocItem">
+                            <i class="newspaper icon"></i>Документ
+                        </a>
+                        <a href="@Url.RouteUrl("AddPost", new { postType = PostContentTypes.ImageCollection.ToString().ToLower() })" class="item">
+                            <i class="file image outline icon"></i>Коллекцию
+                        </a>
+                        <a href="@Url.Action("Add", "AuthorServices")" class="item">
+                            <i class="suitcase icon"></i>Услугу
+                        </a>
+                    </div>
+                </div>
+            </div>
             <a class="violet notifications item" href="/user/notifications">
                 <i class="feed icon"></i>
                 Уведомления
@@ -109,6 +121,13 @@
             <a href="@Url.Action("Index", "UserSettings")" class="violet user-settings item">
                 <i class="settings icon"></i>
                 Настройки
+            </a>
+            <a href="@Url.Action("Index", "UserDeals")" class="violet deals item">
+                Заказы
+                @if (newDealsCount > 0)
+                {
+                    <div class="ui right violet label">@newDealsCount</div>
+                }
             </a>
             <a href="@Url.Action("Index", "Cash")" class="violet item" id="cashItem">
                 <i class="ruble icon"></i>
@@ -134,7 +153,7 @@
                 @if (Request.IsAuthenticated)
                 {
                     <div class="right menu">
-                        @if (ViewHelper.IsMobileDevice(Request))
+                        @if (isMobile)
                         {
                             <a class="item menu-btn"><i class="list layout icon"></i>Меню</a>
                         }
@@ -160,6 +179,10 @@
                                 </div>
                             </div>
                             <a class="item menu-btn" style="display: none"><i class="list layout icon"></i>Меню</a>
+                        }
+                        else
+                        {
+                            <a class="item menu-btn" style="display: none">Меню</a>
                         }
                     </div>
                 }
@@ -209,7 +232,10 @@
                 </a>
                 <a class="violet deals item" href="@Url.Action("Index", "UserDeals")" data-content="Заказы">
                     <i class="book icon"></i>
-                    @{ Html.RenderAction("NewDealsCount", "Deals"); }
+                    @if(newDealsCount > 0)
+                    {
+                        <div class="ui violet floating label">@newDealsCount</div>
+                    }
                 </a>
                 <a href="@Url.Action("Index", "Cash")" class="violet cash item" data-content="Счёт">
                     <i class="ruble icon"></i>
@@ -272,42 +298,6 @@
     </script>
     @RenderSection("scripts", false)
     <script>
-        function readNotifications() {
-            $.ajax({
-                url: '/api/notification',
-                type: 'put'
-            });
-        }
-        function initNotifications() {
-            $('[data-utc-date]').each(function (i, elem) {
-                var dateIso = elem.dataset.utcDate;
-                dateIso += dateIso[dateIso.length - 1] == 'Z' ? '' : 'Z';
-                elem.innerHTML = ViewHelper.getPastTense(new Date(dateIso).getTime());
-            });
-            if ($(window).width() < 900) {
-                $('.notifications.item').attr('href', '/user/notifications');
-                return;
-            }
-            $('.notifications.item').popup({
-                position: 'left center',
-                on: 'click',
-                popup: '.notify.popup',
-                inline: true,
-                variation: 'basic',
-                onShow: function (item) {
-                    $(item).addClass('active');
-                    readNotifications();
-                },
-                onHide: function (item) {
-                    $(item).removeClass('active');
-                    this.addClass('empty');
-                    var emptyMsg = 'У вас пока нет новых уведомлений. <a href="@Url.Action("Notifications", "UserProfile")">Посмотреть все.</a>';
-                    this.html(emptyMsg);
-                    //Обнуляем и скрываем счетчик уведомлений
-                    $(item).children('.label').html(0).hide();
-                }
-            });
-        }
         $(function () {
             $('article').css('margin-bottom', $('footer').height() + 50 + 'px');
             $('#addPostMenu').dropdown({
@@ -323,17 +313,38 @@
             });
             $(".ui.sidebar").sidebar("attach events", ".menu-btn");
             $(".ui.accordion").accordion();
-            $('.user-menu.menu>.item').popup({
+            $('.user-menu.menu>.item:not(.notifications)').popup({
                 variation: 'small basic',
                 position: 'left center',
                 inline: true,
+            });
+            $('.user-menu>.notifications.item').popup({
+                position: 'left center',
+                on: 'click',
+                popup: '.notify.popup',
+                inline: true,
+                variation: 'basic',
+                onShow: function (item) {
+                    $(item).addClass('active');
+                    $.ajax({
+                        url: '/api/notification',
+                        type: 'put'
+                    });
+                },
+                onHide: function (item) {
+                    $(item).removeClass('active');
+                    this.addClass('empty');
+                    var emptyMsg = 'У вас пока нет новых уведомлений. <a href="@Url.Action("Notifications", "UserProfile")">Посмотреть все.</a>';
+                    this.html(emptyMsg);
+                    //Обнуляем и скрываем счетчик уведомлений
+                    $(item).children('.label').html(0).hide();
+                }
             });
             $('.header.main.item').popup({
                 variation: 'small basic',
                 position: 'bottom left',
                 inline: true
             });
-            initNotifications();
         });
     </script>
 </body>

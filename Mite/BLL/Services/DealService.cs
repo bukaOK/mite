@@ -442,7 +442,13 @@ namespace Mite.BLL.Services
                 try
                 {
                     if (deal.Price != null)
-                        await cashService.AddAsync(null, deal.AuthorId, (double)deal.Price, CashOperationTypes.Deal);
+                    {
+                        if (deal.Status == DealStatuses.ModerRejected)
+                            await cashService.AddAsync(null, deal.ClientId, (double)deal.Price, CashOperationTypes.Deal);
+                        else if (deal.Status == DealStatuses.Confirmed || deal.Status == DealStatuses.ModerConfirmed)
+                            await cashService.AddAsync(null, deal.AuthorId, (double)deal.Price, CashOperationTypes.Deal);
+                        else throw new Exception("Неверный статус сделки");
+                    }
                     deal.Payed = false;
                     await repo.UpdateAsync(deal);
 
@@ -549,7 +555,8 @@ namespace Mite.BLL.Services
                 return DataServiceResult.Failed("Сделка не найдена");
             if (deal.ClientId != clientId)
                 return DataServiceResult.Failed("Неизвестный пользователь");
-            if (deal.Status != DealStatuses.Confirmed)
+            //Выглядит странно, но имхо - так оценки будут более объективными
+            if (deal.Status != DealStatuses.ModerRejected && deal.Status != DealStatuses.Confirmed)
                 return DataServiceResult.Failed("Действие запрещено");
 
             try
@@ -571,7 +578,7 @@ namespace Mite.BLL.Services
                 return DataServiceResult.Failed("Сделка не найдена");
             if (deal.ClientId != clientId)
                 return DataServiceResult.Failed("Неизвестный пользователь");
-            if (deal.Status != DealStatuses.Confirmed)
+            if (deal.Status != DealStatuses.ModerRejected && deal.Status != DealStatuses.Confirmed)
                 return DataServiceResult.Failed("Действие запрещено");
 
             deal.Feedback = feedback;

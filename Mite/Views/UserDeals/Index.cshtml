@@ -150,9 +150,9 @@
     <div class="ui divided items">
         {{for}}
         <div class="item">
-            <div class="ui tiny image">
+            <a class="ui tiny image" href="@Url.Action("Show", "Deals")/{{:Id}}">
                 <img src="{{:ImageSrc}}" />
-            </div>
+            </a>
             <div class="content">
                 <a class="header" href="@Url.Action("Show", "Deals")/{{:Id}}">{{:Title}}</a>
                 <div class="meta">

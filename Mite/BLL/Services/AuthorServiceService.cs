@@ -160,6 +160,10 @@ namespace Mite.BLL.Services
             if (authorService == null)
                 return null;
             var model = Mapper.Map<AuthorServiceShowModel>(authorService);
+            var feedbacks = await repo.GetFeedbacksAsync(id);
+            model.Feedbacks = feedbacks.Count > 0
+                ? Mapper.Map<IList<ServiceFeedbackModel>>(feedbacks)
+                : new List<ServiceFeedbackModel>();
             return model;
         }
 

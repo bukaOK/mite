@@ -73,7 +73,7 @@ else if(Model.Status == DealStatuses.ExpectClient)
         <div class="ui error message"></div>
     </form>
 }
-else if(Model.Status == DealStatuses.Confirmed || Model.Status == DealStatuses.ModerConfirmed)
+else if(Model.Status == DealStatuses.Confirmed || Model.Status == DealStatuses.ModerRejected)
 {
     <h3 class="ui header"><i class="check icon"></i>Заказ выполнен</h3>
     if (!string.IsNullOrEmpty(Model.ImageSrc))
@@ -97,7 +97,7 @@ else if(Model.Status == DealStatuses.Confirmed || Model.Status == DealStatuses.M
         <div class="ui error message"></div>
     </form>
 }
-else if(Model.Status == DealStatuses.Rejected || Model.Status == DealStatuses.ModerRejected)
+else if(Model.Status == DealStatuses.Rejected || Model.Status == DealStatuses.ModerConfirmed)
 {
     <h3 class="ui header">Сделка закрыта</h3>
 }

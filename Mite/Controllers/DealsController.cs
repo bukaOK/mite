@@ -134,10 +134,7 @@ namespace Mite.Controllers
         public ActionResult NewDealsCount()
         {
             var dealsCount = dealService.GetNewCount(User.Identity.GetUserId());
-
-            if(dealsCount > 0)
-                return PartialView(dealsCount);
-            return new EmptyResult();
+            return Content(dealsCount.ToString());
         }
     }
 }

@@ -3,8 +3,6 @@ using Mite.BLL.Services;
 using Mite.CodeData.Enums;
 using Mite.Core;
 using Mite.Models;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -26,7 +24,10 @@ namespace Mite.Controllers
         {
             var notifications = notificationService.GetByUser(User.Identity.GetUserId(), onlyNew);
             if (onlyNew)
+            {
+                ViewBag.newNotificationsCount = notifications.Count;
                 return PartialView("_UserNotifications", notifications);
+            }
             else
                 return View("Notifications", new UserNotificationsModel
                 {

@@ -79,6 +79,7 @@
     <Compile Include="Core\Repository.cs" />
     <Compile Include="DTO\AuthorServiceTypeDTO.cs" />
     <Compile Include="DTO\DealGalleryItemDTO.cs" />
+    <Compile Include="DTO\FeedbackDTO.cs" />
     <Compile Include="DTO\PostDTO.cs" />
     <Compile Include="DTO\TagDTO.cs" />
     <Compile Include="DTO\UserAdDTO.cs" />

@@ -29,10 +29,16 @@ else
 }
 <script>
     $(function () {
-        var newNotificationsCount = @Model.Count;
         var nPs = new PerfectScrollbar('#notify-popup');
+        var newNotificationsCount = @Model.Count;
         if (newNotificationsCount > 0) {
             $('.notifications.item .label').html(newNotificationsCount).show();
         }
+        $('[data-utc-date]').each(function (i, elem) {
+            var dateIso = elem.dataset.utcDate;
+            dateIso += dateIso[dateIso.length - 1] == 'Z' ? '' : 'Z';
+            elem.innerHTML = ViewHelper.getPastTense(new Date(dateIso).getTime());
+        });
+        
     });
 </script>
