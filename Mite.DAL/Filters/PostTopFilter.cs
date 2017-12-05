@@ -28,8 +28,9 @@ namespace Mite.DAL.Filters
         /// Список пользователей, на которых текущий подписан(если OnlyFollowings=true)
         /// </summary>
         public IList<string> Followings { get; set; }
+        public IList<Guid> TagPostsIds { get; set; }
         /// <summary>
-        /// Список постов для выборки(если есть теги)
+        /// Список постов для выборки
         /// </summary>
         public IList<Guid> PostIds { get; set; }
     }

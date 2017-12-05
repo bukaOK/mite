@@ -201,8 +201,8 @@ var ChatMessages = {
                     MsgFiles.files = [];
                     $('.attachments.grid').removeClass('active').html('');
                     var chatLoader = window.chats[resp.ChatId];
-                    chatLoader.scrollbar.settings.endFixed = true;
                     chatLoader.chat.append(tmpl.render(msgData));
+                    chatLoader._updateScrollState(true);
                     window.hubReady.done(function () {
                         $.connection.chatHub.server.addMessage(resp);
                     });

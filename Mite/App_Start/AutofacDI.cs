@@ -55,10 +55,10 @@ namespace Mite
         {
             var dataProtectionProvider = app.GetDataProtectionProvider();
 
-            builder.RegisterType<AppDbContext>();
+            builder.RegisterType<AppDbContext>().InstancePerLifetimeScope();
             builder.RegisterType<UnitOfWork>().As<IUnitOfWork>();
 
-            builder.Register(c => HttpContext.Current.GetOwinContext().Authentication).As<IAuthenticationManager>();
+            builder.Register(c => HttpContext.Current.GetOwinContext().Authentication).As<IAuthenticationManager>().InstancePerLifetimeScope();
             builder.Register(c => new AppUserManager(new UserStore<User>(c.Resolve<AppDbContext>()),
                 dataProtectionProvider));
             builder.RegisterType<AppSignInManager>();

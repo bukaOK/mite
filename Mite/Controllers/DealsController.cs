@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNet.Identity;
+using Mite.BLL.Core;
 using Mite.BLL.Services;
 using Mite.CodeData.Constants;
 using Mite.CodeData.Enums;
 using Mite.Core;
 using Mite.Models;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -14,10 +16,14 @@ namespace Mite.Controllers
     public class DealsController : BaseController
     {
         private readonly IDealService dealService;
+        private readonly IUserService userService;
+        private readonly IAuthorServiceService authorServiceService;
 
-        public DealsController(IDealService dealService)
+        public DealsController(IDealService dealService, IUserService userService, IAuthorServiceService authorServiceService)
         {
             this.dealService = dealService;
+            this.userService = userService;
+            this.authorServiceService = authorServiceService;
         }
         public async Task<ActionResult> Show(long id)
         {
@@ -135,6 +141,24 @@ namespace Mite.Controllers
         {
             var dealsCount = dealService.GetNewCount(User.Identity.GetUserId());
             return Content(dealsCount.ToString());
+        }
+        public async Task<ActionResult> RecountReliability(string itemId, ReliabilityRecountTypes recountType)
+        {
+            DataServiceResult result;
+            switch (recountType)
+            {
+                case ReliabilityRecountTypes.AuthorService:
+                    result = await authorServiceService.RecountReliabilityAsync(Guid.Parse(itemId));
+                    break;
+                case ReliabilityRecountTypes.User:
+                    result = await userService.RecountReliabilityAsync(itemId);
+                    break;
+                default:
+                    throw new Exception("Неизвестный тип пересчета");
+            }
+            if (result.Succeeded)
+                return Json(JsonStatuses.Success);
+            return Json(JsonStatuses.ValidationError, result.Errors);
         }
     }
 }

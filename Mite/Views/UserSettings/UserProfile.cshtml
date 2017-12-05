@@ -11,16 +11,6 @@
             <div class="grouped fields">
                 @Html.EditorFor(x => x.Gender)
             </div>
-            <div class="two fields">
-                <div class="field">
-                    @Html.LabelFor(x => x.FirstName)
-                    @Html.TextBoxFor(x => x.FirstName, new { placeholder = "Иван" })
-                </div>
-                <div class="field">
-                    @Html.LabelFor(x => x.LastName)
-                    @Html.TextBoxFor(x => x.LastName, new { placeholder = "Иванов" })
-                </div>
-            </div>
             <div class="fields">
                 <div class="four wide field">
                     @Html.LabelFor(x => x.Age)
@@ -31,27 +21,38 @@
                     @Html.DropDownListFor(x => x.City, Model.Cities, new { @class = "ui fluid search selection dropdown" })
                 </div>
             </div>
+            <div class="two fields">
+                <div class="field">
+                    @Html.LabelFor(x => x.FirstName)
+                    @Html.TextBoxFor(x => x.FirstName, new { placeholder = "Иван" })
+                </div>
+                <div class="field">
+                    @Html.LabelFor(x => x.LastName)
+                    @Html.TextBoxFor(x => x.LastName, new { placeholder = "Иванов" })
+                </div>
+            </div>
             <div class="field">
                 @Html.LabelFor(x => x.About)
-                @Html.TextAreaFor(x => x.About, new { placeholder = "Люблю разработку...и власть" })
+                @Html.TextAreaFor(x => x.About, new { placeholder = "Люблю фотографировать, бальные танцы, и прыгать по крышам с:" })
+            </div>
+            <div class="ui icon yellow message" style="display: none" id="extServMsg">
+                <i class="warning icon"></i>
+                <div class="content">
+                    <span class="header">Обнаружена ссылка!</span>
+                    <p>Мы обнаружили ссылку на внешний ресурс, рекомендуем добавить её в раздел "Внешние ссылки".</p>
+                </div>
             </div>
             <button type="button" class="ui primary button" onclick="updateUserProfile(this)">Сохранить</button>
-            <div class="ui hidden message" style="text-align: center" id="update-state-msg">
+            <div class="ui error message" style="text-align: center" id="update-state-msg">
             </div>
             @Html.ValidationSum()
         }
     </div>
 </div>
 <script>
-    $(function () {
-        $('#City').dropdown({
-            fullTextSearch: true,
-            match: 'text'
-        });
-    });
     function updateUserProfile(ev) {
         var $form = $(ev).parents('form');
-        if (!$form.form('is valid')) {
+        if (!$form.form('validate form')) {
             return;
         }
         $.ajax({
@@ -88,18 +89,33 @@
                 $updateMsg.html('Ошибка на сервере');
             },
             complete: function (jqXhr) {
-                $('#update-state-msg').removeClass('hidden');
+                $('#update-state-msg').removeClass('error');
                 $('#profileForm').removeClass('loading');
             }
         });
     }
-    $('#About').keydown(function () {
-        var rgx = /((.*vk.com.*)|(.*artstation.com.*)|(.*dribbble.com.*)|(.*facebook.com.*)|(.*twitter.com.*)|(.*instagram.com))/i
-    })
+    $('#City').dropdown({
+        fullTextSearch: true,
+        match: 'text'
+    });
+    $('#About').keyup(function (ev) {
+        var rgx = /((.*vk.com.*)|(.*vkontakte.ru.*)|(.*artstation.com.*)|(.*dribbble.com.*)|(.*facebook.com.*)|(.*twitter.com.*)|(.*instagram.com))/i,
+            $msg = $('#extServMsg');
+        if ($(this).val().match(rgx)) {
+            $msg.show();
+        } else {
+            $msg.hide();
+        }
+    });
+    var cityPs = new PerfectScrollbar('#City~.menu', {
+        minScrollbarLength: 15
+    });
+    $('#City~.search').on('input', function (ev) {
+        cityPs.update();
+    });
     $('.ui.checkbox').checkbox();
     $('#profileForm').form({
         on: 'submit',
-        inline: true,
         fields: {
             NickName: {
                 rules: [

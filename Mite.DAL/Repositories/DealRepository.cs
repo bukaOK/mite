@@ -48,13 +48,16 @@ namespace Mite.DAL.Repositories
                 .ToListAsync();
             return deals;
         }
-        public async Task<IEnumerable<Deal>> GetForModerAsync(DealStatuses status, string moderId)
+        public async Task<IList<Deal>> GetForModerAsync(DealStatuses status, string moderId)
         {
             var query = Table.Where(x => x.Status == status && x.ClientId != moderId && x.AuthorId != moderId);
             switch (status)
             {
                 case DealStatuses.Dispute:
-                    query = query.Where(x => x.ModerId == null);
+                    if (string.IsNullOrEmpty(moderId))
+                        query = query.Where(x => x.ModerId == null);
+                    else
+                        query = query.Where(x => x.ModerId == moderId);
                     break;
                 default:
                     query = query.Where(x => x.ModerId == moderId);

@@ -22,8 +22,10 @@ namespace Mite.Infrastructure.Automapper
                             return "Банковская карта";
                         case PaymentType.YandexWallet:
                             return "Яндекс.Деньги";
+                        case PaymentType.WebMoney:
+                            return "WebMoney";
                         default:
-                            throw new ArgumentException("Неизвестный тип платежа");
+                            return src.PaymentType.ToString();
                     }
                 }));
         }

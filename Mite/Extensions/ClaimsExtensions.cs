@@ -27,7 +27,7 @@ namespace Mite.Extensions
             var identity = (ClaimsIdentity) currentIdentity;
 
             var claim = identity.FindFirst(x => x.Type == key);
-            return claim == null ? null : claim.Value;
+            return claim?.Value;
         }
     }
 }

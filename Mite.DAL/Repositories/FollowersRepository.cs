@@ -17,25 +17,28 @@ namespace Mite.DAL.Repositories
         {
         }
 
-        public async Task<IEnumerable<Follower>> GetFollowersByUserAsync(string userId, SortFilter sort)
+        public Task<IEnumerable<Follower>> GetFollowersByUserAsync(string userId, SortFilter sort)
         {
-            var folQuery = Table.Where(x => x.FollowingUserId == userId).Include(x => x.User);
+            var query = "select * from dbo.\"Followers\" as followers inner join dbo.\"Users\" as users " +
+                "on followers.\"UserId\"=users.\"Id\" where followers.\"FollowingUserId\"=@userId order by ";
             switch (sort)
             {
                 case SortFilter.New:
-                    folQuery = folQuery.OrderByDescending(x => x.FollowingUser.RegisterDate)
-                        .ThenByDescending(x => x.FollowingUser.Rating);
+                    query += "followers.\"FollowTime\" desc";
                     break;
                 case SortFilter.Old:
-                    folQuery = folQuery.OrderBy(x => x.FollowingUser.RegisterDate)
-                        .ThenByDescending(x => x.FollowingUser.Rating);
+                    query += "followers.\"FollowTime\" asc";
                     break;
                 case SortFilter.Popular:
-                    folQuery = folQuery.OrderByDescending(x => x.FollowingUser.Rating)
-                        .ThenBy(x => x.FollowingUser.RegisterDate);
+                    query += "users.\"Rating\" desc, followers.\"FollowTime\" desc";
                     break;
             }
-            return await folQuery.ToListAsync();
+            query += ";";
+            return Db.QueryAsync<Follower, User, Follower>(query, (follower, user) =>
+            {
+                follower.User = user;
+                return follower;
+            }, new { userId });
         }
         public async Task<bool> IsFollower(string followerId, string followingId)
         {

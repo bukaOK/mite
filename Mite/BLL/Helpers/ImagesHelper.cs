@@ -3,6 +3,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Web;
 using System.Web.Hosting;
 
@@ -25,8 +26,14 @@ namespace Mite.BLL.Helpers
         }
         public static bool IsAnimatedImage(string path)
         {
-            var img = Image.FromFile(path);
-            return img.GetFrameCount(new FrameDimension(img.FrameDimensionsList[0])) > 1;
+            if(path.Split('.').Last() == "gif")
+            {
+                using (var img = Image.FromFile(path))
+                {
+                    return img.GetFrameCount(new FrameDimension(img.FrameDimensionsList[0])) > 1;
+                }
+            }
+            return false;
         }
         /// <summary>
         /// Обновляем изображение

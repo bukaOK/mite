@@ -8,11 +8,11 @@
 }
 @section styles{
     <style>
-        #cityFilter{
-            padding: 10px;
-        }
         #vk_groups{
             width: 100%;
+        }
+        #cityFilter .ps__rail-y{
+            margin: 5px 0;
         }
     </style>
 }
@@ -35,30 +35,38 @@
         </div>
     </div>
     <div class="item">
-        <div class="ui floating dropdown labeled search icon button" id="cityFilter">
+        <div class="ui inline dropdown" id="cityFilter">
             @Html.HiddenFor(x => x.City)
             <i class="building icon"></i>
             <span class="text">Выберите город</span>
+            <i class="dropdown icon"></i>
             <div class="menu">
-                <div class="item" data-value="">Выберите город</div>
-                @foreach (var city in Model.Cities)
-                {
-                    if (city.Selected)
+                <div class="ui icon search input">
+                    <i class="search icon"></i>
+                    <input type="text" placeholder="Введите название..." />
+                </div>
+                <div class="scrolling menu">
+                    <div class="item" data-value="">Выберите город</div>
+                    @foreach (var city in Model.Cities)
                     {
-                        <div class="active item" data-value="@city.Value">@city.Text</div>
+                        if (city.Selected)
+                        {
+                            <div class="active item" data-value="@city.Value">@city.Text</div>
+                        }
+                        else
+                        {
+                            <div class="item" data-value="@city.Value">@city.Text</div>
+                        }
                     }
-                    else
-                    {
-                        <div class="item" data-value="@city.Value">@city.Text</div>
-                    }
-                }
+                </div>
+
             </div>
         </div>
     </div>
     <div class="right item" id="searchItem">
         <div class="ui transparent icon input">
-            <input type="text" placeholder="портрет по фото" title="Поиск" role="search" onfocus="$('#searchItem').addClass('maximised')"
-                   onblur="$('#searchItem').removeClass('maximised')"  id="serviceSearch" />
+            <input type="text" placeholder="Название услуги" title="Поиск" role="search" onfocus="$('#searchItem').addClass('maximised')"
+                   onblur="$('#searchItem').removeClass('maximised')" id="serviceSearch" />
             <i class="search link icon" onclick="SearchFilters.changeFilter()"></i>
         </div>
     </div>
@@ -67,16 +75,16 @@
     <div class="three wide column">
         <div class="ui service-types segment">
             <h3 class="ui dividing header">Цена</h3>
-            <div class="ui fluid small labeled input" style="margin-bottom: 8px;">
+            <div class="ui fluid small labeled input" style="margin-bottom: 8px;" title="Нажмите Enter для поиска">
                 <label for="minPrice" class="ui label">От</label>
-                <input type="number" placeholder="@Model.Min" id="minPrice" onblur="SearchFilters.changeFilter()" />
+                <input type="number" placeholder="@Model.Min" id="minPrice" />
             </div>
-            <div class="ui fluid small right labeled input">
-                <input type="number" placeholder="@Model.Max" id="maxPrice" onblur="SearchFilters.changeFilter()" />
+            <div class="ui fluid small right labeled input" title="Нажмите Enter для поиска">
+                <input type="number" placeholder="@Model.Max" id="maxPrice" />
                 <label for="maxPrice" class="ui label">До</label>
             </div>
             <h3 class="ui dividing header" style="margin-top: 1rem">Типы услуг</h3>
-            @foreach (var serviceType in Model.ServiceTypes){<a class="ui label" onclick="loadServiceType('@serviceType.Value')">@serviceType.Text</a>}
+            @foreach (var serviceType in Model.ServiceTypes){<a class="ui stype label" data-id="@serviceType.Value" onclick="loadServiceType('@serviceType.Value')">@serviceType.Text</a>}
         </div>
         <div id="vk_groups"></div>
         <div class="ui segment">
@@ -187,11 +195,14 @@
             <div class="extra content">
                 <span title="Срок выполнения"><i class="calendar violet icon"></i>{{:Deadline}}</span>
                 <span title="Рейтинг"><i class="yellow star icon"></i>{{:Rating}}</span>
-                {{if Price != null && Price > 0}}
+                <span title="Надёжность"><i class="blue check circle icon"></i>{{:Reliability}}</span>
                 <div class="right">
+                    {{if Price != null && Price > 0}}
                     <span title="Цена"><i class="ruble green icon"></i>{{:Price}}</span>
+                    {{else}}
+                    <span title="Цена"><i class="ruble green icon"></i>Бесплатно</span>
+                    {{/if}}
                 </div>
-                {{/if}}
             </div>
         </div>
     </div>
@@ -200,12 +211,19 @@
 <script>
     function loadServiceType(typeId) {
         $('#ServiceType').val(typeId);
+        $('.stype.active').removeClass('active');
+        $('.stype[data-id="' + typeId + '"]').addClass('active');
         SearchFilters.changeFilter();
     }
     $(function () {
         var userCardTmpl = $.templates('#miniUserCardTmpl');
         var grid = $('.services.grid').masonry();
-
+        var cityPs = new PerfectScrollbar('#cityFilter .scrolling.menu', {
+            minScrollbarLength: 15
+        });
+        $('#cityFilter input[type="text"]').on('input', function (ev) {
+            cityPs.update();
+        });
         $('#sortType').dropdown({
             onChange: function () {
                 if (SearchFilters.initialized) {
@@ -222,11 +240,20 @@
                 }
             }
         });
-        var ps = new PerfectScrollbar('#cityFilter .menu')
         $('input[type="number"]').focusin(function (ev) {
             $(this).siblings('.label').addClass('violet');
         }).focusout(function (ev) {
             $(this).siblings('.label').removeClass('violet');
+            });
+        $('#minPrice,#maxPrice').focusin(function (ev) {
+            $(this).siblings('.label').addClass('violet');
+        }).focusout(function (ev) {
+            $(this).siblings('.label').removeClass('violet');
+            });
+        $('#minPrice,#maxPrice,#serviceSearch').keypress(function (ev) {
+            if (ev.keyCode === 13 || ev.which === 13) {
+                SearchFilters.changeFilter();
+            }
         });
         SearchFilters.init({
             beforeLoad: function () {
@@ -315,18 +342,7 @@
                         return $(this.selector).val();
                     },
                     updateState: function (newVal) {
-                        $('#sortType').val(newVal);
-                    }
-                },
-                {
-                    name: 'sortFilter',
-                    selector: '#sortType',
-                    getVal: function () {
-                        return $(this.selector).dropdown('get value') == ''
-                            ? '@((byte)SortFilter.New)' : $(this.selector).dropdown('get value');
-                    },
-                    updateState: function (newVal) {
-                        $(this.selector).dropdown('set selected', newVal);
+                        $('#sortType').dropdown('set selected', newVal);
                     }
                 },
                 {
@@ -357,6 +373,7 @@
                     },
                     updateState: function (newVal) {
                         $(this.selector).val(newVal);
+                        $('.stype[data-id="' + newVal + '"]').addClass('active');
                     }
                 },
                 {

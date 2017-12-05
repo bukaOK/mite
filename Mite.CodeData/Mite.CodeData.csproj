@@ -46,6 +46,7 @@
     <Compile Include="Constants\Automapper\UserProfileConstants.cs" />
     <Compile Include="Constants\ClaimConstants.cs" />
     <Compile Include="Constants\CookieKeys.cs" />
+    <Compile Include="Constants\DealConstants.cs" />
     <Compile Include="Constants\FacebookSettings.cs" />
     <Compile Include="Constants\GoogleApiSettings.cs" />
     <Compile Include="Constants\GoogleCaptchaSettings.cs" />
@@ -73,6 +74,7 @@
     <Compile Include="Enums\PostTypes.cs" />
     <Compile Include="Enums\PostUserFilter.cs" />
     <Compile Include="Enums\RatingRecountTypes.cs" />
+    <Compile Include="Enums\ReliabilityRecountTypes.cs" />
     <Compile Include="Enums\ServiceSortFilter.cs" />
     <Compile Include="Enums\SocialServiceTypes.cs" />
     <Compile Include="Enums\SortFilter.cs" />

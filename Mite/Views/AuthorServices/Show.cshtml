@@ -39,9 +39,15 @@
                 @if (User.IsInRole(RoleNames.Moderator))
                 {
                     <div class="field">
-                        <button type="button" class="ui blue button" onclick="RatingMvc.recount('@Model.Id', '@RatingRecountTypes.AuthorService')">
-                            Пересчитать рейтинг
-                        </button>
+                        <label>Пересчитать:</label>
+                        <div class="ui blue buttons">
+                            <button type="button" class="ui button" onclick="RatingMvc.recount('@Model.Id', '@RatingRecountTypes.AuthorService', this)">
+                                Рейтинг
+                            </button>
+                            <button type="button" class="ui button" onclick="DealsMvc.recountReliability('@Model.Id', '@ReliabilityRecountTypes.AuthorService', this)">
+                                Надёжность
+                            </button>
+                        </div>
                     </div>
                 }
                 <div class="ui error message"></div>
@@ -59,7 +65,7 @@
                 <a class="item" role="listitem">
                     <i class="yellow star large icon"></i>
                     <div class="content">
-                        Рейтинг: @Model.Rating
+                        <div class="header">Рейтинг: @Model.Rating</div>
                     </div>
                 </a>
                 @if (Model.Price != null)

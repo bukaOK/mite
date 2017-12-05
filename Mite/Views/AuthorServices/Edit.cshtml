@@ -31,23 +31,20 @@
             </div>
         </div>
         <div class="left aligned column">
-            <div class="field">
-                <button class="ui fluid inverted blue button" type="button" onclick="$('#publishGuideModal').modal('show')">Гайд по услугам.</button>
-            </div>
             @Html.HiddenFor(x => x.Id)
             @Html.HiddenFor(x => x.ImageBase64)
             <div class="field">
                 <label>@Html.DisplayNameFor(x => x.Title)</label>
-                @Html.TextBoxFor(x => x.Title, new { placeholder = "Портрет по фото" })
+                @Html.TextBoxFor(x => x.Title, new { placeholder = "Уточните тип услуги" })
             </div>
             <div class="fields">
                 <div class="ten wide field">
-                    <label>@Html.DisplayNameFor(x => x.ServiceTypeId) (<a class="link" onclick="$('#serviceTypeModal').modal('show')">Предложить новый</a>)</label>
+                    <label>@Html.DisplayNameFor(x => x.ServiceTypeId) (<a class="link" data-tooltip="Предложите нам свой тип услуги!" onclick="$('#serviceTypeModal').modal('show')">Предложить новый</a>)</label>
                     @Html.DropDownListFor(x => x.ServiceTypeId, Model.ServiceTypes, new { @class = "ui selection dropdown" })
                 </div>
                 <div class="six wide field">
                     <label>@Html.DisplayNameFor(x => x.Price)</label>
-                    @Html.TextBoxFor(x => x.Price, new { placeholder = "500" })
+                    @Html.TextBoxFor(x => x.Price, new { placeholder = "1000" })
                 </div>
             </div>
             <div class="fields">

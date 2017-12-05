@@ -37,5 +37,18 @@ namespace Mite.ExternalServices.VkApi.Objects
         public string Photo100_Url { get; set; }
         [JsonProperty("photo_200")]
         public string Photo200_Url { get; set; }
+        [JsonProperty("contacts")]
+        public IList<GroupContactMeta> Contacts { get; set; }
+    }
+    public class GroupContactMeta
+    {
+        [JsonProperty("user_id")]
+        public string UserId { get; set; }
+        [JsonProperty("desc")]
+        public string Description { get; set; }
+        [JsonProperty("phone")]
+        public string Phone { get; set; }
+        [JsonProperty("email")]
+        public string Email { get; set; }
     }
 }

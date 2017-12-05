@@ -197,6 +197,8 @@ namespace Mite.BLL.Services
         public async Task<IEnumerable<DealUserModel>> GetForModerAsync(DealStatuses status, string moderId)
         {
             var deals = await repo.GetForModerAsync(status, moderId);
+            if (deals.Count == 0)
+                deals = await repo.GetForModerAsync(status, null);
             return Mapper.Map<IEnumerable<DealUserModel>>(deals, opts => opts.Items.Add("forModer", true));
         }
         public async Task<DealModel> GetShowAsync(long id)
@@ -431,9 +433,6 @@ namespace Mite.BLL.Services
             var serviceRepo = Database.GetRepo<AuthorServiceRepository, AuthorService>();
             var userRepo = Database.GetRepo<UserRepository, User>();
 
-            const int goodCoef = 1;
-            const int badCoef = -3;
-
             var client = await userManager.FindByIdAsync(deal.ClientId);
             var author = await userManager.FindByIdAsync(deal.AuthorId);
             var service = await serviceRepo.GetAsync(deal.ServiceId);
@@ -441,7 +440,7 @@ namespace Mite.BLL.Services
             {
                 try
                 {
-                    if (deal.Price != null)
+                    if (deal.Price != null && deal.Payed)
                     {
                         if (deal.Status == DealStatuses.ModerRejected)
                             await cashService.AddAsync(null, deal.ClientId, (double)deal.Price, CashOperationTypes.Deal);
@@ -451,10 +450,21 @@ namespace Mite.BLL.Services
                     }
                     deal.Payed = false;
                     await repo.UpdateAsync(deal);
+                    var resultCoef = 0;
+                    switch (deal.Status)
+                    {
+                        case DealStatuses.Confirmed:
+                            resultCoef += DealConstants.GoodCoef;
+                            break;
+                        case DealStatuses.ModerRejected:
+                        case DealStatuses.ModerConfirmed:
+                            resultCoef += DealConstants.BadCoef;
+                            break;
+                    }
 
-                    client.Reliability = await userRepo.GetReliabilityAsync(client.Id, goodCoef, badCoef, false);
-                    author.Reliability = await userRepo.GetReliabilityAsync(author.Id, goodCoef, badCoef, true);
-                    service.Reliability = await serviceRepo.GetReliabilityAsync(service.Id, badCoef, goodCoef);
+                    client.Reliability += resultCoef;
+                    author.Reliability += resultCoef;
+                    service.Reliability += resultCoef;
                     await userManager.UpdateAsync(client);
                     await userManager.UpdateAsync(author);
                     await serviceRepo.UpdateAsync(service);

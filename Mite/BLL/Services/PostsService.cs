@@ -515,7 +515,9 @@ namespace Mite.BLL.Services
                 MaxDate = filter.InitialDate,
                 OnlyFollowings = PostUserFilter.OnlyFollowings == filter.PostUserFilter,
                 PostName = filter.PostName,
-                Tags = filter.Tags?.Split(',')
+                Tags = filter.Tags?.Split(','),
+                SortType = filter.SortFilter,
+                PostType = PostTypes.Published
             };
 
             var currentDate = DateTime.UtcNow;

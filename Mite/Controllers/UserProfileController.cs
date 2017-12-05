@@ -123,7 +123,7 @@ namespace Mite.Controllers
             var user = await userManager.FindByNameAsync(name);
             if (user == null)
                 return Json(JsonStatuses.Error);
-            var services = await _authorService.GetByUserAsync(user.Id);
+            var services = await _authorService.GetByUserAsync(user.Id, sort);
             return Json(JsonStatuses.Success, services);
         }
     }

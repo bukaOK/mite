@@ -41116,6 +41116,16 @@ body.dimmable > .dimmer {
     User Variable Overrides
 *******************************/
 /* <select> */
+/*@miteSelectionBoxShadow: 0 0 0px 1px #b540c6;
+
+@selectionBoxShadow: 0 0 0px 1px #e4e4e4;
+@selectionActiveHoverBoxShadow: @miteSelectionBoxShadow;
+@selectionVisibleBoxShadow: @miteSelectionBoxShadow;
+
+@selectionMenuBoxShadow: @miteSelectionBoxShadow;
+@selectionVisibleMenuBoxShadow: @miteSelectionBoxShadow;
+@selectionFocusMenuBoxShadow: @miteSelectionBoxShadow;
+@selectionActiveHoverMenuBoxShadow: @miteSelectionBoxShadow;*/
 /*******************************
              Mix-ins
 *******************************/

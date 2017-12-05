@@ -67,6 +67,7 @@ namespace Mite.Models
         public string ImageSrc { get; set; }
         public ServiceTypeModel ServiceType { get; set; }
         public int Rating { get; set; }
+        public int Reliability { get; set; }
         public double? Price { get; set; }
         public string Deadline { get; set; }
         public UserShortModel User { get; set; }

@@ -56,7 +56,6 @@
                 }
             </div>
             <button type="button" class="ui green button" id="save-btn">Сохранить</button>
-            @Html.ValidationSum("result-msg")
             <div class="ui error message" id="result-msg"></div>
         </div>
     </form>
@@ -99,7 +98,7 @@
             model.PublishDate = new Date().toISOString();
         }
         $.ajax({
-            url: '@url',
+            url: '/posts/addpost',
             data: model,
             type: 'post',
             dataType: 'json',

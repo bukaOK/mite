@@ -29,7 +29,7 @@ namespace Mite.Models
     {
         [Required]
         [DisplayName("Ник")]
-        [RegularExpression(@"\w+", ErrorMessage = "Ник может содержать только английские буквы, цифры и знак подчеркивания")]
+        [RegularExpression(@"[a-zA-Z0-9@_]+", ErrorMessage = "Ник может содержать только английские буквы, собаку, цифры и знак подчеркивания")]
         [UIHint("TextBox")]
         public string UserName { get; set; }
         [Required]
@@ -48,7 +48,7 @@ namespace Mite.Models
     {
         [Required]
         [DisplayName("Ник")]
-        [RegularExpression(@"[a-zA-Z0-9-_]+", ErrorMessage = "Ник может содержать только английские буквы, цифры и знак подчеркивания")]
+        [RegularExpression(@"[a-zA-Z0-9@_]+", ErrorMessage = "Ник может содержать только английские буквы, собаку, цифры и знак подчеркивания")]
         [MaxLength(30, ErrorMessage = "Слишком длинный ник")]
         [UIHint("TextBox")]
         public string UserName { get; set; }

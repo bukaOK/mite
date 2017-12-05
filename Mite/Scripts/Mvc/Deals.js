@@ -143,5 +143,34 @@
             $msg.removeClass('error').addClass('green');
             $msg.html('Успешно');
         }, $(btn));
+    },
+    recountReliability: function (itemId, recountType, btn) {
+        var $form = $(btn).parents('.form').addClass('loading');
+        return $.ajax({
+            type: 'post',
+            url: '/deals/recountreliability',
+            data: {
+                itemId: itemId,
+                recountType: recountType
+            },
+            success: function (resp) {
+                if (resp.status === undefined) {
+                    resp = JSON.parse(resp);
+                }
+                if (resp.status === Settings.apiStatuses.success) {
+                    iziToast.success({
+                        title: 'Успех'
+                    });
+                } else {
+                    $form.form('add errors', resp.data);
+                }
+            },
+            error: function () {
+                $form.form('add errors', ['Ошибка']);
+            },
+            complete: function () {
+                $form.removeClass('loading');
+            }
+        });
     }
 }

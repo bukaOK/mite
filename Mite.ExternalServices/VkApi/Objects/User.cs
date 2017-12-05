@@ -25,5 +25,7 @@ namespace Mite.ExternalServices.VkApi.Objects
         public string About { get; set; }
         [JsonProperty("activities")]
         public string Activities { get; set; }
+        [JsonProperty("domain")]
+        public string Domain { get; set; }
     }
 }

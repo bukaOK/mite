@@ -6,6 +6,8 @@ using Mite.Extensions;
 using Mite.ExternalServices.IpApi.Requests;
 using Mite.ExternalServices.YandexGeocoder.Requests;
 using Mite.Models;
+using NLog;
+using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -16,12 +18,15 @@ namespace Mite.Modules
         private readonly AppUserManager userManager;
         private readonly HttpClient httpClient;
         private readonly ICityService cityService;
+        private readonly ILogger logger;
 
-        public GeoMiddleware(OwinMiddleware next, AppUserManager userManager, HttpClient httpClient, ICityService cityService) : base(next)
+        public GeoMiddleware(OwinMiddleware next, AppUserManager userManager, HttpClient httpClient, ICityService cityService, 
+            ILogger logger) : base(next)
         {
             this.userManager = userManager;
             this.httpClient = httpClient;
             this.cityService = cityService;
+            this.logger = logger;
         }
 
         public override async Task Invoke(IOwinContext context)
@@ -52,13 +57,21 @@ namespace Mite.Modules
         {
             var ipReq = new IpApiRequest(httpClient);
             var ipResult = await ipReq.PerformAsync(ip);
+            CityModel city;
+            try
+            {
+                var yaReq = new YaGeocoderRequest(httpClient);
+                var cityName = await yaReq.GetCityNameAsync(ipResult.Latitude, ipResult.Longitude);
 
-            var yaReq = new YaGeocoderRequest(httpClient);
-            var cityName = await yaReq.GetCityNameAsync(ipResult.Latitude, ipResult.Longitude);
-
-            var city = await cityService.GetByNameAsync(cityName);
-            if (city == null)
+                city = await cityService.GetByNameAsync(cityName);
+                if (city == null)
+                    city = await cityService.GetByNameAsync("Москва");
+            }
+            catch(Exception e)
+            {
+                logger.Error("Ошибка при определении города :" + e.Message);
                 city = await cityService.GetByNameAsync("Москва");
+            }
 
             return city;
         }

@@ -3,14 +3,9 @@
     this.ended = false;
     this.chat = $('.chat.feed[data-id="' + chatId + '"]');
     var self = this;
-    this.scrollbar = new MiteScroll({
-        wrap: this.chat.parent()[0],
-        rollingY: true,
-        thumbOffset: 8
-    });
+    this.scrollbar = new PerfectScrollbar(this.chat.parent()[0]);
     //Поскольку скроллбар изменяет DOM и вытаскивает из него чат, нужно снова его инициализировать
     this.chat = $('.chat.feed[data-id="' + chatId + '"]');
-    this.scrollbar.beginObserve(this.chat[0]);
     this.loader = $('.chat.feed[data-id="' + chatId + '"] .dot-loader-wrapper');
     this.loading = false;
     this.fixEnd = true;
@@ -81,6 +76,10 @@ ChatLoader.prototype.loadNext = function () {
             var tmpl = $.templates('#messageTmpl'),
                 html = tmpl.render(resp.data);
             self.loader.after(html);
+            self._updateScrollState(!initialized);
+            self.chat.imagesLoaded(function () {
+                self._updateScrollState(!initialized);
+            });
             $('.event .extra.images:not(.listening)').addClass('listening')
                 .click(function (ev) {
                     ev.stopPropagation();
@@ -90,9 +89,7 @@ ChatLoader.prototype.loadNext = function () {
                         prevHtml: '<i class="angle big left icon"></i>'
                     });
                 });
-            var scrollInner = $('.msg-chat-wrapper').find('.scroll-inner');
-            if (!initialized)
-                scrollInner.scrollTop(scrollInner[0].scrollHeight);
+            
             self._page++;
         },
         error: function (jqXhr) {
@@ -109,6 +106,11 @@ ChatLoader.prototype.loadNext = function () {
             }
         }
     });
+}
+ChatLoader.prototype._updateScrollState = function (scroll) {
+    this.scrollbar.update();
+    if(scroll)
+        this.chat.parent().scrollTop(this.chat[0].scrollHeight);
 }
 ChatLoader.prototype._initListeners = function () {
     var self = this;

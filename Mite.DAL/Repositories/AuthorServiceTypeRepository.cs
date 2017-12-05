@@ -5,6 +5,9 @@ using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
 using Mite.DAL.DTO;
 using Dapper;
+using System;
+using System.Linq;
+using System.Data.Entity;
 
 namespace Mite.DAL.Repositories
 {
@@ -20,6 +23,15 @@ namespace Mite.DAL.Repositories
                 "services.\"ServiceTypeId\"=service_types.\"Id\" where service_types.\"Confirmed\"=@confirmed " +
                 "group by service_types.\"Id\" order by \"Popularity\" desc";
             return Db.QueryAsync<AuthorServiceTypeDTO>(query, new { confirmed });
+        }
+        /// <summary>
+        /// Кол-во услуг данного типа услуги
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task<int> GetServiceCountAsync(Guid id)
+        {
+            return await Table.Where(x => x.Id == id).CountAsync();
         }
     }
 }

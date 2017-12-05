@@ -41,7 +41,7 @@
             {{/if}}
         </td>
         <td>
-            <button class="ui margined compact button" onclick="showCityEditModal(this, '{{:Id}}')">Изменить</button>
+            <button class="ui margined compact button" onclick="showServiceEditModal(this, '{{:Id}}')">Изменить</button>
             <button class="ui margined compact red button" onclick="ServiceTypesApi.remove($(this), $(this).parents('tr'), '{{:Id}}')">Удалить</button>
         </td>
     </tr>
@@ -57,14 +57,14 @@
         });
         $('#serviceTypeModal').modal('show');
     }
-    function showCityEditModal(btn, id) {
+    function showServiceEditModal(btn, id) {
         var $tr = $(btn).parents('tr');
         $('#serviceTypeModal>.header').html('Изменение типа услуги');
         var $form = $('#serviceTypeForm');
 
-        $form.find('#Name').val($tr.data('name'));
-        $form.find('#Confirmed').val($tr.data('confirmed'));
-        $form.find('#Id').val($tr.data('id'));
+        $form.find('[name="Name"]').val($tr.data('name'));
+        $form.find('[name="Confirmed"]').val($tr.data('confirmed'));
+        $form.find('[name="Id"]').val($tr.data('id'));
 
         document.getElementById('serviceTypeModal').dataset.id = id;
         $('#serviceTypeModal').modal('show');

@@ -27,7 +27,7 @@
         <input type="file" multiple id="att-input" style="display: none" />
         <div class="ui attachments three column grid segment"></div>
         <div class="field">
-            <div class="dialog-area" contenteditable="true" data-state="begin" oninput="ChatMessages.inputHandle('@Model.Id', this)"></div>
+            <div class="dialog-area" ondrop="return false" ondragover="return false" contenteditable="true" data-state="begin" oninput="ChatMessages.inputHandle('@Model.Id', this)"></div>
         </div>
         <button type="button" class="ui right floated compact labeled icon primary button" id="msgSendBtn">
             <i class="send outline icon"></i>

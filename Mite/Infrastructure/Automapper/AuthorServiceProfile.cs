@@ -27,6 +27,10 @@ namespace Mite.Infrastructure.Automapper
             CreateMap<AuthorServiceModel, AuthorService>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.ImageSrc, opt => opt.Ignore())
+                .ForMember(dest => dest.AuthorId, opt => opt.ResolveUsing((src, dest) =>
+                {
+                    return string.IsNullOrEmpty(dest?.AuthorId) ? src.AuthorId : dest.AuthorId;
+                }))
                 .ForMember(dest => dest.VkRepostConditions, opt => opt.ResolveUsing(src =>
                 {
                     if (string.IsNullOrEmpty(src.VkPostCode))
@@ -64,7 +68,8 @@ namespace Mite.Infrastructure.Automapper
 
             CreateMap<ServiceTopFilterModel, ServiceTopFilter>()
                 .ForMember(dest => dest.MaxDate, opt => opt.MapFrom(src => src.InitialDate))
-                .ForMember(dest => dest.CityId, opt => opt.MapFrom(src => src.City));
+                .ForMember(dest => dest.CityId, opt => opt.MapFrom(src => src.City))
+                .ForMember(dest => dest.ServiceTypeId, opt => opt.MapFrom(src => src.ServiceType));
         }
         private string GetDeadline(int num, DurationTypes type)
         {

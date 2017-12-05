@@ -16,6 +16,7 @@ using System.Web.Mvc;
 using Mite.BLL.IdentityManagers;
 using Mite.DAL.Filters;
 using Mite.DAL.DTO;
+using Mite.CodeData.Enums;
 
 namespace Mite.BLL.Services
 {
@@ -34,7 +35,7 @@ namespace Mite.BLL.Services
         Task<ServiceTopFilterModel> GetTopModelAsync(string userId);
         Task<IEnumerable<ProfileServiceModel>> GetTopAsync(ServiceTopFilterModel filter);
         Task<AuthorServiceModel> GetNew();
-        Task<IEnumerable<ProfileServiceModel>> GetByUserAsync(string userId);
+        Task<IEnumerable<ProfileServiceModel>> GetByUserAsync(string userId, SortFilter sort);
         /// <summary>
         /// Получить услугу для показа
         /// </summary>
@@ -42,6 +43,7 @@ namespace Mite.BLL.Services
         /// <returns></returns>
         Task<AuthorServiceShowModel> GetShowAsync(Guid id);
         Task<IEnumerable<GalleryItemModel>> GetGalleryAsync(Guid id);
+        Task<DataServiceResult> RecountReliabilityAsync(Guid id);
     }
     public class AuthorServiceService : DataService, IAuthorServiceService
     {
@@ -99,9 +101,9 @@ namespace Mite.BLL.Services
             };
         }
 
-        public async Task<IEnumerable<ProfileServiceModel>> GetByUserAsync(string userId)
+        public async Task<IEnumerable<ProfileServiceModel>> GetByUserAsync(string userId, SortFilter sort)
         {
-            var services = await repo.GetByUserAsync(userId);
+            var services = await repo.GetByUserAsync(userId, sort);
             return Mapper.Map<IEnumerable<ProfileServiceModel>>(services);
         }
 
@@ -112,10 +114,13 @@ namespace Mite.BLL.Services
             {
                 return DataServiceResult.Failed("Только владелец может удалить эту работу.");
             }
+            var dealsCount = await repo.DealsCountAsync(id);
+            if (dealsCount > 0)
+                return DataServiceResult.Failed("Нельзя удалить услугу, по которой были осуществлены сделки.");
             try
             {
                 await repo.RemoveAsync(id);
-                return DataServiceResult.Success();
+                return Success;
             }
             catch(Exception e)
             {
@@ -204,6 +209,19 @@ namespace Mite.BLL.Services
             var dealRepo = Database.GetRepo<DealRepository, Deal>();
             var items = await dealRepo.GetServiceGalleryAsync(id);
             return Mapper.Map<IEnumerable<GalleryItemModel>>(items);
+        }
+
+        public async Task<DataServiceResult> RecountReliabilityAsync(Guid id)
+        {
+            try
+            {
+                await repo.RecountReliabilityAsync(id, DealConstants.BadCoef, DealConstants.GoodCoef);
+                return Success;
+            }
+            catch(Exception e)
+            {
+                return CommonError("Ошибка при пересчете надежности услуги", e);
+            }
         }
     }
 }

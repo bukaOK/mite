@@ -15,7 +15,7 @@
             <label>@Html.DisplayNameFor(x => x.Demands)</label>
             @Html.TextAreaFor(x => x.Demands, new { placeholder = "Ваши требования" })
         </div>
-        <button class="ui red button" type="button" onclick="DealsMvc.close(this)">
+        <button class="ui red button" type="button" onclick="DealsMvc.close(this, '@Model.Id')">
             <i class="close icon"></i>
             Закрыть сделку
         </button>
@@ -35,7 +35,9 @@ else if (Model.Status == DealStatuses.ExpectPayment)
             </button>
             @if (!Model.Payed)
             {
-                <button class="ui primary button" type="button" onclick="DealsMvc.pay(this)">Оплатить</button>
+                <button class="ui primary button" data-tooltip="Средства будут храниться в системе до закрытия сделки" type="button" onclick="DealsMvc.pay(this)">
+                    Оплатить
+                </button>
             }
             else
             {
@@ -45,7 +47,7 @@ else if (Model.Status == DealStatuses.ExpectPayment)
         @if (Model.VkReposted == false)
         {
             <div class="field">@Html.Raw(Model.Service.VkRepostCode)</div>
-            <button class="ui blue compact button" type="button" onclick="DealsMvc.checkVkRepost(this, '@Model.Id')">Проверить репост</button>
+            <button class="ui blue compact button" data-tooltip="Если мы не нашли ваш репост, обратитесь к автору" type="button" onclick="DealsMvc.checkVkRepost(this, '@Model.Id')">Проверить репост</button>
         }
         else if (Model.VkReposted == true)
         {
@@ -60,13 +62,13 @@ else if(Model.Status == DealStatuses.ExpectClient)
     <form class="ui form" id="dealForm">
         <div class="field"></div>
         <div class="field">
-            <button class="ui fluid green button" onclick="DealsMvc.confirm(this, '@Model.Id')">
+            <button class="ui fluid green button" data-tooltip="Средства безвозвратно переведутся автору" onclick="DealsMvc.confirm(this, '@Model.Id')">
                 <i class="check icon"></i>
                 Заказ выполнен в соответствии с требованиями
             </button>
         </div>
         <div class="field">
-            <button class="ui fluid red button" type="button" onclick="DealsMvc.openDispute(this, '@Model.Id')">
+            <button class="ui fluid red button" data-tooltip="После окончания спора ваша надёжность уменьшится" type="button" onclick="DealsMvc.openDispute(this, '@Model.Id')">
                 <i class="meh icon"></i>Открыть спор
             </button>
         </div>

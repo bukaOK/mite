@@ -842,6 +842,37 @@
     <Content Include="Content\images\some-logo.png" />
     <Content Include="Content\images\video.svg" />
     <Content Include="Content\landing.css" />
+    <Content Include="Content\onion\023.gif" />
+    <Content Include="Content\onion\044.gif" />
+    <Content Include="Content\onion\047.gif" />
+    <Content Include="Content\onion\087.gif" />
+    <Content Include="Content\onion\088.gif" />
+    <Content Include="Content\onion\0fbbf481.gif" />
+    <Content Include="Content\onion\17f0f3b0.gif" />
+    <Content Include="Content\onion\33c4b951.gif" />
+    <Content Include="Content\onion\485c3a61.gif" />
+    <Content Include="Content\onion\4e5dd44a.gif" />
+    <Content Include="Content\onion\5c745924.gif" />
+    <Content Include="Content\onion\64caf316.gif" />
+    <Content Include="Content\onion\70bff581.gif" />
+    <Content Include="Content\onion\91eea40f.gif" />
+    <Content Include="Content\onion\967339c1.gif" />
+    <Content Include="Content\onion\afd371da.gif" />
+    <Content Include="Content\onion\baa60776.gif" />
+    <Content Include="Content\onion\cd08785a.gif" />
+    <Content Include="Content\onion\d582d79f.gif" />
+    <Content Include="Content\onion\efb50fe2.gif" />
+    <Content Include="Content\onion\kiddy.gif" />
+    <Content Include="Content\onion\main.png" />
+    <Content Include="Content\onion\th_057_.gif" />
+    <Content Include="Content\onion\th_084_.gif" />
+    <Content Include="Content\onion\th_087_.gif" />
+    <Content Include="Content\onion\th_0como.gif" />
+    <Content Include="Content\onion\th_0tando.gif" />
+    <Content Include="Content\onion\th_0tive.gif" />
+    <Content Include="Content\onion\th_110_.gif" />
+    <Content Include="Content\onion\th_116_.gif" />
+    <Content Include="Content\onion\th_117_.gif" />
     <Content Include="Content\ripple-loader.css" />
     <Content Include="Content\scrollbar.css" />
     <Content Include="Content\semantic.css" />
@@ -871,6 +902,7 @@
     <Content Include="Content\emojies\emojies.json" />
     <Content Include="Files\validExtensions.json" />
     <Content Include="Content\emojies\data.json" />
+    <Content Include="Content\onion\data.json" />
     <None Include="NLog.xsd">
       <SubType>Designer</SubType>
     </None>
@@ -888,7 +920,6 @@
     <Content Include="Scripts\BrowserSupport.js" />
     <Content Include="Scripts\content-tools.js" />
     <Content Include="Scripts\content-tools.min.js" />
-    <Content Include="Scripts\Custom\MiteScrollbar.js" />
     <Content Include="Scripts\Custom\MsgFiles.js" />
     <Content Include="Scripts\Custom\DateTimeHelper.js" />
     <Content Include="Scripts\Custom\EmojiHelper.js" />

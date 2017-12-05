@@ -230,7 +230,8 @@
     }
     $(function () {
         var grid = $('.posts.grid').masonry({
-            itemSelector: '.column'
+            itemSelector: '.column',
+            horizontalOrder: true
         });
         $('.ui.dropdown').dropdown({
             onChange: function (ev) {

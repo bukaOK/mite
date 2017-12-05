@@ -85,13 +85,13 @@ namespace Mite.DAL.Repositories
                 post.Rating = newRating;
                 DbContext.Entry(post).Property(x => x.Rating).IsModified = true;
 
-                var user = await DbContext.Users.FirstAsync(x => x.Id == post.UserId);
-                await RecountAsync(user, false);
+                await RecountAsync(post.UserId, false);
                 await SaveAsync();
             }
         }
-        public async Task RecountAsync(User user, bool commit = true)
+        public async Task RecountAsync(string userId, bool commit = true)
         {
+            var user = await DbContext.Users.FirstAsync(x => x.Id == userId);
             var ratingSum = await Table.Where(x => x.OwnerId == user.Id).SumAsync(x => x.Value);
             var dealSum = await DbContext.Deals.Where(x => x.AuthorId == user.Id).SumAsync(x => x.Rating);
             user.Rating = ratingSum + dealSum;
@@ -107,8 +107,7 @@ namespace Mite.DAL.Repositories
                 comment.Rating = newRating;
                 DbContext.Entry(comment).Property(x => x.Rating).IsModified = true;
 
-                var user = await DbContext.Users.FirstAsync(x => x.Id == comment.UserId);
-                await RecountAsync(user, false);
+                await RecountAsync(comment.UserId, false);
                 await SaveAsync();
             }
         }
@@ -119,8 +118,7 @@ namespace Mite.DAL.Repositories
             {
                 service.Rating = newRating;
                 DbContext.Entry(service).Property(x => x.Rating).IsModified = true;
-                var user = await DbContext.Users.FirstAsync(x => x.Id == service.AuthorId);
-                await RecountAsync(user, false);
+                await RecountAsync(service.AuthorId, false);
                 await SaveAsync();
             }
         }

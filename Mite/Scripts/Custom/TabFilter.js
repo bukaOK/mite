@@ -207,7 +207,7 @@ var TabFilter = {
     loadNextPage: false,
     initialized: false,
     source: [],
-    range: 9,
+    range: 20,
     loading: false,
 
     init: function(basePath, settings){
@@ -306,13 +306,15 @@ var TabFilter = {
     },
     loadNext: function () {
         this.loadNextPage = true;
-        var offset = this.range * this.page;
+        var lastTab = this.Tabs.getLastActiveTab();
+        var range = lastTab.range ? lastTab.range : this.range;
+        var offset = range * this.page;
         if (this.loading || offset >= this.source.length) {
             return;
         }
         this.page++;
 
         var items = this.source.slice(offset, offset + TabFilter.range);
-        TabFilter.onSuccess(items, TabFilter.Tabs.getLastActiveTab());
+        TabFilter.onSuccess(items, lastTab);
     }
 }

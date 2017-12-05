@@ -70,7 +70,25 @@
                     <i class="add user icon"></i>Подписаться
                 </button>
             }
-            @if (currentUserName == pageUserName)
+            @if (User.IsInRole(RoleNames.Moderator))
+            {
+                <form class="ui form">
+                    <div class="ui icon top right pointing dropdown button" id="moderActionsDrop">
+                        <i class="configure icon"></i>
+                        <div class="menu">
+                            <a class="item" onclick="RatingMvc.recount('@Model.UserId', '@RatingRecountTypes.User', this)">Пересчитать рейтинг</a>
+                            <a class="item" onclick="DealsMvc.recountReliability('@Model.UserId', '@ReliabilityRecountTypes.User', this)">Пересчитать надежность</a>
+                        </div>
+                    </div>
+                    <div class="ui error message"></div>
+                </form>
+                <script>
+                    $('#moderActionsDrop').dropdown({
+                        action: 'hide'
+                    });
+                </script>
+            }
+            else if (currentUserName == pageUserName)
             {
                 <a href="/user/settings" class="ui blue button"><i class="setting icon"></i>Настройки</a>
             }
@@ -116,7 +134,7 @@
             }
         </div>
     </div>
-    <div class="row">
+    <div class="four column row">
         <div class="column">
             <div class="ui small statistic">
                 <div class="value">
@@ -125,6 +143,14 @@
                 <div class="label">
                     @ViewHelper.GetWordCase(Model.FollowersCount, "Подписчик", "Подписчика", "Подписчиков")
                 </div>
+            </div>
+        </div>
+        <div class="column">
+            <div class="ui small statistic">
+                <div class="value">
+                    @Model.Reliability
+                </div>
+                <div class="label">Надежность</div>
             </div>
         </div>
         <div class="column">
@@ -203,9 +229,9 @@
         }
         else
         {
-            <div class="ui tab four doubling column grid basic segment" data-tab="published"></div>
-            <div class="ui tab four doubling column basic segment grid" data-tab="drafts"></div>
-            <div class="ui tab four doubling column basic segment grid" data-tab="blocked"></div>
+            <div class="ui tab four column doubling grid basic segment" data-tab="published"></div>
+            <div class="ui tab four column doubling basic segment grid" data-tab="drafts"></div>
+            <div class="ui tab four column doubling basic segment grid" data-tab="blocked"></div>
         }
     </div>
     if (isMobileDevice)
@@ -216,9 +242,9 @@
     }
     else
     {
-        <div class="ui tab four doubling column basic segment grid" data-tab="followers"></div>
-        <div class="ui tab four doubling column basic segment grid" data-tab="followings"></div>
-        <div class="ui tab three doubling column basic segment grid" data-tab="services"></div>
+        <div class="ui tab four column doubling basic segment grid" data-tab="followers"></div>
+        <div class="ui tab four column doubling basic segment grid" data-tab="followings"></div>
+        <div class="ui tab three column doubling basic segment grid" data-tab="services"></div>
     }
     <div class="dot-loader-wrapper">
         <div class="dot-loader">
@@ -387,14 +413,14 @@ else
                         <i class="dropdown icon"></i>
                         <div class="menu" role="menu">
                             {{if CanEdit}}
-                            <a class="item" href="@Url.Action("EditPost", "Posts")/{{:Id}}" role="menuitem"><i class="edit icon"></i>Редактировать</a>
+                            <a class="item" href="/posts/edit/{{:Id}}" role="menuitem"><i class="edit icon"></i>Редактировать</a>
                             {{/if}}
                             <div class="item" onclick="showDeletePostModal('{{:Id}}')" role="menuitem"><i class="remove icon"></i>Удалить</div>
                         </div>
                     </div>
                     {{else}}
                     <div class="ui primary buttons">
-                        <a class="ui compact button" href="@Url.Action("EditPost", "Posts")/{{:Id}}">Редактировать</a>
+                        <a class="ui compact button" href="/posts/edit/{{:Id}}">Редактировать</a>
                         <div class="ui compact floating dropdown icon button">
                             <i class="dropdown icon"></i>
                             <div class="menu" role="menu">
@@ -414,7 +440,7 @@ else
                     <img src="{{:Content}}" class="ui image" />
                 </a>
                 {{else}}
-                <a href="@Url.Action("EditPost", "Posts")/{{:Id}}">
+                <a href="/posts/edit/{{:Id}}">
                     <img src="{{:Content}}" class="ui image" />
                 </a>
                 {{/if}}
@@ -431,7 +457,7 @@ else
                 {{:Content}}
             </a>
             {{else}}
-            <a class="post-content content" href="@Url.Action("EditPost", "Posts")/{{:Id}}">
+            <a class="post-content content" href="/posts/edit/{{:Id}}">
                 {{:Content}}
             </a>
             {{/if}}
@@ -473,13 +499,21 @@ else
     </div>
 </script>
 <script id="servicesTmpl" type="text/x-jsrender">
-    <div class="column">
+    <div class="column" data-service-id="{{:Id}}">
         <div class="ui service-item segment">
             <div class="extra content">
                 <a href="@Url.Action("Top", "AuthorServices")?serviceType={{:ServiceType.Id}}" class="ui right floated teal tag label">{{:ServiceType.Name}}</a>
                 @if (currentUserName == pageUserName)
                 {
-                    <a class="ui primary compact button" href="@Url.Action("Edit", "AuthorServices")/{{:Id}}">Редактировать</a>
+                    <div class="ui violet compact buttons">
+                        <a class="ui button" href="@Url.Action("Edit", "AuthorServices")/{{:Id}}">Редактировать</a>
+                        <div class="ui floating dropdown icon button">
+                            <i class="dropdown icon"></i>
+                            <div class="menu">
+                                <div class="item" onclick="AuthorServiceApi.remove('{{:Id}}')"><i class="delete icon"></i>Удалить</div>
+                            </div>
+                        </div>
+                    </div>
                 }
                 else
                 {
@@ -586,7 +620,7 @@ else
         </h3>
     </div>
 </template>
-@Scripts.Render("~/bundles/jsrender", "~/bundles/grid")
+@Scripts.Render("~/bundles/jsrender", "~/bundles/grid", "~/bundles/api")
 <script>
     var delPostId;
     var isOwner = @((currentUserName == pageUserName).ToString().ToLower());
@@ -687,6 +721,7 @@ else
         });
     }
     $(function () {
+        $('.radio.checkbox').checkbox();
         $('#donateForm').form({
             on: 'submit',
             fields: {
@@ -801,6 +836,7 @@ else
             var followingsTab = new Tab({
                 parentTab: null,
                 name: 'followings',
+                range: 50,
                 isActive: false,
                 tmplSelector: '#followersTmpl',
                 emptyTmplSelector: '#emptyFollowingsTmpl'
@@ -820,6 +856,7 @@ else
             parentTab: null,
             name: 'followers',
             isActive: false,
+            range: 50,
             tmplSelector: '#followersTmpl',
             emptyTmplSelector: '#emptyFollowersTmpl'
         });
@@ -886,10 +923,11 @@ else
                             grids[i].elem.masonry('layout');
                             $('.dot-loader-wrapper').removeClass('active');
                             resp.forEach(function(elem){
-                                $('.column[data-post-id="' + elem.Id + '"] .dropdown').dropdown({
-                                    action: 'hide',
-                                    on: 'hover'
-                                });
+                                $('.column[data-post-id="' + elem.Id + '"] .dropdown, .column[data-service-id="' + elem.Id + '"] .dropdown')
+                                    .dropdown({
+                                        action: 'hide',
+                                        on: 'hover'
+                                    });
                             });
                         }).progress(function(){
                             grids[i].elem.masonry('layout');
@@ -912,9 +950,7 @@ else
         Scrolling.init('footer', function () {
             if (!TabFilter.loading) {
                 var lastTab = TabFilter.Tabs.getLastActiveTab();
-                if(lastTab.name != 'followings' && lastTab.name != 'followers'){
-                    TabFilter.loadNext();
-                }
+                TabFilter.loadNext();
             }
         });
         $('#sortDropDown').dropdown({
@@ -922,6 +958,5 @@ else
                 TabFilter.refresh();
             }
         });
-        $('.social.dropdown').dropdown();
     });
 </script>

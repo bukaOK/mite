@@ -30,7 +30,7 @@
         return this._send('/moder/updateposttags', 'post', {
             postId: postId,
             tagsNames: $('#Tags').val().split(',')
-        });
+        }, $form);
     },
     blockPost: function (btn, postId) {
         return this._send('/moder/blockpost/' + postId, 'post');

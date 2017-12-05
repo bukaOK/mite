@@ -31,7 +31,7 @@ namespace Mite.Models
     public class ProfileSettingsModel
     {
         [DisplayName("Ник")]
-        [RegularExpression(@"\w+", ErrorMessage = "Ник может содержать только английские буквы, цифры и знак подчеркивания")]
+        [RegularExpression(@"[a-zA-Z0-9_]+", ErrorMessage = "Ник может содержать только английские буквы, цифры и знак подчеркивания")]
         [UIHint("TextBox")]
         [Required]
         public string NickName { get; set; }

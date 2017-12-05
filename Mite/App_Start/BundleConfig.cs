@@ -59,7 +59,6 @@ namespace Mite
                 "~/node_modules/croppie/croppie.css",
                 "~/bower_components/izitoast/dist/css/iziToast.min.css",
                 "~/Content/dotloader.css",
-                "~/Content/scrollbar.css",
                 "~/Content/Site.css",
                 "~/Content/ident.css",
                 "~/Content/content-tools.min.css",

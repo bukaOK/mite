@@ -41,6 +41,11 @@ namespace Mite.BLL.Services
         SocialLinksModel GetSocialLinks(string userId);
         Task<SocialLinksModel> GetSocialLinksAsync(string userId);
         Task UpdateSocialLinksAsync(SocialLinksModel model, string userId);
+        /// <summary>
+        /// Пересчитать надежность пользователя
+        /// </summary>
+        /// <returns></returns>
+        Task<DataServiceResult> RecountReliabilityAsync(string userId);
     }
     public class UserService : DataService, IUserService
     {
@@ -193,7 +198,7 @@ namespace Mite.BLL.Services
             }
             else
             {
-                userModel.FollowingsCount = await followersRepo.GetFollowersCount(user.Id);
+                userModel.FollowingsCount = await followersRepo.GetFollowingsCountAsync(user.Id);
             }
             if(user.Id != currentUserId)
             {
@@ -246,6 +251,20 @@ namespace Mite.BLL.Services
             {
                 Mapper.Map(model, socialLinks);
                 await repo.UpdateAsync(socialLinks);
+            }
+        }
+
+        public async Task<DataServiceResult> RecountReliabilityAsync(string userId)
+        {
+            var repo = Database.GetRepo<UserRepository, User>();
+            try
+            {
+                await repo.RecountReliabilityAsync(userId, DealConstants.GoodCoef, DealConstants.BadCoef);
+                return Success;
+            }
+            catch(Exception e)
+            {
+                return CommonError("Ошибка при пересчете", e);
             }
         }
     }

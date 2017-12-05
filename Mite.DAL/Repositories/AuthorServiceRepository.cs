@@ -35,10 +35,34 @@ namespace Mite.DAL.Repositories
                 }).ToListAsync();
             return feedbacks;
         }
-        public async Task<IEnumerable<AuthorService>> GetByUserAsync(string userId)
+        public async Task<int> DealsCountAsync(Guid serviceId)
         {
-            var services = await Table.Where(x => x.AuthorId == userId).Include(x => x.ServiceType).ToListAsync();
-            return services;
+            var count = await DbContext.Deals.Where(x => x.ServiceId == serviceId).CountAsync();
+            return count;
+        }
+        public Task<IEnumerable<AuthorService>> GetByUserAsync(string userId, SortFilter sort)
+        {
+            var query = "select * from dbo.\"AuthorServices\" as services inner join dbo.\"AuthorServiceTypes\" as service_types " +
+                "on services.\"ServiceTypeId\"=service_types.\"Id\" where services.\"AuthorId\"=@userId order by ";
+            switch (sort)
+            {
+                case SortFilter.New:
+                    query += "services.\"CreateDate\" desc";
+                    break;
+                case SortFilter.Old:
+                    query += "services.\"CreateDate\" asc";
+                    break;
+                case SortFilter.Popular:
+                default:
+                    query += "services.\"Rating\" desc";
+                    break;
+            }
+            query += ";";
+            return Db.QueryAsync<AuthorService, AuthorServiceType, AuthorService>(query, (service, serviceType) =>
+            {
+                service.ServiceType = serviceType;
+                return service;
+            }, new { userId });
         }
         public async Task<(double min, double max)> GetMinMaxPricesAsync()
         {
@@ -53,14 +77,23 @@ namespace Mite.DAL.Repositories
         /// <param name="badCoef">На сколько умножаем "плохие" статусы</param>
         /// <param name="goodCoef">На сколько умножаем "хорошие" для надежности статусы</param>
         /// <returns></returns>
-        public async Task<int> GetReliabilityAsync(Guid id, int badCoef, int goodCoef)
+        public async Task RecountReliabilityAsync(Guid id, int badCoef, int goodCoef)
         {
-            var badCount = await DbContext.Deals
-                .Where(x => x.ServiceId == id && (x.Status == DealStatuses.ModerRejected || x.Status == DealStatuses.ModerConfirmed))
-                .CountAsync();
-            var goodCount = await DbContext.Deals.Where(x => x.ServiceId == id && x.Status == DealStatuses.Confirmed)
-                .CountAsync();
-            return badCount * badCoef + goodCount * goodCoef;
+            var query = $"select count(*) from dbo.\"Deals\" where \"ServiceId\"=@id and \"Status\"={(int)DealStatuses.Confirmed};";
+            var qParams = new { id };
+            var goodCount = await Db.QueryFirstAsync<int>(query, qParams);
+            query = "select count(*) from dbo.\"Deals\" where \"ServiceId\"=@id " +
+                $"and (\"Status\"={(int)DealStatuses.ModerConfirmed} or \"Status\"={(int)DealStatuses.ModerRejected});";
+            var badCount = await Db.QueryFirstAsync<int>(query, qParams);
+            var reliability = badCount * badCoef + goodCount * goodCoef;
+
+            var service = await Table.FirstAsync(x => x.Id == id);
+            if(service.Reliability != reliability)
+            {
+                service.Reliability = reliability;
+                DbContext.Entry(service).Property(x => x.Reliability).IsModified = true;
+                await SaveAsync();
+            }
         }
         public Task<IEnumerable<AuthorService>> GetByFilterAsync(ServiceTopFilter filter)
         {
@@ -73,6 +106,8 @@ namespace Mite.DAL.Repositories
                 query += "and services.\"Price\" >= @Min ";
             if (filter.Max != null)
                 query += "and services.\"Price\" <= @Max ";
+            if (filter.ServiceTypeId != null)
+                query += "and service_types.\"Id\"=@ServiceTypeId ";
             if (!string.IsNullOrEmpty(filter.Input))
                 query += "and to_tsvector('mite_ru', services.\"Title\") @@ plainto_tsquery(@Input) ";
 

@@ -91,6 +91,9 @@ namespace Mite.BLL.Services
             var entity = await repo.GetAsync(id);
             if (entity == null)
                 return DataServiceResult.Failed("Не найден тип услуги.");
+            var serviceCount = await repo.GetServiceCountAsync(id);
+            if (serviceCount > 0)
+                return DataServiceResult.Failed("Нельзя удалить тип услуги.");
             try
             {
                 await repo.RemoveAsync(entity);

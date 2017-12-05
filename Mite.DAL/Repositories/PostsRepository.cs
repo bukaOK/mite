@@ -161,13 +161,7 @@ namespace Mite.DAL.Repositories
         }
         public async Task<IEnumerable<PostDTO>> GetByFilterAsync(PostTopFilter filter)
         {
-            filter.PostType = PostTypes.Published;
-
-            var query = "select posts.*, (select count(*) from dbo.\"Comments\" as comments where comments.\"PostId\"=posts.\"Id\") " +
-                "as \"CommentsCount\", users.*, tags.* from dbo.\"Posts\" as posts " +
-                "inner join dbo.\"Users\" as users on posts.\"UserId\"=users.\"Id\" " +
-                "left outer join dbo.\"TagPosts\" as tag_posts on tag_posts.\"Post_Id\"=posts.\"Id\" " +
-                "left outer join dbo.\"Tags\" as tags on tags.\"Id\"=tag_posts.\"Tag_Id\" " +
+            var query = "select posts.\"Id\" from dbo.\"Posts\" as posts " +
                 "where posts.\"Type\"=@PostType and \"PublishDate\" is not null and \"PublishDate\" > @MinDate and \"PublishDate\" < @MaxDate ";
             if (!string.IsNullOrEmpty(filter.PostName))
             {
@@ -190,10 +184,10 @@ namespace Mite.DAL.Repositories
 
                 var tagsCountRes = await Db.QueryAsync(tagsCountQuery);
                 //Чтобы у поста было точное кол-во совпадений с тегами(т.е. написали в запросе 2 тега - должно совпасть 2 тега или больше)
-                filter.PostIds = tagsCountRes.Where(x => (int)x.TagsCount >= filter.Tags.Length)
+                filter.TagPostsIds = tagsCountRes.Where(x => (int)x.TagsCount >= filter.Tags.Length)
                     .Select(x => (Guid)x.Post_Id).ToList();
 
-                query += "and posts.\"Id\"=any(@PostIds) ";
+                query += "and posts.\"Id\"=any(@TagPostsIds) ";
             }
             if (filter.OnlyFollowings)
             {
@@ -201,19 +195,27 @@ namespace Mite.DAL.Repositories
                     .Select(x => x.FollowingUserId).ToListAsync();
                 query += "and users.\"Id\" = any(@followings) ";
             }
+            var sortQuery = "order by posts.\"PublishDate\" desc";
             switch (filter.SortType)
             {
                 case SortFilter.Popular:
-                    query += "order by posts.\"Rating\" desc, posts.\"PublishDate\" desc";
+                    sortQuery = "order by posts.\"Rating\" desc, posts.\"PublishDate\" desc";
                     break;
                 case SortFilter.New:
-                    query += "order by posts.\"PublishDate\" desc";
+                    sortQuery = "order by posts.\"PublishDate\" desc";
                     break;
                 case SortFilter.Old:
-                    query += "order by posts.\"PublishDate\" asc";
+                    sortQuery = "order by posts.\"PublishDate\" asc";
                     break;
             }
-            query += $" limit {filter.Range} offset {filter.Offset};";
+            query += $"{sortQuery} limit {filter.Range} offset {filter.Offset};";
+            filter.PostIds = (await Db.QueryAsync<Guid>(query, filter)).ToList();
+
+            query = "select posts.*, (select count(*) from dbo.\"Comments\" as comments where comments.\"PostId\"=posts.\"Id\") " +
+                "as \"CommentsCount\", users.*, tags.* from dbo.\"Posts\" as posts " +
+                "inner join dbo.\"Users\" as users on posts.\"UserId\"=users.\"Id\" " +
+                "left outer join dbo.\"TagPosts\" as tag_posts on tag_posts.\"Post_Id\"=posts.\"Id\" " +
+                $"left outer join dbo.\"Tags\" as tags on tags.\"Id\"=tag_posts.\"Tag_Id\" where posts.\"Id\"=any(@PostIds) {sortQuery};";
 
             var posts = new List<PostDTO>();
             await Db.QueryAsync<PostDTO, User, Tag, PostDTO>(query, (post, user, tag) =>

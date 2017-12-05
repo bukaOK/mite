@@ -6,7 +6,6 @@
     ViewBag.Title = "Профиль " + Model.UserName;
     var pageUserName = Model.UserName.ToLower();
     var currentUserName = User.Identity.Name.ToLower();
-
     var isMobileDevice = ViewHelper.IsMobileDevice(Request);
 }
 @section styles{
@@ -43,12 +42,12 @@
         </div>
     </div>
     <div class="twelve wide column">
-        <div class="ui tabs menu" role="tablist">
+        <div class="ui stackable tabs menu" role="tablist">
             <div class="active item" role="tab" data-tab="followings">Подписки</div>
             <div class="right item">
                 <i class="filter icon"></i>
                 Сначала&nbsp;
-                <div class="ui right top inline dropdown" id="sortDropDown">
+                <div class="ui inline dropdown" id="sortDropDown">
                     <div class="text">новые</div>
                     <i class="dropdown icon"></i>
                     <div class="menu">
@@ -59,23 +58,32 @@
                 </div>
             </div>
         </div>
-        <div class="ui loading basic active tab three column grid segment" data-tab="followings"></div>
+        @if (isMobileDevice)
+        {
+            <div class="ui loading basic active tab two column stackable grid segment" data-tab="followings"></div>
+        }
+        else
+        {
+            <div class="ui loading basic active tab three column doubling grid segment" data-tab="followings"></div>
+        }
     </div>
 </div>
 <script id="followersTmpl" type="text/x-jsrender">
     <div class="column">
-        <div class="ui compact segment follower-card grid" style="margin: 0px;">
-            <div class="five wide column">
-                <img src="{{:AvatarSrc}}" class="ui small circular image">
-                <span><i class="yellow star icon"></i>{{:Rating}}</span>
-            </div>
-            <div class="eleven wide column">
-                <h3 class="ui header">
-                    <span class="content">
-                        <a href="/user/profile/{{:UserName}}">{{:UserName}}</a>
-                        <span class="sub header">{{:Description}}</span>
-                    </span>
-                </h3>
+        <div class="ui compact segment">
+            <div class="ui grid follower-card">
+                <div class="five wide column">
+                    <img src="{{:AvatarSrc}}" class="ui small circular image">
+                    <span><i class="yellow star icon"></i>{{:Rating}}</span>
+                </div>
+                <div class="eleven wide column">
+                    <h3 class="ui header">
+                        <span class="content">
+                            <a href="/user/profile/{{:UserName}}">{{:UserName}}</a>
+                            <span class="sub header">{{:Description}}</span>
+                        </span>
+                    </h3>
+                </div>
             </div>
         </div>
     </div>
@@ -168,6 +176,11 @@
                 },
                 ajax: {
                     type: 'post'
+                }
+            });
+            $('#sortDropDown').dropdown({
+                onChange: function () {
+                    TabFilter.refresh();
                 }
             });
         });

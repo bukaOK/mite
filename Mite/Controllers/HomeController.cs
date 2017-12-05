@@ -12,11 +12,7 @@ namespace Mite.Controllers
     {
         public ActionResult Index()
         {
-            if (User.Identity.IsAuthenticated)
-            {
-                return RedirectToAction("Top", "Posts");
-            }
-            return View("Land");
+            return RedirectToAction("Top", "Posts");
         }
         public ActionResult Help()
         {

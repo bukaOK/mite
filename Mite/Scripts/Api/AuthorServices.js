@@ -53,19 +53,23 @@
     },
     remove: function (id) {
         return $.ajax({
-            url: '/api/authorservices/',
+            url: '/api/authorservices/' + id,
             type: 'delete',
-            data: 'id=' + id,
             success: function () {
+                $('.tab[data-tab="services"]').masonry('remove', $('[data-service-id="' + id + '"]')[0]);
                 iziToast.success({
                     title: 'Успешно!',
                     message: 'Услуга удалена.'
                 });
             },
             error: function (jqXhr) {
+                var error = 'Ошибка.',
+                    jsonResp = jqXhr.responseJSON;
+                if (jsonResp !== null && jsonResp.length > 0)
+                    error = jsonResp[0];
                 iziToast.error({
                     title: 'Упс!',
-                    message: 'Не удалось удалить услугу.'
+                    message: error
                 });
             }
         })

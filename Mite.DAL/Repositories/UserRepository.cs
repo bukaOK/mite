@@ -40,16 +40,23 @@ namespace Mite.DAL.Repositories
         /// <param name="badCoef">На сколько умножаем "плохие" статусы</param>
         /// <param name="goodCoef">На сколько умножаем "хорошие" для надежности статусы</param>
         /// <returns></returns>
-        public async Task<int> GetReliabilityAsync(string id, int goodCoef, int badCoef, bool isAuthor)
+        public async Task RecountReliabilityAsync(string userId, int goodCoef, int badCoef)
         {
-            var goodCount = await DbContext.Deals
-                .Where(x => isAuthor ? x.AuthorId == id : x.ClientId == id && x.Status == DealStatuses.Confirmed)
-                .CountAsync();
-            var badCount = await DbContext.Deals
-                .Where(x => isAuthor ? x.AuthorId == id : x.ClientId == id && 
-                    (x.Status == DealStatuses.ModerConfirmed || x.Status == DealStatuses.ModerRejected))
-                .CountAsync();
-            return badCount * badCoef + goodCount * goodCoef;
+            var query = "select count(*) from dbo.\"Deals\" where (\"AuthorId\"=@userId or \"ClientId\"=@userId) and " +
+                $"\"Status\"={(int)DealStatuses.Confirmed};";
+            var qParams = new { userId };
+            var goodCount = await Db.QueryFirstAsync<int>(query, qParams);
+            query = "select count(*) from dbo.\"Deals\" where (\"AuthorId\"=@userId or \"ClientId\"=@userId) " +
+                $"and (\"Status\"={(int)DealStatuses.ModerConfirmed} or \"Status\"={(int)DealStatuses.ModerRejected});";
+            var badCount = await Db.QueryFirstAsync<int>(query, qParams);
+            var reliability = badCount * badCoef + goodCount * goodCoef;
+            var user = await Table.FirstAsync(x => x.Id == userId);
+            if (user.Reliability != reliability)
+            {
+                user.Reliability = reliability;
+                DbContext.Entry(user).Property(x => x.Reliability).IsModified = true;
+                await SaveAsync();
+            }
         }
     }
 }

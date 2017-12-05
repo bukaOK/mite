@@ -5,7 +5,11 @@
 
 @{ 
     var isMobile = ViewHelper.IsMobileDevice(Request);
-    var newDealsCount = int.Parse(Html.Action("NewDealsCount", "Deals").ToString());
+    var newDealsCount = 0;
+    if (User.Identity.IsAuthenticated)
+    {
+        newDealsCount = int.Parse(Html.Action("NewDealsCount", "Deals").ToString());
+    }
 }
 <!DOCTYPE html>
 <html style="height: 100% !important" lang="ru">
@@ -148,7 +152,7 @@
                 </a>
                 <a href="/posts/top?tags=арт" class="computer tablet only item">Арт</a>
                 <a href="/posts/top?tags=литература" class="computer tablet only item">Литература</a>
-                <a href="/posts/top?tags=фото" class="computer tablet only item">Фото</a>
+                <a href="/posts/top?tags=фотография" class="computer tablet only item">Фото</a>
                 @Html.ActionLink("Услуги", "Top", "AuthorServices", null, new { @class = "item"})
                 @if (Request.IsAuthenticated)
                 {

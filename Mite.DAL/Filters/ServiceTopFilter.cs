@@ -10,6 +10,7 @@ namespace Mite.DAL.Filters
     public class ServiceTopFilter
     {
         public Guid? CityId { get; set; }
+        public Guid? ServiceTypeId { get; set; }
         public string Input { get; set; }
         public ServiceSortFilter SortFilter { get; set; }
         public int? Min { get; set; }

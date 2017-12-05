@@ -34,11 +34,8 @@ namespace Mite.BLL.Services
     }
     public class RatingService : DataService, IRatingService
     {
-        private readonly AppUserManager userManager;
-
-        public RatingService(IUnitOfWork database, ILogger logger, AppUserManager userManager) : base(database, logger)
+        public RatingService(IUnitOfWork database, ILogger logger) : base(database, logger)
         {
-            this.userManager = userManager;
         }
 
         public async Task<CommentRatingModel> GetByCommentAndUserAsync(Guid commentId, string userId)
@@ -122,8 +119,7 @@ namespace Mite.BLL.Services
                         await repo.RecountAsync(post);
                         break;
                     case RatingRecountTypes.User:
-                        var user = await userManager.FindByIdAsync(itemId.ToString());
-                        await repo.RecountAsync(user);
+                        await repo.RecountAsync(itemId.ToString());
                         break;
                     default:
                         return DataServiceResult.Failed("Неизвестный тип для пересчета рейтинга");

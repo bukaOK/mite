@@ -125,12 +125,13 @@ namespace Mite.Controllers
             var msg = "Ваш код подтверждения: " + code;
             await _userManager.SendSmsAsync(User.Identity.GetUserId(), msg);
         }
-        public async Task<PartialViewResult> EmailSettings()
+        public ActionResult EmailSettings()
         {
+            var userId = User.Identity.GetUserId();
             var model = new EmailSettingsModel
             {
-                Email = await _userManager.GetEmailAsync(User.Identity.GetUserId()),
-                Confirmed = await _userManager.IsEmailConfirmedAsync(User.Identity.GetUserId())
+                Email = User.Identity.GetClaimValue(ClaimTypes.Email) ?? _userManager.GetEmail(userId),
+                Confirmed = _userManager.IsEmailConfirmed(userId)
             };
             return PartialView(model);
         }
