@@ -5,7 +5,6 @@ using AutoMapper;
 using Mite.BLL.Core;
 using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
-using Mite.Helpers;
 using Mite.Models;
 using Mite.BLL.IdentityManagers;
 using Mite.CodeData.Enums;
@@ -14,8 +13,8 @@ using System.Web.Hosting;
 using NLog;
 using Mite.DAL.Repositories;
 using Mite.BLL.Helpers;
-using Mite.CodeData.Constants;
 using Mite.DAL.Filters;
+using Mite.BLL.Infrastructure;
 
 namespace Mite.BLL.Services
 {
@@ -31,7 +30,7 @@ namespace Mite.BLL.Services
         /// </summary>
         /// <param name="postId"></param>
         /// <returns></returns>
-        Task<PostModel> GetWithTagsUserAsync(Guid postId);
+        Task<PostModel> GetWithTagsUserAsync(Guid postId, string currentUserId);
         /// <summary>
         /// Получить работы по пользователю
         /// </summary>
@@ -444,9 +443,10 @@ namespace Mite.BLL.Services
         /// </summary>
         /// <param name="postId"></param>
         /// <returns></returns>
-        public async Task<PostModel> GetWithTagsUserAsync(Guid postId)
+        public async Task<PostModel> GetWithTagsUserAsync(Guid postId, string currentUserId)
         {
             var repo = Database.GetRepo<PostsRepository, Post>();
+            var favoritesRepo = Database.GetRepo<FavoritePostsRepository, FavoritePost>();
 
             var post = await repo.GetWithTagsAsync(postId);
             if (post == null)
@@ -454,14 +454,15 @@ namespace Mite.BLL.Services
             post.Tags = post.Tags.Where(x => !string.IsNullOrEmpty(x.Name)).ToList();
             var user = await _userManager.FindByIdAsync(post.UserId);
             var postModel = Mapper.Map<PostModel>(post);
-            var userModel = Mapper.Map<UserShortModel>(user);
 
             if (post.ContentType == PostContentTypes.Document)
             {
                 //Заменяем путь к документу на содержание
                 postModel.Content = await FilesHelper.ReadDocumentAsync(post.Content);
             }
-            postModel.User = userModel;
+            postModel.User = Mapper.Map<UserShortModel>(user);
+            postModel.IsFavorite = await favoritesRepo.IsFavoriteAsync(postId, currentUserId);
+            postModel.FavoriteCount = await favoritesRepo.FavoriteCountAsync(postId);
             postModel.CommentsCount = await Database.GetRepo<CommentsRepository, Comment>().GetPostCommentsCountAsync(postId);
 
             return postModel;
@@ -471,6 +472,8 @@ namespace Mite.BLL.Services
             var repo = Database.GetRepo<PostsRepository, Post>();
 
             var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+                throw new DataServiceException("Неизвестный пользователь");
             var posts = await repo.GetByUserAsync(user.Id, type, sort);
 
             var currentUser = string.IsNullOrEmpty(currentUserId) ? null : await _userManager.FindByIdAsync(currentUserId);

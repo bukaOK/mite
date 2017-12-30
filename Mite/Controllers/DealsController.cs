@@ -4,6 +4,7 @@ using Mite.BLL.Services;
 using Mite.CodeData.Constants;
 using Mite.CodeData.Enums;
 using Mite.Core;
+using Mite.Extensions;
 using Mite.Models;
 using System;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace Mite.Controllers
         public async Task<ActionResult> Show(long id)
         {
             var currentUserId = User.Identity.GetUserId();
-            var deal = await dealService.GetShowAsync(id);
+            var deal = await dealService.GetShowAsync(id, CurrentUserId);
             if (deal == null)
                 return NotFound();
             if (!string.Equals(currentUserId, deal.Author.Id) && !string.Equals(currentUserId, deal.Client.Id) 
@@ -39,13 +40,13 @@ namespace Mite.Controllers
             if (deal.Status == DealStatuses.Dispute && deal.Moder != null && deal.DisputeChat != null)
             {
                 deal.DisputeChat.Name = "Чат спора";
-                deal.DisputeChat.CurrentUser = deal.DisputeChat.Members.FirstOrDefault(x => x.Id == currentUserId);
+                //deal.DisputeChat.CurrentUser = currentUser;
             }
             else
             {
-                deal.Chat.Name = "Чат с " + deal.Chat.Members.First(x => !string.Equals(currentUserId, x.Id)).UserName;
+                deal.Chat.Name = "Чат с " + deal.Chat.Companion.UserName;
                 //null возможен, когда модератор зашел на страницу сделки, но ещё не начал его разрешать
-                deal.Chat.CurrentUser = deal.Chat.Members.FirstOrDefault(x => string.Equals(currentUserId, x.Id));
+                //deal.Chat.CurrentUser = deal.Chat.Members.FirstOrDefault(x => string.Equals(currentUserId, x.Id));
             }
 
             return View(deal);

@@ -17,7 +17,7 @@ namespace Mite.DAL.Core
         protected readonly DbSet<TEntity> Table;
         protected string TableName;
 
-        protected Repository(AppDbContext dbContext)
+        public Repository(AppDbContext dbContext)
         {
             dbContext.Configuration.LazyLoadingEnabled = false;
 

@@ -40,7 +40,7 @@ namespace Mite.DAL.Repositories
         /// <returns></returns>
         public async Task<IEnumerable<Rating>> GetCommentsRatings(IEnumerable<Guid> commentsIds, string userId)
         {
-            var ratings = await Table.Where(x => x.UserId == userId && commentsIds.Any(y => y == x.CommentId)).ToListAsync();
+            var ratings = await Table.AsNoTracking().Where(x => x.UserId == userId && commentsIds.Any(y => y == x.CommentId)).ToListAsync();
             return ratings;
         }
         public override async Task AddAsync(Rating entity)
@@ -150,24 +150,6 @@ namespace Mite.DAL.Repositories
             DbContext.Entry(user).Property(x => x.Rating).IsModified = true;
 
             await SaveAsync();
-        }
-        /// <summary>
-        /// Возвращаем рейтинги по оценившему пользователю(асинхронно) 
-        /// </summary>
-        /// <param name="ratedUser">Оценщик</param>
-        /// <returns></returns>
-        public async Task<IEnumerable<Rating>> GetAsync(string ratedUser)
-        {
-            return await Table.Where(x => x.UserId == ratedUser).ToListAsync();
-        }
-        /// <summary>
-        /// Возвращаем рейтинги по оценившему пользователю
-        /// </summary>
-        /// <param name="ratedUser">Оценщик</param>
-        /// <returns></returns>
-        public IEnumerable<Rating> Get(string ratedUser)
-        {
-            return Table.Where(x => x.UserId == ratedUser).ToList();
         }
     }
 }

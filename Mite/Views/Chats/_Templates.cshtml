@@ -1,0 +1,310 @@
+﻿@using Microsoft.AspNet.Identity
+@model Mite.Models.ChatModel
+
+@{
+    var emCount = 0;
+    var currentUserId = User.Identity.GetUserId();
+}
+<script type="text/x-jsrender" id="chatTmpl">
+    <div class="ui chat-wrap segments" data-id="{{:Id}}">
+        <div class="ui chat-header two column grid segment">
+            <div class="column">
+                <h4 class="ui header"><b>{{:Name}}</b></h4>
+            </div>
+            <div class="right aligned column">
+                <div class="msg-actions">
+                    <button class="ui red compact small button" onclick="ChatMessages.Api.remove()">Удалить</button>
+                </div>
+                {{if ChatType == @((byte)ChatTypes.PrivateGroup) || ChatType == @((byte)ChatTypes.Public)}}
+                <div class="ui inline dropdown chat-menu">
+                    <i class="ellipsis vertical icon"></i>
+                    <div class="menu" role="menu">
+                        <a class="item" role="menuitem" data-value="mem">Участники</a>
+                        <a class="item" role="menuitem" data-value="addMem">Добавить участников</a>
+                    </div>
+                </div>
+                {{/if}}
+            </div>
+        </div>
+        <div class="ui msg-chat-wrapper segment">
+            <div class="ui chat feed" data-id="{{:Id}}">
+                <div class="active dot-loader-wrapper" style="height: 20px; min-height: 20px;">
+                    <div class="dot-loader">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <form class="ui clearing form segment" data-chat-id="{{:Id}}">
+            <div class="ui attachments three column grid segment"></div>
+            <div class="field">
+                <div class="dialog-area" ondrop="return false" ondragover="return false" contenteditable="true" data-state="begin" oninput="ChatMessages.inputHandle('{{:Id}}', this)"></div>
+            </div>
+            <button type="button" class="ui right floated compact labeled icon primary msgSend button">
+                <i class="send outline icon"></i>
+                Отправить
+            </button>
+            <div class="ui popup">
+                <ul class="ui list">
+                    <li><b>Shift + Enter</b> для переноса строки</li>
+                    <li><b>Enter</b> для отправки сообщения</li>
+                </ul>
+            </div>
+            <label class="ui compact blue icon circular att-btn button">
+                <i class="attach icon"></i>
+                <input class="att-input" type="file" multiple style="display: none" />
+            </label>
+            <div class="chat-dl dot-loader">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            <span class="type-label" style="display: none"></span>
+            <button type="button" class="ui right floated compact icon circular emoji-btn button">
+                <i class="smile icon"></i>
+            </button>
+            <div class="ui emoji popup">
+                <div class="em-wrapper">
+                    <div class="ui mini tabs icon menu" role="tablist">
+                        @foreach (var emGroup in Model.Emojies)
+                        {
+                            <a title="@emGroup.RuName" class="@Html.Raw(emCount == 0 ? "active " : "")item" role="tab" data-tab="@emGroup.Name">
+                                @if (!string.IsNullOrEmpty(emGroup.IconClass))
+                                {
+                                    <i class="@emGroup.IconClass large violet icon"></i>
+                                }
+                                else
+                                {
+                                    <img class="ui image em-img" src="@emGroup.MainImage" alt="@emGroup.RuName" />
+                                }
+                            </a>
+                            emCount++;
+                        }
+                    </div>
+                </div>
+                @{ emCount = 0; }
+                @foreach (var emGroup in Model.Emojies)
+                {
+                    <div class="ui @Html.Raw(emCount == 0 ? "active " : "")tab" data-tab="@emGroup.Name">
+                        <div class="ui @emGroup.ColsCount column grid">
+                            @foreach (var em in emGroup.Emojies)
+                            {
+                                <div class="em-col column"><img class="@emGroup.EmClass" src="@em.Src" alt="@em.Alt" /></div>
+                            }
+                        </div>
+                    </div>
+                    emCount++;
+                }
+            </div>
+            <div class="ui error message"></div>
+        </form>
+    </div>
+    <div class="ui chat-members tiny modal" data-chat-id="{{:Id}}">
+        <i class="close icon"></i>
+        <div class="header">Участники чата</div>
+        <div class="scrolling content">
+            <div class="ui fluid input">
+                <input type="text" placeholder="Найти участника" class="members-search" />
+            </div>
+            <div class="ui chat-members items" role="list">
+                <div class="active dot-loader-wrapper" style="height: 20px; min-height: 20px;">
+                    <div class="dot-loader">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui tiny chat-followers scrolling modal" data-chat-id="{{:Id}}">
+        <i class="close icon"></i>
+        <div class="header">Добавить участника чата</div>
+        <div class="content">
+            <div class="ui fluid input">
+                <input type="text" placeholder="Найти" class="foll-search" />
+            </div>
+            <div class="ui items" role="list">
+                <div class="active dot-loader-wrapper" style="height: 20px; min-height: 20px;">
+                    <div class="dot-loader">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<div class="ui tiny modal" id="attModal" role="dialog">
+    <i class="close icon"></i>
+    <div class="header">Вложения</div>
+    <div class="ui basic segment content" role="document">
+        <div class="ui fluid pointing secondary menu" role="tablist" id="att-menu">
+            <a class="active item" role="tab" data-tab="att-images">Изображения</a>
+            <a class="item" role="tab" data-tab="att-documents">Документы</a>
+        </div>
+        <div class="ui active four column grid tab" data-tab="att-images" role="tabpanel"></div>
+        <div class="ui four column grid tab" data-tab="att-documents" role="tabpanel"></div>
+    </div>
+</div>
+<script type="text/x-jsrender" id="messageTmpl">
+    {{if DividerDate != null}}
+    <div class="ui horizontal divider">{{:DividerDate}}</div>
+    {{/if}}
+    <div class="event" data-date="{{:Date}}" data-id="{{:Id}}" data-status="{{:Status.name}}" onclick="ChatMessages.Events.MessageClick($(this))">
+        <div class="label">
+            <img src="{{:Sender.AvatarSrc}}" />
+        </div>
+        <div class="content">
+            <div class="summary">
+                <a href="/user/profile/{{:Sender.UserName}}" class="user">{{:Sender.UserName}}</a>
+                <span class="date">{{:Time}}</span>
+                <span class="status" title="{{:Status.title}}"><i class="{{:Status.class}} violet icon"></i></span>
+            </div>
+            <div class="text">
+                {{:Message}}
+            </div>
+            {{if images.length > 0}}
+            <div class="extra images">
+                {{for images}}
+                <a href="{{:Src}}">
+                    <img src="{{:CompressedSrc}}" />
+                </a>
+                {{/for}}
+            </div>
+            {{/if}}
+            {{if documents.length > 0}}
+            <div class="meta">
+                {{for documents}}
+                <a download href="/files/download?path={{:Src}}&name={{:Name}}" target="_blank"><i class="attach icon"></i>{{:Name}}</a>
+                {{/for}}
+            </div>
+            {{/if}}
+        </div>
+        <div class="msg-mark-wrap"></div>
+    </div>
+</script>
+<script type="text/x-jsrender" id="attTmpl">
+    <div class="column" data-id="{{:Id}}">
+        {{if IsImage}}
+        <div class="ui small image">
+            <div class="ui dimmer">
+                <div class="content">
+                    <div class="center">
+                        <i class="big remove icon"></i>
+                    </div>
+                </div>
+            </div>
+            <img src="{{:Src}}" />
+        </div>
+        {{else}}
+        <div class="ui segment">
+            <div class="ui dimmer">
+                <div class="content">
+                    <div class="center">
+                        <i class="big remove icon"></i>
+                    </div>
+                </div>
+            </div>
+            <p>{{:Name}}</p>
+        </div>
+        {{/if}}
+    </div>
+</script>
+<script type="text/x-jsrender" id="attShowTmpl">
+    {{if IsImage}}
+    <div class="column" data-index="{{:Index}}">
+        <img src="{{:CompressedSrc}}" class="ui small image" />
+    </div>
+    {{else}}
+    <div class="column">
+        <div class="ui segment">
+            <div class="ui dimmer">
+                <div class="content">
+                    <div class="center">
+                        <i class="download icon"></i>
+                    </div>
+                </div>
+            </div>
+            <p>{{:Name}}</p>
+        </div>
+    </div>
+    {{/if}}
+</script>
+<script type="text/x-jsrender" id="chatItemTmpl">
+    <div class="item chat-item" data-creator-id="{{:CreatorId}}" data-id="{{:Id}}" onclick="ChatsApi.Loader.initChat('{{:Id}}', '{{:Name}}', {{:ChatType}})">
+        <img class="ui tiny circular image" src="{{:ImageSrc}}" />
+        <div class="content">
+            <div class="ui small header">
+                {{:Name}}
+                <span title="Новые сообщения!" class="ui {{if NewMessagesCount}}active {{/if}}msg-count violet label">{{:NewMessagesCount}}</span>
+            </div>
+            <span class="right floated" onclick="ChatsApi.remove('{{:Id}}', event)">
+                <i title="Удалить" class="red remove link icon"></i>
+            </span>
+            {{if LastMessage}}
+            <div class="description">{{:LastMessage.Message}}</div>
+            {{else}}
+            <div class="description">Нет сообщений</div>
+            {{/if}}
+            <div class="extra">
+                {{if LastMessage}}
+                <span class="ui send-date label">{{:LastMessage.SendDateStr}}</span>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+</script>
+@*Возможный участник чата(Подписчики текущего пользователя)*@
+<script type="text/x-jsrender" id="chatFollowerTmpl">
+    {{for followers ~chatId=chatId}}
+    <div class="item" role="listitem">
+        <img class="ui tiny circular image" src="{{:AvatarSrc}}" />
+        <div class="scrolling content">
+            <a class="ui small header" href="/user/profile/{{:UserName}}">{{:UserName}}</a>
+            <div class="description">{{:Description}}</div>
+        </div>
+        <div class="fol-wrap">
+            <button title="Добавить" onclick="ChatMembers.Api.add('{{>~chatId}}', '{{:Id}}', this)" class="ui add-fol primary circular icon button">
+                <i class="plus icon"></i>
+            </button>
+        </div>
+    </div>
+    {{/for}}
+</script>
+<script type="text/x-jsrender" id="chatMemberTmpl">
+    {{for members ~chatId=chatId}}
+    <div class="item" role="listitem">
+        <img class="ui tiny circular image" src="{{:User.AvatarSrc}}" />
+        <div class="content">
+            <a class="ui small header" href="/user/profile/{{:User.UserName}}">
+                {{:User.UserName}}
+            </a>
+            {{if Inviter}}
+            приглашён <a class="ui small header" href="/user/profile/{{:Inviter.UserName}}">{{:Inviter.UserName}}</a>
+            {{else CreatorId==User.Id}}
+            <span class="ui small header">создатель чата</span>
+            {{/if}}
+            <div class="description">{{:User.Description}}</div>
+            {{if (Inviter && Inviter.Id == '@currentUserId') || CreatorId == '@currentUserId'}}
+            <div class="extra">
+                <a class="ui small compact red button" onclick="ChatMembers.Api.exclude('{{>~chatId}}', '{{:User.Id}}', this)">
+                    <i class="remove user icon"></i>Исключить
+                </a>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+    {{/for}}
+</script>
+<script type="text/x-jsrender" id="possibleCompanionTmpl">
+    <div class="item" onclick="ChatsHelper.CompanionChatCreating.Events.click('{{:Id}}', '{{:UserName}}')">
+        <img class="ui avatar image" src="{{:AvatarSrc}}" />
+        <div class="content">
+            <div class="header">{{:UserName}}</div>
+        </div>
+    </div>
+</script>

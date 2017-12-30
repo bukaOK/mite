@@ -23,8 +23,6 @@ namespace Mite.DAL.Entities
         /// Сжатый контент
         /// </summary>
         public string Content_50 { get; set; }
-        [Obsolete("Заменено PostContentType, после обновления удалить")]
-        public bool IsImage { get; set; }
         /// <summary>
         /// Время последнего редактирования
         /// </summary>
@@ -33,10 +31,6 @@ namespace Mite.DAL.Entities
         /// Когда опубликовано
         /// </summary>
         public DateTime? PublishDate { get; set; }
-        [Obsolete("Заменено PublishDate, должно быть удалено")]
-        public bool IsPublished { get; set; }
-        [Obsolete("Заменено PostTypes, после обновления базы удалить")]
-        public bool Blocked { get; set; }
         public List<Tag> Tags { get; set; }
         public List<Comment> Comments { get; set; }
         /// <summary>

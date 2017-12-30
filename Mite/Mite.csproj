@@ -350,6 +350,7 @@
     <Compile Include="Attributes\Validation\CheckedAttribute.cs" />
     <Compile Include="BLL\Core\CrudService.cs" />
     <Compile Include="BLL\Core\DataService.cs" />
+    <Compile Include="BLL\Infrastructure\DataServiceException.cs" />
     <Compile Include="BLL\DTO\VkRepostDTO.cs" />
     <Compile Include="BLL\Helpers\FilesHelper.cs" />
     <Compile Include="BLL\Helpers\ImagesHelper.cs" />
@@ -360,6 +361,7 @@
     <Compile Include="BLL\Services\AuthorServiceService.cs" />
     <Compile Include="BLL\Services\AuthorServiceTypeService.cs" />
     <Compile Include="BLL\Services\CashService.cs" />
+    <Compile Include="BLL\Services\ChatMembersService.cs" />
     <Compile Include="BLL\Services\ChatService.cs" />
     <Compile Include="BLL\Services\CityService.cs" />
     <Compile Include="BLL\Services\CommentsService.cs" />
@@ -382,7 +384,9 @@
     <Compile Include="Controllers\Api\AuthorServicesController.cs" />
     <Compile Include="Controllers\Api\AuthorServiceTypesController.cs" />
     <Compile Include="Controllers\Api\DealsController.cs" />
+    <Compile Include="Controllers\Api\FavoritePostsController.cs" />
     <Compile Include="Controllers\Api\MessageController.cs" />
+    <Compile Include="Controllers\ChatMembersController.cs" />
     <Compile Include="Controllers\FilesController.cs" />
     <Compile Include="Controllers\AuthorServicesController.cs" />
     <Compile Include="Controllers\CashController.cs" />
@@ -395,7 +399,7 @@
     <Compile Include="Controllers\NotificationController.cs" />
     <Compile Include="Controllers\UserDealsController.cs" />
     <Compile Include="Controllers\ErrorController.cs" />
-    <Compile Include="Controllers\FollowersController.cs" />
+    <Compile Include="Controllers\Api\FollowersController.cs" />
     <Compile Include="Controllers\GoogleController.cs" />
     <Compile Include="Controllers\ModerController.cs" />
     <Compile Include="Controllers\Api\NotificationController.cs" />
@@ -406,7 +410,6 @@
     <Compile Include="Controllers\Api\TagsController.cs" />
     <Compile Include="Controllers\UserHelpersController.cs" />
     <Compile Include="Controllers\UserProfileController.cs" />
-    <Compile Include="Controllers\VkController.cs" />
     <Compile Include="Controllers\YandexController.cs" />
     <Compile Include="Core\CrudApiController.cs" />
     <Compile Include="Extensions\ClaimsExtensions.cs" />
@@ -911,15 +914,20 @@
     <None Include="Scripts\jquery-3.1.1.intellisense.js" />
     <Content Include="robots.txt" />
     <Content Include="Scripts\Api\AuthorServices.js" />
+    <Content Include="Scripts\Api\ChatFollowers.js" />
     <Content Include="Scripts\Api\ChatLoader.js" />
+    <Content Include="Scripts\Api\ChatMembers.js" />
     <Content Include="Scripts\Api\ChatMessages.js" />
+    <Content Include="Scripts\Api\Chats.js" />
     <Content Include="Scripts\Api\Cities.js" />
     <Content Include="Scripts\Api\Deals.js" />
+    <Content Include="Scripts\Api\FavoritePosts.js" />
     <Content Include="Scripts\Api\Payments.js" />
     <Content Include="Scripts\Api\ServiceTypes.js" />
     <Content Include="Scripts\BrowserSupport.js" />
     <Content Include="Scripts\content-tools.js" />
     <Content Include="Scripts\content-tools.min.js" />
+    <Content Include="Scripts\Custom\ChatsHelper.js" />
     <Content Include="Scripts\Custom\MsgFiles.js" />
     <Content Include="Scripts\Custom\DateTimeHelper.js" />
     <Content Include="Scripts\Custom\EmojiHelper.js" />
@@ -1048,6 +1056,11 @@
     <Content Include="Views\UserProfile\ClientIndex.cshtml" />
     <Content Include="Views\Deals\_ShowModer.cshtml" />
     <Content Include="Views\Notification\_UserNotifications.cshtml" />
+    <Content Include="Views\UserProfile\_Templates.cshtml" />
+    <Content Include="Views\UserProfile\_Modals.cshtml" />
+    <Content Include="Views\Chats\UserChats.cshtml" />
+    <Content Include="Views\Chats\_Chat.cshtml" />
+    <Content Include="Views\Chats\_Templates.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

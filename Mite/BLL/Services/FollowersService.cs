@@ -20,6 +20,13 @@ namespace Mite.BLL.Services
     public interface IFollowersService : IDataService
     {
         /// <summary>
+        /// Получить подписчиков для добавления в чаты
+        /// </summary>
+        /// <param name="chatId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task<IEnumerable<UserShortModel>> GetForChatAsync(Guid chatId, string userId);
+        /// <summary>
         /// Получить подписчиков пользователя
         /// </summary>
         /// <param name="userId"></param>
@@ -76,6 +83,12 @@ namespace Mite.BLL.Services
             });
 
             return fModels;
+        }
+
+        public async Task<IEnumerable<UserShortModel>> GetForChatAsync(Guid chatId, string userId)
+        {
+            var followers = await Database.GetRepo<FollowersRepository, Follower>().GetForChatAsync(chatId, userId);
+            return Mapper.Map<IEnumerable<UserShortModel>>(followers);
         }
     }
 }

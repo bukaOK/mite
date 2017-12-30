@@ -21,6 +21,16 @@
 @section meta{
     @ViewHelper.GenerateMeta(openGraphMeta)
 }
+@section styles{
+    <style>
+        [followers].grid.tab, [followings].tab{
+            margin: -0.5rem !important;
+        }
+        [followers].grid.tab>.column, [followings].grid.tab>.column{
+            padding: 0.5rem;
+        }
+    </style>
+}
 <div class="ui profile center aligned three column stackable grid segment">
     <div class="computer tablet only row">
         <div class="right aligned column">
@@ -179,16 +189,14 @@
     @if (currentUserName == pageUserName)
     {
         <a class="active item" data-tab="posts">Работы</a>
+        <a class="item" data-tab="followings">Я подписан</a>
     }
     else
     {
         <a class="active item" data-tab="posts/published">Работы</a>
     }
     <a class="item" id="followers-tab" data-tab="followers">Подписчики</a>
-    @if (currentUserName == pageUserName)
-    {
-        <a class="item" data-tab="followings">Я подписан</a>
-    }
+    <a class="item" data-tab="favorites">Избранное</a>
     <a class="item" data-tab="services">Услуги</a>
     <div class="right item">
         <i class="filter icon"></i>
@@ -239,12 +247,14 @@
         <div class="ui tab stackable three column basic segment grid" data-tab="followers"></div>
         <div class="ui tab stackable three column basic segment grid" data-tab="followings"></div>
         <div class="ui tab stackable two column basic segment grid" data-tab="services"></div>
+        <div class="ui tab stackable two column basic segment grid" data-tab="favorites"></div>
     }
     else
     {
         <div class="ui tab four column doubling basic segment grid" data-tab="followers"></div>
         <div class="ui tab four column doubling basic segment grid" data-tab="followings"></div>
         <div class="ui tab three column doubling basic segment grid" data-tab="services"></div>
+        <div class="ui tab stackable four column basic segment grid" data-tab="favorites"></div>
     }
     <div class="dot-loader-wrapper">
         <div class="dot-loader">
@@ -278,12 +288,14 @@ else
                     <div class="ui tab two column stackable basic segment grid" data-tab="posts/published"></div>
                     <div class="ui doubling tab three column basic segment grid" data-tab="followers"></div>
                     <div class="ui tab stackable two column basic segment grid" data-tab="services"></div>
+                    <div class="ui tab stackable two column basic segment grid" data-tab="favorites"></div>
                 }
                 else
                 {
-                    <div class="ui tab three column basic segment grid" data-tab="posts/published"></div>
+                    <div class="ui tab four column basic segment grid" data-tab="posts/published"></div>
                     <div class="ui tab four column basic segment grid" data-tab="followers"></div>
                     <div class="ui tab three column basic segment grid" data-tab="services"></div>
+                    <div class="ui tab stackable four column basic segment grid" data-tab="favorites"></div>
                 }
                 <div class="dot-loader-wrapper">
                     <div class="dot-loader">
@@ -318,308 +330,8 @@ else
         </div>
     }
 }
-<div class="ui basic modal" id="confirmPostDelete">
-    <div class="ui icon header">
-        <i class="remove circle icon"></i>
-        Удалить работу
-    </div>
-    <div class="content" style="text-align: center">
-        <p>Вы уверены? Данное действие будет невозможно отменить</p>
-    </div>
-    <div class="actions">
-        <div class="ui red basic cancel inverted button">
-            <i class="remove icon"></i>
-            Нет
-        </div>
-        <div class="ui green ok inverted button">
-            <i class="checkmark icon"></i>
-            Да
-        </div>
-    </div>
-</div>
-<div class="ui small modal" id="donateModal">
-    <i class="close icon"></i>
-    <div class="header">
-        Поддержать @Model.UserName
-    </div>
-    <div class="content">
-        <form class="ui form" id="donateForm" action="https://money.yandex.ru/quickpay/confirm.xml" method="post" target="_blank">
-            <div class="field">
-                <textarea placeholder="Ваши пожелания =)" name="comment" rows="3"></textarea>
-            </div>
-            <div class="inline fields">
-                <div class="field">
-                    <input type="number" placeholder="Сумма" name="sum" />
-                </div>
-                <div class="field">
-                    <div class="ui radio checkbox">
-                        <input type="radio" name="paymentType" value="PC" class="hidden" />
-                        <label>Яндекс.Деньги</label>
-                    </div>
-                </div>
-                <div class="field">
-                    <div class="ui radio checkbox">
-                        <input type="radio" name="paymentType" value="PC" class="hidden" />
-                        <label>Банковская карта</label>
-                    </div>
-                </div>
-                <div class="field">
-                    <div class="ui radio checkbox">
-                        <input type="radio" name="paymentType" value="MC" class="hidden" />
-                        <label>Мобильный</label>
-                    </div>
-                </div>
-            </div>
-            <input type="hidden" name="receiver" value="@Model.YandexWalId" />
-            <input type="hidden" name="quickpay-form" value="donate" />
-            <input type="hidden" name="targets" value="Поддержка пользователя @Model.UserName" />
-            <input type="hidden" name="formcomment" value="Поддержка пользователя @Model.UserName" />
-            <input type="hidden" name="short-dest" value="Поддержка пользователя @Model.UserName" />
-            <input type="hidden" name="successURL" value="@Request.Url" />
-        </form>
-    </div>
-    <div class="actions">
-        <button type="submit" form="donateForm" class="ui primary button">Поддержать</button>
-    </div>
-</div>
-<script id="followersTmpl" type="text/x-jsrender">
-    <div class="column">
-        <div class="ui compact segment follower-card grid" style="margin: 0px;">
-            <div class="five wide column">
-                <img src="{{:AvatarSrc}}" class="ui small circular image">
-            </div>
-            <div class="eleven wide column">
-                <h4 class="ui header">
-                    <span class="content">
-                        <a href="/user/profile/{{:UserName}}">{{:UserName}}</a> &bull; <i class="yellow star icon"></i>{{:Rating}}
-                        <span class="sub header">{{:Description}}</span>
-                    </span>
-                </h4>
-            </div>
-        </div>
-    </div>
-</script>
-<script id="postsTmpl" type="text/x-jsrender">
-    <div class="column" data-post-id="{{:Id}}">
-        <div class="ui segment {{if !IsImage && Cover != null}}invert{{/if}}{{if !ShowAdultContent}} hide-adult-content{{/if}} post-item" 
-        {{if !IsImage && Cover != null}} style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})"{{/if}} 
-        id="post{{:Id}}">
-            @if (currentUserName == pageUserName)
-            {
-                <div class="extra content">
-                    {{if IsPublished}}
-                    <div class="ui default floating compact dropdown button">
-                        Действия
-                        <i class="dropdown icon"></i>
-                        <div class="menu" role="menu">
-                            {{if CanEdit}}
-                            <a class="item" href="/posts/edit/{{:Id}}" role="menuitem"><i class="edit icon"></i>Редактировать</a>
-                            {{/if}}
-                            <div class="item" onclick="showDeletePostModal('{{:Id}}')" role="menuitem"><i class="remove icon"></i>Удалить</div>
-                        </div>
-                    </div>
-                    {{else}}
-                    <div class="ui primary buttons">
-                        <a class="ui compact button" href="/posts/edit/{{:Id}}">Редактировать</a>
-                        <div class="ui compact floating dropdown icon button">
-                            <i class="dropdown icon"></i>
-                            <div class="menu" role="menu">
-                                <div class="item" onclick="publishPost('{{:Id}}')" role="menuitem"><i class="announcement icon"></i>Опубликовать</div>
-                                <div class="item" onclick="showDeletePostModal('{{:Id}}')" role="menuitem"><i class="remove icon"></i>Удалить</div>
-                            </div>
-                        </div>
-                    </div>
-                    {{/if}}
-                </div>
-                <div class="ui {{if !IsImage && Cover != null}}inverted {{/if}} divider"></div>
-            }
-            {{if IsImage}}
-            <div class="img-content">
-                {{if IsPublished}}
-                <a href="@Url.Action("ShowPost", "Posts")/{{:Id}}">
-                    <img src="{{:Content}}" class="ui image" />
-                </a>
-                {{else}}
-                <a href="/posts/edit/{{:Id}}">
-                    <img src="{{:Content}}" class="ui image" />
-                </a>
-                {{/if}}
-                {{if IsGif}}
-                <div class="active gif-wrapper">
-                    <button class="ui large primary circular icon button" onclick="loadFullGif('{{:FullPath}}', '{{:Id}}', $(this))"><i class="fire icon"></i></button>
-                    <span class="ui violet label">gif</span>
-                </div>
-                {{/if}}
-            </div>
-            {{else}}
-            {{if IsPublished}}
-            <a class="post-content content" href="@Url.Action("ShowPost", "Posts")/{{:Id}}">
-                {{:Content}}
-            </a>
-            {{else}}
-            <a class="post-content content" href="/posts/edit/{{:Id}}">
-                {{:Content}}
-            </a>
-            {{/if}}
-            {{/if}}
-            <div class="ui {{if !IsImage && Cover != null}}inverted{{/if}} divider"></div>
-            <div class="extra content">
-                <a class="ui {{if !IsImage && Cover != null}}inverted {{/if}}header" style="margin-bottom: 5px" href="/posts/showpost/{{:Id}}">
-                    {{:Header}}
-                    <span class="sub header">
-                        {{:Description}}
-                    </span>
-                </a>
-                {{for Tags}}
-                <a class="ui{{if !~root.IsImage && ~root.Cover != null}} invert{{/if}} label" href="/posts/top?tags={{>#data}}">{{>#data}}</a>
-                {{/for}}
-            </div>
-            <div class="ui {{if !IsImage && Cover != null}}inverted{{/if}} divider"></div>
-            <div class="extra content">
-                {{:PublicTimeStr}}
-                {{if IsPublished}}
-                <div class="right">
-                    <i class="yellow star icon"></i>{{:Rating}}
-                    <i class="{{if Cover == null}}blue{{else}}black{{/if}} unhide icon"></i>{{:Views}}
-                    <i class="green comments outline icon"></i>{{:CommentsCount}}
-                </div>
-                {{/if}}
-            </div>
-            {{if !ShowAdultContent}}
-            <div class="ui dimmer">
-                <div class="content">
-                    <div class="center">
-                        <h2 class="ui inverted header">Взрослый контент(18+)</h2>
-                        <button class="ui primary button" onclick="$(this).parents('.post-item').dimmer('hide')">Показать</button>
-                    </div>
-                </div>
-            </div>
-            {{/if}}
-        </div>
-    </div>
-</script>
-<script id="servicesTmpl" type="text/x-jsrender">
-    <div class="column" data-service-id="{{:Id}}">
-        <div class="ui service-item segment">
-            <div class="extra content">
-                <a href="@Url.Action("Top", "AuthorServices")?serviceType={{:ServiceType.Id}}" class="ui right floated teal tag label">{{:ServiceType.Name}}</a>
-                @if (currentUserName == pageUserName)
-                {
-                    <div class="ui violet compact buttons">
-                        <a class="ui button" href="@Url.Action("Edit", "AuthorServices")/{{:Id}}">Редактировать</a>
-                        <div class="ui floating dropdown icon button">
-                            <i class="dropdown icon"></i>
-                            <div class="menu">
-                                <div class="item" onclick="AuthorServiceApi.remove('{{:Id}}')"><i class="delete icon"></i>Удалить</div>
-                            </div>
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <a class="ui primary compact button" href="@Url.Action("Show", "AuthorServices")/{{:Id}}">Смотреть</a>
-                }
-            </div>
-            <div class="ui divider"></div>
-            <div class="img-content">
-                <a href="@Url.Action("Show", "AuthorServices")/{{:Id}}">
-                    <img src="{{:ImageSrc}}" class="ui image" />
-                </a>
-            </div>
-            <div class="ui divider"></div>
-            <div class="extra content">
-                <a class="ui header" href="@Url.Action("Show", "AuthorServices")/{{:Id}}">
-                    {{:Title}}
-                    <span class="sub header">{{:Description}}</span>
-                </a>
-            </div>
-            <div class="ui divider"></div>
-            <div class="extra content">
-                <i class="calendar violet icon"></i>
-                <span>Срок: {{:Deadline}}</span>
-                {{if Price != null && Price > 0}}
-                <div class="right">
-                    <i class="ruble green icon"></i>
-                    <span>Цена: {{:Price}}</span>
-                </div>
-                {{/if}}
-            </div>
-        </div>
-    </div>
-</script>
-<template id="emptyPostTmpl">
-    <div class="sixteen wide column">
-        <h2 class="ui center aligned icon header" style="color: #6D6788; margin-top: 20px;">
-            <i class="frown icon"></i>
-            @if (currentUserName != pageUserName)
-            {
-                <span class="content">
-                    У пользователя пока нет работ.
-                </span>
-            }
-            else
-            {
-                <span class="content">
-                    У вас пока нет работ.
-                </span>
-            }
-        </h2>
-    </div>
-</template>
-<template id="emptyBlockedTmpl">
-    <div class="sixteen wide column">
-        <h2 class="ui center aligned icon header" style="color: #6D6788">
-            <i class="smile icon"></i>
-            <span class="content">У вас нет заблокированных работ.</span>
-        </h2>
-    </div>
-</template>
-<template id="emptyFollowersTmpl">
-    <div class="sixteen wide column">
-        <h3 class="ui center aligned icon header" style="color: #6D6788">
-            <i class="users icon"></i>
-            @if (currentUserName == pageUserName)
-            {
-                <span class="content">
-                    У вас пока нет подписчиков.
-                </span>
-            }
-            else
-            {
-                <span class="content">
-                    У пользователя пока нет подписчиков.
-                </span>
-            }
-        </h3>
-    </div>
-</template>
-<template id="emptyFollowingsTmpl">
-    <div class="sixteen wide column">
-        <h3 class="ui center aligned icon header" style="color: #6D6788">
-            <i class="users icon"></i>
-            <span class="content">
-                Вы пока ни на кого не подписались.
-            </span>
-        </h3>
-    </div>
-</template>
-<template id="emptyServicesTmpl">
-    <div class="sixteen wide column">
-        <h3 class="ui center aligned icon header" style="color: #6D6788">
-            <i class="suitcase icon"></i>
-            <span class="content">
-                @if(pageUserName == currentUserName)
-                {
-                    @Html.Raw("У вас пока нет услуг.")
-                }
-                else
-                {
-                    @Html.Raw("У пользователя пока нет услуг.")
-                }
-            </span>
-        </h3>
-    </div>
-</template>
+@{ Html.RenderPartial("_Modals"); }
+@{ Html.RenderPartial("_Templates"); }
 @Scripts.Render("~/bundles/jsrender", "~/bundles/grid", "~/bundles/api")
 <script>
     var delPostId;
@@ -756,37 +468,13 @@ else
                 on: 'hover'
             });
         }
-
-        var grids = [
-            {
-                tabName: 'posts/published',
-                elem: $('.tab[data-tab="posts/published"]').masonry()
-            },
-            {
-                tabName: 'published',
-                elem: $('.tab[data-tab="published"]').masonry()
-            },
-            {
-                tabName: 'drafts',
-                elem: $('.tab[data-tab="drafts"]').masonry()
-            },
-            {
-                tabName: 'blocked',
-                elem: $('.tab[data-tab="blocked"]').masonry()
-            },
-            {
-                tabName: 'followers',
-                elem: $('.tab[data-tab="followers"]').masonry()
-            },
-            {
-                tabName: 'followings',
-                elem: $('.tab[data-tab="followings"]').masonry()
-            },
-            {
-                tabName: 'services',
-                elem: $('.tab[data-tab="services"]').masonry()
-            }
-        ];
+        var grids = [];
+        $('.tab.grid[data-tab]').each(function (index, elem) {
+            grids.push({
+                tabName: elem.dataset.tab,
+                elem: $(elem).masonry()
+            });
+        });
         if(isOwner){
             ViewHelper.activateSidebarItem('.user-profile.item');
         }
@@ -860,6 +548,13 @@ else
             tmplSelector: '#followersTmpl',
             emptyTmplSelector: '#emptyFollowersTmpl'
         });
+        var favoritesTab = new Tab({
+            parentTab: null,
+            name: 'favorites',
+            isActive: false,
+            tmplSelector: '#favoritePostsTmpl',
+            emptyTmplSelector: '#emptyPostTmpl'
+        });
         var servicesTab = new Tab({
             parentTab: null,
             name: 'services',
@@ -867,7 +562,7 @@ else
             tmplSelector: '#servicesTmpl',
             emptyTmplSelector: '#emptyServicesTmpl'
         });
-        TabFilter.Tabs.items.push(followersTab, servicesTab);
+        TabFilter.Tabs.items.push(followersTab, servicesTab, favoritesTab);
         TabFilter.Filters.add({
             name: 'sort',
             elem: $('#sortDropDown'),
@@ -891,7 +586,7 @@ else
                     tab.content.html(html);
                     $('.dot-loader-wrapper').removeClass('active');
                 } else if(resp.length > 0) {
-                    if((tab.parentTab != undefined && tab.parentTab != null && tab.parentTab.name == 'posts') || tab.name == 'posts/published'){
+                    if((tab.parentTab && tab.parentTab.name === 'posts') || tab.name === 'posts/published' || tab.name === 'favorites'){
                         resp.forEach(function(elem){
                             elem.LastEdit += elem.LastEdit[elem.LastEdit - 1] == 'Z' ? '' : 'Z';
                             if(elem.PublishDate != null){

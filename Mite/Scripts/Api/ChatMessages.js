@@ -11,6 +11,7 @@ function MessageStatus(stClass, title, name) {
     this.name = name;
 }
 var ChatMessages = {
+    dealChat: false,
     /**
      * Отправлен ли запрос на прочтение сообщений
     */
@@ -25,65 +26,6 @@ var ChatMessages = {
         message[0].dataset.name = status.name;
         message.find('span.status').attr('title', status.title).children('.icon')
             .removeClass().addClass(status.class + ' violet icon');
-    },
-    initHub: function (chatId) {
-        var chatHub = $.connection.chatHub;
-        window.hubReady.done(function () {
-            chatHub.server.readMessages(chatId);
-        });
-
-        chatHub.client.addMessage = function (msg) {
-            msg.images = [];
-            msg.documents = [];
-            if (msg.Attachments !== null && msg.Attachments.length > 0) {
-                msg.Attachments.forEach(function (att, j) {
-                    att.Index = j;
-                    if (att.Type === 0) {
-                        msg.images.push(att);
-                    } else {
-                        msg.documents.push(att);
-                    }
-                });
-            }
-            var date = new Date();
-            msg.Time = DateTimeHelper.toTimeString(date);
-            msg.Date = DateTimeHelper.toDateString(date, 'short');
-            msg.IsoDate = date;
-            msg.Status = ChatMessages.Api.statuses.readed;
-
-            var tmpl = $.templates('#messageTmpl'),
-                chatLoader = window.chats[msg.ChatId];
-            chatLoader.scrollbar.settings.endFixed = true;
-            chatLoader.chat.append(tmpl.render(msg));
-            if (document.hasFocus()) {
-                chatHub.server.readMessage(msg.Id);
-            } else {
-                ChatMessages.readSended = false;
-            }
-        }
-        window.onfocus = function () {
-            if (document.hasFocus() && !ChatMessages.readSended) {
-                window.hubReady.done(function () {
-                    chatHub.server.readMessages(chatId);
-                    ChatMessages.readSended = true;
-                });
-            }
-        }
-        chatHub.client.readMessage = function (msgId) {
-            ChatMessages.changeStatus($('.chat .event[data-id="' + msgId + '"]'), ChatMessages.Api.statuses.readed);
-        }
-        chatHub.client.readAll = function (chatId) {
-            $('.chat[data-id="' + chatId + '"] .event[data-status="sended"]').each(function (index, elem) {
-                ChatMessages.changeStatus($(elem), ChatMessages.Api.statuses.readed);
-            });
-        }
-        //Обработка ввода
-        chatHub.client.beginType = function (chatId, userName) {
-            $('form[data-chat-id="' + chatId + '"] .chat-dl').addClass('active').siblings('.type-label').text(userName + ' пишет').show();
-        }
-        chatHub.client.endType = function (chatId) {
-            $('form[data-chat-id="' + chatId + '"] .chat-dl').removeClass('active').siblings('.type-label').hide();
-        }
     },
     /**
      * Обработка ввода сообщения
@@ -105,6 +47,87 @@ var ChatMessages = {
             }
         });
     },
+    initHub: function () {
+        var self = ChatMessages;
+        var chatHub = $.connection.chatHub;
+
+        chatHub.client.addMessage = function (msg) {
+            var chatId = msg.ChatId,
+                chat = window.chats[chatId],
+                now = new Date();
+            if (!chat && !self.dealChat) {
+                var chatItem = $('.chat-item[data-id="' + chatId + '"]');
+                if (chatItem.length === 0) {
+                    var chatsLoader = ChatsApi.Loader;
+                    msg.Chat.LastMessage = msg;
+                    msg.Chat.LastMessage.SendDateStr = 'Сегодня';
+                    chatsLoader.loader.after(chatsLoader.tmpl.render(msg.Chat));
+                    chatItem = $('.chat-item[data-id="' + chatId + '"]');
+                }
+                chatItem.find('.description').html(msg.Message);
+                chatItem.find('.send-date').text('Сегодня');
+                return;
+            }
+            var chatLoader = chat.ChatLoader,
+                chatItem = chat.chatItem,
+                chatWrap = chat.chatWrap;
+            msg.images = [];
+            msg.documents = [];
+            if (msg.Attachments !== null && msg.Attachments.length > 0) {
+                msg.Attachments.forEach(function (att, j) {
+                    att.Index = j;
+                    if (att.Type === 0) {
+                        msg.images.push(att);
+                    } else {
+                        msg.documents.push(att);
+                    }
+                });
+            }
+            msg.Time = DateTimeHelper.toTimeString(now);
+            msg.Date = DateTimeHelper.toDateString(now, 'short');
+            msg.IsoDate = now;
+
+            var tmpl = $.templates('#messageTmpl');
+            chatLoader.updateScrollState(true);
+            if (!self.dealChat) {
+                chatItem.find('.description').html(msg.Message);
+                chatItem.find('.send-date').text('Сегодня');
+            }
+            if (chat.isInView()) {
+                msg.Status = ChatMessages.Api.statuses.readed;
+                chatHub.server.readMessage(msg.Id);
+            } else {
+                msg.Status = ChatMessages.Api.statuses.new;
+                chat.hasNew = true;
+                if (!self.dealChat)
+                    chatItem.find('.msg-count.label').addClass('active')[0].innerHTML++;
+            }
+            chatLoader.chat.append(tmpl.render(msg));
+        }
+        window.onfocus = function () {
+            for (var chatId in window.chats) {
+                var chat = window.chats[chatId];
+                if (chat.isInView()) {
+                    chat.readMessages();
+                }
+            }
+        }
+        chatHub.client.readMessage = function (msgId) {
+            ChatMessages.changeStatus($('.chat .event[data-id="' + msgId + '"]'), ChatMessages.Api.statuses.readed);
+        }
+        chatHub.client.readAll = function (chatId) {
+            $('.chat[data-id="' + chatId + '"] .event[data-status="sended"]').each(function (index, elem) {
+                ChatMessages.changeStatus($(elem), ChatMessages.Api.statuses.readed);
+            });
+        }
+        //Обработка ввода
+        chatHub.client.beginType = function (chatId, userName) {
+            $('form[data-chat-id="' + chatId + '"] .chat-dl').addClass('active').siblings('.type-label').text(userName + ' пишет').show();
+        }
+        chatHub.client.endType = function (chatId) {
+            $('form[data-chat-id="' + chatId + '"] .chat-dl').removeClass('active').siblings('.type-label').hide();
+        }
+    },
     Events: {
         /**
          * Обработка нажатия на сообщение
@@ -112,10 +135,11 @@ var ChatMessages = {
         */
         MessageClick: function (message) {
             message.toggleClass('marked').find('.msg-mark-wrap').toggleClass('active');
+            var msgActions = message.parents('.chat-wrap').find('.msg-actions');
             if ($('.chat .event').hasClass('marked')) {
-                $('.msg-actions').addClass('active');
+                msgActions.addClass('active');
             } else {
-                $('.msg-actions').removeClass('active');
+                msgActions.removeClass('active');
             }
         }
     },
@@ -124,7 +148,8 @@ var ChatMessages = {
             wait: new MessageStatus('wait', 'Ожидает', 'wait'),
             sended: new MessageStatus('checkmark', 'Отправлено', 'sended'),
             readed: new MessageStatus('check circle outline', 'Прочитано', 'readed'),
-            error: new MessageStatus('remove', 'Ошибка', 'error')
+            error: new MessageStatus('remove', 'Ошибка', 'error'),
+            new: new MessageStatus('mail', 'Новое', 'new')
         },
         url: '/api/message',
         /**
@@ -135,20 +160,22 @@ var ChatMessages = {
          * @param {string} message контент сообщения
         */
         add: function (chatId, targetUser, message) {
-            var dialogArea = $('.dialog-area');
-            if (dialogArea.html() === '' && MsgFiles.files.length === 0) {
+            var $form = $('.form[data-chat-id="' + chatId + '"]'),
+                dialogArea = $form.find('.dialog-area'),
+                msgFiles = window.chats[chatId].MsgFiles;
+            if (dialogArea.html() === '' && msgFiles.files.length === 0) {
                 return false;
             }
             var attSize = 0;
-            MsgFiles.files.forEach(function (file) {
+            msgFiles.files.forEach(function (file) {
                 attSize += file.Size;
             });
             if (attSize / 1024 / 1024 > 80) {
-                $('#chat-form').form('add errors', ['Суммарный размер файлов не должен превышать 80 мбайт.']);
+                $form.form('add errors', ['Суммарный размер файлов не должен превышать 80 мбайт.']);
                 return false;
             }
             var self = ChatMessages.Api,
-                $btn = $('#msgSendBtn').addClass('loading'),
+                $btn = $form.children('.msgSend.button').addClass('loading'),
                 now = new Date(),
                 formData = new FormData(),
                 msgData = {
@@ -170,7 +197,7 @@ var ChatMessages = {
             formData.append('Recipient.Id', targetUser.Id);
             formData.append('ChatId', chatId);
             formData.append('Message', message);
-            MsgFiles.files.forEach(function (file, i) {
+            msgFiles.files.forEach(function (file, i) {
                 formData.append('StreamAttachments[' + i + ']', file.Stream);
             });
             return $.ajax({
@@ -198,14 +225,25 @@ var ChatMessages = {
                     }
                     msgData.Id = resp.Id;
                     dialogArea.html('');
-                    MsgFiles.files = [];
+                    msgFiles.files = [];
                     $('.attachments.grid').removeClass('active').html('');
-                    var chatLoader = window.chats[resp.ChatId];
+                    var chat = window.chats[resp.ChatId],
+                        chatLoader = chat.ChatLoader;
+                    if (!ChatMessages.dealChat) {
+                        chat.chatItem.find('.description').html(message);
+                        chat.chatItem.find('.ui.msg-count.label').removeClass('active').text(0);
+                    }
+                    $('.chat[data-id="' + resp.ChatId + '"] .event[data-status="new"]').each(function (index, elem) {
+                        ChatMessages.changeStatus($(elem), ChatMessages.Api.statuses.readed);
+                    });
+                    chat.hasNew = false;
+
                     chatLoader.chat.append(tmpl.render(msgData));
-                    chatLoader._updateScrollState(true);
+                    chatLoader.updateScrollState(true);
                     window.hubReady.done(function () {
                         $.connection.chatHub.server.addMessage(resp);
                     });
+
                 },
                 error: function (jqXhr) {
                     var errMsg = 'Внутренняя ошибка';
@@ -213,28 +251,12 @@ var ChatMessages = {
                         errMsg = jqXhr.responseText;
                     }
                     console.log(jqXhr);
-                    $('#chat-form').form('add errors', [errMsg]);
+                    $form.form('add errors', [errMsg]);
                 },
                 complete: function () {
                     $btn.removeClass('loading');
                 }
             });
-            //var xhr = new XMLHttpRequest();
-            //xhr.open('post', '/messages/add', true);
-            //xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-            //xhr.send(formData);
-            //xhr.onreadystatechange = function () {
-            //    if (xhr.readyState === 4) {
-            //        switch (xhr.status) {
-            //            case 200:
-            //                var resp = JSON.parse(xhr.responseText);
-                            
-            //                break;
-            //            default:
-            //        }
-                    
-            //    }
-            //}
         },
         /**
          * Удаляем выделенные сообщения
@@ -246,6 +268,10 @@ var ChatMessages = {
             }).transition({
                 animation: 'fly left',
                 onHide: function () {
+                    var chatId = $(this).parents('.chat.feed').data('id');
+                    //window.chats[chatId].ChatLoader.updateScrollState();
+                    $('.msg-actions[data-chat-id="' + chatId + '"]').removeClass('active');
+
                     this.remove();
                     $('.chat .divider+.divider').prev().remove();
                     var lastDivider = $('.chat .divider:last-child');
@@ -253,7 +279,7 @@ var ChatMessages = {
                         lastDivider.remove();
                     }
                 }
-                });
+            });
             return $.ajax({
                 type: 'delete',
                 url: '/api/message?' + ids,

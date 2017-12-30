@@ -13,6 +13,7 @@ namespace Mite.Helpers
 {
     public static class EmojiHelper
     {
+        private static List<EmojiGroup> emojiGroups;
         public static void InitOnion()
         {
             var path = HostingEnvironment.MapPath("~/Content/onion/");
@@ -31,21 +32,22 @@ namespace Mite.Helpers
                 writer.Write(json);
             }
         }
-        public static IList<EmojiGroup> GetEmojies()
+        public static List<EmojiGroup> GetEmojies()
         {
+            if (emojiGroups != null)
+                return emojiGroups;
             var path = HostingEnvironment.MapPath("~/Content/emojies/data.json");
-            IList<EmojiGroup> emojiGroups;
 
             using (var reader = new StreamReader(path))
             {
                 var json = reader.ReadToEnd();
-                emojiGroups = JsonConvert.DeserializeObject<IList<EmojiGroup>>(json);
+                emojiGroups = JsonConvert.DeserializeObject<List<EmojiGroup>>(json);
             }
             path = HostingEnvironment.MapPath("~/Content/onion/data.json");
             using(var reader = new StreamReader(path))
             {
                 var json = reader.ReadToEnd();
-                var onions = JsonConvert.DeserializeObject<IList<Emoji>>(json);
+                var onions = JsonConvert.DeserializeObject<List<Emoji>>(json);
                 emojiGroups.Add(new EmojiGroup
                 {
                     Name = "Onion",

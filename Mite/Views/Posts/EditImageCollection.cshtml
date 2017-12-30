@@ -112,7 +112,7 @@
         <div class="ui cancel red button">Нет</div>
     </div>
 </div>
-<template id="postItemFormTmpl">
+<script type="text/html" id="postItemFormTmpl">
     <form class="ui form p-item-form" style="display: none">
         <div class="ui divider"></div>
         <i title="Удалить" onclick="Posts.removeCollectionItem(this)" class="red link large close icon"></i>
@@ -140,7 +140,7 @@
             </div>
         </div>
     </form>
-</template>
+</script>
 @section scripts{
     @Scripts.Render("~/bundles/api")
     <script>

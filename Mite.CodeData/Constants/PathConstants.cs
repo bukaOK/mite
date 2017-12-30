@@ -10,5 +10,6 @@ namespace Mite.CodeData.Constants
     {
         public const string VirtualImageFolder = "/Public/Images";
         public const string VirtualDocumentFolder = "/Public/Documents";
+        public const string AvatarSrc = "/Content/images/doubt-ava.png";
     }
 }

@@ -9,22 +9,17 @@
 
     var openGraphMeta = new Dictionary<string, string>
     {
-        { "og:title", ViewBag.Title },
+        { "og:title", Model.Header },
         { "og:type", "article" },
         { "og:url", Url.Action("Index", "ShowPost", new{id = Model.Id}, "http") }
     };
-    if (Model.ContentType == PostContentTypes.Image)
+    if (Model.ContentType == PostContentTypes.Image || Model.ContentType == PostContentTypes.ImageCollection)
     {
         openGraphMeta.Add("og:image", Model.Content);
-    }
-    else if(Model.ContentType == PostContentTypes.ImageCollection)
-    {
-        openGraphMeta.Add("og:image", Model.Cover);
     }
 
     var userId = User.Identity.GetUserId();
     var tagsRow = "";
-    //var vkWidgetImage = Model.IsImage ? "http://" + Request.Url.Host + Model.Content : "";
     var pageUserName = Model.User.UserName;
     var currentUserName = User.Identity.Name;
 
@@ -32,7 +27,6 @@
     {
         tagsRow = string.Join(",", Model.Tags);
     }
-
 }
 @section meta{
     @ViewHelper.GenerateMeta(openGraphMeta)
@@ -51,6 +45,21 @@
         </div>
         <div class="right aligned column">
             <div id="vk_share" style="display: inline-block;"></div>
+            <div class="ui tiny labeled button">
+                @if (Model.IsFavorite)
+                {
+                    <button class="ui compact small primary button" onclick="FavoritePostsApi.remove(this, '@Model.Id', '@userId')">
+                        <i class="like icon"></i><span class="content">Из избранных</span>
+                    </button>
+                }
+                else
+                {
+                    <button class="ui compact small primary button" onclick="FavoritePostsApi.add(this, '@Model.Id', '@userId')">
+                        <i class="like icon"></i><span class="content">В избранное</span>
+                    </button>
+                }
+                <span class="ui violet basic left pointing label">@Model.FavoriteCount</span>
+            </div>
             @if(currentUserName == pageUserName && Model.CanEdit)
             {
                 @Html.ActionLink("Редактировать", "EditPost", "Posts", new { id = Model.Id }, new { @class = "ui primary small compact button" })
@@ -277,18 +286,11 @@
     var isImage = @((Model.ContentType == PostContentTypes.Image || Model.ContentType == PostContentTypes.ImageCollection).ToString().ToLower());
 
     function loadPostTime(){
-        var options = {
-            year: 'numeric',
-            day: 'numeric',
-            month: 'long',
-            hour: 'numeric',
-            minute: 'numeric'
-        };
         var dateIso = '@Model.LastEdit.ToString("o")';
         dateIso += dateIso[dateIso.length - 1] == 'Z' ? '' : 'Z';
         var date = new Date(dateIso);
 
-        $('.post-time').html(date.toLocaleString("ru", options));
+        $('.post-time').html(DateTimeHelper.toDateString(date, 'long', true) + ',' + DateTimeHelper.toTimeString(date));
     }
     function loadCommentsCount(){
         var elem = document.getElementById('comments-count');
@@ -401,7 +403,7 @@
                 if(resp.status == undefined){
                     resp = JSON.parse(resp);
                 }
-                MiteGallery.init(resp.data.Items, resp.data.InitialIndex, '@Url.Action("ShowPost", "Posts")', $('#post-content'));
+                MiteGallery.init(resp.data.Items, resp.data.InitialIndex, '/posts/showpost/', $('#post-content'));
             },
             error: function(jqXhr){
             }
@@ -470,7 +472,6 @@
         document.getElementById('vk_share').innerHTML = VK.Share.button({
             url: '@Request.Url.AbsoluteUri',
             title: '@Model.Header',
-            @*image: '@vkWidgetImage',*@
             noparse: false,
         }, {
             type: 'custom',

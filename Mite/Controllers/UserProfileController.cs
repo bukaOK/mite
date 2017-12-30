@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using Mite.Models;
 using Mite.BLL.IdentityManagers;
+using Mite.BLL.Infrastructure;
 
 namespace Mite.Controllers
 {
@@ -18,7 +19,6 @@ namespace Mite.Controllers
         private readonly IPostsService _postsService;
         private readonly IFollowersService _followersService;
         private readonly IAuthorServiceService _authorService;
-        private readonly AppUserManager userManager;
 
         public UserProfileController(IUserService userService, IPostsService postsService, IFollowersService followersService,
             IAuthorServiceService authorService, AppUserManager userManager)
@@ -27,7 +27,6 @@ namespace Mite.Controllers
             _postsService = postsService;
             _followersService = followersService;
             _authorService = authorService;
-            this.userManager = userManager;
         }
         /// <summary>
         /// Страница пользователя
@@ -111,6 +110,10 @@ namespace Mite.Controllers
         {
             return Index(name);
         }
+        public Task<ActionResult> Favorites(string name)
+        {
+            return Index(name);
+        }
         [HttpPost]
         public async Task<ActionResult> Followings(string name, SortFilter sort)
         {
@@ -120,11 +123,28 @@ namespace Mite.Controllers
         [HttpPost]
         public async Task<ActionResult> Services(string name, SortFilter sort)
         {
-            var user = await userManager.FindByNameAsync(name);
-            if (user == null)
-                return Json(JsonStatuses.Error);
-            var services = await _authorService.GetByUserAsync(user.Id, sort);
-            return Json(JsonStatuses.Success, services);
+            try
+            {
+                var services = await _authorService.GetByUserAsync(name, sort);
+                return Json(JsonStatuses.Success, services);
+            }
+            catch (DataServiceException e)
+            {
+                return Json(JsonStatuses.ValidationError, e.Message);
+            }
+        }
+        [HttpPost]
+        public async Task<ActionResult> Favorites(string name, SortFilter sort)
+        {
+            try
+            {
+                var posts = await _postsService.GetByUserAsync(name, User.Identity.GetUserId(), sort, PostTypes.Favorite);
+                return Json(JsonStatuses.Success, posts);
+            }
+            catch (DataServiceException e)
+            {
+                return Json(JsonStatuses.ValidationError, e.Message);
+            }
         }
     }
 }

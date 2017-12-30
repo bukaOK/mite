@@ -1,9 +1,5 @@
 ﻿using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.SignalR;
 using Mite.BLL.Services;
-using Mite.Hubs;
-using Mite.Models;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +12,7 @@ using System.Web.Http;
 
 namespace Mite.Controllers.Api
 {
+    [Authorize]
     public class MessageController : ApiController
     {
         private readonly IChatMessagesService messagesService;
@@ -58,7 +55,7 @@ namespace Mite.Controllers.Api
         //    return Content(HttpStatusCode.ServiceUnavailable, result.Errors);
         //}
         [HttpDelete]
-        public async Task<IHttpActionResult> Remove([FromUri]Guid[] ids)
+        public async Task<IHttpActionResult> Remove([FromUri]List<Guid> ids)
         {
             var result = await messagesService.RemoveListAsync(ids, User.Identity.GetUserId());
             if (result.Succeeded)

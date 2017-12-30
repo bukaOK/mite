@@ -76,7 +76,7 @@
             }
         }, $(btn));
     },
-    create: function () {
+    create: function (btn) {
         var $form = $(this.formSelector);
         var $msg = $form.find('.message');
 
@@ -84,7 +84,7 @@
             $msg.removeClass('error').addClass('green');
             $msg.html('Успешно')
             location.href = '/user/deals/outgoing/new';
-        });
+        }, $(btn));
     },
     remove: function (id) {
         var self = DealsApi;

@@ -9,7 +9,7 @@ var MiteGallery = {
             items.push({
                 thumb: item.ImageCompressed,
                 src: item.ImageSrc,
-                subHtml: '<a title="Перейти" href="' + baseLink + '"/' + item.Id + '" class="ui inverted header">' + item.Title + '</a>'
+                subHtml: '<a title="Перейти" href="' + baseLink + item.Id + '" class="ui inverted header">' + item.Title + '</a>'
             });
         });
         $elem.on('click', function (ev) {

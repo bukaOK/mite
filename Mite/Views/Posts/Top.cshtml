@@ -199,7 +199,7 @@
         </div>
     </div>
 </script>
-<template id="emptyResultTmpl">
+<script type="text/html" id="emptyResultTmpl">
     <div class="column">
         <h2 class="ui center aligned icon header" style="color: #6D6788; margin-top: 20px;">
             <i class="frown icon"></i>
@@ -208,7 +208,7 @@
             </span>
         </h2>
     </div>
-</template>
+</script>
 @Scripts.Render("~/bundles/grid", "~/bundles/scroll")
 <script>
     var tagsInitialized = false;
@@ -229,6 +229,11 @@
         });
     }
     $(function () {
+        $('.ui.label').each(function (index, el) {
+            if ($(this).height() > 12) {
+                $(this).css('margin-top', '2px');
+            }
+        });
         var grid = $('.posts.grid').masonry({
             itemSelector: '.column',
             horizontalOrder: true

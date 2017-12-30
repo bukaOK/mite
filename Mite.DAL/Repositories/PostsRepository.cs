@@ -79,8 +79,11 @@ namespace Mite.DAL.Repositories
             var query = "select posts.*, (select count(*) from dbo.\"Comments\" as comments where comments.\"PostId\"=posts.\"Id\") " +
                 "as \"CommentsCount\", tags.* from dbo.\"Posts\" as posts " +
                 "left outer join dbo.\"TagPosts\" as tag_posts on tag_posts.\"Post_Id\"=posts.\"Id\" " +
-                "left outer join dbo.\"Tags\" as tags on tags.\"Id\"=tag_posts.\"Tag_Id\" " +
-                "where posts.\"UserId\"=@userId and posts.\"Type\"=@postType ";
+                "left outer join dbo.\"Tags\" as tags on tags.\"Id\"=tag_posts.\"Tag_Id\" ";
+            if (postType == PostTypes.Favorite)
+                query += "right outer join dbo.\"FavoritePosts\" as favorites on favorites.\"PostId\"=posts.\"Id\" and favorites.\"UserId\"=@userId ";
+            else
+                query += "where posts.\"UserId\"=@userId and posts.\"Type\"=@postType ";
             switch (sort)
             {
                 case SortFilter.Popular:
@@ -161,8 +164,10 @@ namespace Mite.DAL.Repositories
         }
         public async Task<IEnumerable<PostDTO>> GetByFilterAsync(PostTopFilter filter)
         {
-            var query = "select posts.\"Id\" from dbo.\"Posts\" as posts " +
-                "where posts.\"Type\"=@PostType and \"PublishDate\" is not null and \"PublishDate\" > @MinDate and \"PublishDate\" < @MaxDate ";
+            var query = "select posts.\"Id\" from dbo.\"Posts\" as posts ";
+            if (filter.OnlyFollowings)
+                query += "inner join dbo.\"Users\" as users on users.\"Id\"=posts.\"UserId\" ";
+            query += "where posts.\"Type\"=@PostType and \"PublishDate\" is not null and \"PublishDate\" > @MinDate and \"PublishDate\" < @MaxDate ";
             if (!string.IsNullOrEmpty(filter.PostName))
             {
                 query += "and (setweight(to_tsvector('mite_ru', posts.\"Title\"), 'A') || " +
@@ -241,7 +246,7 @@ namespace Mite.DAL.Repositories
         }
         public async Task<IEnumerable<Post>> GetGalleryByUserAsync(string userId)
         {
-            return await Table.Where(x => x.UserId == userId && x.Type == PostTypes.Published && (x.ContentType == PostContentTypes.Image
+            return await Table.AsNoTracking().Where(x => x.UserId == userId && x.Type == PostTypes.Published && (x.ContentType == PostContentTypes.Image
                 || x.ContentType == PostContentTypes.ImageCollection))
                 .ToListAsync();
         }

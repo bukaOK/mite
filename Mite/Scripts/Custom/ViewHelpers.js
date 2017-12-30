@@ -24,6 +24,14 @@
                 return word2;
         }
     },
+    /**
+     * Обрезает строку с 0 позиции
+     * @param {string} str строка
+     * @param {number} length максимальная длина
+    */
+    truncStr: function (str, length) {
+        return str.length > length ? str.substr(0, length - 3) + '...' : str;
+    },
     /** 
      * Преобразует разницу во времени в слова (два дня назад, неделю назад)
      * @param {number} publicTime время публикации (в миллисекундах)

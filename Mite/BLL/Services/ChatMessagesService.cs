@@ -24,9 +24,16 @@ namespace Mite.BLL.Services
     public interface IChatMessagesService : IDataService
     {
         Task<IEnumerable<ChatMessageModel>> GetByFilterAsync(Guid chatId, string userId, int page, int range);
-        Task<DataServiceResult> AddAsync(ChatMessageModel model);
-        Task<DataServiceResult> RemoveListAsync(Guid[] ids, string userId);
+        /// <summary>
+        /// Добавление сообщения
+        /// </summary>
+        /// <param name="model">Модель</param>
+        /// <param name="inSession">Находится ли чат в сессии(недавно созданный)</param>
+        /// <returns></returns>
+        Task<DataServiceResult> AddAsync(ChatMessageModel model, bool inSession);
+        Task<DataServiceResult> RemoveListAsync(List<Guid> ids, string userId);
         Task<DataServiceResult> ReadAsync(Guid id, string userId);
+        int GetNewCount(string userId);
     }
     public class ChatMessagesService : DataService, IChatMessagesService
     {
@@ -44,13 +51,38 @@ namespace Mite.BLL.Services
             this.userManager = userManager;
         }
 
-        public async Task<DataServiceResult> AddAsync(ChatMessageModel model)
+        public async Task<DataServiceResult> AddAsync(ChatMessageModel model, bool inSession)
         {
-            var chat = await chatRepository.GetWithMembersAsync(model.ChatId);
-            if(chat == null)
-                return DataServiceResult.Failed("Неизвестный диалог");
-            if (!chat.Members.Any(x => x.Id == model.Sender.Id))
-                return DataServiceResult.Failed("Неизвестный пользователь");
+            Chat chat = null;
+            if(inSession)
+            {
+                chat = await chatRepository.GetByMembersAsync(model.Recipients.Select(x => x.Id).Take(2));
+                if(chat == null)
+                {
+                    chat = new Chat
+                    {
+                        Members = model.Recipients.Select(x => new ChatMember
+                        {
+                            EnterDate = DateTime.UtcNow,
+                            Status = ChatMemberStatuses.InChat,
+                            UserId = x.Id
+                        }).Take(2).ToList()
+                    };
+                    chat.Id = model.ChatId;
+                    await chatRepository.AddAsync(chat);
+                }
+            }
+            else
+            {
+                chat = await chatRepository.GetWithMembersAsync(model.ChatId);
+                if (chat == null)
+                    return DataServiceResult.Failed("Неизвестный чат");
+                if (!chat.Members.Any(x => x.UserId == model.Sender.Id))
+                    return DataServiceResult.Failed("Неизвестный пользователь");
+                var currentMember = chat.Members.First(x => x.UserId == model.Sender.Id);
+                if (currentMember.Status == ChatMemberStatuses.Removed || currentMember.Status == ChatMemberStatuses.Removed)
+                    currentMember.Status = ChatMemberStatuses.InChat;
+            }
 
             var key = CryptoHelper.CreateKey(chat.Id.ToString() + model.Sender.Id + SecKey);
             var encrypted = await CryptoHelper.EncryptAsync(model.Message, key);
@@ -61,13 +93,13 @@ namespace Mite.BLL.Services
                 Content = encrypted.data,
                 SenderId = model.Sender.Id,
                 SendDate = DateTime.UtcNow,
-                Recipients = chat.Members.Select(x =>
+                Recipients = chat.Members.Where(x => x.Status == ChatMemberStatuses.InChat).Select(x =>
                 {
                     var re = new ChatMessageUser
                     {
-                        UserId = x.Id
+                        UserId = x.UserId
                     };
-                    if (x.Id == model.Sender.Id)
+                    if (x.UserId == model.Sender.Id)
                         re.Read = true;
 
                     return re;
@@ -104,11 +136,12 @@ namespace Mite.BLL.Services
 
                 model.Id = message.Id;
                 model.Sender = Mapper.Map<UserShortModel>(await userManager.FindByIdAsync(message.SenderId));
-                model.Attachments = Mapper.Map<IList<MessageAttachmentModel>>(message.Attachments);
-                model.Recipients = chat.Members.Select(x => new UserShortModel
+                model.Attachments = Mapper.Map<List<MessageAttachmentModel>>(message.Attachments);
+                model.Recipients = message.Recipients.Select(x => new UserShortModel
                 {
-                    Id = x.Id
+                    Id = x.UserId
                 }).ToList();
+                model.Chat = Mapper.Map<ShortChatModel>(chat);
                 model.StreamAttachments = null;
                 return DataServiceResult.Success(model);
             }
@@ -122,13 +155,22 @@ namespace Mite.BLL.Services
         public async Task<IEnumerable<ChatMessageModel>> GetByFilterAsync(Guid chatId, string userId, int page, int range)
         {
             var chat = await chatRepository.GetWithMembersAsync(chatId);
-            if (!chat.Members.Any(x => x.Id == userId))
+            //Когда чат в сессии
+            if (chat == null)
+                return new List<ChatMessageModel>();
+            if (!chat.Members.Any(x => x.UserId == userId))
                 throw new ArgumentException("Неизвестный пользователь");
             var offset = (page - 1) * range;
 
             var messages = await messagesRepository.GetAsync(chatId, range, offset, userId);
             
             return Mapper.Map<IEnumerable<ChatMessageModel>>(messages);
+        }
+
+        public int GetNewCount(string userId)
+        {
+            var count = messagesRepository.GetNewCount(userId);
+            return count;
         }
 
         public async Task<DataServiceResult> ReadAsync(Guid id, string userId)
@@ -148,11 +190,19 @@ namespace Mite.BLL.Services
             }
         }
 
-        public async Task<DataServiceResult> RemoveListAsync(Guid[] ids, string userId)
+        public async Task<DataServiceResult> RemoveListAsync(List<Guid> ids, string userId)
         {
             try
             {
-                await messagesRepository.RemoveListAsync(ids, userId);
+                var attsToRemove = await messagesRepository.RemoveListAsync(ids, userId);
+                if(attsToRemove != null && attsToRemove.Count > 0)
+                {
+                    foreach(var attachment in attsToRemove)
+                    {
+                        FilesHelper.DeleteFile(attachment.Src);
+                        FilesHelper.DeleteFile(attachment.CompressedSrc);
+                    }
+                }
                 return DataServiceResult.Success();
             }
             catch(Exception e)

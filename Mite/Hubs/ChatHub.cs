@@ -2,6 +2,7 @@
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.SignalR;
 using Mite.BLL.IdentityManagers;
+using Mite.CodeData.Enums;
 using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
 using Mite.DAL.Repositories;
@@ -25,7 +26,7 @@ namespace Mite.Hubs
         public ChatHub(ILifetimeScope lifetimeScope)
         {
             this.lifetimeScope = lifetimeScope.BeginLifetimeScope();
-            var unitOfWork = lifetimeScope.Resolve<IUnitOfWork>();
+            var unitOfWork = new UnitOfWork(new AppDbContext());
             userManager = lifetimeScope.Resolve<AppUserManager>();
 
             chatMessagesRepository = unitOfWork.GetRepo<ChatMessagesRepository, ChatMessage>();
@@ -43,20 +44,22 @@ namespace Mite.Hubs
             var userName = Context.User.Identity.Name;
             var chat = chatRepository.GetWithMembers(chatId);
 
+            if (chat == null)
+                return;
             if(beginTyping)
                 foreach (var member in chat.Members)
                 {
-                    if(member.Id != userId)
+                    if(member.UserId != userId && member.Status == ChatMemberStatuses.InChat)
                     {
-                        Clients.Group(member.Id).beginType(chatId, userName);
+                        Clients.Group(member.UserId).beginType(chatId, userName);
                     }
                 }
             else
                 foreach (var member in chat.Members)
                 {
-                    if(member.Id != userId)
+                    if(member.UserId != userId)
                     {
-                        Clients.Group(member.Id).endType(chatId);
+                        Clients.Group(member.UserId).endType(chatId);
                     }
                 }
         }
@@ -84,14 +87,16 @@ namespace Mite.Hubs
             chatMessagesRepository.ReadUnreaded(chatId, userId);
             //Получаем вместе с чатом всех участников
             var chat = chatRepository.GetWithMembers(chatId);
-            foreach(var member in chat.Members)
-            {
-                //делаем у всех участников сообщения прочитанными
-                if (member.Id != userId)
+            //Чат может не существовать, если его только создали и он в сессии
+            if(chat != null)
+                foreach(var member in chat.Members)
                 {
-                    Clients.Group(member.Id).readAll(chatId);
+                    //делаем у всех участников чата прочитанными
+                    if (member.UserId != userId && member.Status != ChatMemberStatuses.Removed)
+                    {
+                        Clients.Group(member.UserId).readAll(chatId);
+                    }
                 }
-            }
         }
         public override Task OnConnected()
         {

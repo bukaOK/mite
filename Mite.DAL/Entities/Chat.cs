@@ -2,17 +2,23 @@
 using Mite.DAL.Core;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mite.DAL.Entities
 {
     public class Chat : GuidEntity
     {
-        public IList<User> Members { get; set; }
-        public IList<ChatMessage> Messages { get; set; }
+        public string Name { get; set; }
+        public string ImageSrc { get; set; }
+        public string ImageSrcCompressed { get; set; }
+        public int MaxMembersCount { get; set; }
+        public ChatTypes Type { get; set; }
+        [ForeignKey("Creator")]
+        public string CreatorId { get; set; }
+        public User Creator { get; set; }
+        public List<ChatMember> Members { get; set; }
+        [Obsolete("Заменено Members")]
+        public List<User> Users { get; set; }
+        public List<ChatMessage> Messages { get; set; }
     }
 }

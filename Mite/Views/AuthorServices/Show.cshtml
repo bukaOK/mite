@@ -31,7 +31,7 @@
             <form class="ui form" id="dealForm">
                 @Html.HiddenFor(x => x.Id)
                 <div class="field">
-                    <button type="button" class="ui animated fade fluid primary button" onclick="DealsApi.create()">
+                    <button type="button" class="ui animated fade fluid primary button" onclick="DealsApi.create(this)">
                         <div class="hidden content"><i class="shop icon"></i></div>
                         <div class="visible content">Сделать заказ</div>
                     </button>

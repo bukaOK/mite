@@ -32,7 +32,7 @@ else
         @Html.EditorFor(x => x.Password)
         @Html.AntiForgeryToken()
         <button type="button" class="ui primary button" onclick="changeEmail(this)">Изменить</button>
-        <div class="ui red message" hidden id="emailSendingFailedMsg">
+        <div class="ui error message" id="emailSendingFailedMsg">
         </div>
     }
 <script>
@@ -74,16 +74,16 @@ else
                     resp.data.forEach(function(elem){
                         errorStr += '<li>' + elem + '</li>';
                     });
-                    $msg.addClass('red').removeClass('green');
+                    $msg.addClass('error').removeClass('green');
                     $msg.html(errorStr);
                 } else{
-                    $msg.addClass('green').removeClass('red');
+                    $msg.addClass('green').removeClass('error');
                     $msg.html('E-mail успешно изменен.');
                 }
             },
             error: function(err){
                 var $msg = $('#emailSendingFailedMsg');
-                $msg.addClass('red').removeClass('green');
+                $msg.addClass('error').removeClass('green');
                 $msg.html('Ошибка сервера.');
             },
             complete: function(){

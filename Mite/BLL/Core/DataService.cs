@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNet.Identity;
-using Mite.DAL.Infrastructure;
+﻿using Mite.DAL.Infrastructure;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 
 namespace Mite.BLL.Core
 {
@@ -22,23 +22,26 @@ namespace Mite.BLL.Core
 
         protected DataServiceResult CommonError(string message, Exception e)
         {
-            logger.Error($"{message}: {e.Message}");
+            var msg = $"{message}: {e.Message}";
+            if (e.InnerException != null)
+                msg += $";{e.InnerException.Message}";
+            logger.Error(msg);
             return DataServiceResult.Failed(message);
         }
     }
     public class DataServiceResult
     {
-        private DataServiceResult(IEnumerable<string> errors)
+        public DataServiceResult(IEnumerable<string> errors)
         {
             Succeeded = false;
             Errors = errors;
         }
-        private DataServiceResult(bool success, object data)
+        public DataServiceResult(bool success, object data)
         {
             Succeeded = success;
             ResultData = data;
         }
-        private DataServiceResult(bool success, object data, IEnumerable<string> errors)
+        public DataServiceResult(bool success, object data, IEnumerable<string> errors)
         {
             Succeeded = success;
             ResultData = data;

@@ -202,7 +202,7 @@ namespace Mite.BLL.Services
             }
             if(user.Id != currentUserId)
             {
-                userModel.IsFollowing = await followersRepo.IsFollower(currentUserId, user.Id);
+                userModel.IsFollowing = await followersRepo.IsFollowerAsync(currentUserId, user.Id);
             }
             return userModel;
         }

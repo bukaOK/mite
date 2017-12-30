@@ -78,6 +78,7 @@
     <Compile Include="Core\IRepository.cs" />
     <Compile Include="Core\Repository.cs" />
     <Compile Include="DTO\AuthorServiceTypeDTO.cs" />
+    <Compile Include="DTO\ChatDTO.cs" />
     <Compile Include="DTO\DealGalleryItemDTO.cs" />
     <Compile Include="DTO\FeedbackDTO.cs" />
     <Compile Include="DTO\PostDTO.cs" />
@@ -88,7 +89,9 @@
     <Compile Include="Entities\AuthorService.cs" />
     <Compile Include="Entities\AuthorServiceType.cs" />
     <Compile Include="Entities\CashOperation.cs" />
+    <Compile Include="Entities\ChatMember.cs" />
     <Compile Include="Entities\ChatMessageAttachment.cs" />
+    <Compile Include="Entities\FavoritePost.cs" />
     <Compile Include="Entities\GroupChatMember.cs" />
     <Compile Include="Entities\ChatMessageUser.cs" />
     <Compile Include="Entities\City.cs" />
@@ -115,6 +118,7 @@
     <Compile Include="Entities\User.cs" />
     <Compile Include="Filters\PostTopFilter.cs" />
     <Compile Include="Filters\ServiceTopFilter.cs" />
+    <Compile Include="Filters\UserChatsFilter.cs" />
     <Compile Include="Infrastructure\AppDbContext.cs" />
     <Compile Include="Infrastructure\IUnitOfWork.cs" />
     <Compile Include="Infrastructure\UnitOfWork.cs" />
@@ -178,17 +182,35 @@
     <Compile Include="Migrations\201711051241144_AddDisputeChat.Designer.cs">
       <DependentUpon>201711051241144_AddDisputeChat.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201712061913425_AddFavorites.cs" />
+    <Compile Include="Migrations\201712061913425_AddFavorites.Designer.cs">
+      <DependentUpon>201712061913425_AddFavorites.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201712131543507_UpdateChats.cs" />
+    <Compile Include="Migrations\201712131543507_UpdateChats.Designer.cs">
+      <DependentUpon>201712131543507_UpdateChats.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201712131546297_RenameChatMembers.cs" />
+    <Compile Include="Migrations\201712131546297_RenameChatMembers.Designer.cs">
+      <DependentUpon>201712131546297_RenameChatMembers.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201712181738307_AddInviters.cs" />
+    <Compile Include="Migrations\201712181738307_AddInviters.Designer.cs">
+      <DependentUpon>201712181738307_AddInviters.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\AuthorServiceRepository.cs" />
     <Compile Include="Repositories\AuthorServiceTypeRepository.cs" />
     <Compile Include="Repositories\CashOperationsRepository.cs" />
+    <Compile Include="Repositories\ChatMembersRepository.cs" />
     <Compile Include="Repositories\CitiesRepository.cs" />
     <Compile Include="Repositories\CommentsRepository.cs" />
     <Compile Include="Repositories\DealRepository.cs" />
     <Compile Include="Repositories\ChatMessagesRepository.cs" />
     <Compile Include="Repositories\ChatRepository.cs" />
     <Compile Include="Repositories\ExternalServiceRepository.cs" />
+    <Compile Include="Repositories\FavoritePostsRepository.cs" />
     <Compile Include="Repositories\FollowersRepository.cs" />
     <Compile Include="Repositories\HelpersRepository.cs" />
     <Compile Include="Repositories\NotificationRepository.cs" />
@@ -253,6 +275,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201711051241144_AddDisputeChat.resx">
       <DependentUpon>201711051241144_AddDisputeChat.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201712061913425_AddFavorites.resx">
+      <DependentUpon>201712061913425_AddFavorites.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201712131543507_UpdateChats.resx">
+      <DependentUpon>201712131543507_UpdateChats.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201712131546297_RenameChatMembers.resx">
+      <DependentUpon>201712131546297_RenameChatMembers.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201712181738307_AddInviters.resx">
+      <DependentUpon>201712181738307_AddInviters.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

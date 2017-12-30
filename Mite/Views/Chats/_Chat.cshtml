@@ -1,0 +1,56 @@
+﻿
+<script>
+    $(function () {
+        $('.emoji-btn').popup({
+            inline: true,
+            hoverable: true,
+            position: 'top center'
+        });
+        $('.dialog-area').keydown(function (ev) {
+            var self = this;
+            if (ev.which === 13 && ev.shiftKey === false) {
+                ChatMessages.Api.add('@Model.Id', {
+                    AvatarSrc: '@Model.CurrentUser.AvatarSrc',
+                    Id: '@Model.CurrentUser.Id',
+                    UserName: '@Model.CurrentUser.UserName'
+                }, $(self).html());
+                return false;
+            }
+        });
+        $('.emoji .tabs .item').tab();
+        $('.emoji .tab').each(function (index, elem) {
+            new PerfectScrollbar(elem);
+        });
+        $('.msgSend.button').click(function () {
+            ChatMessages.Api.add('@Model.Id', {
+                AvatarSrc: '@Model.CurrentUser.AvatarSrc',
+                Id: '@Model.CurrentUser.Id',
+                UserName: '@Model.CurrentUser.UserName'
+            }, $('.dialog-area').html());
+        }).popup({
+            inline: true,
+            delay: {
+                show: 150,
+                hide: 0
+            },
+            position: 'bottom center'
+        });
+        var emPs = new PerfectScrollbar('.em-wrapper', {
+            useBothWheelAxes: true
+        });
+        window.chats = {
+            '@Model.Id': {
+                ChatLoader: new ChatLoader('@Model.Id'),
+                MsgFiles: new MsgFiles('@Model.Id')
+            }
+        };
+        $('.em-col').click(function () {
+            EmojiHelper.addToArea('.dialog-area', this.childNodes[0].cloneNode());
+        }).mousedown(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+        ChatMessages.chatId = '@Model.Id';
+        chats['@Model.Id'].ChatLoader.loadNext();
+    });
+</script>

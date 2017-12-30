@@ -1,0 +1,133 @@
+﻿@using Mite.Extensions
+@model Mite.Models.ChatModel
+@{
+    ViewBag.Title = "Чат";
+}
+@section styles{
+    @Styles.Render("~/Content/dialog", "~/Content/lgallery")
+}
+<div class="ui stackable grid">
+    <div class="four wide column">
+        <div class="ui chat-items-wrap segment">
+            <div class="ui fluid input">
+                <input type="text" placeholder="Найти чат" oninput="ChatsApi.Loader.refresh(this.value)" id="chatsInput" />
+                <i title="Найти собеседников" class="chat-add link violet plus icon" onclick="$('#possibleChatCompanions').modal('show')"></i>
+            </div>
+            <div class="ui items chat-items">
+                <div class="active dot-loader-wrapper" style="height: 20px; min-height: 20px;">
+                    <div class="dot-loader">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="nine wide column" id="chatContext">
+        <div class="ui start active segment chat-wrap">
+            <h4 class="ui centered header">Нажмите на чат, чтобы начать.</h4>
+        </div>
+    </div>
+    <div class="three wide column">
+        @*<div class="ui vertical menu" role="menu">
+            <a class="active item" role="menuitem">Приватные</a>
+            <a class="item" role="menuitem">Публичные</a>
+        </div>*@
+        <button class="ui fluid green inverted button" onclick="$('#chatCreateModal').modal('show')">
+            Создать чат
+        </button>
+    </div>
+</div>
+<div class="ui coupled tiny modal" id="chatCreateModal">
+    <div class="header">Создать чат</div>
+    <div class="content">
+        <form class="ui form">
+            @Html.HiddenFor(x => x.ImageSrc)
+            <div class="fields">
+                <div class="four wide field">
+                    <label title="Выбрать изображение" class="chat-create-img" id="imageSetLabel">
+                        <input type="file" onchange="ChatsHelper.ChatCreating.read(this)" style="display: none" />
+                    </label>
+                </div>
+                <div class="twelve wide field">
+                    <div class="field">
+                        <label>@Html.DisplayNameFor(x => x.Name)</label>
+                        @Html.TextBoxFor(x => x.Name)
+                    </div>
+                    <div class="field">
+                        <label>@Html.DisplayNameFor(x => x.MaxMembersCount)</label>
+                        @Html.TextBoxFor(x => x.MaxMembersCount, new { placeholder = "100" })
+                    </div>
+                </div>
+            </div>
+            @Html.HiddenFor(x => x.ChatType, new { Value = ChatTypes.PrivateGroup })
+            @*<div class="inline fields">
+                <label>@Html.DisplayNameFor(x => x.ChatType)</label>
+                <div class="field">
+                    <div class="ui radio checkbox" title="Чат будет доступен всем пользователям">
+                        @Html.RadioButtonFor(x => x.ChatType, ChatTypes.PrivateGroup, new { @checked = true })
+                        <label>Приватный</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui radio checkbox" title="Чат будет доступен лишь приглашённым участниками чата">
+                        @Html.RadioButtonFor(x => x.ChatType, ChatTypes.Public)
+                        <label>Публичный</label>
+                    </div>
+                </div>
+            </div>*@
+            <div class="ui error message"></div>
+        </form>
+    </div>
+    <div class="actions">
+        <button class="ui green ok button">Сохранить</button>
+        <button class="ui red deny button">Отмена</button>
+    </div>
+</div>
+<div class="ui coupled mini modal" id="chatImageSetModal">
+    <div class="header">Настройка картинки</div>
+    <div class="content">
+        <div class="crop-container"></div>
+    </div>
+    <div class="actions">
+        <button class="ui green ok button">Сохранить</button>
+        <button class="ui deny red button">Отмена</button>
+    </div>
+</div>
+<div class="ui mini modal" id="possibleChatCompanions">
+    <i class="close icon"></i>
+    <div class="header">Добавить собеседника</div>
+    <div class="content">
+        <div class="ui fluid input">
+            <input placeholder="Найти" type="text" oninput="ChatsHelper.CompanionChatCreating.refresh(this.value)" />
+        </div>
+        <div class="ui large middle aligned selection list" role="list">
+            <div class="active dot-loader-wrapper" style="height: 20px; min-height: 20px;">
+                <div class="dot-loader">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@{ Html.RenderPartial("_Templates", Model); }
+@section scripts{
+@Scripts.Render("~/bundles/api", "~/bundles/grid", "~/bundles/gallery", "~/bundles/croppie")
+<script>
+    $(function () {
+        @Html.Raw(Html.FormValidation<Mite.Models.ChatModel>("#chatCreateModal .form"))
+        ChatsApi.Loader.init({
+            Id: '@Model.CurrentUser.Id',
+            AvatarSrc: '@Model.CurrentUser.AvatarSrc',
+            UserName: '@Model.CurrentUser.UserName'
+        });
+        ChatMessages.initHub();
+        ChatsHelper.ChatCreating.init();
+        ChatsHelper.CompanionChatCreating.init();
+        $('#chatCreateModal .checkbox').checkbox();
+    });
+</script>
+}

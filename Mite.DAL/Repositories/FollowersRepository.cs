@@ -8,6 +8,7 @@ using System.Data.Entity;
 using System.Threading.Tasks;
 using System.Linq;
 using Mite.CodeData.Enums;
+using System;
 
 namespace Mite.DAL.Repositories
 {
@@ -40,10 +41,9 @@ namespace Mite.DAL.Repositories
                 return follower;
             }, new { userId });
         }
-        public async Task<bool> IsFollower(string followerId, string followingId)
+        public async Task<bool> IsFollowerAsync(string followerId, string followingId)
         {
-            var count = await Table.CountAsync(x => x.UserId == followerId && x.FollowingUserId == followingId);
-            return count > 0;
+            return await Table.AnyAsync(x => x.UserId == followerId && x.FollowingUserId == followingId);
         }
         public async Task RemoveAsync(string followerId, string followingId)
         {
@@ -53,7 +53,7 @@ namespace Mite.DAL.Repositories
         }
         public async Task<IEnumerable<Follower>> GetFollowingsByUserAsync(string userId, SortFilter sort)
         {
-            var folQuery = Table.Where(x => x.UserId == userId).Include(x => x.FollowingUser);
+            var folQuery = Table.AsNoTracking().Where(x => x.UserId == userId).Include(x => x.FollowingUser);
             switch (sort)
             {
                 case SortFilter.New:
@@ -79,6 +79,20 @@ namespace Mite.DAL.Repositories
         public Task<int> GetFollowingsCountAsync(string followerId)
         {
             return Table.CountAsync(x => x.UserId == followerId);
+        }
+        /// <summary>
+        /// Подписчики пользователя для добавления в чат
+        /// </summary>
+        /// <param name="chatId">Чат</param>
+        /// <param name="userId">Пользователь, для которого ищем подписчиков</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<User>> GetForChatAsync(Guid chatId, string userId)
+        {
+            var query = "select users.* from dbo.\"Followers\" as followers inner join dbo.\"Users\" as users on users.\"Id\"=followers.\"UserId\" " +
+                "left outer join (select ch_mem.\"Status\", ch_mem.\"UserId\" from dbo.\"ChatMembers\" as ch_mem where ch_mem.\"ChatId\"=@chatId) " +
+                "as chat_members on chat_members.\"UserId\"=users.\"Id\" where followers.\"FollowingUserId\"=@userId and " +
+                "(chat_members.\"Status\" is null or chat_members.\"Status\"=@excludeStatus);";
+            return await Db.QueryAsync<User>(query, new { chatId, userId, excludeStatus = ChatMemberStatuses.Excluded });
         }
     }
 }

@@ -3,43 +3,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Newtonsoft.Json;
+using Microsoft.AspNet.Identity;
 
 namespace Mite.Core
 {
     public abstract class BaseController : Controller
     {
+        protected string CurrentUserId => User.Identity.GetUserId();
         protected ContentResult Json(JsonStatuses status)
         {
-            return Content(JsonConvert.SerializeObject(new { status = status }), "application/json");
+            return Content(JsonConvert.SerializeObject(new { status }), "application/json");
         }
         protected ContentResult Json(JsonStatuses status, string message, object data)
         {
-            return Content(JsonConvert.SerializeObject(new
-            {
-                status = status,
-                message = message,
-                data = data
-            }), "application/json");
+            return Content(JsonConvert.SerializeObject(new { status, message, data }), "application/json");
         }
 
         protected ContentResult Json(JsonStatuses status, object data)
         {
-            return Content(JsonConvert.SerializeObject(new
-            {
-                status = status,
-                data = data
-            }), "application/json");
+            return Content(JsonConvert.SerializeObject(new { status, data }), "application/json");
         }
 
         protected ContentResult Json(JsonStatuses status, string message)
         {
             if (status == JsonStatuses.Error)
                 Response.StatusCode = 500;
-            return Content(JsonConvert.SerializeObject(new
-            {
-                status = status,
-                message = message
-            }), "application/json");
+            return Content(JsonConvert.SerializeObject(new { status, message }), "application/json");
         }
         protected ActionResult RedirectToLocal(string returnUrl)
         {

@@ -82,9 +82,13 @@ namespace Mite.Controllers
                 return Forbidden();
             var moder = await userManager.FindByIdAsync(User.Identity.GetUserId());
             var chat = await chatRepo.GetWithMembersAsync((Guid)deal.DisputeChatId);
-            if (chat.Members.Any(x => x.Id == moder.Id))
+            if (chat.Members.Any(x => x.UserId == moder.Id))
                 return Forbidden();
-            chat.Members.Add(moder);
+            chat.Members.Add(new ChatMember
+            {
+                UserId = moder.Id,
+                ChatId = chat.Id
+            });
             try
             {
                 deal.ModerId = User.Identity.GetUserId();

@@ -16,6 +16,11 @@ namespace Mite.Models
         [Display(Name = "Заголовок")]
         [MaxLength(100, ErrorMessage = "Слишком большой заголовок")]
         public string Header { get; set; }
+        public bool IsFavorite { get; set; }
+        /// <summary>
+        /// Сколько пользователей добавили в избранное
+        /// </summary>
+        public int FavoriteCount { get; set; }
         private string content;
         /// <summary>
         /// Если коллекция изображений или документ, то хранится документ, иначе изображение(это на входе)

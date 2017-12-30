@@ -25,7 +25,7 @@
         <div class="ui hidden message" style="text-align: center" id="change-ava-msg"></div>
     </div>
     <div class="column">
-        <div class="avatar edit" id="someId" style="display: none"></div>
+        <div class="avatar edit" style="display: none"></div>
     </div>
 </div>
 @Scripts.Render("~/bundles/croppie")
@@ -92,11 +92,9 @@
             var reader = new FileReader();
             reader.onprogress = function(){
                 $("#loading-span").css("display: inline");
-                $(evt).addClass('loading');
             };
             reader.onloadend = function(){
                 $("#loading-span").css('display: none');
-                $(evt).removeClass('loading');
             };
             reader.onload = function(){
                 uploadCrop.show();

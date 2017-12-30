@@ -15,5 +15,9 @@ namespace Mite.CodeData.Constants
         /// Экспресс платеж WebMoney хранит InvoiceId(uint)
         /// </summary>
         public const string WebMoneyExpressInvoiceId = "WebMoneyExpressInvoiceId";
+        /// <summary>
+        /// Ключ к списку новых чатов(они ещё не в базе и нет сообщений)
+        /// </summary>
+        public const string NewChats = "NewChats";
     }
 }

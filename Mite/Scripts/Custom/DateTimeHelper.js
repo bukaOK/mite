@@ -29,7 +29,7 @@
             year = !withYear ? '' : '' + date.getFullYear();
         switch (type) {
             case 'long':
-                month = months[date.getMonth() - 1];
+                month = months[date.getMonth()];
                 if (withYear) {
                     year = ' ' + year;
                 }

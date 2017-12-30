@@ -1,24 +1,20 @@
-﻿using Hangfire;
-using Microsoft.AspNet.Identity;
+﻿using Microsoft.AspNet.Identity;
 using Mite.Attributes.Filters;
 using Mite.BLL.IdentityManagers;
-using Mite.BLL.Services;
+using Mite.CodeData.Constants;
 using Mite.Core;
 using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
 using Mite.DAL.Repositories;
 using Mite.ExternalServices.YandexMoney;
 using Mite.Models;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
-using System.Web.Security;
 
 namespace Mite.Controllers
 {
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = RoleNames.Admin)]
     [AjaxOnly("Index")]
     public class AdminController : BaseController
     {

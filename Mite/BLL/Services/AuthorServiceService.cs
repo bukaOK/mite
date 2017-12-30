@@ -35,7 +35,7 @@ namespace Mite.BLL.Services
         Task<ServiceTopFilterModel> GetTopModelAsync(string userId);
         Task<IEnumerable<ProfileServiceModel>> GetTopAsync(ServiceTopFilterModel filter);
         Task<AuthorServiceModel> GetNew();
-        Task<IEnumerable<ProfileServiceModel>> GetByUserAsync(string userId, SortFilter sort);
+        Task<IEnumerable<ProfileServiceModel>> GetByUserAsync(string userName, SortFilter sort);
         /// <summary>
         /// Получить услугу для показа
         /// </summary>
@@ -101,9 +101,12 @@ namespace Mite.BLL.Services
             };
         }
 
-        public async Task<IEnumerable<ProfileServiceModel>> GetByUserAsync(string userId, SortFilter sort)
+        public async Task<IEnumerable<ProfileServiceModel>> GetByUserAsync(string userName, SortFilter sort)
         {
-            var services = await repo.GetByUserAsync(userId, sort);
+            var user = await userManager.FindByNameAsync(userName);
+            if (user == null)
+                throw new ArgumentException("Неизвестное имя пользователя");
+            var services = await repo.GetByUserAsync(user.Id, sort);
             return Mapper.Map<IEnumerable<ProfileServiceModel>>(services);
         }
 

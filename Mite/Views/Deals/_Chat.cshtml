@@ -3,13 +3,16 @@
 @{
     var emCount = 0;
 }
-<div class="ui segments">
+<div class="ui active chat-wrap segments" data-id="@Model.Id">
     <div class="ui chat-header two column grid segment">
         <div class="column">
             <h4 class="ui header"><b>@Model.Name</b></h4>
         </div>
-        <div class="right aligned msg-actions column">
-            <div class="ui red compact small button" onclick="ChatMessages.Api.remove()">Удалить</div>
+        <div class="right aligned column">
+            <div class="msg-actions">
+                <div class="ui red compact small button" onclick="ChatMessages.Api.remove()">Удалить</div>
+            </div>
+            <i class="ellipsis vertical"></i>
         </div>
     </div>
     <div class="ui msg-chat-wrapper segment">
@@ -23,13 +26,12 @@
             </div>
         </div>
     </div>
-    <form class="ui clearing form segment" id="chat-form" data-chat-id="@Model.Id">
-        <input type="file" multiple id="att-input" style="display: none" />
+    <form class="ui clearing form segment" data-chat-id="@Model.Id">
         <div class="ui attachments three column grid segment"></div>
         <div class="field">
             <div class="dialog-area" ondrop="return false" ondragover="return false" contenteditable="true" data-state="begin" oninput="ChatMessages.inputHandle('@Model.Id', this)"></div>
         </div>
-        <button type="button" class="ui right floated compact labeled icon primary button" id="msgSendBtn">
+        <button type="button" class="ui right floated compact labeled icon primary msgSend button">
             <i class="send outline icon"></i>
             Отправить
         </button>
@@ -39,8 +41,9 @@
                 <li><b>Enter</b> для отправки сообщения</li>
             </ul>
         </div>
-        <label for="att-input" class="ui compact blue icon circular button">
+        <label class="ui compact blue icon circular att-btn button">
             <i class="attach icon"></i>
+            <input class="att-input" type="file" multiple style="display: none" />
         </label>
         <div class="chat-dl dot-loader">
             <div class="dot"></div>
@@ -48,7 +51,7 @@
             <div class="dot"></div>
         </div>
         <span class="type-label" style="display: none"></span>
-        <button type="button" class="ui right floated compact icon circular button" id="emoji-btn">
+        <button type="button" class="ui right floated compact icon circular emoji-btn button">
             <i class="smile icon"></i>
         </button>
         <div class="ui emoji popup">
@@ -137,7 +140,7 @@
     </div>
 </script>
 <script type="text/x-jsrender" id="attTmpl">
-    <div class="column" data-id="{{:Id}}" onclick="MsgFiles.clickEvent(this)">
+    <div class="column" data-id="{{:Id}}">
         {{if IsImage}}
         <div class="ui small image">
             <div class="ui dimmer">
@@ -185,7 +188,7 @@
 </script>
 <script>
     $(function () {
-        $('#emoji-btn').popup({
+        $('.emoji-btn').popup({
             inline: true,
             hoverable: true,
             position: 'top center'
@@ -201,13 +204,11 @@
                 return false;
             }
         });
-        MsgFiles.init('att-input');
         $('.emoji .tabs .item').tab();
-        $('#att-menu .item').tab()
         $('.emoji .tab').each(function (index, elem) {
             new PerfectScrollbar(elem);
         });
-        $('#msgSendBtn').click(function () {
+        $('.msgSend.button').click(function () {
             ChatMessages.Api.add('@Model.Id', {
                 AvatarSrc: '@Model.CurrentUser.AvatarSrc',
                 Id: '@Model.CurrentUser.Id',
@@ -225,7 +226,18 @@
             useBothWheelAxes: true
         });
         window.chats = {
-            '@Model.Id': new ChatLoader('@Model.Id')
+            '@Model.Id': {
+                ChatLoader: new ChatLoader('@Model.Id'),
+                MsgFiles: new MsgFiles('@Model.Id'),
+                isInView: function () {
+                    return document.hasFocus();
+                },
+                readMessages: function () {
+                    window.hubReady.done(function () {
+                        $.connection.chatHub.server.readMessages('@Model.Id');
+                    });
+                }
+            }
         };
         $('.em-col').click(function () {
             EmojiHelper.addToArea('.dialog-area', this.childNodes[0].cloneNode());
@@ -233,8 +245,9 @@
             e.preventDefault();
             e.stopPropagation();
         });
-        ChatMessages.initHub('@Model.Id');
         ChatMessages.chatId = '@Model.Id';
-        chats['@Model.Id'].loadNext();
+        ChatMessages.dealChat = true;
+        ChatMessages.initHub();
+        chats['@Model.Id'].ChatLoader.loadNext();
     });
 </script>

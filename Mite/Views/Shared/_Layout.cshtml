@@ -6,9 +6,11 @@
 @{ 
     var isMobile = ViewHelper.IsMobileDevice(Request);
     var newDealsCount = 0;
+    var newMessagesCount = 0;
     if (User.Identity.IsAuthenticated)
     {
         newDealsCount = int.Parse(Html.Action("NewDealsCount", "Deals").ToString());
+        newMessagesCount = int.Parse(Html.Action("NewMessagesCount", "Chats").ToString());
     }
 }
 <!DOCTYPE html>
@@ -117,6 +119,12 @@
                     </div>
                 </div>
             </div>
+            <a class="violet user-chats item" href="@Url.Action("UserChats", "Chats")">
+                <i class="mail icon"></i>Сообщения
+                <div class="ui right violet label" @Html.Raw(newMessagesCount > 0 ? "" : "style=\"display:none\"")>
+                    @newMessagesCount
+                </div>
+            </a>
             <a class="violet notifications item" href="/user/notifications">
                 <i class="feed icon"></i>
                 Уведомления
@@ -131,6 +139,10 @@
                 @if (newDealsCount > 0)
                 {
                     <div class="ui right violet label">@newDealsCount</div>
+                }
+                else
+                {
+                    <div class="ui right violet label" style="display: none">@newDealsCount</div>
                 }
             </a>
             <a href="@Url.Action("Index", "Cash")" class="violet item" id="cashItem">
@@ -224,6 +236,12 @@
                 <a href="@Url.Action("Index", "UserProfile", new { name = User.Identity.Name })" class="violet user-profile item" data-content="Пользователь">
                     <i class="user icon"></i>
                 </a>
+                <a href="@Url.Action("UserChats", "Chats")" class="violet user-chats item" data-content="Сообщения">
+                    <i class="mail icon"></i>
+                    <div class="ui floating right violet label" @Html.Raw(newMessagesCount > 0 ? "" : "style=\"display:none\"")>
+                        @newMessagesCount
+                    </div>
+                </a>
                 <a class="violet notifications item">
                     <i class="feed icon"></i>
                     <div class="ui floating right violet label" style="display: none">
@@ -239,6 +257,10 @@
                     @if(newDealsCount > 0)
                     {
                         <div class="ui violet floating label">@newDealsCount</div>
+                    }
+                    else
+                    {
+                        <div class="ui violet floating label" style="display: none">@newDealsCount</div>
                     }
                 </a>
                 <a href="@Url.Action("Index", "Cash")" class="violet cash item" data-content="Счёт">

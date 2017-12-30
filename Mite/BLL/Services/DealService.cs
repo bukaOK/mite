@@ -56,12 +56,7 @@ namespace Mite.BLL.Services
         /// <param name="userId"></param>
         /// <returns></returns>
         Task<DataServiceResult> OpenDisputeAsync(long id, string userId);
-        /// <summary>
-        /// Перевод в состояние ожидания оплаты
-        /// </summary>
-        /// <param name="id">DealId</param>
-        /// <returns></returns>
-        Task<DealModel> GetShowAsync(long id);
+        Task<DealModel> GetShowAsync(long id, string currentUserId);
         Task<IEnumerable<DealUserModel>> GetIncomingAsync(DealStatuses dealType, string authorId);
         Task<IEnumerable<DealUserModel>> GetOutgoingAsync(DealStatuses dealType, string clientId);
         Task<IEnumerable<DealUserModel>> GetForModerAsync(DealStatuses status, string moderId);
@@ -152,20 +147,20 @@ namespace Mite.BLL.Services
             try
             {
                 var members = new List<string> { authorService.AuthorId, clientId };
-                var chat = await chatRepo.GetByMembersAsync(members);
-                if(chat == null)
+                var chat = new Chat
                 {
-                    chat = new Chat
-                    {
-                        Members = members.Select(x => new User
-                        {
-                            Id = x
-                        }).ToList()
-                    };
-                    await chatRepo.AddAsync(chat);
-                }
+                    Type = ChatTypes.Deal
+                };
+                chat.Members = members.Select(x => new ChatMember
+                {
+                    UserId = x,
+                    ChatId = chat.Id
+                }).ToList();
+                await chatRepo.AddAsync(chat);
                 deal.ChatId = chat.Id;
                 await repo.AddAsync(deal);
+                //await userManager.SendEmailAsync(deal.AuthorId, "У вас новый заказ!", 
+                //    "Уважаемый автор! По одной из ваших услуг сделали заказ! С уважением, MiteGroup.");
                 return DataServiceResult.Success(deal.Id);
             }
             catch(Exception e)
@@ -201,10 +196,19 @@ namespace Mite.BLL.Services
                 deals = await repo.GetForModerAsync(status, null);
             return Mapper.Map<IEnumerable<DealUserModel>>(deals, opts => opts.Items.Add("forModer", true));
         }
-        public async Task<DealModel> GetShowAsync(long id)
+        public async Task<DealModel> GetShowAsync(long id, string currentUserId)
         {
+            var currentUser = Mapper.Map<UserShortModel>(await userManager.FindByIdAsync(currentUserId));
             var deal = await repo.GetWithServiceAsync(id);
             var dealModel = Mapper.Map<DealModel>(deal);
+            if (dealModel.DisputeChat != null)
+                dealModel.DisputeChat.CurrentUser = currentUser;
+            if (dealModel.Chat != null)
+                dealModel.Chat.CurrentUser = currentUser;
+            var companion = dealModel.Chat.Members.First(x => !string.Equals(currentUserId, x.Id));
+            if(companion != null)
+                companion = Mapper.Map<UserShortModel>(await userManager.FindByIdAsync(companion.Id));
+            dealModel.Chat.Companion = companion;
             return dealModel;
         }
 
@@ -519,10 +523,10 @@ namespace Mite.BLL.Services
             var chatRepo = Database.GetRepo<ChatRepository, Chat>();
             var disputeChat = new Chat
             {
-                Members = new List<User>
+                Members = new List<ChatMember>
                 {
-                    new User { Id = deal.ClientId },
-                    new User { Id = deal.AuthorId }
+                    new ChatMember { UserId = deal.ClientId },
+                    new ChatMember { UserId = deal.AuthorId }
                 }
             };
             deal.DisputeChatId = disputeChat.Id;

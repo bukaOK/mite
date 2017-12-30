@@ -45,13 +45,13 @@ namespace Mite.Controllers
         {
             if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out Guid postId))
                 return NotFound();
-
-            var post = await postsService.GetWithTagsUserAsync(postId);
+            var userId = User.Identity.GetUserId();
+            var post = await postsService.GetWithTagsUserAsync(postId, userId);
             if (post == null || post.Type != PostTypes.Published && post.Type != PostTypes.Blocked)
             {
                 return NotFound();
             }
-            var userRating = (await ratingService.GetByPostAndUserAsync(postId, User.Identity.GetUserId()))
+            var userRating = (await ratingService.GetByPostAndUserAsync(postId, userId))
                 ?? new PostRatingModel();
             userRating.PostId = post.Id;
 

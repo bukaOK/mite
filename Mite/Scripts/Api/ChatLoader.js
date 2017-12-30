@@ -1,11 +1,10 @@
 ﻿function ChatLoader(chatId) {
     this._page = 1;
+    this.chatId = chatId;
     this.ended = false;
     this.chat = $('.chat.feed[data-id="' + chatId + '"]');
     var self = this;
     this.scrollbar = new PerfectScrollbar(this.chat.parent()[0]);
-    //Поскольку скроллбар изменяет DOM и вытаскивает из него чат, нужно снова его инициализировать
-    this.chat = $('.chat.feed[data-id="' + chatId + '"]');
     this.loader = $('.chat.feed[data-id="' + chatId + '"] .dot-loader-wrapper');
     this.loading = false;
     this.fixEnd = true;
@@ -16,7 +15,8 @@ ChatLoader.prototype.loadNext = function () {
         return;
     var self = this,
         initialized = self._page > 1,
-        statuses = ChatMessages.Api.statuses;
+        statuses = ChatMessages.Api.statuses,
+        wrap = self.chat.parent();
 
     this.loading = true;
     this.fixEnd = !initialized;
@@ -24,7 +24,7 @@ ChatLoader.prototype.loadNext = function () {
         dataType: 'json',
         data: {
             page: self._page,
-            chatId: ChatMessages.chatId
+            chatId: self.chatId
         },
         url: '/api/message',
         success: function (resp) {
@@ -74,22 +74,21 @@ ChatLoader.prototype.loadNext = function () {
                 }
             });
             var tmpl = $.templates('#messageTmpl'),
-                html = tmpl.render(resp.data);
+                html = tmpl.render(resp.data),
+                prevScrollPos = wrap[0].scrollHeight - wrap.scrollTop();
+
             self.loader.after(html);
-            self._updateScrollState(!initialized);
-            self.chat.imagesLoaded(function () {
-                self._updateScrollState(!initialized);
-            });
-            $('.event .extra.images:not(.listening)').addClass('listening')
+            self.updateScrollState(!initialized, prevScrollPos);
+            $('.event .extra.images:not(.initialized)').addClass('initialized')
                 .click(function (ev) {
                     ev.stopPropagation();
                     ev.preventDefault();
-                    $(this).lightGallery({
+                }).each(function (index, elem) {
+                    $(elem).lightGallery({
                         nextHtml: '<i class="angle big right icon"></i>',
                         prevHtml: '<i class="angle big left icon"></i>'
                     });
                 });
-            
             self._page++;
         },
         error: function (jqXhr) {
@@ -107,10 +106,21 @@ ChatLoader.prototype.loadNext = function () {
         }
     });
 }
-ChatLoader.prototype._updateScrollState = function (scroll) {
-    this.scrollbar.update();
-    if(scroll)
-        this.chat.parent().scrollTop(this.chat[0].scrollHeight);
+/**
+ * Обновляем скроллбар
+ * @param {boolean} scroll прокручивать ли вниз
+*/
+ChatLoader.prototype.updateScrollState = function (scroll, prevScrollPos) {
+    var self = this,
+        wrap = self.chat.parent();
+    this.chat.imagesLoaded().progress(function () {
+        self.scrollbar.update();
+        if (scroll) {
+            wrap.scrollTop(wrap[0].scrollHeight);
+        } else {
+            wrap.scrollTop(wrap[0].scrollHeight - prevScrollPos)
+        }
+    });
 }
 ChatLoader.prototype._initListeners = function () {
     var self = this;

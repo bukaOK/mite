@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Constants\Automapper\ChatConstants.cs" />
     <Compile Include="Constants\Automapper\UserProfileConstants.cs" />
     <Compile Include="Constants\ClaimConstants.cs" />
     <Compile Include="Constants\CookieKeys.cs" />
@@ -60,6 +61,8 @@
     <Compile Include="Constants\YaMoneySettings.cs" />
     <Compile Include="Enums\AttachmentTypes.cs" />
     <Compile Include="Enums\CashOperationTypes.cs" />
+    <Compile Include="Enums\ChatMemberStatuses.cs" />
+    <Compile Include="Enums\ChatTypes.cs" />
     <Compile Include="Enums\DealStatuses.cs" />
     <Compile Include="Enums\DialogTypes.cs" />
     <Compile Include="Enums\DurationTypes.cs" />

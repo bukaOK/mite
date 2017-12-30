@@ -6,9 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Mite.DAL.Infrastructure;
+using Mite.DAL.DTO;
 using Dapper;
 using System.Data.Entity;
 using System.Data;
+using Mite.CodeData.Enums;
 
 namespace Mite.DAL.Repositories
 {
@@ -17,31 +19,43 @@ namespace Mite.DAL.Repositories
         public ChatMessagesRepository(AppDbContext dbContext) : base(dbContext)
         {
         }
-        public Task ReadAsync(Guid messageId, string userId)
+        public async Task ReadAsync(Guid messageId, string userId)
         {
-            var query = "update dbo.\"ChatMessageUsers\" set \"Read\"=true where \"MessageId\"=@messageId and \"UserId\"=@userId";
-            return Db.ExecuteAsync(query, new { messageId, userId });
+            if (Db.State != ConnectionState.Closed)
+                return;
+            var msgUser = await DbContext.MessageUsers.FirstOrDefaultAsync(x => x.MessageId == messageId && x.UserId == userId);
+            msgUser.Read = true;
+            DbContext.Entry(msgUser).Property(x => x.Read).IsModified = true;
+            await SaveAsync();
         }
         public void Read(Guid messageId, string userId)
         {
-            var query = "update dbo.\"ChatMessageUsers\" set \"Read\"=true where \"MessageId\"=@messageId and \"UserId\"=@userId";
-            Db.Execute(query, new { messageId, userId });
+            if (Db.State != ConnectionState.Closed)
+                return;
+            var msgUser = DbContext.MessageUsers.FirstOrDefault(x => x.MessageId == messageId && x.UserId == userId);
+            msgUser.Read = true;
+            DbContext.Entry(msgUser).Property(x => x.Read).IsModified = true;
+            Save();
         }
         public void ReadUnreaded(Guid chatId, string userId)
         {
             if (Db.State != ConnectionState.Closed)
                 return;
-            var query = "select messages.\"Id\" from dbo.\"ChatMessageUsers\" as message_users inner join dbo.\"ChatMessages\" as messages " +
-                "on messages.\"Id\"=message_users.\"MessageId\" where messages.\"ChatId\"=@chatId and message_users.\"UserId\"=@userId " +
-                "and message_users.\"Read\"=false group by messages.\"Id\";";
-            var ids = Db.Query<Guid>(query, new { chatId, userId });
-            query = "update dbo.\"ChatMessageUsers\" set \"Read\"=true where \"MessageId\"=any(@ids) and \"UserId\"=@userId;";
-            Db.Execute(query, new { ids, userId });
+            var msgUsers = DbContext.MessageUsers.Where(x => x.Message.ChatId == chatId && x.UserId == userId).ToList();
+            if (msgUsers.Count == 0)
+                return;
+            foreach(var msgUser in msgUsers)
+            {
+                msgUser.Read = true;
+                DbContext.Entry(msgUser).Property(x => x.Read).IsModified = true;
+            }
+            Save();
         }
-        public Task RemoveAsync(Guid messageId, string userId)
+        public async Task RemoveAsync(Guid messageId, string userId)
         {
-            var query = "delete from dbo.\"ChatMessageUsers\" where MessageId=@messageId and UserId=@userId";
-            return Db.ExecuteAsync(query, new { messageId, userId });
+            var msgUser = await DbContext.MessageUsers.FirstOrDefaultAsync(x => x.MessageId == messageId && x.UserId == userId);
+            DbContext.MessageUsers.Remove(msgUser);
+            await SaveAsync();
         }
         public Task<int> RecipientsCountAsync(Guid id)
         {
@@ -93,36 +107,52 @@ namespace Mite.DAL.Repositories
             return msgList;
         }
         /// <summary>
-        /// Получаем словарь Id сообщения -> кол-во вложений
+        /// Кол-во новых сообщений
         /// </summary>
-        /// <param name="messageIds">Список сообщений для получения</param>
+        /// <param name="userId"></param>
         /// <returns></returns>
-        public async Task<IDictionary<Guid, int>> GetAttachmentsCountAsync(IList<Guid> messageIds)
+        public async Task<int> GetNewCountAsync(string userId)
         {
-            var query = "select \"MessageId\", count(\"Id\") as \"AttCount\" from dbo.\"ChatMessageAttachments\" where \"MessageId\"=any(@messageIds) " +
-                "group by \"MessageId\";";
-            var dict = new Dictionary<Guid, int>();
-            var result = await Db.QueryAsync(query, new { messageIds });
-            foreach(var item in result)
-            {
-                dict[(Guid)item.MessageId] = (int)item.AttCount;
-            }
-
-            return dict;
+            var count = await Table.CountAsync(x => x.Recipients.Any(y => y.UserId == userId && !y.Read) 
+                && x.Chat.Type != ChatTypes.Deal && x.Chat.Type != ChatTypes.Dispute);
+            return count;
         }
-        public async Task RemoveListAsync(Guid[] ids, string userId)
+        public Task<IEnumerable<NewMessagesCountDTO>> GetNewCountAsync(string userId, List<Guid> chatIds)
         {
-            var msgUsers = DbContext.MessageUsers.Where(x => x.UserId == userId && ids.Contains(x.MessageId));
-            DbContext.MessageUsers.RemoveRange(msgUsers);
-            await SaveAsync();
-
-            var messages = await Table.Where(x => ids.Contains(x.Id)).Include(x => x.Recipients).ToListAsync();
-            foreach(var msg in messages)
+            var query = "select msgs.\"ChatId\", count(msgs.\"ChatId\") as \"MessagesCount\" from dbo.\"ChatMessages\" msgs " +
+                "left outer join dbo.\"ChatMessageUsers\" msg_users on msg_users.\"MessageId\"=msgs.\"Id\" " +
+                "where msg_users.\"UserId\"=@userId and msg_users.\"Read\"=false and msgs.\"ChatId\"=any(@chatIds) group by msgs.\"ChatId\";";
+            return Db.QueryAsync<NewMessagesCountDTO>(query, new { userId, chatIds });
+        }
+        public int GetNewCount(string userId)
+        {
+            var count = Table.Count(x => x.Recipients.Any(y => y.UserId == userId && !y.Read));
+            return count;
+        }
+        public async Task<IList<ChatMessageAttachment>> RemoveListAsync(List<Guid> ids, string userId)
+        {
+            var qParams = new { userId, ids };
+            var query = "delete from dbo.\"ChatMessageUsers\" where \"UserId\"=@userId and \"MessageId\"=any(@ids);";
+            await Db.ExecuteAsync(query, qParams);
+            query = "select msgs.\"Id\" from dbo.\"ChatMessages\" msgs left outer join dbo.\"ChatMessageUsers\" msg_users " +
+                "on msgs.\"Id\"=msg_users.\"MessageId\" where msgs.\"Id\"=any(@ids) and msg_users.\"UserId\"=@userId " +
+                "group by msgs.\"Id\" having count(msgs.\"Id\")=0;";
+            var msgsToDel = await Db.QueryAsync<Guid>(query, qParams);
+            if (msgsToDel.Count() > 0)
             {
-                if (msg.Recipients.Count == 0)
-                    Table.Remove(msg);
+                var delIds = msgsToDel.ToList();
+                query = "select * from dbo.\"ChatMessageAttachments\" where \"MessageId\"=any(@ids);";
+                var attsToRemove = await Db.QueryAsync<ChatMessageAttachment>(query, new { ids });
+                query = "delete from dbo.\"ChatMessages\" msgs where msgs.\"Id\"=any(@ids);";
+                await Db.ExecuteAsync(query, new { ids = delIds });
+                return attsToRemove.ToList();
             }
-            await SaveAsync();
+            return null;
+        }
+        public async Task<IEnumerable<Guid>> GetByChatAsync(Guid chatId)
+        {
+            var query = "select \"Id\" from dbo.\"ChatMessages\" where \"ChatId\"=@chatId;";
+            return await Db.QueryAsync<Guid>(query, new { chatId });
         }
         public Task<ChatMessage> GetWithAttachmentsAsync(Guid messageId)
         {

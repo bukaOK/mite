@@ -1,0 +1,64 @@
+﻿<div class="ui basic modal" id="confirmPostDelete">
+    <div class="ui icon header">
+        <i class="remove circle icon"></i>
+        Удалить работу
+    </div>
+    <div class="content" style="text-align: center">
+        <p>Вы уверены? Данное действие будет невозможно отменить</p>
+    </div>
+    <div class="actions">
+        <div class="ui red basic cancel inverted button">
+            <i class="remove icon"></i>
+            Нет
+        </div>
+        <div class="ui green ok inverted button">
+            <i class="checkmark icon"></i>
+            Да
+        </div>
+    </div>
+</div>
+<div class="ui small modal" id="donateModal">
+    <i class="close icon"></i>
+    <div class="header">
+        Поддержать @Model.UserName
+    </div>
+    <div class="content">
+        <form class="ui form" id="donateForm" action="https://money.yandex.ru/quickpay/confirm.xml" method="post" target="_blank">
+            <div class="field">
+                <textarea placeholder="Ваши пожелания =)" name="comment" rows="3"></textarea>
+            </div>
+            <div class="inline fields">
+                <div class="field">
+                    <input type="number" placeholder="Сумма" name="sum" />
+                </div>
+                <div class="field">
+                    <div class="ui radio checkbox">
+                        <input type="radio" name="paymentType" value="PC" class="hidden" />
+                        <label>Яндекс.Деньги</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui radio checkbox">
+                        <input type="radio" name="paymentType" value="PC" class="hidden" />
+                        <label>Банковская карта</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui radio checkbox">
+                        <input type="radio" name="paymentType" value="MC" class="hidden" />
+                        <label>Мобильный</label>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" name="receiver" value="@Model.YandexWalId" />
+            <input type="hidden" name="quickpay-form" value="donate" />
+            <input type="hidden" name="targets" value="Поддержка пользователя @Model.UserName" />
+            <input type="hidden" name="formcomment" value="Поддержка пользователя @Model.UserName" />
+            <input type="hidden" name="short-dest" value="Поддержка пользователя @Model.UserName" />
+            <input type="hidden" name="successURL" value="@Request.Url" />
+        </form>
+    </div>
+    <div class="actions">
+        <button type="submit" form="donateForm" class="ui primary button">Поддержать</button>
+    </div>
+</div>

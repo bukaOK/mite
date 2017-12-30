@@ -3,6 +3,7 @@ using Microsoft.AspNet.Identity;
 using MimeKit;
 using MimeKit.Text;
 using MailKit.Net.Smtp;
+using MailKit;
 
 namespace Mite
 {

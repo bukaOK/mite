@@ -170,13 +170,13 @@
         {{/for}}
     </div>
 </script>
-<template id="emptyDealsTmpl">
+<script type="text/html" id="emptyDealsTmpl">
     <h3 class="ui center aligned header">
         <i class="frown icon"></i>
         Заказы не найдены
     </h3>
-</template>
-<template id="errorDealsTmpl">
+</script>
+<script type="text/html" id="errorDealsTmpl">
     <div class="ui icon red message">
         <i class="warning circle icon"></i>
         <div class="content">
@@ -184,7 +184,7 @@
             <p>Ошибка при загрузке заказов</p>
         </div>
     </div>
-</template>
+</script>
 @Scripts.Render("~/bundles/jsrender")
 <script>
     var isAuthor = @isAuthor.ToString().ToLower();
