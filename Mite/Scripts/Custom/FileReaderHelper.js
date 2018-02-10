@@ -1,6 +1,6 @@
 ﻿/**
  * Хелпер для чтения файлов
- * @typedef {{saveBtn: JQuery<HTMLElement>, imgWrapper: JQuery<HTMLElement>, field: JQuery<HTMLElement>}} ReaderSettings
+ * @typedef {{progress: JQuery<HTMLElement>, imgWrapper: JQuery<HTMLElement>, field: JQuery<HTMLElement>}} ReaderSettings
  */
 var FileReaderHelper = {
     /**
@@ -11,23 +11,35 @@ var FileReaderHelper = {
     */
     readFile: function (file, evt, settings) {
         var self = FileReaderHelper;
-        if (settings === undefined || settings === null) {
+        if (!settings) {
+            var $form = $(evt.target).parents('form'),
+                $progress = $form.find('.ui.progress');
             settings = {
-                saveBtn: $('#saveBtn'),
-                imgWrapper: $(evt.target).parents('form').find('.img-wrapper'),
-                field: $(evt.target).parents('form').find('[name="Content"]')
+                imgWrapper: $form.find('.img-wrapper'),
+                field: $form.find('[name="Content"]')
             };
+            if ($progress.length) {
+                settings.progress = $progress;
+            }
         }
-
         var reader = new FileReader();
-        reader.onprogress = function () {
-            settings.saveBtn.addClass('loading');
+        reader.onloadstart = function (ev) {
+            if (settings.progress) {
+                settings.progress.progress();
+            }
+        }
+        reader.onprogress = function (ev) {
+            if (settings.progress && ev.lengthComputable) {
+                var percentLoaded = Math.round((ev.loaded / ev.total) * 100);
+                settings.progress.progress('set percent', percentLoaded);
+            }
         };
         reader.onloadend = function () {
-            settings.saveBtn.removeClass('loading');
+            if (settings.progress) {
+                settings.progress.progress('set percent', 100);
+            }
         };
         reader.onload = function () {
-            settings.saveBtn.show();
             settings.imgWrapper.html('<img src="' + reader.result + '" style="max-width: 100%"/>');
             settings.field.val(reader.result);
         };
@@ -38,7 +50,7 @@ var FileReaderHelper = {
     },
     /**
      * Когда перемещаем файл мышкой и курсор над областью
-     * @param {Event} evt
+     * @param {DragEvent} evt
     */
     dragOverHandler: function (evt) {
         evt.stopPropagation();
@@ -47,25 +59,25 @@ var FileReaderHelper = {
     },
     /**
      * Когда переместили файл
-     * @param {Event} evt
+     * @param {DragEvent} evt
     */
-    dropHandler: function (evt) {
+    dropHandler: function (evt, settings) {
         var self = FileReaderHelper;
 
         evt.stopPropagation();
         evt.preventDefault();
         var file = evt.dataTransfer.files[0];
-        self.readFile(file, evt);
+        self.readFile(file, evt, settings);
     },
     /**
-     * Нажали на кнопку загрузки
+     * Загрузка файла
      * @param {Event} evt
      * @param {ReaderSettings} settings
+     * @param {number} fileIndex индекс файла(если их несколько)
     */
-    inputDownloadHandler: function (evt, settings) {
+    inputDownloadHandler: function (evt, settings, fileIndex) {
         var self = FileReaderHelper;
-
-        var file = evt.target.files[0];
+        var file = fileIndex ? evt.target.files[fileIndex] : evt.target.files[0];
         self.readFile(file, evt, settings);
     }
 }

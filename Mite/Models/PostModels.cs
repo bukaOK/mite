@@ -79,6 +79,7 @@ namespace Mite.Models
         }
         public UserShortModel User { get; set; }
         public IList<PostCollectionItemModel> Collection { get; set; }
+        public IList<PostComicsItemModel> ComicsItems { get; set; }
         public IList<string> AvailableTags { get; set; }
     }
     public class WritingPostModel
@@ -124,6 +125,7 @@ namespace Mite.Models
         public IList<string> Tags { get; set; }
         public IList<string> AvailableTags { get; set; }
         public IList<PostCollectionItemModel> Collection { get; set; }
+        public IList<PostComicsItemModel> ComicsItems { get; set; }
     }
     public class PostRatingModel
     {
@@ -135,7 +137,12 @@ namespace Mite.Models
         public Guid PostId { get; set; }
         public string UserId { get; set; }
     }
-    public class PostCollectionItemModel
+
+    public interface IContentModel
+    {
+        string Content { get; set; }
+    }
+    public class PostCollectionItemModel : IContentModel
     {
         public Guid Id { get; set; }
         [MaxLength(300)]
@@ -145,6 +152,18 @@ namespace Mite.Models
         public string Content { get; set; }
         public Guid PostId { get; set; }
     }
+    public class PostComicsItemModel : IContentModel
+    {
+        public Guid Id { get; set; }
+        [Required]
+        [DisplayName("Номер страницы")]
+        public int Page { get; set; }
+        [DisplayName("Изображение страницы")]
+        public string Content { get; set; }
+        public string CompressedContent { get; set; }
+        public Guid PostId { get; set; }
+    }
+
     /// <summary>
     /// Модель изображения в галерее (когда показывают пост)
     /// </summary>

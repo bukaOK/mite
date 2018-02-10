@@ -35,6 +35,18 @@ namespace Mite.Models
         /// пользователя страницы
         /// </summary>
         public bool IsFollowing { get; set; }
+        /// <summary>
+        /// Является пользователь страницы подписчиком текущего
+        /// </summary>
+        public bool IsFollower { get; set; }
+        /// <summary>
+        /// Может ли текущий писать сообщения владельцу страницы
+        /// </summary>
+        public bool CanWrite { get; set; }
+        /// <summary>
+        /// Занес ли текущий пользователь владельца страницы в черный список
+        /// </summary>
+        public bool BlackListed { get; set; }
         public bool IsAuthor { get; set; }
         public int PostsCount { get; set; }
         public string YandexWalId { get; set; }
@@ -64,11 +76,11 @@ namespace Mite.Models
         public int CommentsCount { get; set; }
         public PostTypes Type { get; set; }
         public PostContentTypes ContentType { get; set; }
-        public bool IsPublished => PublishDate != null;
+        public bool IsPublished { get; set; }
         /// <summary>
         /// Может ли пользователь редактировать работу
         /// </summary>
-        public bool CanEdit => (PublishDate == null) || (PublishDate != null && (DateTime.UtcNow - PublishDate).Value.TotalDays <= 3);
+        public bool CanEdit { get; set; }
 
         private string cover;
         public string Cover
@@ -84,8 +96,7 @@ namespace Mite.Models
         }
 
         public int Views { get; set; }
-        public bool IsImage => ContentType == PostContentTypes.Image || 
-            ContentType == PostContentTypes.ImageCollection;
+        public bool IsImage { get; set; }
         /// <summary>
         /// Показывать ли взрослый контент
         /// </summary>

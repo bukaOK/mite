@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using Microsoft.AspNet.Identity.EntityFramework;
 using System.ComponentModel.DataAnnotations.Schema;
+using Mite.CodeData.Enums;
+using System.ComponentModel;
 
 namespace Mite.DAL.Entities
 {
@@ -60,5 +62,13 @@ namespace Mite.DAL.Entities
         /// Надежность(зависит от сделок)
         /// </summary>
         public int Reliability { get; set; }
+        /// <summary>
+        /// Уведомлять ли по почте
+        /// </summary>
+        public bool MailNotify { get; set; }
+        /// <summary>
+        /// Кто может писать пользователю
+        /// </summary>
+        public ChatPrivacy ChatPrivacy { get; set; }
     }
 }

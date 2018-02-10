@@ -2,15 +2,22 @@
 @using Mite.Extensions
 @using Mite.Helpers
 @using Mite.CodeData.Enums
+@using Microsoft.AspNet.Identity
+@using Mite.BLL.Services
+@using Mite.BLL.IdentityManagers
 
 @{ 
     var isMobile = ViewHelper.IsMobileDevice(Request);
     var newDealsCount = 0;
     var newMessagesCount = 0;
+    var emailConfirmed = false;
+    var currentUserId = User.Identity.GetUserId();
+    var resolver = DependencyResolver.Current;
     if (User.Identity.IsAuthenticated)
     {
-        newDealsCount = int.Parse(Html.Action("NewDealsCount", "Deals").ToString());
-        newMessagesCount = int.Parse(Html.Action("NewMessagesCount", "Chats").ToString());
+        newDealsCount = resolver.GetService<IDealService>().GetNewCount(currentUserId);
+        newMessagesCount = resolver.GetService<IChatMessagesService>().GetNewCount(currentUserId);
+        emailConfirmed = resolver.GetService<AppUserManager>().IsEmailConfirmed(currentUserId);
     }
 }
 <!DOCTYPE html>
@@ -61,17 +68,16 @@
         <script>
             var notifyHub = $.connection.notifyHub;
             notifyHub.client.notifyUser = function (notification) {
-                var $popup = $('.notify.popup');
-
-                var data = JSON.parse(notification);
-                var dateIso = data.NotifyDate;
+                var $popup = $('.notify.popup'),
+                    data = JSON.parse(notification),
+                    dateIso = data.NotifyDate;
                 dateIso += dateIso[dateIso.length - 1] == 'Z' ? '' : 'Z';
                 data.DateStr = ViewHelper.getPastTense(new Date(dateIso).getTime());
                 var label = $('.notifications.item>.label');
                 label[0].innerHTML++;
                 label[1].innerHTML++;
-                var tmpl = $.templates('#eventTmpl');
-                var html = tmpl.render(data);
+                var tmpl = $.templates('#eventTmpl'),
+                    html = tmpl.render(data);
                 if ($popup.hasClass('empty')) {
                     $popup.html('<div class="ui feed">' + html + '</div>');
                     $popup.removeClass('empty');
@@ -80,6 +86,21 @@
                 }
                 $('.notifications.item').popup('reposition');
                 label.show();
+            }
+            notifyHub.client.addMessage = function (msg) {
+                if (location.pathname.indexOf('/user/chats') !== -1)
+                    return;
+                msg = JSON.parse(msg);
+                $('.user-chats.item').show()[0].innerHTML++;
+                iziToast.show({
+                    title: ViewHelper.truncStr(msg.Sender.UserName, 15),
+                    message: ChatsHelper.truncChatItemMessage(msg.Message, 30),
+                    layout: 2,
+                    icon: 'mail icon',
+                    theme: 'dark',
+                    iconColor: '#b540c6',
+                    progressBarColor: '#b540c6'
+                });
             }
             window.hubReady = $.connection.hub.start();
         </script>
@@ -104,18 +125,11 @@
                 <div class="title">Добавить</div>
                 <div class="content">
                     <div class="vertical menu">
-                        <a href="@Url.RouteUrl("AddPost", new { postType = PostContentTypes.Image.ToString().ToLower() })" class="violet item" id="editImageItem">
-                            <i class="image icon"></i>Изображение
-                        </a>
-                        <a href="@Url.RouteUrl("AddPost", new { postType = PostContentTypes.Document.ToString().ToLower() })" class="violet item" id="editDocItem">
-                            <i class="newspaper icon"></i>Документ
-                        </a>
-                        <a href="@Url.RouteUrl("AddPost", new { postType = PostContentTypes.ImageCollection.ToString().ToLower() })" class="item">
-                            <i class="file image outline icon"></i>Коллекцию
-                        </a>
-                        <a href="@Url.Action("Add", "AuthorServices")" class="item">
-                            <i class="suitcase icon"></i>Услугу
-                        </a>
+                        @Html.RouteLink("Изображение", "AddPost", new { postType = PostContentTypes.Image.ToString().ToLower() }, new { @class = "item", title="Арт, фото" })
+                        @Html.RouteLink("Документ", "AddPost", new { postType = PostContentTypes.Document.ToString().ToLower() }, new { @class = "item", title="Статьи, рассказы, стихи" })
+                        @Html.RouteLink("Коллекцию", "AddPost", new { postType = PostContentTypes.ImageCollection.ToString().ToLower() }, new { @class = "item", title = "Коллекция изображений" })
+                        @Html.RouteLink("Комикс", "AddPost", new { postType = PostContentTypes.Comics.ToString().ToLower() }, new { @class = "item", title="Комиксы, манга" })
+                        @Html.ActionLink("Услугу", "Add", "AuthorServices", null, new { @class = "item", title="Услуги"})
                     </div>
                 </div>
             </div>
@@ -179,18 +193,11 @@
                                 <div class="ui dropdown top right pointing violet button" id="addPostMenu">
                                     Добавить
                                     <div class="menu">
-                                        <a href="@Url.RouteUrl("AddPost", new { postType = PostContentTypes.Image.ToString().ToLower() })" class="item">
-                                            <i class="image icon"></i>Изображение
-                                        </a>
-                                        <a href="@Url.RouteUrl("AddPost", new { postType = PostContentTypes.Document.ToString().ToLower() })" class="item">
-                                            <i class="newspaper icon"></i>Документ
-                                        </a>
-                                        <a href="@Url.RouteUrl("AddPost", new { postType = PostContentTypes.ImageCollection.ToString().ToLower() })" class="item">
-                                            <i class="file image outline icon"></i>Коллекцию
-                                        </a>
-                                        <a href="@Url.Action("Add", "AuthorServices")" class="item">
-                                            <i class="suitcase icon"></i>Услугу
-                                        </a>
+                                        @Html.RouteLink("Изображение", "AddPost", new { postType = PostContentTypes.Image.ToString().ToLower() }, new { @class = "item", title = "Арт, фото" })
+                                        @Html.RouteLink("Документ", "AddPost", new { postType = PostContentTypes.Document.ToString().ToLower() }, new { @class = "item", title = "Статьи, рассказы, стихи" })
+                                        @Html.RouteLink("Коллекцию", "AddPost", new { postType = PostContentTypes.ImageCollection.ToString().ToLower() }, new { @class = "item", title = "Коллекция изображений" })
+                                        @Html.RouteLink("Комикс", "AddPost", new { postType = PostContentTypes.Comics.ToString().ToLower() }, new { @class = "item", title = "Комиксы, манга" })
+                                        @Html.ActionLink("Услугу", "Add", "AuthorServices", null, new { @class = "item", title = "Услуги" })
                                     </div>
                                 </div>
                             </div>
@@ -276,7 +283,7 @@
                 <div class="row">
                     <div class="ten wide column">
                         <div class="ui inverted horizontal link list" role="list">
-                            @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "item", role = "listitem" })
+                            @*@Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "item", role = "listitem" })*@
                             @Html.ActionLink("Условия пользования", "Terms", "Home", null, new { @class = "item", role = "listitem" })
                             @Html.ActionLink("Политика конфиденциальности", "Privacy", "Home", null, new { @class = "item", role = "listitem" })
                         </div>
@@ -300,13 +307,6 @@
             </div>
         </footer>
     </div>
-    <div class="ui tiny modal" id="cityChoseModal">
-        <div class="header">Выбор города</div>
-        <div class="content">
-            <p>К сожалению, мы не смогли определить ваш город.</p>
-            <select class="ui fluid search selection dropdown" id="cityChoseSelect"></select>
-        </div>
-    </div>
     <script id="eventTmpl" type="text/x-jsrender">
         <div class="event">
             <div class="label">
@@ -323,6 +323,23 @@
         </div>
     </script>
     @RenderSection("scripts", false)
+    @if (!emailConfirmed && !Request.Path.ToLower().Contains("user/settings"))
+    {
+        <script>
+            iziToast.warning({
+                title: 'E-mail не подтвержден!',
+                message: 'При утере пароля вы не сможете восстановить доступ.',
+                buttons: [
+                    ['<button>Подтвердить</button>', function () {
+                        location.href = '@Url.Action("Security", "UserSettings")';
+                    }]
+                ],
+                position: 'topLeft',
+                //maxWidth: 300,
+                timeout: false
+            });
+        </script>
+    }
     <script>
         $(function () {
             $('article').css('margin-bottom', $('footer').height() + 50 + 'px');

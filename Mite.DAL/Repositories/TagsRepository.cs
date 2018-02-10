@@ -19,20 +19,32 @@ namespace Mite.DAL.Repositories
         }
         public async Task<IEnumerable<Tag>> GetAllAsync(bool isConfirmed)
         {
-            var tags = await Table.Where(x => x.IsConfirmed == isConfirmed).ToListAsync();
+            var tags = await Table.AsNoTracking().Where(x => x.IsConfirmed == isConfirmed).ToListAsync();
             return tags;
         }
-        public Task<IEnumerable<TagDTO>> GetAllWithPopularityAsync(bool isConfirmed)
+        /// <summary>
+        /// Получить теги с популярностью
+        /// </summary>
+        /// <param name="isConfirmed">Подтвержденные/неподтвержденные</param>
+        /// <returns></returns>
+        public Task<IEnumerable<TagDTO>> GetAllWithPopularityAsync(bool isConfirmed, int count = 50)
         {
-            var query = "select dbo.\"Tags\".\"Name\", COUNT(dbo.\"TagPosts\".\"Tag_Id\") as \"Popularity\" "
-                + "from dbo.\"Tags\" left outer join dbo.\"TagPosts\" on dbo.\"TagPosts\".\"Tag_Id\"=dbo.\"Tags\".\"Id\"" +
-                " where \"IsConfirmed\"=@isConfirmed" 
-                + " group by dbo.\"Tags\".\"Name\" order by \"Popularity\" desc;";
-            return Db.QueryAsync<TagDTO>(query, new { isConfirmed });
+            var query = "select tags.*, COUNT(tags.\"Id\") as \"Popularity\" "
+                + "from dbo.\"Tags\" tags left outer join dbo.\"TagPosts\" tagposts on tagposts.\"Tag_Id\"=tags.\"Id\"" +
+                " where \"IsConfirmed\"=@isConfirmed group by tags.\"Id\" order by \"Popularity\" desc limit @count;";
+            return Db.QueryAsync<TagDTO>(query, new { isConfirmed, count });
+        }
+        public async Task<IEnumerable<TagDTO>> GetAllWithPopularityAsync()
+        {
+            var query = "select tags.*, COUNT(tags.\"Id\") as \"Popularity\" "
+                + "from dbo.\"Tags\" tags left outer join dbo.\"TagPosts\" tagposts on tagposts.\"Tag_Id\"=tags.\"Id\"" +
+                " where \"Checked\"=true group by tags.\"Id\" order by \"Popularity\" desc;";
+            return await Db.QueryAsync<TagDTO>(query);
         }
         public async Task<IEnumerable<Tag>> GetByNameAsync(string name)
         {
-            var tags = await Table.Where(x => x.Name.Contains(name)).ToListAsync();
+            var query = $"select * from dbo.\"Tags\" where \"Name\" like '%{name}%'";
+            var tags = await Db.QueryAsync<Tag>(query);
             return tags;
         }
         /// <summary>

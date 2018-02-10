@@ -64,13 +64,21 @@ namespace Mite.DAL.Repositories
         }
         public async Task<IList<ChatMessage>> GetAsync(Guid chatId, int range, int offset, string userId)
         {
-            var query = "select msges.*, senders.\"Id\", senders.\"UserName\", senders.\"AvatarSrc\", msg_users.*, atts.* from dbo.\"ChatMessages\" " +
-                "as msges inner join dbo.\"Users\" as senders on senders.\"Id\"=msges.\"SenderId\" " +
+            var chat = await DbContext.Chats.FirstAsync(x => x.Id == chatId);
+
+            var query = "select msges.*, sender.\"Id\", sender.\"UserName\", sender.\"AvatarSrc\", msg_users.*, atts.* from dbo.\"ChatMessages\" " +
+                "as msges inner join dbo.\"Users\" as sender on sender.\"Id\"=msges.\"SenderId\" " +
                 "full outer join dbo.\"ChatMessageUsers\" as msg_users on msg_users.\"MessageId\"=msges.\"Id\" full outer join " +
-                "dbo.\"ChatMessageAttachments\" as atts on atts.\"MessageId\"=msges.\"Id\" where msges.\"Id\"=any(" +
-                "select msges1.\"Id\" from dbo.\"ChatMessages\" as msges1 left outer join dbo.\"ChatMessageUsers\" as msg_users1 on " +
-                "msges1.\"Id\" = msg_users1.\"MessageId\" where msg_users1.\"UserId\"=@userId and msges1.\"ChatId\"=@chatId " +
-                $"group by msges1.\"Id\" order by msges1.\"SendDate\" desc limit {range} offset {offset}) order by msges.\"SendDate\" asc;";
+                "dbo.\"ChatMessageAttachments\" as atts on atts.\"MessageId\"=msges.\"Id\" where msges.\"Id\" in (" +
+                "select msges1.\"Id\" from dbo.\"ChatMessages\" msges1 inner join dbo.\"ChatMessageUsers\" msg_users1 on ";
+            if (chat.Type != ChatTypes.Public)
+                query += "msges1.\"Id\"=msg_users1.\"MessageId\" where msg_users1.\"UserId\"=@userId and msges1.\"ChatId\"=@chatId ";
+            else
+                query += "msges1.\"Id\"=msg_users1.\"MessageId\" where msges1.\"ChatId\"=@chatId ";
+
+            query += $"group by msges1.\"Id\" order by msges1.\"SendDate\" desc limit {range} offset {offset}" +
+                ") order by msges.\"SendDate\" asc;";
+
             var msgList = new List<ChatMessage>();
             await Db.QueryAsync<ChatMessage, User, ChatMessageUser, ChatMessageAttachment, ChatMessage>(query,
                 (msg, sender, re, att) =>
@@ -126,7 +134,8 @@ namespace Mite.DAL.Repositories
         }
         public int GetNewCount(string userId)
         {
-            var count = Table.Count(x => x.Recipients.Any(y => y.UserId == userId && !y.Read));
+            var count = Table.Count(x => x.Recipients.Any(y => y.UserId == userId && !y.Read) 
+                && x.Chat.Type != ChatTypes.Deal && x.Chat.Type != ChatTypes.Dispute);
             return count;
         }
         public async Task<IList<ChatMessageAttachment>> RemoveListAsync(List<Guid> ids, string userId)

@@ -12,7 +12,7 @@ namespace Mite.DAL.Entities
     /// <summary>
     /// Элемент коллекции работы
     /// </summary>
-    public class PostCollectionItem : GuidEntity
+    public class PostCollectionItem : GuidEntity, IContentEntity
     {
         [ForeignKey("Post")]
         public Guid PostId { get; set; }

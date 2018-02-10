@@ -18,17 +18,13 @@ namespace Mite.Hubs
 {
     public class ChatHub : Hub
     {
-        private readonly ILifetimeScope lifetimeScope;
+        //private readonly ILifetimeScope lifetimeScope;
         private readonly ChatMessagesRepository chatMessagesRepository;
         private readonly ChatRepository chatRepository;
-        private readonly AppUserManager userManager;
 
-        public ChatHub(ILifetimeScope lifetimeScope)
+        public ChatHub()
         {
-            this.lifetimeScope = lifetimeScope.BeginLifetimeScope();
             var unitOfWork = new UnitOfWork(new AppDbContext());
-            userManager = lifetimeScope.Resolve<AppUserManager>();
-
             chatMessagesRepository = unitOfWork.GetRepo<ChatMessagesRepository, ChatMessage>();
             chatRepository = unitOfWork.GetRepo<ChatRepository, Chat>();
         }
@@ -63,17 +59,9 @@ namespace Mite.Hubs
                     }
                 }
         }
-        public void AddMessage(ChatMessageModel message)
+        public void AddPublicMessage(ChatMessageModel message)
         {
-            if (message.Attachments == null)
-                message.Attachments = new List<MessageAttachmentModel>();
-            foreach (var re in message.Recipients)
-            {
-                if (re.Id != message.Sender.Id)
-                {
-                    Clients.Group(re.Id).addMessage(message);
-                }
-            }
+
         }
         public void ReadMessage(Guid messageId)
         {
@@ -106,8 +94,8 @@ namespace Mite.Hubs
         }
         protected override void Dispose(bool disposing)
         {
-            if (disposing && lifetimeScope != null)
-                lifetimeScope.Dispose();
+            //if (disposing && lifetimeScope != null)
+            //    lifetimeScope.Dispose();
             base.Dispose(disposing);
         }
     }

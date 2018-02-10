@@ -23,7 +23,7 @@ namespace Mite.Controllers.Api
         [AllowAnonymous]
         public async Task<IEnumerable<TagModel>> GetForUser()
         {
-            var tags = await _unitOfWork.GetRepo<TagsRepository, Tag>().GetAllWithPopularityAsync(true);
+            var tags = await _unitOfWork.GetRepo<TagsRepository, Tag>().GetAllWithPopularityAsync();
             return Mapper.Map<IEnumerable<TagModel>>(tags);
         }
         [HttpGet]

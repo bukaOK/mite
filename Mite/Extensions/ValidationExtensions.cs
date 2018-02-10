@@ -46,20 +46,40 @@ namespace Mite.Extensions
             var str = new StringBuilder($"$('{formSelector}').form({{on: '{actionOn}', inline: {inlineStr}, fields: {{");
             foreach(var prop in modelProps)
             {
-                if (prop.GetCustomAttribute<OffClientValidationAttribute>() != null)
-                    continue;
-
                 var propType = prop.PropertyType;
-                var id = "#" + htmlHelper.Id(prop.Name);
                 var displayName = prop.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName;
                 if (displayName == null)
                     displayName = propType.Name;
 
                 str.Append($"{prop.Name}:{{rules:[");
 
+                if (propType == typeof(double) || propType == typeof(float) || propType == typeof(decimal)
+                    || propType == typeof(double?) || propType == typeof(float?) || propType == typeof(decimal?))
+                    str.Append("{type: 'decimal', prompt: 'Введите значение с плавающей точкой'},");
+
+                var rangeAttr = prop.GetCustomAttribute<RangeAttribute>();
+                if (rangeAttr != null)
+                {
+                    str.Append($"{{type: 'integer[{rangeAttr.Minimum}..{rangeAttr.Maximum}]',")
+                            .Append($"prompt: '{rangeAttr.FormatErrorMessage(displayName)}'}},");
+                }
+                else if (propType == typeof(int) || propType == typeof(long) || propType == typeof(int?) || propType == typeof(long?))
+                {
+                    str.Append("{type: 'number', prompt: 'Введите численное значение.'},");
+                }
+
+                if (prop.GetCustomAttribute<OffClientValidationAttribute>() != null || 
+                    prop.GetCustomAttributes<ValidationAttribute>(true).Count() == 0)
+                {
+                    str.Append("]},");
+                    continue;
+                }
+
+                //var id = "#" + htmlHelper.Id(prop.Name);
+
                 var reqAttr = prop.GetCustomAttribute<RequiredAttribute>();
                 if(reqAttr != null)
-                    str.Append($"{{type: 'empty',prompt: $('{id}').data('valRequired')}},");
+                    str.Append($"{{type: 'empty',prompt: '{reqAttr.FormatErrorMessage(displayName)}'}},");
 
                 var checkedAttr = prop.GetCustomAttribute<CheckedAttribute>();
                 if(checkedAttr != null)
@@ -67,30 +87,23 @@ namespace Mite.Extensions
 
                 var regExpAttr = prop.GetCustomAttribute<RegularExpressionAttribute>();
                 if(regExpAttr != null)
-                    str.Append($"{{type: 'regExp', value: '{regExpAttr.Pattern}',prompt: $('{id}').data('val-regex')}},");
+                    str.Append($"{{type: 'regExp', value: '{regExpAttr.Pattern}',prompt: '{regExpAttr.FormatErrorMessage(displayName)}'}},");
 
                 var minLengthAttr = prop.GetCustomAttribute<MinLengthAttribute>();
                 if(minLengthAttr != null)
-                str.Append($"{{type: 'minLength[{minLengthAttr.Length}]', prompt: $('{id}').data('val-minlength')}},");
+                str.Append($"{{type: 'minLength[{minLengthAttr.Length}]', prompt: '{minLengthAttr.FormatErrorMessage(displayName)}'}},");
 
                 var maxLengthAttr = prop.GetCustomAttribute<MaxLengthAttribute>();
                 if(maxLengthAttr != null)
-                    str.Append($"{{type: 'maxLength[{maxLengthAttr.Length}]',prompt: $('{id}').data('val-maxlength')}},");
+                    str.Append($"{{type: 'maxLength[{maxLengthAttr.Length}]',prompt: '{maxLengthAttr.FormatErrorMessage(displayName)}'}},");
 
                 var emailAttr = prop.GetCustomAttribute<EmailAddressAttribute>();
                 if(emailAttr != null)
-                    str.Append($"{{type: 'email', prompt: $('{id}').data('val-email')}},");
+                    str.Append($"{{type: 'email', prompt: '{emailAttr.FormatErrorMessage(displayName)}'}},");
 
                 var compareAttr = prop.GetCustomAttribute<System.ComponentModel.DataAnnotations.CompareAttribute>();
                 if(compareAttr != null)
-                    str.Append($"{{type: 'match[{compareAttr.OtherProperty}]',prompt: $('{id}').data('valEqualto')}},");
-
-                if(propType == typeof(int) || propType == typeof(long) || propType == typeof(int?) || propType == typeof(long?) ||
-                    propType == typeof(double) || propType == typeof(float) || propType == typeof(decimal)
-                    || propType == typeof(double?) || propType == typeof(float?) || propType == typeof(decimal?))
-                {
-                    str.Append("{type: 'number', prompt: 'Введите численное значение.'},");
-                }
+                    str.Append($"{{type: 'match[{compareAttr.OtherProperty}]',prompt: '{compareAttr.FormatErrorMessage(displayName)}'}},");
 
                 str.Append("]},");
             }

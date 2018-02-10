@@ -15,12 +15,18 @@ namespace Mite.BLL.Services
     public interface IChatMembersService : IDataService
     {
         Task<IEnumerable<ChatMemberModel>> GetByChatAsync(Guid chatId, string currentUserId);
+        /// <summary>
+        /// Добавить пользователя в чат
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="currentUserId"></param>
+        /// <param name="chatId"></param>
+        /// <returns></returns>
         Task<DataServiceResult> AddAsync(string userId, string currentUserId, Guid chatId);
         /// <summary>
         /// Войти в чат
         /// </summary>
         /// <param name="userId"></param>
-        /// <param name="currentUserId"></param>
         /// <param name="chatId"></param>
         /// <returns></returns>
         Task<DataServiceResult> EnterAsync(string userId, Guid chatId);
@@ -58,6 +64,10 @@ namespace Mite.BLL.Services
             var isMember = await membersRepository.IsMemberAsync(chatId, currentUserId);
             if (!isMember)
                 return DataServiceResult.Failed("Неизвестный пользователь");
+            var chat = await Database.GetRepo<ChatRepository, Chat>().GetAsync(chatId);
+            var membersCount = await membersRepository.GetCountAsync(chatId);
+            if (chat.MaxMembersCount > 0 && ++membersCount > chat.MaxMembersCount)
+                return DataServiceResult.Failed("Достигнуто максимальное кол-во участников");
             try
             {
                 var member = await membersRepository.GetAsync(userId, chatId);
@@ -89,24 +99,25 @@ namespace Mite.BLL.Services
 
         public async Task<DataServiceResult> EnterAsync(string userId, Guid chatId)
         {
-            var chat = await Database.GetRepo<ChatRepository, Chat>().GetAsync(chatId);
+            var chat = await Database.GetRepo<ChatRepository, Chat>().GetWithLastMessageAsync(chatId);
             var member = await membersRepository.GetAsync(userId, chatId);
+            var shortChat = Mapper.Map<ShortChatModel>(chat);
             if (chat == null)
                 return DataServiceResult.Failed("Неизвестный чат");
-            if(member != null && chat.Type == ChatTypes.Private && member.Status == ChatMemberStatuses.CameOut)
+            if(member != null && member.Status == ChatMemberStatuses.CameOut)
             {
                 try
                 {
                     member.Status = ChatMemberStatuses.InChat;
                     await membersRepository.UpdateAsync(member);
-                    return Success;
+                    return DataServiceResult.Success(shortChat);
                 }
                 catch(Exception e)
                 {
                     return CommonError("Ошибка при входе в чат", e);
                 }
             }
-            if(member == null && (chat.Type == ChatTypes.PrivateGroup || chat.Type == ChatTypes.Public))
+            if(member == null && chat.Type == ChatTypes.Public)
             {
                 try
                 {
@@ -115,10 +126,10 @@ namespace Mite.BLL.Services
                         Status = ChatMemberStatuses.InChat,
                         EnterDate = DateTime.UtcNow,
                         UserId = userId,
-                        ChatId = chat.Id
+                        ChatId = chat.Id,
                     };
                     await membersRepository.AddAsync(member);
-                    return Success;
+                    return DataServiceResult.Success(shortChat);
                 }
                 catch (Exception e)
                 {

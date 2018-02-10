@@ -2,10 +2,13 @@
     formSelector: '#authorServiceForm',
     msgSelector: '#serviceEditMsg',
     _send: function (url, type) {
-        var $form = $(this.formSelector);
-        var $msg = $(this.msgSelector);
+        var $form = $(this.formSelector),
+            $msg = $(this.msgSelector);
         if (!$form.form('validate form')) {
             return false;
+        }
+        if ($('#ImageBase64').val().length / 1024 / 1024 > 30) {
+            $form.form('add errors', ['Изображение не должно превышать по размеру 30 мбайт.'])
         }
         $form.addClass('loading');
         return $.ajax({
@@ -56,11 +59,8 @@
             url: '/api/authorservices/' + id,
             type: 'delete',
             success: function () {
-                $('.tab[data-tab="services"]').masonry('remove', $('[data-service-id="' + id + '"]')[0]);
-                iziToast.success({
-                    title: 'Успешно!',
-                    message: 'Услуга удалена.'
-                });
+                $('.tab[data-tab="services"]').masonry('remove', $('[data-service-id="' + id + '"]')[0])
+                    .masonry('layout');
             },
             error: function (jqXhr) {
                 var error = 'Ошибка.',
@@ -75,22 +75,71 @@
         })
     },
     /**
+     * Добавляем список услуг из вк
+     * @param {string|HTMLElement} formSelector селектор форм
+    */
+    addVkList: function (formSelector, btn) {
+        var $forms = $(formSelector),
+            invalid = $forms.form('validate form').some(function (validItem) {
+                return !validItem;
+            }), data = [];
+        if (invalid)
+            return null;
+        $(btn).addClass('loading disabled');
+        $forms.each(function (index, form) {
+            var $form = $(form);
+            data.push({
+                ImageBase64: $form.find('[name=ImageBase64]').val(),
+                VkLink: $form.find('[name=VkLink]').val(),
+                VkThumbLink: $form.find('[name=VkThumbLink]').val(),
+                Title: $form.find('[name=Title]').val(),
+                ServiceTypeId: $form.find('[name=ServiceTypeId]').val(),
+                Price: $form.find('[name=Price]').val(),
+                DeadlineNum: $form.find('[name=DeadlineNum]').val(),
+                Description: $form.find('[name=Description]').val(),
+                VkPostCode: $form.find('[name=VkPostCode]').val()
+            });
+        });
+        return $.ajax({
+            type: 'post',
+            data: {
+                services: data
+            },
+            success: function (resp) {
+                if (resp.status != Settings.apiStatuses.success) {
+                    iziToast.error({
+                        title: 'Упс!',
+                        message: resp.data[0]
+                    });
+                } else {
+                    location.reload();
+                }
+            },
+            error: function () {
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Внутренняя ошибка сервера'
+                });
+            },
+            complete: function () {
+                $(btn).removeClass('loading disabled');
+            }
+        });
+    },
+    /**
      * Грузим результаты услуги
      * @param {string} id id услуги
      * @param {JQuery<HTMLElement>} $img изображение услуги
     */
     loadGallery: function (id, $img) {
-        return $.ajax({
-            url: '/authorservices/servicegallery/' + id,
-            success: function (resp) {
-                if (resp.status === undefined) {
-                    resp = JSON.parse(resp);
-                }
-                resp.data.unshift({
-                    ImageSrc: $img.attr('src')
-                });
-                MiteGallery.initService(resp.data, $img);
+        return $.getJSON('/authorservices/servicegallery/' + id).done(function (resp) {
+            if (resp.status === undefined) {
+                resp = JSON.parse(resp);
             }
+            resp.data.unshift({
+                ImageSrc: $img.attr('src')
+            });
+            MiteGallery.initService(resp.data, $img);
         });
     }
 }

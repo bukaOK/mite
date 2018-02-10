@@ -9,6 +9,7 @@ using Mite.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
 
 namespace Mite.Controllers
@@ -32,7 +33,7 @@ namespace Mite.Controllers
             var deal = await dealService.GetShowAsync(id, CurrentUserId);
             if (deal == null)
                 return NotFound();
-            if (!string.Equals(currentUserId, deal.Author.Id) && !string.Equals(currentUserId, deal.Client.Id) 
+            if (!string.Equals(currentUserId, deal.Author.Id) && !string.Equals(currentUserId, deal.Client.Id)
                 && !User.IsInRole(RoleNames.Moderator))
                 return Forbidden();
             var isAuthor = User.Identity.GetUserId() == deal.Author.Id;
@@ -48,7 +49,6 @@ namespace Mite.Controllers
                 //null возможен, когда модератор зашел на страницу сделки, но ещё не начал его разрешать
                 //deal.Chat.CurrentUser = deal.Chat.Members.FirstOrDefault(x => string.Equals(currentUserId, x.Id));
             }
-
             return View(deal);
         }
         [HttpPost]

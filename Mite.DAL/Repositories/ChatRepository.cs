@@ -22,8 +22,16 @@ namespace Mite.DAL.Repositories
         }
         public override async Task AddAsync(Chat entity)
         {
-            Table.Add(entity);
-            await SaveAsync();
+            var query = "insert into dbo.\"Chats\" (\"Id\", \"Name\", \"ImageSrc\", \"ImageSrcCompressed\", \"MaxMembersCount\", \"Type\", \"CreatorId\") " +
+                "values(@Id, @Name, @ImageSrc, @ImageSrcCompressed, @MaxMembersCount, @Type, @CreatorId);";
+            await Db.ExecuteAsync(query, entity);
+            foreach (var member in entity.Members)
+                member.ChatId = entity.Id;
+            if (entity.Members != null && entity.Members.Any())
+            {
+                DbContext.ChatMembers.AddRange(entity.Members);
+                await SaveAsync();
+            }
         }
         public async Task<(string imgSrc, string compressedSrc)> RemoveAsync(Guid chatId, string userId)
         {
@@ -45,9 +53,25 @@ namespace Mite.DAL.Repositories
             await SaveAsync();
             return tuple;
         }
+        public async Task<Chat> GetWithLastMessageAsync(Guid chatId)
+        {
+            var query = "select distinct on(chats.\"Id\") * from dbo.\"Chats\" chats left outer join dbo.\"ChatMessages\" msgs " +
+                "on msgs.\"ChatId\"=chats.\"Id\" inner join dbo.\"Users\" sender on sender.\"Id\"=msgs.\"SenderId\" " +
+                "where chats.\"Id\"=@chatId order by chats.\"Id\", msgs.\"SendDate\" desc";
+            return (await Db.QueryAsync<Chat, ChatMessage, User, Chat>(query, (chat, msg, sender) =>
+            {
+                if (msg != null)
+                {
+                    msg.Sender = sender;
+                    chat.Messages = new List<ChatMessage> { msg };
+                }
+                return chat;
+            }, new { chatId })).First();
+        }
         public Task<Chat> GetByMembersAsync(IEnumerable<string> userIds)
         {
-            return Table.FirstOrDefaultAsync(x => userIds.Count() == x.Members.Count && x.Members.All(y => userIds.Contains(y.UserId)));
+            return Table.FirstOrDefaultAsync(x => x.Type == ChatTypes.Private && 
+                userIds.Count() == x.Members.Count && x.Members.All(y => userIds.Contains(y.UserId)));
         }
         public async Task<IEnumerable<Chat>> GetByUserAsync(string userId)
         {
@@ -65,7 +89,7 @@ namespace Mite.DAL.Repositories
             {
                 if(msg != null)
                 {
-                    msg.Sender = sender ?? null;
+                    msg.Sender = sender;
                     chat.Messages = new List<ChatMessage> { msg };
                 }
                 if (string.IsNullOrEmpty(chat.ImageSrc) && companion != null)
@@ -74,6 +98,17 @@ namespace Mite.DAL.Repositories
                     chat.Name = companion?.UserName ?? "Мой чат";
                 return chat;
             }, new { UserId = userId, DisputeType = ChatTypes.Dispute, DealType = ChatTypes.Deal, RemovedStatus = ChatMemberStatuses.Removed });
+        }
+        public async Task<IEnumerable<PublicChatDTO>> GetPublishedAsync(PublicChatsFilter filter)
+        {
+            var query = "select chats.*, ch_mem.\"MembersCount\" from dbo.\"Chats\" chats inner join " +
+                "(select count(*) \"MembersCount\", chat_members.\"ChatId\" " +
+                "from dbo.\"ChatMembers\" chat_members group by chat_members.\"ChatId\") as ch_mem on ch_mem.\"ChatId\"=chats.\"Id\" " +
+                "where chats.\"Type\"=@PublicType and chats.\"Id\" not in(select distinct on(chats1.\"Id\") chats1.\"Id\" " +
+                "from dbo.\"Chats\" chats1 inner join dbo.\"ChatMembers\" " +
+                "ch_mem1 on ch_mem1.\"ChatId\"=chats1.\"Id\" where ch_mem1.\"UserId\"=@UserId " +
+                "order by chats1.\"Id\") order by \"MembersCount\" desc limit @Range offset @Offset;";
+            return await Db.QueryAsync<PublicChatDTO>(query, filter);
         }
         public Task<Chat> GetWithMembersAsync(Guid id)
         {

@@ -28,8 +28,8 @@ namespace Mite.BLL.Services
         /// <param name="userId"></param>
         /// <returns></returns>
         Task<CommentRatingModel> GetByCommentAndUserAsync(Guid commentId, string userId);
-        Task RatePostAsync(PostRatingModel model);
-        Task RateCommentAsync(CommentRatingModel model);
+        Task<DataServiceResult> RatePostAsync(PostRatingModel model);
+        Task<DataServiceResult> RateCommentAsync(CommentRatingModel model);
         Task<DataServiceResult> RecountAsync(Guid itemId, RatingRecountTypes recountType);
     }
     public class RatingService : DataService, IRatingService
@@ -59,43 +59,59 @@ namespace Mite.BLL.Services
             return Mapper.Map<PostRatingModel>(rating);
         }
 
-        public async Task RateCommentAsync(CommentRatingModel model)
+        public async Task<DataServiceResult> RateCommentAsync(CommentRatingModel model)
         {
             var repo = Database.GetRepo<RatingRepository, Rating>();
             var rating = Mapper.Map<Rating>(model);
             rating.RateDate = DateTime.UtcNow;
 
             var existingRating = await repo.GetByUserAndCommentAsync(rating.CommentId, rating.UserId);
-            //Если существует, обновляем рейтинг, иначе добавляем новый
-            if (existingRating != null)
+            try
             {
-                await repo.UpdateAsync(existingRating, rating.Value);
+                //Если существует, обновляем рейтинг, иначе добавляем новый
+                if (existingRating != null)
+                {
+                    await repo.UpdateAsync(existingRating, rating.Value);
+                }
+                else
+                {
+                    var comment = await Database.GetRepo<CommentsRepository, Comment>().GetAsync((Guid)rating.CommentId);
+                    rating.OwnerId = comment.UserId;
+                    await repo.AddAsync(rating);
+                }
+                return Success;
             }
-            else
+            catch(Exception e)
             {
-                var comment = await Database.GetRepo<CommentsRepository, Comment>().GetAsync((Guid)rating.CommentId);
-                rating.OwnerId = comment.UserId;
-                await repo.AddAsync(rating);
+                return CommonError("Ошибка при оценке комментария", e);
             }
         }
 
-        public async Task RatePostAsync(PostRatingModel ratingModel)
+        public async Task<DataServiceResult> RatePostAsync(PostRatingModel ratingModel)
         {
             var rating = Mapper.Map<Rating>(ratingModel);
             rating.RateDate = DateTime.UtcNow;
             var repo = Database.GetRepo<RatingRepository, Rating>();
 
             var existingRating = await repo.GetByUserAndPostAsync((Guid)rating.PostId, rating.UserId);
-            //Если существует, обновляем рейтинг, иначе добавляем новый
-            if (existingRating != null)
+            try
             {
-                await repo.UpdateAsync(existingRating, rating.Value);
+                //Если существует, обновляем рейтинг, иначе добавляем новый
+                if (existingRating != null)
+                {
+                    await repo.UpdateAsync(existingRating, rating.Value);
+                }
+                else
+                {
+                    var post = await Database.GetRepo<PostsRepository, Post>().GetAsync((Guid)rating.PostId);
+                    rating.OwnerId = post.UserId;
+                    await repo.AddAsync(rating);
+                }
+                return Success;
             }
-            else
+            catch(Exception e)
             {
-                var post = await Database.GetRepo<PostsRepository, Post>().GetAsync((Guid)rating.PostId);
-                rating.OwnerId = post.UserId;
-                await repo.AddAsync(rating);
+                return CommonError("Ошибка при оценке работы", e);
             }
         }
 

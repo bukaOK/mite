@@ -36,8 +36,21 @@ else if (Model.Status == DealStatuses.ExpectPayment)
     <form class="ui form" id="dealForm">
         @if (Model.VkReposted == false)
         {
-        <div class="field">@Html.Raw(Model.Service.VkRepostCode)</div>
-        <button type="button" class="ui primary button" onclick="DealsMvc.confirmVkRepost(this, '@Model.Id')">Подтвердить репост</button>
+            if (Model.VkAuthenticated)
+            {
+                <div class="field">@Html.Raw(Model.Service.VkRepostCode)</div>
+                <button type="button" class="ui primary button" onclick="DealsMvc.confirmVkRepost(this, '@Model.Id')">Подтвердить репост</button>
+            }
+            else
+            {
+                using(Html.BeginForm("InitExternalAuth", "Account", new { returnUrl = Request.CurrentExecutionFilePath }, FormMethod.Post, new { @class = "ui form" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="ui vk button" name="provider" value="@VkSettings.DefaultAuthType" title="Чтобы проверить репост ВКонтакте, необходимо войти">
+                        <i class="vk icon"></i>Войти ВКонтакте
+                    </button>
+                }
+            }
         }
         else if (Model.VkReposted == true)
         {
@@ -52,7 +65,7 @@ else if(Model.Status == DealStatuses.ExpectClient)
     <h3 class="ui header">Ожидаем подтверждения клиента</h3>
     <form class="ui form" id="dealForm">
         <div class="field">
-            <button class="ui fluid red button" data-tooltip="После окончания спора ваша надёжность уменьшится" type="button" onclick="DealsMvc.openDispute(this, '@Model.Id')">
+            <button class="ui fluid red button" title="После окончания спора ваша надёжность уменьшится" type="button" onclick="DealsMvc.openDispute(this, '@Model.Id')">
                 <i class="meh icon"></i>Открыть спор
             </button>
         </div>
@@ -70,7 +83,7 @@ else if (Model.Status == DealStatuses.Confirmed || Model.Status == DealStatuses.
             <i class="cloud download icon"></i>
             <input type="file" id="service-img-inp" style="display: none" />
         </label>
-        <button class="ui green button" data-tooltip="Результат сделки будет доступен на странице услуги" type="button" onclick="DealsMvc.loadImage(this)">Сохранить</button>
+        <button class="ui green button" title="Результат сделки будет доступен на странице услуги" type="button" onclick="DealsMvc.loadImage(this)">Сохранить</button>
         <div class="field">
             <div class="ui image img-wrapper">
                 @if (!string.IsNullOrEmpty(Model.ImageSrc))

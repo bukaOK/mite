@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.DataProtection;
 using Mite.BLL.IdentityManagers;
@@ -18,11 +17,10 @@ using Mite.ExternalServices.YandexMoney;
 using Yandex.Money.Api.Sdk.Interfaces;
 using NLog;
 using Mite.BLL.Core;
-using Mite.BLL.Infrastructure;
-using Mite.Infrastructure;
 using System.Web;
 using Mite.Modules;
 using Autofac.Integration.SignalR;
+using Mite.Hubs.Clients;
 
 namespace Mite
 {

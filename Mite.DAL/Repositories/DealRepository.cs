@@ -69,7 +69,7 @@ namespace Mite.DAL.Repositories
         }
         public Task<Deal> GetWithServiceAsync(long id)
         {
-            return Table.Include(x => x.Service).Include(x => x.Author).Include(x => x.DisputeChat.Members).Include(x => x.Moder)
+            return Table.AsNoTracking().Include(x => x.Service).Include(x => x.Author).Include(x => x.DisputeChat.Members).Include(x => x.Moder)
                 .Include(x => x.Client).Include(x => x.Chat.Members).FirstOrDefaultAsync(x => x.Id == id);
         }
         public int GetAuthorCounts(string authorId)

@@ -27,7 +27,7 @@
     {
         <div class="field">
             <div class="ui radio checkbox">
-                @Html.RadioButton("", item.Value, item.Selected)
+                @Html.RadioButton("", item.Value, item.Selected, new { @id = "" })
                 @Html.Label("", item.Text)
             </div>
         </div>

@@ -112,8 +112,8 @@
     <Reference Include="Hangfire.SqlServer, Version=1.6.17.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Hangfire.SqlServer.1.6.17\lib\net45\Hangfire.SqlServer.dll</HintPath>
     </Reference>
-    <Reference Include="Magick.NET-Q8-AnyCPU, Version=7.0.0.0, Culture=neutral, PublicKeyToken=2004825badfa91ec, processorArchitecture=MSIL">
-      <HintPath>..\packages\Magick.NET-Q8-AnyCPU.7.0.7.700\lib\net40\Magick.NET-Q8-AnyCPU.dll</HintPath>
+    <Reference Include="Magick.NET-Q8-AnyCPU, Version=7.2.1.0, Culture=neutral, PublicKeyToken=2004825badfa91ec, processorArchitecture=MSIL">
+      <HintPath>..\packages\Magick.NET-Q8-AnyCPU.7.3.0\lib\net40\Magick.NET-Q8-AnyCPU.dll</HintPath>
     </Reference>
     <Reference Include="MailKit, Version=1.18.0.0, Culture=neutral, PublicKeyToken=4e064fe7c44a8f1b, processorArchitecture=MSIL">
       <HintPath>..\packages\MailKit.1.18.1.1\lib\net451\MailKit.dll</HintPath>
@@ -350,6 +350,7 @@
     <Compile Include="Attributes\Validation\CheckedAttribute.cs" />
     <Compile Include="BLL\Core\CrudService.cs" />
     <Compile Include="BLL\Core\DataService.cs" />
+    <Compile Include="BLL\Helpers\PostsHelper.cs" />
     <Compile Include="BLL\Infrastructure\DataServiceException.cs" />
     <Compile Include="BLL\DTO\VkRepostDTO.cs" />
     <Compile Include="BLL\Helpers\FilesHelper.cs" />
@@ -360,6 +361,7 @@
     <Compile Include="BLL\Infrastructure\ServiceBuilder.cs" />
     <Compile Include="BLL\Services\AuthorServiceService.cs" />
     <Compile Include="BLL\Services\AuthorServiceTypeService.cs" />
+    <Compile Include="BLL\Services\BlackListService.cs" />
     <Compile Include="BLL\Services\CashService.cs" />
     <Compile Include="BLL\Services\ChatMembersService.cs" />
     <Compile Include="BLL\Services\ChatService.cs" />
@@ -383,6 +385,7 @@
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\Api\AuthorServicesController.cs" />
     <Compile Include="Controllers\Api\AuthorServiceTypesController.cs" />
+    <Compile Include="Controllers\Api\BlackListController.cs" />
     <Compile Include="Controllers\Api\DealsController.cs" />
     <Compile Include="Controllers\Api\FavoritePostsController.cs" />
     <Compile Include="Controllers\Api\MessageController.cs" />
@@ -415,6 +418,7 @@
     <Compile Include="Extensions\ClaimsExtensions.cs" />
     <Compile Include="Extensions\HtmlExtensions.cs" />
     <Compile Include="Extensions\ValidationExtensions.cs" />
+    <Compile Include="Hubs\Clients\ChatHubClient.cs" />
     <Compile Include="Helpers\ClaimsHelper.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -430,6 +434,8 @@
     <Compile Include="Helpers\ViewHelper.cs" />
     <Compile Include="App_Start\AutofacDI.cs" />
     <Compile Include="Hubs\ChatHub.cs" />
+    <Compile Include="Hubs\Clients\Core\HubClient.cs" />
+    <Compile Include="Hubs\Clients\NotifyHubClient.cs" />
     <Compile Include="Hubs\NotifyHub.cs" />
     <Compile Include="Infrastructure\Automapper\AuthorServiceProfile.cs" />
     <Compile Include="Infrastructure\Automapper\ChatProfile.cs" />
@@ -444,6 +450,9 @@
     <Compile Include="Infrastructure\Automapper\RatingProfile.cs" />
     <Compile Include="Infrastructure\Automapper\TagProfile.cs" />
     <Compile Include="Infrastructure\Automapper\UserProfile.cs" />
+    <Compile Include="Infrastructure\Binders\BinderConfig.cs" />
+    <Compile Include="Infrastructure\Binders\DecimalModelBinder.cs" />
+    <Compile Include="Infrastructure\Binders\DoubleModelBinder.cs" />
     <Compile Include="Infrastructure\MiteCookie.cs" />
     <Compile Include="Models\AccountModels.cs" />
     <Compile Include="Models\AdminModels.cs" />
@@ -468,6 +477,7 @@
     <Compile Include="Models\UserSettingsModels.cs" />
     <Compile Include="Models\UserShortModel.cs" />
     <Compile Include="Models\WalletsSettingsModel.cs" />
+    <Compile Include="Modules\ErrorModule.cs" />
     <Compile Include="Modules\GeoMiddleware.cs" />
     <Compile Include="Modules\ReferalModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -841,8 +851,9 @@
     <Content Include="Content\images\mite-logo-icon.png" />
     <Content Include="Content\images\mite-logo2.png" />
     <Content Include="Content\images\mite-main-logo.png" />
-    <Content Include="Content\images\mopple-logo.png" />
     <Content Include="Content\images\some-logo.png" />
+    <Content Include="Content\images\svg\camera-black.svg" />
+    <Content Include="Content\images\svg\camera-white.svg" />
     <Content Include="Content\images\video.svg" />
     <Content Include="Content\landing.css" />
     <Content Include="Content\onion\023.gif" />
@@ -882,6 +893,8 @@
     <Content Include="Content\UserMenu.css" />
     <Content Include="ErrorPages\404-1.htm" />
     <Content Include="ErrorPages\404.html" />
+    <Content Include="ErrorPages\404.aspx" />
+    <Content Include="ErrorPages\500.html" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
@@ -914,16 +927,21 @@
     <None Include="Scripts\jquery-3.1.1.intellisense.js" />
     <Content Include="robots.txt" />
     <Content Include="Scripts\Api\AuthorServices.js" />
+    <Content Include="Scripts\Api\BlackList.js" />
     <Content Include="Scripts\Api\ChatFollowers.js" />
     <Content Include="Scripts\Api\ChatLoader.js" />
     <Content Include="Scripts\Api\ChatMembers.js" />
     <Content Include="Scripts\Api\ChatMessages.js" />
     <Content Include="Scripts\Api\Chats.js" />
+    <Content Include="Scripts\Api\ChatUpdating.js" />
     <Content Include="Scripts\Api\Cities.js" />
     <Content Include="Scripts\Api\Deals.js" />
     <Content Include="Scripts\Api\FavoritePosts.js" />
     <Content Include="Scripts\Api\Payments.js" />
+    <Content Include="Scripts\Api\PublicChats.js" />
     <Content Include="Scripts\Api\ServiceTypes.js" />
+    <Content Include="Scripts\Api\Tags.js" />
+    <Content Include="Scripts\Api\UserSettings.js" />
     <Content Include="Scripts\BrowserSupport.js" />
     <Content Include="Scripts\content-tools.js" />
     <Content Include="Scripts\content-tools.min.js" />
@@ -936,6 +954,8 @@
     <Content Include="Scripts\Custom\MiteTabs.js" />
     <Content Include="Scripts\Custom\SearchFilters.js" />
     <Content Include="Scripts\Custom\Settings.js" />
+    <Content Include="Scripts\Custom\UrlHelper.js" />
+    <Content Include="Scripts\Custom\VkServices.js" />
     <Content Include="Scripts\iziToast.js" />
     <Content Include="Scripts\jquery-3.1.1.js" />
     <Content Include="Scripts\jquery-3.1.1.min.js" />
@@ -970,6 +990,7 @@
     <Content Include="Scripts\Custom\TabFilter.js" />
     <Content Include="Scripts\Custom\ViewHelpers.js" />
     <Content Include="Scripts\_references.js" />
+    <Content Include="Views\ErrorPages\403.html" />
     <Content Include="Views\ErrorPages\404.html" />
     <Content Include="Views\ErrorPages\500.html" />
     <Content Include="Views\UserProfile\Index.cshtml" />
@@ -1061,6 +1082,9 @@
     <Content Include="Views\Chats\UserChats.cshtml" />
     <Content Include="Views\Chats\_Chat.cshtml" />
     <Content Include="Views\Chats\_Templates.cshtml" />
+    <Content Include="Views\Posts\EditComicsItems.cshtml" />
+    <Content Include="Views\AuthorServices\AddVkServices.cshtml" />
+    <Content Include="Views\UserSettings\Notifications.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

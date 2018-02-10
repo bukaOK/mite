@@ -15,6 +15,7 @@ using Mite.DAL.Repositories;
 using Mite.BLL.Helpers;
 using Mite.DAL.Filters;
 using Mite.BLL.Infrastructure;
+using Mite.DAL.Core;
 
 namespace Mite.BLL.Services
 {
@@ -81,9 +82,8 @@ namespace Mite.BLL.Services
             var tagsRepo = Database.GetRepo<TagsRepository, Tag>();
 
             if (string.IsNullOrEmpty(postModel.Content))
-            {
                 return DataServiceResult.Failed("Пустой контент");
-            }
+
             var tags = (List<Tag>)null;
             if(postModel.Tags != null)
             {
@@ -102,21 +102,21 @@ namespace Mite.BLL.Services
             else
                 post.Type = PostTypes.Drafts;
 
-            var result = DataServiceResult.Failed("Внутренняя ошибка");
             switch (post.ContentType)
             {
                 case PostContentTypes.Image:
-                    result = CreateImage(post);
+                    PostsHelper.CreateImage(post);
                     break;
                 case PostContentTypes.ImageCollection:
-                    result = CreateImageCollection(post);
+                case PostContentTypes.Comics:
+                    PostsHelper.CreatePostCollection(post, post.ContentType);
                     break;
                 case PostContentTypes.Document:
-                    result = CreateDocument(post);
+                    PostsHelper.CreateDocument(post);
                     break;
+                default:
+                    throw new ArgumentException("Неизвестный тип работы");
             }
-            if (!result.Succeeded)
-                return result;
             using(var transaction = repo.BeginTransaction())
             {
                 try
@@ -135,95 +135,10 @@ namespace Mite.BLL.Services
             }
         }
 
-        private DataServiceResult CreateImageCollection(Post post)
-        {
-            try
-            {
-                var tuple = ImagesHelper.CreateImage(imagesFolder, post.Content);
-                post.Content = tuple.vPath;
-                post.Content_50 = tuple.compressedVPath;
-            }
-            catch(Exception e)
-            {
-                return CommonError("Ошибка при добавлении изображений", e);
-            }
-
-            var lastPost = 0;
-            foreach (var item in post.Collection)
-            {
-                try
-                {
-                    var tuple = ImagesHelper.CreateImage(imagesFolder, item.ContentSrc);
-                    item.ContentSrc = tuple.vPath;
-                    item.ContentSrc_50 = tuple.compressedVPath;
-                    lastPost++;
-                }
-                catch (Exception e)
-                {
-                    for (var j = 0; j < lastPost; j++)
-                    {
-                        FilesHelper.DeleteFile(post.Collection[j].ContentSrc);
-                        FilesHelper.DeleteFile(post.Collection[j].ContentSrc_50);
-                    }
-                    return CommonError("Ошибка при добавлении изображений", e);
-                }
-            }
-            return DataServiceResult.Success(post);
-        }
-
-        private DataServiceResult CreateDocument(Post post)
-        {
-            if (string.IsNullOrEmpty(post.Content))
-                return DataServiceResult.Failed("Контент не может быть пустым.");
-
-            if (!string.IsNullOrEmpty(post.Cover))
-            {
-                try
-                {
-                    var tuple = ImagesHelper.CreateImage(imagesFolder, post.Cover);
-                    post.Cover = tuple.vPath;
-                    post.Cover_50 = tuple.compressedVPath;
-                }
-                catch(Exception e)
-                {
-                    return CommonError("Ошибка при создании документа", e);
-                }
-            }
-            try
-            {
-                post.Content = FilesHelper.CreateDocument(documentsFolder, post.Content);
-            }
-            catch(Exception e)
-            {
-                return CommonError("Ошибка при создании документа", e);
-            }
-            return Success;
-        }
-
-        private DataServiceResult CreateImage(Post post)
-        {
-            try
-            {
-                post.Content = FilesHelper.CreateImage(imagesFolder, post.Content);
-
-                var fullCPath = HostingEnvironment.MapPath(post.Content);
-                ImagesHelper.Compressed.Compress(fullCPath);
-                post.Content_50 = ImagesHelper.Compressed.CompressedVirtualPath(fullCPath);
-
-                return Success;
-            }
-            catch(Exception e)
-            {
-                FilesHelper.DeleteFile(post.Content);
-                FilesHelper.DeleteFile(post.Content_50);
-                return CommonError("Ошибка при создании изображения", e);
-            }
-        }
-
         public async Task<DataServiceResult> DeletePostAsync(Guid postId)
         {
             var repo = Database.GetRepo<PostsRepository, Post>();
-            var post = await repo.GetWithCollectionAsync(postId);
+            var post = await repo.GetWithCollectionsAsync(postId);
             try
             {
                 switch (post.ContentType)
@@ -243,6 +158,11 @@ namespace Mite.BLL.Services
                             ImagesHelper.DeleteImage(post.Cover, post.Cover_50);
                         FilesHelper.DeleteFile(post.Content);
                         break;
+                    case PostContentTypes.Comics:
+                        ImagesHelper.DeleteImage(post.Content, post.Content_50);
+                        foreach (var item in post.ComicsItems)
+                            ImagesHelper.DeleteImage(item.ContentSrc, item.ContentSrc_50);
+                        break;
                 }
                 await repo.RemoveAsync(postId);
                 return Success;
@@ -261,163 +181,55 @@ namespace Mite.BLL.Services
         {
             var repo = Database.GetRepo<PostsRepository, Post>();
 
-            var currentPost = await repo.GetWithCollectionAsync(postModel.Id);
+            var currentPost = await repo.GetWithCollectionsAsync(postModel.Id);
             if (currentPost.Type == PostTypes.Blocked)
                 return DataServiceResult.Failed("Заблокированный пост нельзя обновлять");
             if (currentPost.PublishDate != null && (DateTime.UtcNow - currentPost.PublishDate).Value.TotalDays > 3)
                 return DataServiceResult.Failed("Время для редактирования истекло");
 
-            var result = DataServiceResult.Failed("Внутренняя ошибка");
-            switch (postModel.ContentType)
-            {
-                case PostContentTypes.Image:
-                    result = UpdateImage(currentPost, postModel);
-                    break;
-                case PostContentTypes.Document:
-                    result = UpdateDocument(currentPost, postModel);
-                    break;
-                case PostContentTypes.ImageCollection:
-                    result = UpdateImage(currentPost, postModel);
-                    if (!result.Succeeded)
-                        break;
-                    result = UpdateImageCollection(currentPost, postModel);
-                    break;
-            }
-            if (!result.Succeeded)
-                return result;
-            currentPost.Description = postModel.Description;
-            currentPost.Title = postModel.Header;
-            currentPost.LastEdit = DateTime.UtcNow;
-
-            if (currentPost.PublishDate == null && postModel.Type == PostTypes.Published)
-            {
-                currentPost.PublishDate = DateTime.UtcNow;
-                currentPost.Type = PostTypes.Published;
-            }
-            var tags = postModel.Tags?.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => new Tag
-            {
-                Name = x.ToLower()
-            }).ToList();
-            if(tags != null)
-                await Database.GetRepo<TagsRepository, Tag>().AddWithPostAsync(tags, currentPost.Id);
-            currentPost.Tags = null;
-            await repo.UpdateAsync(currentPost);
-
-            return Success;
-        }
-        /// <summary>
-        /// Удаление, создание изображения
-        /// </summary>
-        /// <param name="post">Старый пост</param>
-        /// <param name="model">Модель с новыми данными</param>
-        /// <returns></returns>
-        private DataServiceResult UpdateImage(Post post, PostModel model)
-        {
-            if (post.Content != model.Content)
-            {
-                try
-                {
-                    var tuple = ImagesHelper.UpdateImage(post.Content, post.Content_50, model.Content);
-                    post.Content = tuple.vPath;
-                    post.Content_50 = tuple.compressedVPath;
-
-                    return Success;
-                }
-                catch(Exception e)
-                {
-                    return CommonError("Ошибка при обновлении изображения", e);
-                }
-            }
-            return Success;
-        }
-        /// <summary>
-        /// Обновляем контент документа, а также обложку
-        /// </summary>
-        /// <param name="post"></param>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        private DataServiceResult UpdateDocument(Post post, PostModel model)
-        {
-            if (!string.IsNullOrWhiteSpace(model.Content))
-                FilesHelper.UpdateDocument(post.Content, model.Content);
-
-            if(!string.Equals(model.Cover, post.Cover))
-            {
-                try
-                {
-                    //Заменяем
-                    if (!string.IsNullOrEmpty(model.Cover) && !string.IsNullOrEmpty(post.Cover))
-                    {
-                        var tuple = ImagesHelper.UpdateImage(post.Cover, post.Cover_50, model.Cover);
-                        post.Cover = tuple.vPath;
-                        post.Cover_50 = tuple.compressedVPath;
-                    }
-                    //Добавляем
-                    else if (!string.IsNullOrEmpty(model.Cover) && string.IsNullOrEmpty(post.Cover))
-                    {
-                        var tuple = ImagesHelper.CreateImage(imagesFolder, model.Cover);
-                        post.Cover = tuple.vPath;
-                        post.Cover_50 = tuple.compressedVPath;
-                    }
-                    //Удаляем
-                    else if(string.IsNullOrEmpty(model.Cover) && !string.IsNullOrEmpty(post.Cover))
-                    {
-                        ImagesHelper.DeleteImage(post.Cover, post.Cover_50);
-                        post.Cover = null;
-                    }
-                }
-                catch(Exception e)
-                {
-                    return CommonError("Ошибка при обновлении документа", e);
-                }
-            }
-            return Success;
-        }
-        /// <summary>
-        /// Обновляем элементы коллекции
-        /// </summary>
-        /// <param name="post"></param>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        private DataServiceResult UpdateImageCollection(Post post, PostModel model)
-        {
-            var itemsToUpdate = post.Collection.Where(x => model.Collection.Any(y => y.Id == x.Id));
-            var itemsToAdd = model.Collection.Where(x => x.Id == Guid.Empty && !post.Collection.Any(y => y.Id == x.Id));
-            var itemsToDel = post.Collection.Except(itemsToUpdate);
             try
             {
-                foreach (var postItem in itemsToUpdate)
+                switch (postModel.ContentType)
                 {
-                    var modelItem = model.Collection.First(x => x.Id == postItem.Id);
-                    postItem.Description = modelItem.Description;
-                    if (postItem.ContentSrc != modelItem.Content)
-                    {
-                        var tuple = ImagesHelper.UpdateImage(postItem.ContentSrc, postItem.ContentSrc_50, modelItem.Content);
-                        postItem.ContentSrc = tuple.vPath;
-                        postItem.ContentSrc_50 = tuple.compressedVPath;
-                    }
+                    case PostContentTypes.Image:
+                        PostsHelper.UpdateImage(currentPost, postModel);
+                        break;
+                    case PostContentTypes.Document:
+                        PostsHelper.UpdateDocument(currentPost, postModel);
+                        break;
+                    case PostContentTypes.ImageCollection:
+                        PostsHelper.UpdateImage(currentPost, postModel);
+                        PostsHelper.UpdateImageCollection(currentPost, postModel);
+                        break;
+                    case PostContentTypes.Comics:
+                        PostsHelper.UpdateImage(currentPost, postModel);
+                        PostsHelper.UpdateComicsItems(currentPost, postModel);
+                        break;
                 }
-                foreach (var modelItem in itemsToAdd)
+                currentPost.Description = postModel.Description;
+                currentPost.Title = postModel.Header;
+                currentPost.LastEdit = DateTime.UtcNow;
+
+                if (currentPost.PublishDate == null && postModel.Type == PostTypes.Published)
                 {
-                    modelItem.Id = Guid.NewGuid();
-                    var postItem = Mapper.Map<PostCollectionItem>(modelItem);
-                    var tuple = ImagesHelper.CreateImage(imagesFolder, modelItem.Content);
-                    postItem.PostId = post.Id;
-                    postItem.ContentSrc = tuple.vPath;
-                    postItem.ContentSrc_50 = tuple.compressedVPath;
-                    post.Collection.Add(postItem);
+                    currentPost.PublishDate = DateTime.UtcNow;
+                    currentPost.Type = PostTypes.Published;
                 }
-                foreach(var postItem in itemsToDel)
+                var tags = postModel.Tags?.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => new Tag
                 {
-                    ImagesHelper.DeleteImage(postItem.ContentSrc, postItem.ContentSrc_50);
-                }
-                post.Collection = post.Collection.Except(itemsToDel).ToList();
+                    Name = x.ToLower()
+                }).ToList();
+                if (tags != null)
+                    await Database.GetRepo<TagsRepository, Tag>().AddWithPostAsync(tags, currentPost.Id);
+                currentPost.Tags = null;
+                await repo.UpdateAsync(currentPost);
+
+                return Success;
             }
             catch(Exception e)
             {
-                return CommonError("Ошибка при обновлении коллекции", e);
+                return CommonError("Ошибка при обновлении", e);
             }
-            return Success;
         }
         /// <summary>
         /// Получить пост с тегами(для редактирования поста)
@@ -428,6 +240,8 @@ namespace Mite.BLL.Services
         {
             var repo = Database.GetRepo<PostsRepository, Post>();
             var post = await repo.GetWithTagsAsync(postId);
+            if (post == null)
+                return null;
             post.Tags = post.Tags.Where(x => !string.IsNullOrEmpty(x.Name)).ToList();
             
             var postModel = Mapper.Map<PostModel>(post);
@@ -520,7 +334,8 @@ namespace Mite.BLL.Services
                 PostName = filter.PostName,
                 Tags = filter.Tags?.Split(','),
                 SortType = filter.SortFilter,
-                PostType = PostTypes.Published
+                PostType = PostTypes.Published,
+                CurrentUserId = currentUserId
             };
 
             var currentDate = DateTime.UtcNow;

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Net;
 using Newtonsoft.Json;
 using Microsoft.AspNet.Identity;
+using System.IO;
+using System.Text;
 
 namespace Mite.Core
 {

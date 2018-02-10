@@ -1,6 +1,14 @@
-﻿function ChatLoader(chatId) {
+﻿/**
+ * Класс загрузчика чата
+ * @param {string} chatId id чата
+ * @param {string} currentUserId id текущего пользователя
+ * @param {boolean} public является ли чат открытым
+ */
+function ChatLoader(chatId, currentUserId, public) {
+    this.public = public;
     this._page = 1;
     this.chatId = chatId;
+    this.currentUserId = currentUserId;
     this.ended = false;
     this.chat = $('.chat.feed[data-id="' + chatId + '"]');
     var self = this;
@@ -53,7 +61,12 @@ ChatLoader.prototype.loadNext = function () {
                 msg.Time = DateTimeHelper.toTimeString(date);
                 msg.Date = DateTimeHelper.toDateString(date, 'short');
                 msg.IsoDate = date;
-                msg.Status = msg.Readed ? statuses.readed : statuses.sended;
+                if (!self.public) {
+                    if (msg.Sender.Id !== self.currentUserId && !msg.CurrentRead)
+                        msg.Status = statuses.new;
+                    else
+                        msg.Status = msg.Readed ? statuses.readed : statuses.sended;
+                }
 
                 if (i === 0) {
                     var withYear = date.getFullYear() !== now.getFullYear();

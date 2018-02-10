@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Mite.BLL.DTO;
+using Mite.BLL.Helpers;
+using Mite.CodeData.Constants;
 using Mite.CodeData.Enums;
 using Mite.DAL.Entities;
 using Mite.DAL.Filters;
@@ -7,6 +9,7 @@ using Mite.Helpers;
 using Mite.Models;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Mite.Infrastructure.Automapper
@@ -47,7 +50,48 @@ namespace Mite.Infrastructure.Automapper
                     return repost.ToJson();
                 }));
 
+            CreateMap<AuthorServiceModel, VkServiceModel>();
+            CreateMap<VkServiceModel, AuthorService>()
+                .ForMember(dest => dest.AuthorId, opt => opt.ResolveUsing((src, dest, val, context) =>
+                {
+                    var currentUserId = (string)context.Items["UserId"];
+                    return currentUserId;
+                }))
+                .ForMember(dest => dest.CreateDate, opt => opt.UseValue(DateTime.UtcNow))
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.ImageSrc, opt => opt.ResolveUsing((src, dest) =>
+                {
+                    if (!string.IsNullOrEmpty(src.ImageBase64))
+                    {
+                        var tuple = ImagesHelper.CreateImage(PathConstants.VirtualImageFolder, src.ImageBase64);
+                        dest.ImageSrc_50 = tuple.compressedVPath;
+                        return tuple.vPath;
+                    }
+                    else
+                    {
+                        dest.ImageSrc_50 = src.VkThumbLink;
+                        return src.VkLink;
+                    }
+                }))
+                .ForMember(dest => dest.ImageSrc_50, opt => opt.Ignore())
+                .ForMember(dest => dest.VkRepostConditions, opt => opt.ResolveUsing(src =>
+                {
+                    if (string.IsNullOrEmpty(src.VkPostCode))
+                        return null;
+                    var regex = new Regex(@"VK\.Widgets\.Post\(('|"")(?<id>.+)('|""),\s(?<ownerId>-?\d+),\s(?<postId>\d+),\s'(?<hash>.+)'\)");
+                    var match = regex.Match(src.VkPostCode);
+                    var repost = new VkRepostDTO
+                    {
+                        ContainerId = match.Groups["id"].Value,
+                        OwnerId = match.Groups["ownerId"].Value,
+                        PostId = match.Groups["postId"].Value,
+                        Hash = match.Groups["hash"].Value
+                    };
+                    return repost.ToJson();
+                }));
             CreateMap<AuthorService, ProfileServiceModel>()
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description.Length > 300 ? 
+                    src.Description.Take(300) + "..." : src.Description))
                 .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => src.ImageSrc_50))
                 .ForMember(dest => dest.Deadline, opt => opt.MapFrom(src => GetDeadline(src.DeadlineNum, src.DeadlineType)))
                 .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.Author));

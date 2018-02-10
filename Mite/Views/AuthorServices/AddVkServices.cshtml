@@ -1,0 +1,269 @@
+﻿@using Mite.Helpers
+@using Mite.Extensions
+@model Mite.Models.VkServiceModel
+@{
+    ViewBag.Title = "Импорт товаров ВКонтакте";
+}
+@section styles{
+    <style>
+        #vkImportForm [type=text] + .button {
+            transition-duration: .3s;
+        }
+    </style>
+}
+<script src="https://vk.com/js/api/openapi.js?152" type="text/javascript"></script>
+<script type="text/javascript">
+    VK.init({
+        apiId: 6256553
+    });
+</script>
+<div class="ui center aligned segment">
+    <h2 class="ui left aligned dividing header">@ViewBag.Title</h2>
+    <form class="ui form" id="vkImportForm">
+        <div class="ui action input">
+            <input type="text" placeholder="Ссылка вашего сообщества" />
+            <button class="ui button" type="button" onclick="importMarket(this)">Импортировать</button>
+        </div>
+        <div class="ui error message"></div>
+    </form>
+    <div class="ui divider"></div>
+    <div class="vk-items content"></div>
+    <button class="ui green button" style="margin-top: 1em;" onclick="AuthorServiceApi.addVkList('.vk-items .form', this)">Сохранить</button>
+</div>
+@{ Html.RenderPartial("_AddServiceType", new Mite.Models.ServiceTypeModel()); }
+<div class="ui modal" id="vkRepostHelpModal">
+    <i class="close icon"></i>
+    <div class="header">Добавление виджета записи ВКонтакте</div>
+    <div class="image content">
+        <img src="~/Public/guides/vk_repost_1.png" class="ui image" width="530" height="367" />
+        <div class="description">
+            <p>Нажмите на кнопку "Поделиться записью" (приведена на скриншоте).</p>
+        </div>
+    </div>
+    <div class="ui fitted divider"></div>
+    <div class="image content">
+        <img src="~/Public/guides/vk_repost_2.png" class="ui image" />
+        <div class="description">
+            <p>В открывшемся модальном окне перейдите на вкладку "Экспортировать", после чего скопируйте "Код для вставки".</p>
+        </div>
+    </div>
+</div>
+<script type="text/x-jsrender" id="vkItemTmpl">
+    <form class="ui form">
+        <i style="float: left" title="Удалить" onclick="$(this).parent().remove()" class="red link large close icon"></i>
+        <div class="ui stackable two column grid">
+            <div class="column">
+                <h3 class="ui header">Изображение, характеризующее услугу.</h3>
+                <label class="ui dashed drop-zone segment">
+                    <span class="ui small blue header"><i class="cloud download icon"></i>Перетащите или нажмите</span>
+                    <input type="file" class="img-download" />
+                </label>
+                <div class="ui indicating progress">
+                    <div class="bar">
+                        <div class="progress"></div>
+                    </div>
+                    <div class="label">Загрузка изображения</div>
+                </div>
+                <div class="img-wrapper field">
+                    <img class="ui image" src="{{:image}}" />
+                </div>
+                <div class="vk-code-wrapper field"></div>
+            </div>
+            <div class="left aligned column">
+                <input type="hidden" name="@Html.NameFor(x => x.ImageBase64)" />
+                <input type="hidden" name="@Html.NameFor(x => x.VkLink)" value="{{:image}}" />
+                <input type="hidden" name="@Html.NameFor(x => x.VkThumbLink)" value="{{:thumb_image}}" />
+                <div class="field">
+                    <label>@Html.DisplayNameFor(x => x.Title)</label>
+                    <input type="text" name="@Html.NameFor(x => x.Title)" placeholder="Название услуги" value="{{:title}}" />
+                </div>
+                <div class="fields">
+                    <div class="ten wide field">
+                        <label>@Html.DisplayNameFor(x => x.ServiceTypeId) (<a class="link" data-tooltip="Предложите нам свой тип услуги!" onclick="$('#serviceTypeModal').modal('show')">Предложить новый</a>)</label>
+                        <select name="@Html.NameFor(x => x.ServiceTypeId)" class="ui service-type selection dropdown">
+                            @foreach (var item in Model.ServiceTypes)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="six wide field">
+                        <label>@Html.DisplayNameFor(x => x.Price)</label>
+                        <input type="text" name="@Html.NameFor(x => x.Price)" value="{{:amount}}" placeholder="1000" />
+                    </div>
+                </div>
+                <div class="fields">
+                    <div class="field">
+                        <label>@Html.DisplayNameFor(x => x.DeadlineNum)</label>
+                        <div class="ui action input">
+                            <input type="text" name="@Html.NameFor(x => x.DeadlineNum)" placeholder="@Html.DisplayNameFor(x => x.DeadlineNum)" />
+                            <div class="ui compact selection deadline dropdown">
+                                <input type="hidden" name="@Html.NameFor(x => x.DeadlineType)" value="@DurationTypes.Hour" />
+                                <div class="text">@ViewHelper.GetEnumDisplayName(DurationTypes.Hour)</div>
+                                <i class="dropdown icon"></i>
+                                <div class="menu">
+                                    <div class="item" data-text="час" data-value="@DurationTypes.Hour">Час</div>
+                                    <div class="item" data-text="день" data-value="@DurationTypes.Day">День</div>
+                                    <div class="item" data-text="неделя" data-value="@DurationTypes.Week">Неделя</div>
+                                    <div class="item" data-text="месяц" data-value="@DurationTypes.Month">Месяц</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>@Html.DisplayNameFor(x => x.Description)</label>
+                    <textarea rows="3" placeholder="Не принимаются низкокачественные фотографии" name="@Html.NameFor(x => x.Description)"></textarea>
+                </div>
+                <div class="ui blue icon message">
+                    <i class="warning icon"></i>
+                    <div class="content">
+                        <span class="header">Внимание!</span>
+                        <p>
+                            Значения <b>Цена</b> и <b>Срок выполнения</b> представляют собой примерные(средние) значения.
+                            Конкретные значения устанавливаются непосредственно во время сделки.
+                        </p>
+                    </div>
+                </div>
+                <h3 class="ui header">Дополнительные условия оплаты</h3>
+                <div class="field">
+                    <label>@Html.DisplayNameFor(x => x.VkPostCode) (<a class="link" onclick="$('#vkRepostHelpModal').modal('show')">Как добавить код?</a>)</label>
+                    <textarea rows="3" name="@Html.NameFor(x => x.VkPostCode)" placeholder="Код для вставки" onchange="pasteVkCode(this)"></textarea>
+                </div>
+                <div class="ui error message"></div>
+            </div>
+        </div>
+    </form>
+</script>
+@Scripts.Render("~/bundles/api")
+<script>
+    var deadlineItems = [
+        {
+            val: '@DurationTypes.Hour',
+            words: ['Час', 'Часа', 'Часов']
+        },
+        {
+            val: '@DurationTypes.Day',
+            words: ['День', 'Дня', 'Дней']
+        },
+        {
+            val: '@DurationTypes.Week',
+            words: ['Неделя', 'Недели', 'Недель']
+        },
+        {
+            val: '@DurationTypes.Month',
+            words: ['Месяц', 'Месяца', 'Месяцев']
+        }
+    ];
+    function pasteVkCode(textarea) {
+        $(textarea).parents('.form').find('.vk-code-wrapper').html(textarea.value);
+    }
+    function updateDeadline(input) {
+        var inputVal = input.value,
+            $dropdown = $(input).siblings('.dropdown');
+        $dropdown.find('.menu>.item').each(function (index, item) {
+            for (var i = 0; i < deadlineItems.length; i++) {
+                var itemWords = deadlineItems[i];
+                if (itemWords.val === item.dataset.value) {
+                    var word = ViewHelper.getWordCase(+inputVal, itemWords.words[0], itemWords.words[1], itemWords.words[2]);
+                    item.dataset.text = word.toLowerCase();
+                    item.innerHTML = word;
+                    break;
+                }
+            }
+        });
+        var currentVal = $dropdown.dropdown('get value'),
+            items = $dropdown.dropdown('get item', currentVal);
+        if (items) {
+            $dropdown.children('.text').html(items[0].dataset.text);
+        }
+    }
+    function importMarket(btn) {
+        var $btn = $(btn),
+            $form = $btn.parents('.form').addClass('loading'),
+            inputVal = $btn.siblings('[type=text]').val();
+        VK.Auth.getLoginStatus(function (checkResp) {
+            if (checkResp.status === 'connected') {
+                loadGoods($form, inputVal);
+            } else {
+                VK.Auth.login(function (resp) {
+                    if (resp.status === 'connected') {
+                        loadGoods($form, inputVal);
+                    } else {
+                        $form.removeClass('loading');
+                        $form.form('add errors', [resp.error.error_msg]);
+                    }
+                }, 134283264);
+            }
+        });
+    }
+    function getReadSettings() {
+
+    }
+    function loadGoods($form, val) {
+        var rgx = /https?:\/\/vk.com\//;
+        if (!val.match(rgx))
+            return $form.form('add errors', ['Неправильный формат ссылки']);
+        val = val.replace(rgx, '');
+        VK.Api.call('groups.getById', { group_id: val, v: 5.71 }, function (resp) {
+            if (resp.response) {
+                VK.Api.call('market.get', { owner_id: '-' + resp.response[0].id, extended: 1, v: 5.71 }, function (markResp) {
+                    if (markResp.response) {
+                        var items = markResp.response.items.map(function (item) {
+                            var prod = {
+                                title: item.title,
+                                amount: item.price.amount / 100
+                            }, max = 0;
+                            for (var phKey in item.photos[0]) {
+                                if (phKey.match('photo_')) {
+                                    var phSize = +phKey.split('_')[1];
+                                    if (phSize > max)
+                                        max = phSize;
+                                }
+                            }
+                            prod.image = item.photos[0]['photo_' + max];
+                            prod.thumb_image = item.photos[0].photo_604 ? item.photos[0].photo_604 : item.thumb_photo;
+                            return prod;
+                        });
+                        var html = vkItemTmpl.render(items);
+                        $('.vk-items.content').html(html).find('.dropdown').dropdown();
+                        $('.vk-items .form').each(function (index, elem) {
+                            var $form = $(elem),
+                                readSetttings = {
+                                    field: $form.find('[name=ImageBase64]'),
+                                    progress: $form.find('.ui.progress'),
+                                    imgWrapper: $form.find('.img-wrapper')
+                                }, timeInput = $form.find('.deadline.dropdown').siblings('input');
+                            timeInput.change(function () {
+                                updateDeadline(this);
+                            });
+                            $form.find('.img-download').change(function (ev) {
+                                FileReaderHelper.inputDownloadHandler(ev.originalEvent, readSetttings);
+                            });
+                            $form.find('.drop-zone').on('dragover', function (ev) {
+                                FileReaderHelper.inputDownloadHandler(ev.originalEvent, readSetttings);
+                            }).on('drop', function (ev) {
+                                FileReaderHelper.inputDownloadHandler(ev.originalEvent, readSetttings);
+                            });
+                        });
+                        @Html.FormValidation(".vk-items.content .form")
+                    } else {
+                        $form.form('add errors', [markResp.error.error_msg]);
+                    }
+                    $form.removeClass('loading');
+                });
+            } else {
+                $form.removeClass('loading');
+                $form.form('add errors', [resp.error.error_msg]);
+            }
+        });
+    }
+    var vkItemTmpl = $.templates('#vkItemTmpl');
+    $('#vkImportForm [type=text]').focus(function () {
+        $(this).siblings('.button').addClass('violet');
+    }).blur(function () {
+        $(this).siblings('.button').removeClass('violet');
+    });
+</script>
+
+

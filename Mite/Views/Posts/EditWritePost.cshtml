@@ -179,11 +179,11 @@
         var file = evt.target.files[0];
         readImage(file, evt);
     }
-    function savePost(isPublished, editorInstance){
+    function savePost(isPublished, editorInstance) {
         @{
             var url = string.IsNullOrEmpty(Model.Header)
-                ? Url.RouteUrl("AddPost", new { postType = 0})
-                : Url.Action("UpdatePost", "Posts" );
+                ? "/posts/addpost"
+                : "/posts/updatepost";
         }
         if(isPublished){
             formData.PublishDate = new Date().toISOString();
@@ -192,7 +192,7 @@
         $.ajax({
             data: formData,
             type: 'post',
-            url: '/posts/addpost',
+            url: '@url',
             success: function (resp) {
                 if(resp.status == undefined){
                     resp = JSON.parse(resp);
@@ -320,7 +320,6 @@
             forceSelection: false,
             match: 'text'
         });
-        new PerfectScrollbar('#select-tags>.menu');
 
         @Html.Raw(Html.FormValidation<Mite.Models.WritingPostModel>("#writeEditForm"))
         var editor = ContentTools.EditorApp.get();

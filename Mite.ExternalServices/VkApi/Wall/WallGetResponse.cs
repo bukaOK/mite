@@ -14,5 +14,7 @@ namespace Mite.ExternalServices.VkApi.Wall
         public int Count { get; set; }
         [JsonProperty("items")]
         public IList<Post> Items { get; set; }
+        [JsonProperty("profiles")]
+        public IList<User> Profiles { get; set; }
     }
 }

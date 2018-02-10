@@ -31,6 +31,7 @@ namespace Mite
             //Database.SetInitializer(new DbInitializer(app.GetDataProtectionProvider()));
             Database.SetInitializer(new MigrateDatabaseToLatestVersion<AppDbContext, Configuration>());
             var dbContext = new AppDbContext();
+
             dbContext.Database.Initialize(false);
             var apiConfig = ConfigureWebApi();
             var container = AutofacDI.Initialize(app, apiConfig);
@@ -38,7 +39,7 @@ namespace Mite
             app.UseWebApi(apiConfig);
             app.MapSignalR(new HubConfiguration
             {
-                Resolver = new AutofacDependencyResolver(container)
+                //Resolver = new AutofacDependencyResolver(container),
             });
 
             app.UseAutofacMiddleware(container);
@@ -109,7 +110,7 @@ namespace Mite
                 AppSecret = VkSettings.Secret,
                 AuthenticationType = VkSettings.DefaultAuthType,
                 Caption = "Вконтакте",
-                Scope = "offline",
+                Scope = "offline,market",
                 Provider = new VkAuthenticationProvider
                 {
                     OnAuthenticated = context =>

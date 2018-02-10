@@ -83,6 +83,11 @@ namespace Mite.Controllers
                     {
                         AvailableTags = tags
                     });
+                case PostContentTypes.Comics:
+                    return View("EditComicsItems", new ImagePostModel
+                    {
+                        AvailableTags = tags
+                    });
                 default:
                     return NotFound();
             }
@@ -93,6 +98,8 @@ namespace Mite.Controllers
             ViewBag.Title = "Редактирование работы";
 
             var post = await postsService.GetWithTagsAsync(id);
+            if (post == null)
+                return NotFound();
 
             if (User.Identity.GetUserId() != post.User.Id)
                 return Forbidden();
@@ -114,6 +121,9 @@ namespace Mite.Controllers
                     writePost.Content = await FilesHelper.ReadDocumentAsync(writePost.Content);
                     writePost.Helper = await helpersService.GetByUserAsync(User.Identity.GetUserId());
                     return View("EditWritePost", writePost);
+                case PostContentTypes.Comics:
+                    var comics = Mapper.Map<ImagePostModel>(post);
+                    return View("EditComicsItems", comics);
                 default:
                     throw new NotImplementedException("Неизвестный тип контента работы");
             }
@@ -202,7 +212,7 @@ namespace Mite.Controllers
         {
             var model = new TopModel
             {
-                Tags = await tagsService.GetWithPopularityAsync(true)
+                Tags = await tagsService.GetWithPopularityAsync(true, 30)
             };
             if (User.Identity.IsAuthenticated)
             {

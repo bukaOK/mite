@@ -15,13 +15,13 @@ using System.Linq;
 using System.Web.Mvc;
 using Mite.BLL.IdentityManagers;
 using Mite.DAL.Filters;
-using Mite.DAL.DTO;
 using Mite.CodeData.Enums;
 
 namespace Mite.BLL.Services
 {
     public interface IAuthorServiceService : IDataService
     {
+        Task<DataServiceResult> AddVkListAsync(IList<VkServiceModel> services, string userId);
         Task<DataServiceResult> AddAsync(AuthorServiceModel model);
         Task<DataServiceResult> UpdateAsync(AuthorServiceModel model);
         /// <summary>
@@ -224,6 +224,21 @@ namespace Mite.BLL.Services
             catch(Exception e)
             {
                 return CommonError("Ошибка при пересчете надежности услуги", e);
+            }
+        }
+
+        public async Task<DataServiceResult> AddVkListAsync(IList<VkServiceModel> serviceModels, string userId)
+        {
+            var services = Mapper.Map<IEnumerable<AuthorService>>(serviceModels, 
+                opts => opts.Items.Add("UserId", userId));
+            try
+            {
+                await repo.AddListAsync(services);
+                return Success;
+            }
+            catch(Exception e)
+            {
+                return CommonError("Ошибка при добавлении", e);
             }
         }
     }

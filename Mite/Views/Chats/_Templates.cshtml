@@ -5,6 +5,30 @@
     var emCount = 0;
     var currentUserId = User.Identity.GetUserId();
 }
+<script type="text/x-jsrender" id="publicChatTmpl">
+    <div class="ui chat-wrap segments" data-id="{{:Id}}">
+        <div class="ui chat-header two column grid segment">
+            <div class="column">
+                <h4 class="ui header"><b>{{:Name}}</b></h4>
+            </div>
+        </div>
+        <div class="ui msg-chat-wrapper segment">
+            <div class="ui public chat feed" data-id="{{:Id}}">
+                <div class="active dot-loader-wrapper" style="height: 20px; min-height: 20px;">
+                    <div class="dot-loader">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <form class="ui clearing form segment" data-chat-id="{{:Id}}">
+            <button type="button" class="ui fluid primary button" onclick="ChatMembers.Api.enterPublic('{{:Id}}', this)">Присоединиться к чату</button>
+            <div class="ui error message"></div>
+        </form>
+    </div>
+</script>
 <script type="text/x-jsrender" id="chatTmpl">
     <div class="ui chat-wrap segments" data-id="{{:Id}}">
         <div class="ui chat-header two column grid segment">
@@ -21,6 +45,9 @@
                     <div class="menu" role="menu">
                         <a class="item" role="menuitem" data-value="mem">Участники</a>
                         <a class="item" role="menuitem" data-value="addMem">Добавить участников</a>
+                        {{if CreatorId == '@currentUserId'}}
+                        <a class="item" role="menuitem" data-value="updateChat">Изменить чат</a>
+                        {{/if}}
                     </div>
                 </div>
                 {{/if}}
@@ -137,6 +164,75 @@
             </div>
         </div>
     </div>
+    <div class="ui tiny chat-updating modal" data-chat-id="{{:Id}}">
+        <div class="header">Изменить чат</div>
+        <div class="content">
+            <form class="ui form">
+                <input type="hidden" name="ImageSrc" value="{{:ImageSrc}}" />
+                <input type="hidden" name="Id" value="{{:Id}}" />
+                <div class="fields">
+                    <div class="four wide field">
+                        {{if ImageSrc}}
+                        <label title="Выбрать изображение" class="chat-create-img" style="background-image: url({{:ImageSrc}}); background-size: 100% auto; background-color: white;">
+                            <input type="file" style="display: none" />
+                        </label>
+                        {{else}}
+                        <label title="Выбрать изображение" class="chat-create-img" id="imageSetLabel">
+                            <input type="file" style="display: none" />
+                        </label>
+                        {{/if}}
+                    </div>
+                    <div class="twelve wide field">
+                        <div class="field">
+                            <label>@Html.DisplayNameFor(x => x.Name)</label>
+                            <input type="text" name="Name" value="{{:Name}}" />
+                        </div>
+                        <div class="field">
+                            <label>@Html.DisplayNameFor(x => x.MaxMembersCount)</label>
+                            <input type="text" name="MaxMembersCount" placeholder="100" value="{{:MaxMembersCount}}" />
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="ChatType" value="{{:ChatType}}" />
+                <div class="inline fields">
+                    <label>@Html.DisplayNameFor(x => x.ChatType)</label>
+                    <div class="field">
+                        <div class="ui radio checkbox" title="Чат будет доступен всем пользователям">
+                            @Html.RadioButtonFor(x => x.ChatType, ChatTypes.PrivateGroup, new { @checked = true })
+                            <label>Приватный</label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui radio checkbox" title="Чат будет доступен лишь приглашённым участниками чата">
+                            @Html.RadioButtonFor(x => x.ChatType, ChatTypes.Public)
+                            <label>Публичный</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="ui progress" style="display: none">
+                    <div class="bar">
+                        <div class="progress"></div>
+                    </div>
+                    <div class="label">Загрузка файла...</div>
+                </div>
+                <div class="ui error message"></div>
+            </form>
+        </div>
+        <div class="actions">
+            <button class="ui green ok button">Сохранить</button>
+            <button class="ui red deny button">Отмена</button>
+        </div>
+    </div>
+    <div class="ui mini chat-set modal" data-id="{{:Id}}">
+        <div class="header">Настройка картинки</div>
+        <div class="content">
+            <div class="crop-container"></div>
+        </div>
+        <div class="actions">
+            <button class="ui green ok button">Сохранить</button>
+            <button class="ui deny red button">Отмена</button>
+        </div>
+    </div>
 </script>
 <div class="ui tiny modal" id="attModal" role="dialog">
     <i class="close icon"></i>
@@ -154,7 +250,7 @@
     {{if DividerDate != null}}
     <div class="ui horizontal divider">{{:DividerDate}}</div>
     {{/if}}
-    <div class="event" data-date="{{:Date}}" data-id="{{:Id}}" data-status="{{:Status.name}}" onclick="ChatMessages.Events.MessageClick($(this))">
+    <div class="event" data-date="{{:Date}}" data-id="{{:Id}}" {{if Status}}data-status="{{:Status.name}}" {{/if}}onclick="ChatMessages.Events.MessageClick($(this))">
         <div class="label">
             <img src="{{:Sender.AvatarSrc}}" />
         </div>
@@ -162,7 +258,9 @@
             <div class="summary">
                 <a href="/user/profile/{{:Sender.UserName}}" class="user">{{:Sender.UserName}}</a>
                 <span class="date">{{:Time}}</span>
+                {{if Status}}
                 <span class="status" title="{{:Status.title}}"><i class="{{:Status.class}} violet icon"></i></span>
+                {{/if}}
             </div>
             <div class="text">
                 {{:Message}}
@@ -234,12 +332,25 @@
     </div>
     {{/if}}
 </script>
-<script type="text/x-jsrender" id="chatItemTmpl">
-    <div class="item chat-item" data-creator-id="{{:CreatorId}}" data-id="{{:Id}}" onclick="ChatsApi.Loader.initChat('{{:Id}}', '{{:Name}}', {{:ChatType}})">
+<script type="text/x-jsrender" id="publicChatItemTmpl">
+    <div class="item chat-item" data-creator-id="{{:CreatorId}}" data-id="{{:Id}}" data-max-members-count="{{:MaxMembersCount}}"
+         onclick="PublicChats.Loader.initChat('{{:Id}}', '{{:Name}}')">
         <img class="ui tiny circular image" src="{{:ImageSrc}}" />
         <div class="content">
             <div class="ui small header">
-                {{:Name}}
+                <span class="content">{{:Name}}</span>
+            </div>
+            <div class="description">{{:MembersCount}} {{:MembersWord}}</div>
+        </div>
+    </div>
+</script>
+<script type="text/x-jsrender" id="chatItemTmpl">
+    <div class="item chat-item" data-creator-id="{{:CreatorId}}" data-id="{{:Id}}" data-max-members-count="{{:MaxMembersCount}}"
+         onclick="ChatsApi.Loader.initChat('{{:Id}}', '{{:Name}}', {{:ChatType}})">
+        <img class="ui tiny circular image" src="{{:ImageSrc}}" />
+        <div class="content">
+            <div class="ui small header">
+                <span class="content">{{:Name}}</span>
                 <span title="Новые сообщения!" class="ui {{if NewMessagesCount}}active {{/if}}msg-count violet label">{{:NewMessagesCount}}</span>
             </div>
             <span class="right floated" onclick="ChatsApi.remove('{{:Id}}', event)">

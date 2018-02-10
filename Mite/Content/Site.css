@@ -7,6 +7,9 @@
 html, body{
     height: 100% !important;
 }
+label input[type=file]{
+    display: none;
+}
 .ui.header>.sub.header {
     overflow: hidden;
 }
@@ -36,6 +39,9 @@ html, body{
 }
 a.link{
     cursor: pointer;
+}
+.ui.progress:not([data-percent]){
+    display: none;
 }
 /*Dropdown*/
 .ui.dropdown.selection .menu{
@@ -162,15 +168,16 @@ article.ui.container{
     max-height: 500px;
     overflow-y: scroll;
 }
+.notify.popup > .ui.feed{
+    margin: 0;
+}
 /*Настройки пользователя*/
-/*input[type="file"] {
-    display: none !important;
-}*/
-.dashed.segment{
-    border: 2px dashed rgba(0,0,0,0.2);
+.dashed.segment {
+    border: 2px dashed #6d6788;
     box-shadow: none;
     padding: 20px;
-    cursor: default;
+    cursor: pointer;
+    display: block;
 }
 /*Страница пользователя*/
 .ui.avatar.button{
@@ -240,6 +247,11 @@ input[type="text"],input[type="email"],input[type="password"]{
 }
 .profile-post .image, .profile-post .dimmer, .profile-post{
     border-radius: 5px;
+}
+/*Формы*/
+.ui.form:not(.m-success) .ui.m-success.message,
+.ui.form.error .ui.m-success.message {
+    display: none;
 }
 /*Соц. кнопки*/
 .ui.artstation.button{
@@ -519,6 +531,6 @@ p.docs{
     display: block;
 }
 /*Услуги*/
-.ui.dropdown#deadlineDropdown {
+.ui.dropdown#deadlineDropdown, .ui.selection.deadline.dropdown {
     min-width: 100px;
 }

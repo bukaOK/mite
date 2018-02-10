@@ -4,18 +4,22 @@
 @model Mite.Models.AuthorServiceModel
 
 <div class="ui segment">
-    <h2 class="ui dividing header">@ViewBag.Title</h2>
+    <h2 class="ui dividing header">
+        @ViewBag.Title 
+        @Html.ActionLink("Импортировать товары из ВКонтакте", "AddVkServices", "AuthorServices", null, new { @class = "ui violet label" })
+    </h2>
     <form class="ui stackable two column center aligned grid form" id="authorServiceForm">
         <div class="column">
             <h3 class="ui header">Изображение, характеризующее услугу.</h3>
-            <input type="file" id="img-download" onchange="inputDownloadHandler(event)" style="display: none" />
-            <label for="img-download" class="ui labeled icon large primary button">
-                Загрузить
-                <i class="cloud download icon"></i>
+            <label class="ui dashed drop-zone segment">
+                <span class="ui small blue header"><i class="cloud download icon"></i>Перетащите или нажмите</span>
+                <input type="file" id="img-download" />
             </label>
-            <div class="ui section divider horizontal">Или</div>
-            <div class="ui dashed segment" id="drop-zone" ondrop="dropHandler(event)" ondragover="dragOverHandler(event)">
-                <h3 class="ui disabled grey">Перетащите сюда</h3>
+            <div class="ui indicating progress">
+                <div class="bar">
+                    <div class="progress"></div>
+                </div>
+                <div class="label">Загрузка изображения</div>
             </div>
             <div id="img-wrapper" class="field">
                 @if (!string.IsNullOrEmpty(Model.ImageSrc))
@@ -35,7 +39,7 @@
             @Html.HiddenFor(x => x.ImageBase64)
             <div class="field">
                 <label>@Html.DisplayNameFor(x => x.Title)</label>
-                @Html.TextBoxFor(x => x.Title, new { placeholder = "Уточните тип услуги" })
+                @Html.TextBoxFor(x => x.Title, new { placeholder = "Название услуги" })
             </div>
             <div class="fields">
                 <div class="ten wide field">
@@ -75,7 +79,7 @@
                 <div class="content">
                     <span class="header">Внимание!</span>
                     <p>
-                        Значения <b>Цена</b> и <b>Срок выполнения</b> представляют собой примерные(средние) значения. 
+                        Значения <b>Цена</b> и <b>Срок выполнения</b> представляют собой примерные(средние) значения.
                         Конкретные значения устанавливаются непосредственно во время сделки.
                     </p>
                 </div>
@@ -137,44 +141,6 @@
             words: ['Месяц', 'Месяца', 'Месяцев']
         }
     ];
-
-    //Когда перемещаем файл мышкой и курсор над областью
-    function dragOverHandler(evt) {
-        evt.stopPropagation();
-        evt.preventDefault();
-        evt.dataTransfer.dropEffect = "copy";
-    }
-
-    //Когда переместили файл
-    function dropHandler(evt) {
-        evt.stopPropagation();
-        evt.preventDefault();
-        var file = evt.dataTransfer.files[0];
-        readFile(file, evt);
-    }
-
-    function inputDownloadHandler(evt) {
-        var file = evt.target.files[0];
-        readFile(file, evt);
-    }
-    function readFile(file, evt) {
-        var reader = new FileReader();
-        reader.onprogress = function () {
-            $(evt).addClass('loading');
-        };
-        reader.onloadend = function () {
-            $(evt).removeClass('loading');
-        };
-        reader.onload = function () {
-            $('#save-btn').show();
-            $('#img-wrapper').html('<img src="' + reader.result + '" class="ui image" />');
-            $('#ImageBase64').val(reader.result);
-        };
-        if (file.size / 1024 / 1024 > 30) {
-            isImageLarge = true;
-        }
-        reader.readAsDataURL(file);
-    }
     function updateDropdown(inputVal) {
         $('#deadlineDropdown>.menu>.item').each(function (index, item) {
             for (var i = 0; i < deadlineItems.length; i++) {
@@ -195,9 +161,29 @@
         }
     }
     $(function () {
-        @Html.Raw(Html.FormValidation<Mite.Models.AuthorServiceModel>("#authorServiceForm"))
-        $('#ServiceTypeId').dropdown();
+        @Html.Raw(Html.FormValidation("#authorServiceForm"))
+        $('#ServiceTypeId').dropdown({
+            fullTextSearch: true,
+            keys: {
+                delimiter: 13
+            },
+            forceSelection: false,
+            match: 'text'
+        });
         $('#deadlineDropdown').dropdown();
         updateDropdown($('#DeadlineNum').val());
+        var readSettings = {
+            field: $('#ImageBase64'),
+            imgWrapper: $('#img-wrapper'),
+            progress: $('#authorServiceForm .progress')
+        };
+        $('#img-download').change(function (ev) {
+            FileReaderHelper.inputDownloadHandler(ev.originalEvent, readSettings);
+        });
+        $('#authorServiceForm .drop-zone').on('dragover', function (ev) {
+            FileReaderHelper.dragOverHandler(ev.originalEvent, readSettings);
+        }).on('drop', function (ev) {
+            FileReaderHelper.dropHandler(ev.originalEvent, readSettings);
+        });
     });
 </script>

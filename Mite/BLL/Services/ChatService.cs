@@ -12,6 +12,8 @@ using Mite.Helpers;
 using AutoMapper;
 using Mite.BLL.Helpers;
 using System.Linq;
+using Mite.CodeData.Constants;
+using Mite.DAL.Filters;
 
 namespace Mite.BLL.Services
 {
@@ -22,7 +24,14 @@ namespace Mite.BLL.Services
         Task<ChatModel> GetAsync(Guid id, string companionName);
         Task<DataServiceResult> RemoveAsync(Guid id, string userId);
         Task<DataServiceResult> UpdateAsync(ChatModel model);
-        Task<IEnumerable<ShortChatModel>> GetByUserAsync(string userId);
+        /// <summary>
+        /// Получить чаты по пользователю
+        /// </summary>
+        /// <param name="userId">Id пользователя</param>
+        /// <param name="writingChat">Если пользователь кому то пишет, надо добавить этот чат</param>
+        /// <returns></returns>
+        Task<List<ShortChatModel>> GetByUserAsync(string userId, Guid? writingChat);
+        Task<List<PublicChatModel>> GetPublishedAsync(string userId, int page, string input);
         /// <summary>
         /// Подписчики, которые не состоят в чате(один на один) с пользователем
         /// </summary>
@@ -49,10 +58,18 @@ namespace Mite.BLL.Services
         public async Task<DataServiceResult> CreateAsync(ChatModel model)
         {
             var chat = Mapper.Map<Chat>(model);
+            chat.Id = Guid.NewGuid();
+            chat.Members = model.Members.Select(x => new ChatMember
+            {
+                UserId = x.Id,
+                ChatId = chat.Id
+            }).ToList();
             try
             {
                 await repo.AddAsync(chat);
                 model.Id = chat.Id;
+                if (model.ImageSrc == null)
+                    model.ImageSrc = PathConstants.AvatarSrc;
                 return DataServiceResult.Success(model);
             }
             catch(Exception e)
@@ -84,16 +101,43 @@ namespace Mite.BLL.Services
             return chat == null ? null : Mapper.Map<ChatModel>(chat);
         }
 
-        public async Task<IEnumerable<ShortChatModel>> GetByUserAsync(string userId)
+        public async Task<List<ShortChatModel>> GetByUserAsync(string userId, Guid? writingChatId)
         {
-            var chats = await repo.GetByUserAsync(userId);
+            var chats = (await repo.GetByUserAsync(userId)).ToList();
+            if (writingChatId != null && !chats.Any(x => writingChatId == x.Id))
+            {
+                //Поскольку чат, не находящийся в списке либо удален, либо не имеет сообщений
+                var writingChat = await repo.GetWithMembersAsync(writingChatId.Value);
+                if(writingChat != null)
+                {
+                    var companion = (await userManager.FindByIdAsync(writingChat.Members.First(x => x.UserId != userId).UserId));
+                    writingChat.ImageSrc = companion.AvatarSrc;
+                    writingChat.Name = companion.UserName;
+                    chats.Insert(0, writingChat);
+                }
+            }
             var newMessagesCount = await Database.GetRepo<ChatMessagesRepository, ChatMessage>()
                 .GetNewCountAsync(userId, chats.Select(x => x.Id).ToList());
 
-            return Mapper.Map<IEnumerable<ShortChatModel>>(chats, opts =>
+            return Mapper.Map<List<ShortChatModel>>(chats, opts =>
             {
                 opts.Items.Add("messagesCount", newMessagesCount);
             });
+        }
+
+        public async Task<List<PublicChatModel>> GetPublishedAsync(string userId, int page, string input)
+        {
+            const int range = 30;
+            var offset = range * page;
+            var filter = new PublicChatsFilter
+            {
+                UserId = userId,
+                Range = range,
+                Offset = offset,
+                Input = input
+            };
+            var chats = await repo.GetPublishedAsync(filter);
+            return Mapper.Map<List<PublicChatModel>>(chats);
         }
 
         public async Task<DataServiceResult> RemoveAsync(Guid id, string userId)
@@ -121,7 +165,7 @@ namespace Mite.BLL.Services
         public async Task<DataServiceResult> UpdateAsync(ChatModel model)
         {
             var chat = await repo.GetAsync(model.Id);
-            if (!string.Equals(model.ImageSrc, chat.ImageSrc) && !string.Equals(model.ImageSrc, chat.ImageSrcCompressed))
+            if (model.ImageSrc != null && !string.Equals(model.ImageSrc, chat.ImageSrc) && !string.Equals(model.ImageSrc, chat.ImageSrcCompressed))
             {
                 var (vPath, compressedVPath) = ImagesHelper.UpdateImage(chat.ImageSrc, chat.ImageSrcCompressed, model.ImageSrc);
                 chat.ImageSrc = vPath;
@@ -132,7 +176,7 @@ namespace Mite.BLL.Services
             chat.MaxMembersCount = model.MaxMembersCount ?? chat.MaxMembersCount;
             try
             {
-                await UpdateAsync(model);
+                await repo.UpdateAsync(chat);
                 return Success;
             }
             catch(Exception e)

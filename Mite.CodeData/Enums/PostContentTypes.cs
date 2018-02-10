@@ -11,5 +11,6 @@ namespace Mite.CodeData.Enums
         Image = 0,
         Document = 1,
         ImageCollection = 6,
+        Comics = 2
     }
 }

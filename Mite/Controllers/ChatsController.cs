@@ -57,10 +57,39 @@ namespace Mite.Controllers
             var count = messagesService.GetNewCount(User.Identity.GetUserId());
             return Content(count.ToString());
         }
-        public async Task<ActionResult> GetByUser()
+        public async Task<ActionResult> GetByUser(Guid? writingChat)
         {
-            var chats = await chatService.GetByUserAsync(User.Identity.GetUserId());
+            var chats = await chatService.GetByUserAsync(User.Identity.GetUserId(), writingChat);
+            if (writingChat != null && Session[SessionKeys.NewChats] is List<ChatModel> sChats && sChats.Any(x => x.Id == writingChat))
+            {
+                chats.Insert(0, sChats.Where(x => x.Id == writingChat).Select(x => new ShortChatModel
+                {
+                    Id = x.Id,
+                    ImageSrc = x.ImageSrc,
+                    CreatorId = x.CreatorId,
+                    Name = x.Name,
+                    ChatType = x.ChatType
+                }).First());
+            }
+            //Время норм сериализуется
             return Content(JsonConvert.SerializeObject(chats), "application/json");
+        }
+        public async Task<ActionResult> GetPublished(int page, string input)
+        {
+            var chats = await chatService.GetPublishedAsync(CurrentUserId, page, input);
+            return Content(JsonConvert.SerializeObject(chats), "application/json");
+        }
+        [HttpPost]
+        public async Task<ActionResult> Update(ChatModel model)
+        {
+            if (model.ChatType != ChatTypes.PrivateGroup && model.ChatType != ChatTypes.Public)
+                ModelState.AddModelError("ChatType", "Недопустимый тип чата");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            var result = await chatService.UpdateAsync(model);
+            if (result.Succeeded)
+                return Ok();
+            return InternalServerError();
         }
         [HttpPost]
         public async Task<ActionResult> Add(ChatModel model)
@@ -112,6 +141,7 @@ namespace Mite.Controllers
             var model = new ChatModel
             {
                 Id = existingChat?.Id ?? Guid.NewGuid(),
+                CreatorId = CurrentUserId,
                 ChatType = ChatTypes.Private,
                 ImageSrc = companionModel.AvatarSrc,
                 Name = companionModel.UserName,

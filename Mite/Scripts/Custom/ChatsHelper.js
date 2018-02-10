@@ -2,29 +2,52 @@
     /**
      * Сокращаем длину сообщения в элементе чата
      * @param {string} msg сообщение
+     * @param {number} length длина
     */
-    truncChatItemMessage: function (msg) {
+    truncChatItemMessage: function (msg, length) {
+        if (!length)
+            length = 16;
         var rgx = /<img class="em-img"[^>]+>/g,
             emojies = msg.match(rgx);
         msg = msg.replace(rgx, '');
         if (!msg) {
             msg = emojies.join('');
         } else {
-            msg = ViewHelper.truncStr(msg, 16);
+            msg = ViewHelper.truncStr(msg, length);
         }
         return msg;
+    },
+    /**
+     * Пересчитать кол-во новых сообщений в главном меню
+     * @param {number} minusVal отнимаемое кол-во сообщений
+    */
+    recountLabel: function (minusVal) {
+        var chatsLabel = $('.user-chats.item .label'),
+            oldVal = +chatsLabel.text(),
+            newVal = oldVal - minusVal;
+        chatsLabel.text(newVal > 0 ? newVal : 0);
     },
     ChatCreating: {
         init: function () {
             var self = this;
             self.settingImage = false;
             self.imgSetLabel = $('#imageSetLabel');
+            self.createForm = $('#chatCreateModal .form').keydown(function (ev) {
+                if (ev.keycode === 13) {
+                    ev.preventDefault();
+                    self.save();
+                }
+            });
             self.createModal = $('#chatCreateModal').modal({
                 allowMultiple: true,
                 onApprove: function () {
-                    return self.save();
+                    self.save();
                 },
                 onHide: function () {
+                    self.fullImg = null;
+                    self.createForm.find('[name="ImageSrc"]').val('').data('length', 0);
+                    self.createForm.find('[name="Name"]').val('');
+                    self.createForm.find('[name="MaxMembersCount"]').val('');
                     self.imgSetLabel.css({
                         'background-image': '',
                         'background-size': '',
@@ -32,12 +55,11 @@
                     });
                 }
             });
-            self.createForm = $('#chatCreateModal .form');
             self.imageSetModal = $('#chatImageSetModal').modal({
                 closable: false,
                 allowMultiple: true,
                 onVisible: function () {
-                    self.crop.croppie('bind');
+                    self.crop.croppie('bind', self.fullImg);
                 },
                 onApprove: function () {
                     self.settingImage = true;
@@ -53,9 +75,6 @@
                             });
                         self.settingImage = false;
                     });
-                },
-                onDeny: function () {
-                    self.imgSetLabel.removeClass('loading disabled');
                 }
             });
             self.crop = $('#chatImageSetModal .crop-container').croppie({
@@ -76,12 +95,24 @@
         */
         read: function (target) {
             var self = this,
+                progress = self.createModal.find('.progress'),
                 file = target.files[0],
-                label = self.imgSetLabel.addClass('loading disabled'),
                 reader = new FileReader();
             reader.onload = function () {
-                self.crop.croppie('bind', reader.result);
+                self.fullImg = reader.result;
                 self.imageSetModal.modal('show');
+            };
+            reader.onloadstart = function () {
+                progress.show().progress();
+            };
+            reader.onprogress = function (ev) {
+                if (ev.lengthComputable) {
+                    var percentLoaded = Math.round((ev.loaded / ev.total) * 100);
+                    progress.progress('set percent', percentLoaded);
+                }
+            };
+            reader.onloadend = function () {
+                progress.progress('set percent', 100);
             };
             reader.readAsDataURL(file);
         },
@@ -90,10 +121,6 @@
             var imageSrc = self.createForm.find('[name="ImageSrc"]');
             var errors = [];
             if (!self.createForm.form('validate form')) {
-                return false;
-            }
-            if (!imageSrc.val() || imageSrc.val().search(/data:,/) !== -1) {
-                errors.push('Изображение не выбрано');
                 return false;
             }
             if (imageSrc.data('length') / 1024 / 1024 > 30) {
@@ -111,8 +138,7 @@
                     data: {
                         Name: self.createForm.find('[name="Name"]').val(),
                         ImageSrc: imageSrc.val(),
-                        //ChatType: $('#ChatType:checked').val()
-                        ChatType: $('#ChatType').val()
+                        ChatType: self.createForm.find('[name=ChatType]:checked').val()
                     },
                     success: function (resp) {
                         var tmpl = $.templates('#chatItemTmpl');
@@ -152,7 +178,7 @@
         initSource: function () {
             var self = this;
             self.page = 0;
-            self.container.children('.item,.message,p').remove();
+            self.container.children('.item,.message').remove();
             self.loader.addClass('active');
             return $.ajax({
                 url: '/chats/actualfollowers',
@@ -167,6 +193,8 @@
             });
         },
         refresh: function (inputVal) {
+            var self = this;
+            self.container.children('.item').remove();
             self.page = 0;
             self.loadNext(inputVal);
         },
@@ -174,24 +202,25 @@
             var self = this,
                 offset = self.range * self.page,
                 items = [],
-                html = '<p style="text-align: center">Пользователи не найдены.</p>';
-            if (offset >= self.items.length) {
-                if (!self.page) {
-                    self.container.append(html);
-                }
+                emptyMsg = self.container.children('.empty');
+            if (offset >= self.items.length) 
                 return;
-            }
+
             if (!inputVal) {
                 items = self.items.slice(offset, offset + self.range);
             } else {
                 items = self.items.filter(function (member) {
-                    return member.User.UserName.toLowerCase().search(inputVal.toLowerCase()) !== -1;
+                    return member.UserName.toLowerCase().search(inputVal.toLowerCase()) !== -1;
                 });
             }
-            if (self.page || items.length) {
-                html = self.tmpl.render(items);
+            if (items.length === 0 && self.page === 0) {
+                emptyMsg.addClass('active');
+            } else {
+                emptyMsg.removeClass('active');
             }
-            self.container.append(html);
+            if (self.page || items.length) {
+                self.container.append(self.tmpl.render(items));
+            }
             self.page++;
             self.modal.modal('refresh');
         },

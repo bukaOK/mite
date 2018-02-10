@@ -28,6 +28,7 @@ namespace Mite.BLL.Services
         Task<SignInStatus> LoginAsync(ExternalLoginInfo loginInfo, bool remember);
 
         Task<IdentityResult> UpdateUserAsync(ProfileSettingsModel settings, string userId);
+        Task<DataServiceResult> UpdateUserAsync(NotifySettingsModel model, string userId);
 
         /// <summary>
         /// Обновляем аватар пользователя
@@ -115,7 +116,6 @@ namespace Mite.BLL.Services
                 {
                     result = await userManager.AddLoginAsync(user.Id, loginInfo.Login);
                 }
-                await signInManager.SignInAsync(user, true, false);
                 switch ((RegisterRoles?)registerModel.RegisterRole)
                 {
                     case RegisterRoles.Author:
@@ -127,6 +127,7 @@ namespace Mite.BLL.Services
                     default:
                         goto case RegisterRoles.Author;
                 }
+                await signInManager.SignInAsync(user, true, false);
             }
             return result;
         }
@@ -161,7 +162,7 @@ namespace Mite.BLL.Services
             }
 
             var existingUser = await userManager.FindByIdAsync(userId);
-            var existingAvatarSrc = existingUser.AvatarSrc;
+            var existingAvatarSrc = existingUser.AvatarSrc ?? PathConstants.AvatarSrc;
             var existingAvatarFolders = existingAvatarSrc.Split('/');
             existingUser.AvatarSrc = imagePath;
             if(existingAvatarSrc != null && existingAvatarFolders[1] == "Public")
@@ -183,6 +184,7 @@ namespace Mite.BLL.Services
                 return null;
             var postsRepo = Database.GetRepo<PostsRepository, Post>();
             var followersRepo = Database.GetRepo<FollowersRepository, Follower>();
+            var blackListRepo = Database.GetRepo<BlackListUserRepository, BlackListUser>();
 
             var user = await userManager.FindByNameAsync(name);
             if (user == null)
@@ -203,6 +205,9 @@ namespace Mite.BLL.Services
             if(user.Id != currentUserId)
             {
                 userModel.IsFollowing = await followersRepo.IsFollowerAsync(currentUserId, user.Id);
+                userModel.IsFollower = await followersRepo.IsFollowerAsync(user.Id, currentUserId);
+                userModel.CanWrite = !(await blackListRepo.IsInBlackList(currentUserId, user.Id));
+                userModel.BlackListed = await blackListRepo.IsInBlackList(user.Id, currentUserId);
             }
             return userModel;
         }
@@ -265,6 +270,21 @@ namespace Mite.BLL.Services
             catch(Exception e)
             {
                 return CommonError("Ошибка при пересчете", e);
+            }
+        }
+
+        public async Task<DataServiceResult> UpdateUserAsync(NotifySettingsModel model, string userId)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            user.MailNotify = model.MailNotify;
+            try
+            {
+                await userManager.UpdateAsync(user);
+                return Success;
+            }
+            catch(Exception e)
+            {
+                return CommonError("Внутренняя ошибка", e);
             }
         }
     }

@@ -24,6 +24,11 @@ namespace Mite.DAL.Repositories
         {
             return Table.Include(x => x.ServiceType).Include(x => x.Author).FirstOrDefaultAsync(x => x.Id == id);
         }
+        public async Task AddListAsync(IEnumerable<AuthorService> services)
+        {
+            Table.AddRange(services);
+            await SaveAsync();
+        }
         public async Task<IList<FeedbackDTO>> GetFeedbacksAsync(Guid serviceId)
         {
             var feedbacks = await DbContext.Deals.Include(x => x.Client)

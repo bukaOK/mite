@@ -74,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\GuidEntity.cs" />
+    <Compile Include="Core\IContentEntity.cs" />
     <Compile Include="Core\IGuidEntity.cs" />
     <Compile Include="Core\IRepository.cs" />
     <Compile Include="Core\Repository.cs" />
@@ -82,15 +83,18 @@
     <Compile Include="DTO\DealGalleryItemDTO.cs" />
     <Compile Include="DTO\FeedbackDTO.cs" />
     <Compile Include="DTO\PostDTO.cs" />
+    <Compile Include="DTO\PublicChatDTO.cs" />
     <Compile Include="DTO\TagDTO.cs" />
     <Compile Include="DTO\UserAdDTO.cs" />
     <Compile Include="Entities\Advertising.cs" />
     <Compile Include="Entities\Author.cs" />
     <Compile Include="Entities\AuthorService.cs" />
     <Compile Include="Entities\AuthorServiceType.cs" />
+    <Compile Include="Entities\BlackListUser.cs" />
     <Compile Include="Entities\CashOperation.cs" />
     <Compile Include="Entities\ChatMember.cs" />
     <Compile Include="Entities\ChatMessageAttachment.cs" />
+    <Compile Include="Entities\ComicsItem.cs" />
     <Compile Include="Entities\FavoritePost.cs" />
     <Compile Include="Entities\GroupChatMember.cs" />
     <Compile Include="Entities\ChatMessageUser.cs" />
@@ -117,6 +121,7 @@
     <Compile Include="Entities\TagPost.cs" />
     <Compile Include="Entities\User.cs" />
     <Compile Include="Filters\PostTopFilter.cs" />
+    <Compile Include="Filters\PublicChatsFilter.cs" />
     <Compile Include="Filters\ServiceTopFilter.cs" />
     <Compile Include="Filters\UserChatsFilter.cs" />
     <Compile Include="Infrastructure\AppDbContext.cs" />
@@ -198,10 +203,23 @@
     <Compile Include="Migrations\201712181738307_AddInviters.Designer.cs">
       <DependentUpon>201712181738307_AddInviters.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201801161656128_AddComicsItems.cs" />
+    <Compile Include="Migrations\201801161656128_AddComicsItems.Designer.cs">
+      <DependentUpon>201801161656128_AddComicsItems.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201801301147263_AddBlackList.cs" />
+    <Compile Include="Migrations\201801301147263_AddBlackList.Designer.cs">
+      <DependentUpon>201801301147263_AddBlackList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201802062243469_AddChatPrivacy.cs" />
+    <Compile Include="Migrations\201802062243469_AddChatPrivacy.Designer.cs">
+      <DependentUpon>201802062243469_AddChatPrivacy.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\AuthorServiceRepository.cs" />
     <Compile Include="Repositories\AuthorServiceTypeRepository.cs" />
+    <Compile Include="Repositories\BlackListUserRepository.cs" />
     <Compile Include="Repositories\CashOperationsRepository.cs" />
     <Compile Include="Repositories\ChatMembersRepository.cs" />
     <Compile Include="Repositories\CitiesRepository.cs" />
@@ -287,6 +305,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201712181738307_AddInviters.resx">
       <DependentUpon>201712181738307_AddInviters.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801161656128_AddComicsItems.resx">
+      <DependentUpon>201801161656128_AddComicsItems.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801301147263_AddBlackList.resx">
+      <DependentUpon>201801301147263_AddBlackList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802062243469_AddChatPrivacy.resx">
+      <DependentUpon>201802062243469_AddChatPrivacy.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

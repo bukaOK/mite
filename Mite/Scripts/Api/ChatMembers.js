@@ -104,17 +104,77 @@ var ChatMembers = {
             return self._send(self.url + 'add', 'post', {
                 ChatId: chatId,
                 UserId: userId
-            }).done(function (resp) {
+            }, function (resp) {
                 iziToast.success({
                     title: 'Успех!',
                     message: 'Участник успешно добавлен.'
+                });
+            }).then(function () {
+                $(btn).removeClass('loading disabled').parents('.item[role="listitem"]').transition({
+                    onComplete: function () {
+                        $(this).remove();
+                    }
+                });
+            });
+        },
+        /**
+         * Вступить в чат
+         * @param {string} chatId id чата
+         * @param {HTMLElement} btn кнопка
+        */
+        enterPublic: function (chatId, btn) {
+            var self = this;
+            $(btn).addClass('loading disabled');
+            return $.ajax({
+                type: 'post',
+                url: '/chatmembers/enter',
+                data: {
+                    chatId: chatId
+                },
+                success: function (resp) {
+                    switch (+resp.status) {
+                        case Settings.apiStatuses.success:
+                            var tmpl = $.templates('#chatItemTmpl'),
+                                chatItem = resp.data;
+                            if (chatItem.LastMessage) {
+                                var dateIso = chatItem.LastMessage.SendDate,
+                                    now = new Date();
+                                dateIso += dateIso[dateIso.length - 1] === 'Z' ? '' : 'Z';
+                                var sendDate = new Date(dateIso),
+                                    nowDateStr = DateTimeHelper.toDateString(now, 'long'),
+                                    sendDateStr = DateTimeHelper.toDateString(sendDate, 'long');
+                                chatItem.LastMessage.SendDateStr = sendDateStr === nowDateStr
+                                    ? 'Сегодня' : sendDateStr;
+
+                                chatItem.LastMessage.Message = ChatsHelper.truncChatItemMessage(chatItem.LastMessage.Message);
+                                chatItem.Name = ViewHelper.truncStr(chatItem.Name, 15);
+                            }
+                            $('.chat-item[data-id="' + chatId + '"]').remove();
+                            $('.chat-wrap[data-id="' + chatId + '"]').remove();
+                            $('#publicChatContext .start.chat-wrap').addClass('active');
+                            $('.chat-tabs .item').tab('change tab', 'private');
+                            if ($('.public-chat-items .chat-item').length === 0) {
+                                $('.public-chat-items .empty-chats').addClass('active');
+                            }
+                            $('.chat-items .empty-chats').after(tmpl.render(chatItem));
+                            break;
+                        case Settings.apiStatuses.validationError:
+                            iziToast.error({
+                                title: 'Упс...',
+                                message: resp.data[0]
+                            });
+                            break;
+                    }
+                },
+                error: function () {
+                    iziToast.error({
+                        title: 'Упс...',
+                        message: 'Внутренняя ошибка'
                     });
-                }).then(function () {
-                    $(btn).removeClass('loading disabled').parents('.item[role="listitem"]').transition({
-                        onComplete: function () {
-                            $(this).remove();
-                        }
-                    });
+                },
+                complete: function () {
+                    $(btn).removeClass('loading disabled');
+                }
             });
         },
         /**
@@ -129,7 +189,7 @@ var ChatMembers = {
             return self._send(self.url + 'exclude', 'post', {
                 chatId: chatId,
                 userId: userId
-            }).done(function (resp) {
+            }, function (resp) {
                 iziToast.success({
                     title: 'Успех!',
                     message: 'Участник успешно исключен.'
@@ -148,21 +208,34 @@ var ChatMembers = {
         */
         exit: function (chatId) {
             var self = ChatMembers.Api;
-            return self._send(self.url + 'exit', 'post', {
+            return self._send(self.url + 'exit', 'post', null, {
                 chatId: chatId
-            }).done(function (resp) {
+            }, function (resp) {
                 iziToast.success({
                     title: 'Успех!',
                     message: 'Вы успешно вышли.'
                 });
             });
         },
-        _send: function (url, method, data) {
+        _send: function (url, method, data, succCallback) {
             var self = ChatMembers.Api;
             return $.ajax({
                 url: url,
                 type: method,
                 data: data,
+                success: function (resp) {
+                    switch (resp.status) {
+                        case Settings.apiStatuses.success:
+                            succCallback();
+                            break;
+                        case Settings.apiStatuses.validationError:
+                            iziToast.error({
+                                title: 'Упс!',
+                                message: resp.data[0]
+                            });
+                            break;
+                    }
+                },
                 error: function (jqXhr) {
                     iziToast.error({
                         title: 'Упс!',

@@ -67,16 +67,6 @@ namespace Mite.Hubs
             }
             Clients.Group(userId).notifyUser(JsonConvert.SerializeObject(notifyModel));
         }
-        public void NewMessage(ChatMessageModel message)
-        {
-            foreach(var re in message.Recipients)
-            {
-                if(re.Id != message.Sender.Id)
-                {
-                    Clients.Group(re.Id).addMessage(JsonConvert.SerializeObject(message));
-                }
-            }
-        }
         public override Task OnConnected()
         {
             //В качестве группы у нас пользователь, т.к. он может открыть несколько вкладок

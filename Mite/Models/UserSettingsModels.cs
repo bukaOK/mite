@@ -44,12 +44,12 @@ namespace Mite.Models
 
         [DisplayName("Имя")]
         [UIHint("TextBox")]
-        [RegularExpression(@"[А-Яа-яA-Za-z].*", ErrorMessage = "Имя может содержать только буквы")]
+        [RegularExpression(@"[А-Яа-яA-Za-z]*", ErrorMessage = "Имя может содержать только буквы")]
         public string FirstName { get; set; }
 
         [DisplayName("Фамилия")]
         [UIHint("TextBox")]
-        [RegularExpression(@"[А-Яа-яA-Za-z].*", ErrorMessage = "Фамилия может содержать только буквы")]
+        [RegularExpression(@"[А-Яа-яA-Za-z]*", ErrorMessage = "Фамилия может содержать только буквы")]
         public string LastName { get; set; }
 
         [DisplayName("Возраст")]
@@ -68,6 +68,19 @@ namespace Mite.Models
         [UIHint("TextArea")]
         [MaxLength(150, ErrorMessage = "Слишком длинный текст для описания")]
         public string About { get; set; }
+    }
+    public class NotifySettingsModel
+    {
+        /// <summary>
+        /// Заходил ли через вк
+        /// </summary>
+        public bool VkAuthenticated { get; set; }
+        /// <summary>
+        /// Уведомлять по почте
+        /// </summary>
+        [DisplayName("Уведомлять по почте")]
+        [UIHint("Toggle")]
+        public bool MailNotify { get; set; }
     }
     public class EmailSettingsModel
     {

@@ -81,8 +81,8 @@
         var $resultMsg = $('#result-msg');
         @{
             var url = string.IsNullOrEmpty(Model.Header)
-                ? Url.Action("AddPost", "Posts")
-                : Url.Action("UpdatePost", "Posts");
+                ? "/posts/addpost"
+                : "/posts/updatepost";
         }
         var postType = isPublished ? '@PostTypes.Published' : '@PostTypes.Drafts';
         var model = {
@@ -98,7 +98,7 @@
             model.PublishDate = new Date().toISOString();
         }
         $.ajax({
-            url: '/posts/addpost',
+            url: '@url',
             data: model,
             type: 'post',
             dataType: 'json',

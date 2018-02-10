@@ -1,0 +1,31 @@
+﻿@using Mite.CodeData.Constants
+@model Mite.Models.NotifySettingsModel
+
+<form class="ui form" id="notifySettingsForm">
+    @Html.EditorFor(x => x.MailNotify)
+    @if (Model.VkAuthenticated)
+    {
+        <script type="text/javascript" src="//vk.com/js/api/openapi.js?152"></script>
+        <div id="vk_allow_messages"></div>
+        <script type="text/javascript">VK.Widgets.AllowMessagesFromCommunity("vk_allow_messages", {height: 30}, 143219082);</script>
+    }
+    <div class="ui error message"></div>
+    <div class="ui m-success green message">Изменения успешно сохранены.</div>
+</form>
+@if (!Model.VkAuthenticated)
+{
+    using(Html.BeginForm("InitExternalAuth", "Account", new { returnUrl = Request.CurrentExecutionFilePath }, FormMethod.Post, new { @class = "ui form" }))
+    {
+        @Html.AntiForgeryToken()
+        <button type="submit" class="ui vk button" name="provider" value="@VkSettings.DefaultAuthType" title="Чтобы получать уведомления ВКонтакте, необходимо войти">
+            <i class="vk icon"></i>Войти ВКонтакте
+        </button>
+    }
+}
+<script>
+    $('#MailNotify').parent().checkbox({
+        onChange: function () {
+            UserSettingsApi.updateNotifySettings(this);
+        }
+    });
+</script>

@@ -1,0 +1,203 @@
+﻿@using Mite.Extensions
+@model Mite.Models.ImagePostModel
+@{
+    var tagsRow = Model.Tags == null ? string.Empty : string.Join(",", Model.Tags);
+    var saveMode = Model.Header == null ? "add" : "edit";
+    var isPublished = Model.IsPublished.ToString().ToLower();
+}
+@section styles{
+    <style>
+        .p-item-form .close.icon {
+            float: left;
+        }
+    </style>
+}
+<div class="ui segment">
+    <div class="ui dividing header">@ViewBag.Title</div>
+    <form class="ui two column stackable center aligned grid form p-form">
+        <div class="column">
+            <label class="ui dashed drop-zone segment" ondragover="FileReaderHelper.dragOverHandler(event)" ondrop="FileReaderHelper.dropHandler(event)">
+                <span class="ui small blue header">
+                    <i class="cloud download icon"></i>
+                    Перетащите или нажмите
+                </span>
+                <input type="file" onchange="FileReaderHelper.inputDownloadHandler(event)" />
+            </label>
+            <div class="ui indicating progress">
+                <div class="bar">
+                    <div class="progress"></div>
+                </div>
+                <div class="label">Загрузка изображения</div>
+            </div>
+            <div class="field">
+                <div class="ui image img-wrapper">
+                    @if (!string.IsNullOrEmpty(Model.Content))
+                    {
+                        <img src="@Model.Content" />
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="left aligned column">
+            @Html.HiddenFor(x => x.Id)
+            @Html.EditorFor(x => x.Header)
+            @Html.HiddenFor(x => x.Content)
+            @Html.EditorFor(x => x.Description)
+            <div class="field">
+                <div class="ui fluid search multiple selection dropdown" id="select-tags">
+                    <input type="hidden" name="Tags" value="@tagsRow" />
+                    <div class="default text">Теги</div>
+                    <div class="menu">
+                        @foreach (var tagName in Model.AvailableTags)
+                        {
+                            <div class="item" data-value="@tagName">@tagName</div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="ui error message"></div>
+        </div>
+    </form>
+    <div class="ui one column grid">
+        <div class="center aligned column">
+            <div class="collection-items">
+                @if (Model.ComicsItems != null && Model.ComicsItems.Count > 0)
+                {
+                    foreach (var colItem in Model.ComicsItems.OrderBy(x => x.Page))
+                    {
+                        <form class="ui form p-item-form" data-id="@colItem.Id">
+                            <div class="ui divider"></div>
+                            <i title="Удалить" onclick="Posts.removeCollectionItem(this)" class="red link large close icon"></i>
+                            <div class="ui two column stackable center aligned grid">
+                                <div class="column">
+                                    <label class="ui dashed drop-zone segment" ondragover="FileReaderHelper.dragOverHandler(event)" ondrop="FileReaderHelper.dropHandler(event)">
+                                        <span class="ui medium blue header">
+                                            <i class="cloud download icon"></i>
+                                            Перетащите или нажмите
+                                        </span>
+                                        <input type="file" onchange="FileReaderHelper.inputDownloadHandler(event)" />
+                                    </label>
+                                    <div class="ui indicating progress">
+                                        <div class="bar">
+                                            <div class="progress"></div>
+                                        </div>
+                                        <div class="label">Загрузка изображения</div>
+                                    </div>
+                                    <div class="field">
+                                        <div class="ui image img-wrapper">
+                                            <img src="@colItem.Content" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="left aligned column">
+                                    <input type="hidden" name="Content" value="@colItem.Content" />
+                                    <div class="field">
+                                        <label>№ страницы</label>
+                                        <input type="text" placeholder="Страница" name="Page" value="@colItem.Page" />
+                                    </div>
+                                    <div class="ui error message"></div>
+                                </div>
+                            </div>
+                        </form>
+                    }
+                }
+            </div>
+            <label class="ui blue button">
+                Добавить несколько страниц
+                <input type="file" multiple onchange="Posts.addComicsItems(event)" />
+            </label>
+            <button class="ui primary button" style="margin-top: 10px" onclick="Posts.addComicsItem(this)">Добавить страницу</button>
+            <button class="ui green button" onclick="Posts.Api.saveCollection(this, '@saveMode', 'comics', @isPublished)">Сохранить</button>
+        </div>
+    </div>
+</div>
+<div class="ui tiny modal" role="dialog" id="publishConfirmModal">
+    <i class="close icon"></i>
+    <div class="header" role="heading">Опубликовать работу?</div>
+    <div class="content" role="document">
+        <p>
+            После публикации работу можно будет отредактировать в течение трёх дней.
+            При нажатии "Нет" она сохранится в черновиках и будет доступна для изменений в любое время.
+        </p>
+    </div>
+    <div class="actions">
+        <div class="ui ok green button">Да</div>
+        <div class="ui cancel red button">Нет</div>
+    </div>
+</div>
+<script type="text/x-jsrender" id="comicsItemFormTmpl">
+    <form class="ui form p-item-form">
+        <div class="ui divider"></div>
+        <i title="Удалить" onclick="Posts.removeCollectionItem(this)" class="red link large close icon"></i>
+        <div class="ui two column stackable center aligned grid">
+            <div class="column">
+                <label class="ui dashed drop-zone segment" ondragover="FileReaderHelper.dragOverHandler(event)" ondrop="FileReaderHelper.dropHandler(event)">
+                    <span class="ui small blue header">
+                        <i class="cloud download icon"></i>
+                        Перетащите или нажмите
+                    </span>
+                    <input type="file" onchange="FileReaderHelper.inputDownloadHandler(event)" />
+                </label>
+                <div class="ui indicating progress">
+                    <div class="bar">
+                        <div class="progress"></div>
+                    </div>
+                    <div class="label">Загрузка изображения</div>
+                </div>
+                <div class="field">
+                    <div class="ui image img-wrapper"></div>
+                </div>
+            </div>
+            <div class="left aligned column">
+                <input type="hidden" name="Content" />
+                <div class="field">
+                    <label>№ страницы</label>
+                    <input type="text" name="Page" placeholder="Страница" value="{{:Page}}" />
+                </div>
+                <div class="ui error message"></div>
+            </div>
+        </div>
+    </form>
+</script>
+@section scripts{
+    @Scripts.Render("~/bundles/api")
+    <script>
+        $(function () {
+            @Html.Raw(Html.FormValidation<Mite.Models.ImagePostModel>(".p-form"))
+            $('.p-item-form').form({
+                fields: {
+                    Page: {
+                        rules: [
+                            {
+                                type: 'empty',
+                                prompt: 'Заполните номер страницы'
+                            },
+                            {
+                                type: 'integer',
+                                prompt: 'Введите целое число'
+                            }
+                        ]
+                    },
+                    Content: {
+                        rules: [
+                            {
+                                type: 'empty',
+                                prompt: 'Вы не выбрали изображение'
+                            }
+                        ]
+                    }
+                }
+            });
+            $('#select-tags').dropdown({
+                allowAdditions: true,
+                fullTextSearch: true,
+                keys: {
+                    delimiter: 13
+                },
+                showOnFocus: false,
+                forceSelection: false,
+                match: 'text'
+            });
+        });
+    </script>
+}

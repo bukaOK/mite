@@ -88,10 +88,9 @@ namespace Mite.Controllers
         /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [OnlyGuests]
         public ActionResult InitExternalAuth(string provider, string returnUrl)
         {
-            return new ChallengeResult(provider, Url.Action("ExternalRegister", "Account", new { returnUrl = returnUrl }));
+            return new ChallengeResult(provider, Url.Action("ExternalRegister", "Account", new { returnUrl }));
         }
         public async Task<ActionResult> ExternalRegister(string returnUrl)
         {
@@ -100,7 +99,10 @@ namespace Mite.Controllers
             {
                 return RedirectToAction("Login");
             }
-
+            if (User.Identity.IsAuthenticated)
+            {
+                await userManager.AddLoginAsync(CurrentUserId, loginInfo.Login);
+            }
             // Вход, если у пользователя есть аккаунт
             var result = await userService.LoginAsync(loginInfo, true);
             switch (result)
@@ -109,7 +111,7 @@ namespace Mite.Controllers
                     //Обновляем записи о сервисе
                     var accessToken = loginInfo.ExternalIdentity.FindFirstValue(ClaimConstants.ExternalServiceToken);
                     //var expires = loginInfo.ExternalIdentity.FindFirstValue(ClaimConstants.ExternalServiceExpires);
-                    await externalServices.Update(loginInfo.Login.ProviderKey, loginInfo.Login.LoginProvider, accessToken);
+                    await externalServices.UpdateAsync(loginInfo.Login.ProviderKey, loginInfo.Login.LoginProvider, accessToken);
 
                     if(!string.IsNullOrEmpty(returnUrl))
                         return RedirectToLocal(returnUrl);
@@ -219,8 +221,9 @@ namespace Mite.Controllers
                 var user = await userManager.FindByNameAsync(model.UserName);
                 string code = await userManager.GenerateEmailConfirmationTokenAsync(user.Id);
                 var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, "http");
-
+#if !DEBUG
                 await userManager.SendEmailAsync(user.Id, "MiteGroup.Подтверждение почты.", $"Для подтверждения вашего аккаунта перейдите по <a href=\"{callbackUrl}\">ссылке.</a> MiteGroup.");
+#endif
                 if (string.IsNullOrEmpty(returnUrl))
                     return RedirectToAction("Top", "Posts");
                 else
@@ -351,8 +354,8 @@ namespace Mite.Controllers
             {
                 var token = userManager.GeneratePasswordResetTokenAsync(user.Id);
                 var url = Url.Action("ResetPassword", "Account", new { code = token, userId = user.Id });
-                await userManager.SendEmailAsync(user.Id, "Сброс пароля", "Для сброса пароля переходим <a href=\""
-                    + url + "\">по ссылке</a>");
+                await userManager.SendEmailAsync(user.Id, "MiteGroup.Сброс пароля", $"Для сброса пароля переходим <a href=\"{url}\">по ссылке</a>. " +
+                    $"С уважением, MiteGroup.");
             }
         }
         private const string XsrfKey = "XsrfId";
@@ -365,7 +368,7 @@ namespace Mite.Controllers
             }
         }
 
-        internal class ChallengeResult : HttpUnauthorizedResult
+        public class ChallengeResult : HttpUnauthorizedResult
         {
             public ChallengeResult(string provider, string redirectUri)
                 : this(provider, redirectUri, null)

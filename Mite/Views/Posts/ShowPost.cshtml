@@ -3,7 +3,7 @@
 @using Microsoft.AspNet.Identity
 @model Mite.Models.PostModel
 
-@{ 
+@{
     ViewBag.Title = Model.Header;
     ViewBag.MetaDescription = string.Format("Публикация пользователя {0} {1} | {2}", Model.User.UserName, Model.Header, Model.Description);
 
@@ -33,8 +33,12 @@
 }
 @section styles{
     @Styles.Render("~/Content/lgallery")
+    <style>
+        .col-item:not(:last-child){
+            margin-bottom: 1em;
+        }
+    </style>
 }
-@Scripts.Render("~/bundles/scroll", "~/bundles/gallery", "~/bundles/api")
 <div class="ui segment grid">
     <div class="stackable two column row">
         <div class="column">
@@ -51,16 +55,22 @@
                     <button class="ui compact small primary button" onclick="FavoritePostsApi.remove(this, '@Model.Id', '@userId')">
                         <i class="like icon"></i><span class="content">Из избранных</span>
                     </button>
+                    <button class="ui compact small primary button" onclick="FavoritePostsApi.add(this, '@Model.Id', '@userId')" style="display: none">
+                        <i class="like icon"></i><span class="content">В избранное</span>
+                    </button>
                 }
                 else
                 {
                     <button class="ui compact small primary button" onclick="FavoritePostsApi.add(this, '@Model.Id', '@userId')">
                         <i class="like icon"></i><span class="content">В избранное</span>
                     </button>
+                    <button class="ui compact small primary button" onclick="FavoritePostsApi.remove(this, '@Model.Id', '@userId')" style="display: none">
+                        <i class="like icon"></i><span class="content">Из избранных</span>
+                    </button>
                 }
                 <span class="ui violet basic left pointing label">@Model.FavoriteCount</span>
             </div>
-            @if(currentUserName == pageUserName && Model.CanEdit)
+            @if (currentUserName == pageUserName && Model.CanEdit)
             {
                 @Html.ActionLink("Редактировать", "EditPost", "Posts", new { id = Model.Id }, new { @class = "ui primary small compact button" })
             }
@@ -93,7 +103,7 @@
                 <img src="@Model.Content" class="ui centered image" id="post-content" alt="@ViewBag.Title" />
             </div>
         }
-        else if(Model.ContentType == PostContentTypes.Document)
+        else if (Model.ContentType == PostContentTypes.Document)
         {
             <div data-editable class="fifteen wide centered column" id="post-content">
                 @Html.Raw(Model.Content)
@@ -101,13 +111,46 @@
         }
         else if (Model.ContentType == PostContentTypes.ImageCollection)
         {
-            <div class="fifteen wide centered center aligned column">
-                <img src="@Model.Content" class="ui centered image" id="post-content" alt="@ViewBag.Title" />
+            <div class="fifteen wide centered center aligned column col-content">
+                <img src="@Model.Content" class="ui centered image" id="post-content" alt="@Model.Header" />
                 <div class="ui divider"></div>
-                @foreach(var item in Model.Collection)
+                <div class="col-content">
+                    @foreach (var item in Model.Collection)
+                    {
+                        <div class="col-item" data-sub-html="<h3 class='ui inverted header'>@item.Description</h3>" data-src="@item.Content">
+                            <h3 class="ui header">@item.Description</h3>
+                            <img src="@item.Content" class="ui centered image" alt="@item.Description" />
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else if (Model.ContentType == PostContentTypes.Comics)
+        {
+            <div class="fifteen wide centered center aligned column">
+                <img src="@Model.Content" class="ui centered image" id="post-content" alt="@Model.Header" />
+                <div class="ui divider"></div>
+                @if (ViewHelper.IsMobileDevice(Request))
                 {
-                    <img src="@item.Content" data-title="@item.Description" class="ui col-item centered image" alt="@item.Description" />
-                    <p>@item.Description</p>
+                    <div class="ui three column stackable grid comics-content">
+                        @foreach (var item in Model.ComicsItems.OrderBy(x => x.Page))
+                        {
+                            <div class="column comics-item" title="Страница @item.Page" data-src="@item.Content">
+                                <img src="@item.CompressedContent" class="ui centered image" alt="Комикс @Model.Header. Страница @item.Page." />
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="ui five column stackable grid comics-content">
+                        @foreach (var item in Model.ComicsItems.OrderBy(x => x.Page))
+                        {
+                            <div class="column comics-item" title="Страница @item.Page" data-src="@item.Content">
+                                <img src="@item.CompressedContent" class="ui centered image" alt="Комикс @Model.Header. Страница @item.Page." />
+                            </div>
+                        }
+                    </div>
                 }
             </div>
         }
@@ -118,7 +161,7 @@
             <div class="ui items">
                 <div class="item">
                     <div class="ui tiny circular image" style="width: 80px !important">
-                        <img src="@Model.User.AvatarSrc" alt="@Model.User.UserName" style="border-radius: 500rem !important;"/>
+                        <img src="@Model.User.AvatarSrc" alt="@Model.User.UserName" style="border-radius: 500rem !important;" />
                     </div>
                     <div class="content">
                         <a href="@Url.Action("Index", "UserProfile", new { name = Model.User.UserName })" class="header">&copy; @Model.User.UserName</a>
@@ -233,6 +276,7 @@
                         </button>
                         <a href="" id="reply-user"></a>
                         <i id="remove-reply" class="remove red icon" style="display: none; cursor: pointer" onclick="removeReply()"></i>
+                        <div class="ui error message"></div>
                     </form>
                 }
                 else
@@ -281,9 +325,12 @@
         </div>
     </div>
 </script>
+@Scripts.Render("~/bundles/scroll", "~/bundles/gallery", "~/bundles/api", "~/bundles/grid")
 <script>
     var commentsCount = @Model.CommentsCount;
-    var isImage = @((Model.ContentType == PostContentTypes.Image || Model.ContentType == PostContentTypes.ImageCollection).ToString().ToLower());
+    var isImage = @((Model.ContentType == PostContentTypes.Image).ToString().ToLower());
+    var isComics = @((Model.ContentType == PostContentTypes.Comics).ToString().ToLower());
+    var isCollection = @((Model.ContentType == PostContentTypes.ImageCollection).ToString().ToLower());
 
     function loadPostTime(){
         var dateIso = '@Model.LastEdit.ToString("o")';
@@ -326,20 +373,20 @@
         });
     }
     function sendComment(postId) {
-        $('#comments-form').form('form validation');
-        if(!$('#comments-form').form('is valid')) {
+        if (!$('#comments-form').form('form validation')) {
             return;
         }
-        var model = {
-            Content: $('#CommentContent').val(),
-            PostId: postId
-        };
-        var replyCommentId = $('#CommentContent').data('replyComment');
+        var commentContent = $('#CommentContent'),
+            model = {
+                Content: commentContent.val(),
+                PostId: postId
+            };
+        var replyCommentId = commentContent.data('replyComment');
         if(replyCommentId != null && replyCommentId != '') {
             model.ParentComment = {
                 Id: replyCommentId,
                 User: {
-                    Id: $('#CommentContent').data('replyUserId')
+                    Id: commentContent.data('replyUserId')
                 }
             };
         }
@@ -348,7 +395,6 @@
             url: '/api/comments/',
             data: model,
             success: function (data) {
-                console.log(data);
                 sendNotification('@NotificationTypes.PostComment', '@Model.User.Id', '@Model.Id#com' + data.Id);
                 if(replyCommentId != null && replyCommentId != '') {
                     sendNotification('@NotificationTypes.CommentReply', model.ParentComment.User.Id, '@Model.Id#com' + data.Id);
@@ -365,10 +411,18 @@
                 $('#comments-wrapper').prepend(html);
             },
             error: function (jqXhr) {
-                iziToast.error({
-                    title: 'Упс!',
-                    message: 'Ошибка при отправке комментария.'
-                });
+                var errors = [];
+                if (jqXhr.status === 400) {
+                    var resp = jqXhr.responseJSON;
+                    for (var key in resp.ModelState) {
+                        resp.ModelState[key].forEach(function (val) {
+                            errors.push(val);
+                        });
+                    }
+                } else {
+                    errors.push('Внутренняя ошибка');
+                }
+                $('#comments-form').form('add errors', errors);
             }
         });
     }
@@ -404,8 +458,6 @@
                     resp = JSON.parse(resp);
                 }
                 MiteGallery.init(resp.data.Items, resp.data.InitialIndex, '/posts/showpost/', $('#post-content'));
-            },
-            error: function(jqXhr){
             }
         });
     }
@@ -464,8 +516,7 @@
                         }
                     ]
                 }
-            },
-            inline: true
+            }
         });
     }
     function initVkWidget(){
@@ -499,7 +550,12 @@
         initFormValidation();
         if (isImage) {
             loadUserGallery();
-            MiteGallery.initCollection('.col-item');
+        } else if (isCollection) {
+            loadUserGallery();
+            MiteGallery.initCollection('.col-content');
+        } else if (isComics) {
+            loadUserGallery();
+            MiteGallery.initComics('.comics-content');
         }
     });
 </script>

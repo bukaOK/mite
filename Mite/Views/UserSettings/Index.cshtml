@@ -17,8 +17,9 @@
         <a class="item" data-tab="changeavatar">Изменить аватар</a>
         <a class="item" data-tab="security">Безопасность</a>
         <a class="item" data-tab="socialservices">Внешние сервисы</a>
+        <a class="item" data-tab="notifications">Уведомления</a>
     </nav>
-    <div class="ui tab" data-tab="userprofile">
+    <div class="ui active tab" data-tab="userprofile">
         @{Html.RenderAction("UserProfile");}
     </div>
     <div class="ui tab" data-tab="changeavatar">
@@ -37,11 +38,16 @@
     <div class="ui tab" data-tab="socialservices">
         @{Html.RenderAction("SocialServices");}
     </div>
+    <div class="ui tab" data-tab="notifications">
+        @{Html.RenderAction("Notifications");}
+    </div>
 </div>
-<script>
-    $(function () {
-        $('.user-settings.item').addClass('active');
-        var tabs = new MiteTab('.ui.tabs.menu .item', '/user/settings');
-        ViewHelper.disableFormSubmitting('form');
-    });
-</script>
+@section scripts{
+    @Scripts.Render("~/bundles/api")
+    <script>
+        $(function () {
+            var tabs = new MiteTab('.ui.tabs.menu .item', '/user/settings');
+            ViewHelper.disableFormSubmitting('form');
+        });
+    </script>
+}

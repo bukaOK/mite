@@ -1,4 +1,5 @@
-﻿using Mite.CodeData.Enums;
+﻿using ImageMagick;
+using Mite.CodeData.Enums;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -49,24 +50,29 @@ namespace Mite.BLL.Helpers
             base64Str = Regex.Replace(base64Str, @"data:image/(.+);base64,", "");
             //Кодируем строку base64 в изображение
             var bytes = Convert.FromBase64String(base64Str);
-            var memoryStream = new MemoryStream(bytes);
-
-            var image = Image.FromStream(memoryStream);
-
-            string imageName;
-            string imagePath;
-            //Проверяем на то, есть ли уже изображения с таким именем
-            do
+            using(var mStream = new MemoryStream(bytes))
             {
-                imageName = Guid.NewGuid() + "." + imgFormat;
-                imagePath = path[path.Length - 1] == '\\' ? path + imageName : path + "\\" + imageName;
-            } while (File.Exists(imagePath));
-            //Сохраняем на диск
-            image.Save(imagePath);
-            memoryStream.Close();
+                var optimizer = new ImageOptimizer();
+                optimizer.LosslessCompress(mStream);
 
-            virtualPath += virtualPath[virtualPath.Length - 1] == '/' ? "" : "/";
-            return Regex.Replace(virtualPath, "~", "") + imageName;
+                string imageName;
+                string imagePath;
+                //Проверяем на то, есть ли уже изображения с таким именем
+                do
+                {
+                    imageName = Guid.NewGuid() + "." + imgFormat;
+                    imagePath = path[path.Length - 1] == '\\' ? path + imageName : path + "\\" + imageName;
+                } while (File.Exists(imagePath));
+                //Сохраняем на диск
+                using (var fStream = new FileStream(imagePath, FileMode.CreateNew, FileAccess.Write))
+                {
+                    mStream.Position = 0;
+                    mStream.WriteTo(fStream);
+                }
+
+                virtualPath += virtualPath[virtualPath.Length - 1] == '/' ? "" : "/";
+                return Regex.Replace(virtualPath, "~", "") + imageName;
+            }
         }
         public static string CreateFile(string virtualPath, string base64, string ext)
         {

@@ -57,7 +57,7 @@ namespace Mite.DAL.Entities
         [ForeignKey("Service")]
         public Guid ServiceId { get; set; }
         public AuthorService Service { get; set; }
-        [ForeignKey("Chat")]
+        //[ForeignKey("Chat")]
         public Guid ChatId { get; set; }
         public Chat Chat { get; set; }
         [ForeignKey("DisputeChat")]

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Mite.BLL.Helpers;
+using Mite.CodeData.Constants;
 using Mite.CodeData.Constants.Automapper;
 using Mite.DAL.Entities;
 using Mite.Models;
@@ -22,16 +23,20 @@ namespace Mite.Infrastructure.Automapper
                     .ForMember(dest => dest.City, opts => opts.Ignore());
 
             CreateMap<User, ProfileModel>()
-                    .ForMember(dest => dest.About, opt => opt.MapFrom(src => src.Description))
-                    .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => Guid.Parse(src.Id)));
+                .ForMember(dest => dest.AvatarSrc, opt => opt.MapFrom(src => src.AvatarSrc ?? PathConstants.AvatarSrc))
+                .ForMember(dest => dest.About, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => Guid.Parse(src.Id)));
 
             CreateMap<User, ClientProfileModel>()
+                .ForMember(dest => dest.AvatarSrc, opt => opt.MapFrom(src => src.AvatarSrc ?? PathConstants.AvatarSrc))
                 .ForMember(dest => dest.About, opt => opt.MapFrom(src => src.Description))
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id));
 
             CreateMap<User, UserShortModel>()
                 .ForMember(dest => dest.AvatarSrc, opt => opt.ResolveUsing(src =>
                 {
+                    if (string.IsNullOrEmpty(src.AvatarSrc))
+                        return PathConstants.AvatarSrc;
                     var srcPath = HostingEnvironment.MapPath(src.AvatarSrc);
                     if (ImagesHelper.Compressed.CompressedExists(srcPath))
                         return ImagesHelper.Compressed.CompressedVirtualPath(srcPath);

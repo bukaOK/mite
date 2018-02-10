@@ -25,7 +25,7 @@ namespace Mite.BLL.Services
         /// <param name="serviceType"></param>
         /// <param name="accessToken"></param>
         /// <returns></returns>
-        Task<DataServiceResult> Update(string providerKey, string serviceType, string accessToken);
+        Task<DataServiceResult> UpdateAsync(string providerKey, string serviceType, string accessToken);
         void Remove(string userId, string serviceName);
         Task RemoveAsync(string userId, string serviceName);
     }
@@ -72,7 +72,7 @@ namespace Mite.BLL.Services
             return repo.RemoveAsync(userId, serviceName);
         }
 
-        public async Task<DataServiceResult> Update(string providerKey, string serviceType, string accessToken)
+        public async Task<DataServiceResult> UpdateAsync(string providerKey, string serviceType, string accessToken)
         {
             var repo = Database.GetRepo<ExternalServiceRepository, ExternalService>();
             var existingService = await repo.GetByProviderAsync(providerKey, serviceType);

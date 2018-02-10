@@ -1,15 +1,14 @@
 ﻿using Microsoft.AspNet.Identity;
-using Mite.BLL.IdentityManagers;
 using Mite.BLL.Services;
 using Mite.CodeData.Constants;
+using Mite.CodeData.Enums;
 using Mite.Core;
 using Mite.Extensions;
+using Mite.Hubs.Clients;
 using Mite.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
 
 namespace Mite.Controllers
@@ -35,18 +34,26 @@ namespace Mite.Controllers
             if (inSession)
                 model.Recipients = chats.First(x => x.Id == model.ChatId).Members;
 
-            var result = await messagesService.AddAsync(model, inSession);
+            var result = await messagesService.AddAsync(model, CurrentUserId, inSession);
             if (result.Succeeded)
             {
+                if (inSession)
+                    chats.Remove(chats.First(x => x.Id == model.ChatId));
                 var message = (ChatMessageModel)result.ResultData;
                 //Имя чата для собеседника(ов)
                 if (string.IsNullOrEmpty(message.Chat.Name))
                     message.Chat.Name = User.Identity.Name;
                 if (string.IsNullOrEmpty(message.Chat.ImageSrc) || message.Chat.ImageSrc == PathConstants.AvatarSrc)
                     message.Chat.ImageSrc = User.Identity.GetClaimValue(ClaimConstants.AvatarSrc);
+
+                ChatHubClient.AddMessage(message);
+                NotifyHubClient.NewMessage(message);
+                if (message.Chat.ChatType == ChatTypes.Public)
+                    ChatHubClient.AddPublicMessage(message);
+
                 return Json(JsonStatuses.Success, message);
             }
-            return InternalServerError();
+            return Json(JsonStatuses.ValidationError, result.Errors);
         }
     }
 }

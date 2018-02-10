@@ -60,7 +60,7 @@ namespace Mite.Controllers
         }
         public ActionResult UserProfile()
         {
-            var user = _userManager.FindById(User.Identity.GetUserId());
+            var user = _userManager.FindById(CurrentUserId);
             var model = new ProfileSettingsModel
             {
                 NickName = user.UserName,
@@ -69,21 +69,35 @@ namespace Mite.Controllers
                 LastName = user.LastName,
                 Age = user.Age,
                 About = user.Description,
-                Cities = cityService.GetCitiesSelectList(user)
+                Cities = cityService.GetCitiesSelectList(user),
             };
 
             return PartialView(model);
+        }
+        public ActionResult Notifications()
+        {
+            var logins = _userManager.GetLogins(CurrentUserId);
+            var user = _userManager.FindById(CurrentUserId);
+            var model = new NotifySettingsModel
+            {
+                VkAuthenticated = logins.Any(x => x.LoginProvider == VkSettings.DefaultAuthType),
+                MailNotify = user.MailNotify
+            };
+            return PartialView(model);
+        }
+        [HttpPost]
+        public async Task<ActionResult> Notifications(NotifySettingsModel model)
+        {
+            var result = await _userService.UpdateUserAsync(model, CurrentUserId);
+            if (result.Succeeded)
+                return Ok();
+            return InternalServerError();
         }
         [HttpPost]
         public async Task<ActionResult> UserProfile(ProfileSettingsModel settings)
         {
             if (!ModelState.IsValid)
-            {
-                var errorList =
-                    ModelState.Values.Select(modelState => modelState.Errors.Select(error => error.ErrorMessage))
-                        .ToList();
-                return Json(JsonStatuses.ValidationError, errorList);
-            }
+                return Json(JsonStatuses.ValidationError, GetModelErrors());
 
             var result = await _userService.UpdateUserAsync(settings, User.Identity.GetUserId());
             if (!result.Succeeded)

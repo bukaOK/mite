@@ -57,6 +57,10 @@ namespace Mite.DAL.Entities
         /// Элементы коллекции(если работа - коллекция)
         /// </summary>
         public List<PostCollectionItem> Collection { get; set; }
+        /// <summary>
+        /// Страницы комикса(если работа - комикс/манга)
+        /// </summary>
+        public List<ComicsItem> ComicsItems { get; set; }
         [ForeignKey("User")]
         public string UserId { get; set; }
         public User User { get; set; }

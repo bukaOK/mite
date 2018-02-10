@@ -12,13 +12,14 @@ namespace Mite.Controllers.Api
     [Authorize]
     public class CommentsController : ApiController
     {
-        private readonly ICommentsService _commentsService;
+        private readonly ICommentsService commentsService;
+        private readonly IBlackListService blackListService;
 
-        public CommentsController(ICommentsService commentsService)
+        public CommentsController(ICommentsService commentsService, IBlackListService blackListService)
         {
-            _commentsService = commentsService;
+            this.commentsService = commentsService;
+            this.blackListService = blackListService;
         }
-        // GET api/<controller>/5
         /// <summary>
         /// Достает комментарии по id поста, странице и фильтру
         /// </summary>
@@ -30,7 +31,7 @@ namespace Mite.Controllers.Api
         [AllowAnonymous]
         public async Task<IEnumerable<CommentModel>> GetByPost(Guid postId)
         {
-            var comments = await _commentsService.GetCommentsByPostAsync(postId, User.Identity.GetUserId());
+            var comments = await commentsService.GetCommentsByPostAsync(postId, User.Identity.GetUserId());
             return comments;
         }
 
@@ -41,15 +42,23 @@ namespace Mite.Controllers.Api
         [HttpPost]
         public async Task<IHttpActionResult> Add(CommentModel model)
         {
-            if (model.Content == null || model.PostId == null)
-                return BadRequest();
-
             model.User = new UserShortModel
             {
                 Id = User.Identity.GetUserId()
             };
-            var result = await _commentsService.AddCommentToPostAsync(model);
-            return Json(result);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!(await blackListService.CanCommentAsync(model)))
+            {
+                ModelState.AddModelError("", "Пользователь в черном списке");
+                return BadRequest(ModelState);
+            }
+
+            var result = await commentsService.AddCommentToPostAsync(model);
+            if(result.Succeeded)
+                return Json(result.ResultData);
+            return InternalServerError();
         }
 
         [HttpPut]
@@ -59,7 +68,7 @@ namespace Mite.Controllers.Api
                 return BadRequest();
             
             model.User.Id = User.Identity.GetUserId();
-            await _commentsService.UpdateCommentAsync(model);
+            await commentsService.UpdateCommentAsync(model);
             return Ok();
         }
 
@@ -68,11 +77,11 @@ namespace Mite.Controllers.Api
         {
             try
             {
-                var commentUserId = await _commentsService.GetCommentUserIdAsync(id);
+                var commentUserId = await commentsService.GetCommentUserIdAsync(id);
                 if (commentUserId != User.Identity.GetUserId())
                     return StatusCode(HttpStatusCode.Forbidden);
 
-                await _commentsService.DeleteCommentAsync(id);
+                await commentsService.DeleteCommentAsync(id);
                 return Ok();
             }
             catch (Exception)

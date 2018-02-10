@@ -16,7 +16,7 @@ namespace Mite.BLL.Services
     public interface ICommentsService : IDataService
     {
         Task<IEnumerable<CommentModel>> GetCommentsByPostAsync(Guid postId, string currentUserId);
-        Task<CommentModel> AddCommentToPostAsync(CommentModel model);
+        Task<DataServiceResult> AddCommentToPostAsync(CommentModel model);
         Task UpdateCommentAsync(CommentModel model);
         Task DeleteCommentAsync(Guid id);
         Task<string> GetCommentUserIdAsync(Guid id);
@@ -27,7 +27,7 @@ namespace Mite.BLL.Services
         {
         }
 
-        public async Task<CommentModel> AddCommentToPostAsync(CommentModel model)
+        public async Task<DataServiceResult> AddCommentToPostAsync(CommentModel model)
         {
             var comment = Mapper.Map<Comment>(model);
             comment.PublicTime = DateTime.UtcNow;
@@ -35,9 +35,16 @@ namespace Mite.BLL.Services
             comment.Id = Guid.NewGuid();
 
             var repo = Database.GetRepo<CommentsRepository, Comment>();
-            await repo.AddAsync(comment);
-            comment = await repo.GetFullAsync(comment.Id);
-            return Mapper.Map<CommentModel>(comment);
+            try
+            {
+                await repo.AddAsync(comment);
+                comment = await repo.GetFullAsync(comment.Id);
+                return DataServiceResult.Success(Mapper.Map<CommentModel>(comment));
+            }
+            catch(Exception e)
+            {
+                return CommonError("Ошибка при добавлении комментария", e);
+            }
         }
 
         public Task DeleteCommentAsync(Guid id)

@@ -4,14 +4,10 @@
 <div class="ui stackable two column center aligned grid change-avatar">
     <div class="column">
         <input type="file" id="ava-download" style="display: none">
-        <label for="ava-download" class="ui labeled icon large primary button">
-            Загрузить
-            <i class="cloud download icon"></i>
+        <label class="ui dashed drop-zone segment" ondragover="dragOverHandler(event)" ondrop="dropHandler(event)">
+            <span class="ui small blue header"><i class="cloud download icon"></i>Перетащите или нажмите</span>
+            <input type="file" onchange="inputDownloadHandler(event)" />
         </label>
-        <div class="ui section divider horizontal">Или</div>
-        <div class="ui dashed segment" id="drop-zone">
-            <h3 class="ui disabled grey">Перетащите сюда</h3>
-        </div>
         <button type="button" class="ui fluid green button" id="save-btn">Сохранить</button>
         <div class="ui divider"></div>
         <button class="ui ava-rotate primary button" data-deg="-90" style="display: none">
@@ -30,104 +26,94 @@
 </div>
 @Scripts.Render("~/bundles/croppie")
 <script>
-    $(function(){
-        $("avaSet").addClass("active");
-        var uploadCrop = $('.avatar.edit');
-        uploadCrop.croppie({
-            viewport: {
-                width: 150,
-                height: 150,
-                type: 'circle'
-            },
-            boundary: {
-                width: $('.cr-boundary').parents('.column').width() * 0.77,
-                height: 400
-            },
-            enableOrientation: true
-        });
-        $('.ava-rotate').click(function () {
-            $('.avatar.edit').croppie('rotate', +$(this).data('deg'));
-        })
-        $('#save-btn')
-            .click(function(event) {
-                uploadCrop.croppie('result',
-                    {
-                        circle: true
-                    })
-                    .then(function (res) {
-                        if (res.match(/data:,/) != null) {
-                            $('#change-ava-msg').addClass('red').removeClass('hidden').html('Изображение не выбрано');
-                        }else {
-                            $.ajax({
-                                url: '/UserSettings/ChangeAvatar',
-                                type: 'post',
-                                dataType: 'json',
-                                data: {
-                                    base64Str: res
-                                },
-                                beforeSend: function () {
-                                    $('#save-btn').addClass('loading disabled');
-                                },
-                                success: function (resp) {
-                                    if (resp.message == undefined) {
-                                        resp = JSON.parse(resp);
-                                    }
-                                    $('#change-ava-msg').addClass('green').removeClass('red');
-                                    $('#change-ava-msg').html(resp.message);
-                                },
-                                error: function () {
-                                    $('#change-ava-msg').addClass('red').removeClass('green');
-                                    $('#change-ava-msg').html('Ошибка сервера');
-                                },
-                                complete: function (jqXhr) {
-                                    $('#save-btn').removeClass('loading disabled');
-                                    $('#change-ava-msg').removeClass('hidden');
-                                }
-                            });
-                        }
-                    });
-
-            });
-        function readFile(file, evt){
-            var reader = new FileReader();
-            reader.onprogress = function(){
-                $("#loading-span").css("display: inline");
-            };
-            reader.onloadend = function(){
-                $("#loading-span").css('display: none');
-            };
-            reader.onload = function(){
-                uploadCrop.show();
-                $("#save-btn").show();
-                $('.ava-rotate').show();
-                uploadCrop.croppie('bind', reader.result);
-            };
-            reader.readAsDataURL(file);
-        }
-        //Когда перемещаем файл мышкой и курсор над областью
-        function dragOverHandler(evt){
-            evt.stopPropagation();
-            evt.preventDefault();
-            evt.dataTransfer.dropEffect = "copy";
-        }
-        //Когда переместили файл
-        function dropHandler(evt){
-            evt.stopPropagation();
-            evt.preventDefault();
-            var file = evt.dataTransfer.files[0];
-            readFile(file, evt);
-        }
-        function inputDownloadHandler(evt){
-            var file = evt.target.files[0];
-            readFile(file, evt);
-        }
-
-        //Настраиваем загрузку файлов
-        var dropZone = document.getElementById("drop-zone");
-        dropZone.ondragover = dragOverHandler;
-        dropZone.ondrop = dropHandler;
-
-        var inputDownload = document.getElementById("ava-download");
-        inputDownload.onchange = inputDownloadHandler;
+    function readFile(file, evt) {
+        var reader = new FileReader();
+        reader.onprogress = function () {
+            $("#loading-span").css("display: inline");
+        };
+        reader.onloadend = function () {
+            $("#loading-span").css('display: none');
+        };
+        reader.onload = function () {
+            uploadCrop.show();
+            $("#save-btn").show();
+            $('.ava-rotate').show();
+            uploadCrop.croppie('bind', reader.result);
+        };
+        reader.readAsDataURL(file);
+    }
+    //Когда перемещаем файл мышкой и курсор над областью
+    function dragOverHandler(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+        evt.dataTransfer.dropEffect = "copy";
+    }
+    //Когда переместили файл
+    function dropHandler(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+        var file = evt.dataTransfer.files[0];
+        readFile(file, evt);
+    }
+    function inputDownloadHandler(evt) {
+        var file = evt.target.files[0];
+        readFile(file, evt);
+    }
+    $("avaSet").addClass("active");
+    var uploadCrop = $('.avatar.edit');
+    uploadCrop.croppie({
+        viewport: {
+            width: 150,
+            height: 150,
+            type: 'circle'
+        },
+        boundary: {
+            width: $('.cr-boundary').parents('.column').width() * 0.77,
+            height: 400
+        },
+        enableOrientation: true
     });
+    $('.ava-rotate').click(function () {
+        $('.avatar.edit').croppie('rotate', +$(this).data('deg'));
+    })
+    $('#save-btn')
+        .click(function (event) {
+            uploadCrop.croppie('result',
+                {
+                    circle: true
+                })
+                .then(function (res) {
+                    if (res.match(/data:,/) != null) {
+                        $('#change-ava-msg').addClass('red').removeClass('hidden').html('Изображение не выбрано');
+                    } else {
+                        $.ajax({
+                            url: '/UserSettings/ChangeAvatar',
+                            type: 'post',
+                            dataType: 'json',
+                            data: {
+                                base64Str: res
+                            },
+                            beforeSend: function () {
+                                $('#save-btn').addClass('loading disabled');
+                            },
+                            success: function (resp) {
+                                if (resp.message == undefined) {
+                                    resp = JSON.parse(resp);
+                                }
+                                $('#change-ava-msg').addClass('green').removeClass('red');
+                                $('#change-ava-msg').html(resp.message);
+                            },
+                            error: function () {
+                                $('#change-ava-msg').addClass('red').removeClass('green');
+                                $('#change-ava-msg').html('Ошибка сервера');
+                            },
+                            complete: function (jqXhr) {
+                                $('#save-btn').removeClass('loading disabled');
+                                $('#change-ava-msg').removeClass('hidden');
+                            }
+                        });
+                    }
+                });
+
+        });
 </script>

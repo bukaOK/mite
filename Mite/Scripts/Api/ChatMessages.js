@@ -1,9 +1,9 @@
 ﻿/**
  * Статус сообщения
  * @constructor
- * @param {string} stClass
- * @param {string} title
- * @param {string} name
+ * @param {string} stClass css класс статуса
+ * @param {string} title заголовок
+ * @param {string} name имя для dataset
  */
 function MessageStatus(stClass, title, name) {
     this.class = stClass;
@@ -29,13 +29,13 @@ var ChatMessages = {
     },
     /**
      * Обработка ввода сообщения
-     * @param {HTMLElement} input
-     * @param {string} userName
+     * @param {HTMLElement} input элемент для ввода
+     * @param {string} userName никнейм польз.
     */
     inputHandle: function (chatId, input) {
         window.hubReady.done(function () {
             setTimeout(function (lastVal, _chatId) {
-                if (lastVal.length === input.innerText.length || input.innerText == '') {
+                if (lastVal.length === input.innerText.length || input.innerText === '') {
                     $.connection.chatHub.server.typing(_chatId, false);
                     input.dataset.state = 'begin';
                 }
@@ -54,23 +54,24 @@ var ChatMessages = {
         chatHub.client.addMessage = function (msg) {
             var chatId = msg.ChatId,
                 chat = window.chats[chatId],
-                now = new Date();
+                now = new Date(),
+                chatItem;
             if (!chat && !self.dealChat) {
-                var chatItem = $('.chat-item[data-id="' + chatId + '"]');
+                chatItem = $('.chat-item[data-id="' + chatId + '"]');
                 if (chatItem.length === 0) {
                     var chatsLoader = ChatsApi.Loader;
                     msg.Chat.LastMessage = msg;
                     msg.Chat.LastMessage.SendDateStr = 'Сегодня';
-                    chatsLoader.loader.after(chatsLoader.tmpl.render(msg.Chat));
+                    $('.chat-items').prepend(chatsLoader.tmpl.render(msg.Chat));
                     chatItem = $('.chat-item[data-id="' + chatId + '"]');
                 }
                 chatItem.find('.description').html(msg.Message);
                 chatItem.find('.send-date').text('Сегодня');
+                chatItem.find('.msg-count.label').addClass('active')[0].innerHTML++
                 return;
             }
-            var chatLoader = chat.ChatLoader,
-                chatItem = chat.chatItem,
-                chatWrap = chat.chatWrap;
+            var chatLoader = chat.ChatLoader;
+            chatItem = chat.chatItem;
             msg.images = [];
             msg.documents = [];
             if (msg.Attachments !== null && msg.Attachments.length > 0) {
@@ -92,6 +93,7 @@ var ChatMessages = {
             if (!self.dealChat) {
                 chatItem.find('.description').html(msg.Message);
                 chatItem.find('.send-date').text('Сегодня');
+                chatItem.find('.msg-count.label').addClass('active')[0].innerHTML++;
             }
             if (chat.isInView()) {
                 msg.Status = ChatMessages.Api.statuses.readed;
@@ -99,10 +101,35 @@ var ChatMessages = {
             } else {
                 msg.Status = ChatMessages.Api.statuses.new;
                 chat.hasNew = true;
-                if (!self.dealChat)
-                    chatItem.find('.msg-count.label').addClass('active')[0].innerHTML++;
             }
             chatLoader.chat.append(tmpl.render(msg));
+        }
+        chatHub.client.addPublicMessage = function (msg) {
+            var chatId = msg.ChatId,
+                now = new Date(),
+                chat = PublicChats.chats[chatId];
+            if (chat) {
+                var chatLoader = chat.ChatLoader;
+                msg.images = [];
+                msg.documents = [];
+                if (msg.Attachments !== null && msg.Attachments.length > 0) {
+                    msg.Attachments.forEach(function (att, j) {
+                        att.Index = j;
+                        if (att.Type === 0) {
+                            msg.images.push(att);
+                        } else {
+                            msg.documents.push(att);
+                        }
+                    });
+                }
+                msg.Time = DateTimeHelper.toTimeString(now);
+                msg.Date = DateTimeHelper.toDateString(now, 'short');
+                msg.IsoDate = now;
+
+                var tmpl = $.templates('#messageTmpl');
+                chatLoader.updateScrollState(true);
+                chatLoader.chat.append(tmpl.render(msg));
+            }
         }
         window.onfocus = function () {
             for (var chatId in window.chats) {
@@ -210,6 +237,10 @@ var ChatMessages = {
                     if (resp.status === undefined) {
                         resp = JSON.parse(resp);
                     }
+                    if (resp.status === Settings.apiStatuses.validationError) {
+                        $form.form('add errors', resp.data);
+                        return;
+                    }
                     resp = resp.data;
                     msgData.images = [];
                     msgData.documents = [];
@@ -240,10 +271,6 @@ var ChatMessages = {
 
                     chatLoader.chat.append(tmpl.render(msgData));
                     chatLoader.updateScrollState(true);
-                    window.hubReady.done(function () {
-                        $.connection.chatHub.server.addMessage(resp);
-                    });
-
                 },
                 error: function (jqXhr) {
                     var errMsg = 'Внутренняя ошибка';
@@ -260,6 +287,7 @@ var ChatMessages = {
         },
         /**
          * Удаляем выделенные сообщения
+         * @returns {JQuery.jqXHR<any>}
         */
         remove: function () {
             var ids = '';
@@ -270,7 +298,7 @@ var ChatMessages = {
                 onHide: function () {
                     var chatId = $(this).parents('.chat.feed').data('id');
                     //window.chats[chatId].ChatLoader.updateScrollState();
-                    $('.msg-actions[data-chat-id="' + chatId + '"]').removeClass('active');
+                    $('.chat-wrap[data-id="' + chatId + '"] .msg-actions').removeClass('active');
 
                     this.remove();
                     $('.chat .divider+.divider').prev().remove();

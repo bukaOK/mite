@@ -5,35 +5,81 @@
 }
 @section styles{
     @Styles.Render("~/Content/dialog", "~/Content/lgallery")
+    <style>
+        #possibleChatCompanions .list .empty{
+            display: none;
+            text-align: center;
+        }
+        #possibleChatCompanions .list .empty.active{
+            display: block;
+        }
+    </style>
 }
 <div class="ui stackable grid">
-    <div class="four wide column">
-        <div class="ui chat-items-wrap segment">
-            <div class="ui fluid input">
-                <input type="text" placeholder="Найти чат" oninput="ChatsApi.Loader.refresh(this.value)" id="chatsInput" />
-                <i title="Найти собеседников" class="chat-add link violet plus icon" onclick="$('#possibleChatCompanions').modal('show')"></i>
+    <div class="thirteen wide column">
+        <div class="ui @*active*@ tab" data-tab="private" role="tabpanel">
+            <div class="ui stackable grid">
+                <div class="five wide column">
+                    <div class="ui chat-items-wrap segment">
+                        <div class="ui fluid input">
+                            <input type="text" placeholder="Найти чат" oninput="ChatsApi.Loader.refresh(this.value)" />
+                            <i title="Найти собеседников" class="chat-add link violet plus icon" onclick="$('#possibleChatCompanions').modal('show')"></i>
+                        </div>
+                        <div class="chat-items-outer">
+                            <div class="ui items chat-items">
+                                <div class="center aligned empty-chats">Чаты не найдены</div>
+                                <div class="active dot-loader-wrapper">
+                                    <div class="dot-loader">
+                                        <div class="dot"></div>
+                                        <div class="dot"></div>
+                                        <div class="dot"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="eleven wide column" id="chatContext">
+                    <div class="ui start active segment chat-wrap">
+                        <h4 class="ui centered header">Нажмите на чат, чтобы начать.</h4>
+                    </div>
+                </div>
             </div>
-            <div class="ui items chat-items">
-                <div class="active dot-loader-wrapper" style="height: 20px; min-height: 20px;">
-                    <div class="dot-loader">
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
+        </div>
+        <div class="ui tab" data-tab="public" role="tabpanel">
+            <div class="ui stackable grid">
+                <div class="five wide column">
+                    <div class="ui chat-items-wrap segment">
+                        <div class="ui fluid input">
+                            <input type="text" placeholder="Найти чат" oninput="PublicChats.Loader.refresh(this.value)" />
+                        </div>
+                        <div class="chat-items-outer">
+                            <div class="ui items public-chat-items">
+                                <div class="center aligned empty-chats">Чаты не найдены</div>
+                                <div class="active dot-loader-wrapper">
+                                    <div class="dot-loader">
+                                        <div class="dot"></div>
+                                        <div class="dot"></div>
+                                        <div class="dot"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="eleven wide column" id="publicChatContext">
+                    <div class="ui start active segment chat-wrap">
+                        <h4 class="ui centered header">Нажмите на чат, чтобы начать.</h4>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="nine wide column" id="chatContext">
-        <div class="ui start active segment chat-wrap">
-            <h4 class="ui centered header">Нажмите на чат, чтобы начать.</h4>
-        </div>
-    </div>
     <div class="three wide column">
-        @*<div class="ui vertical menu" role="menu">
-            <a class="active item" role="menuitem">Приватные</a>
-            <a class="item" role="menuitem">Публичные</a>
-        </div>*@
+        <div class="ui vertical chat-tabs menu" role="tablist">
+            <a class="item" role="tab" data-tab="private">Приватные</a>
+            <a class="item" role="tab" data-tab="public">Публичные</a>
+        </div>
         <button class="ui fluid green inverted button" onclick="$('#chatCreateModal').modal('show')">
             Создать чат
         </button>
@@ -62,7 +108,7 @@
                 </div>
             </div>
             @Html.HiddenFor(x => x.ChatType, new { Value = ChatTypes.PrivateGroup })
-            @*<div class="inline fields">
+            <div class="inline fields">
                 <label>@Html.DisplayNameFor(x => x.ChatType)</label>
                 <div class="field">
                     <div class="ui radio checkbox" title="Чат будет доступен всем пользователям">
@@ -76,7 +122,13 @@
                         <label>Публичный</label>
                     </div>
                 </div>
-            </div>*@
+            </div>
+            <div class="ui progress" style="display: none">
+                <div class="bar">
+                    <div class="progress"></div>
+                </div>
+                <div class="label">Загрузка файла...</div>
+            </div>
             <div class="ui error message"></div>
         </form>
     </div>
@@ -85,7 +137,7 @@
         <button class="ui red deny button">Отмена</button>
     </div>
 </div>
-<div class="ui coupled mini modal" id="chatImageSetModal">
+<div class="ui mini modal" id="chatImageSetModal">
     <div class="header">Настройка картинки</div>
     <div class="content">
         <div class="crop-container"></div>
@@ -103,6 +155,7 @@
             <input placeholder="Найти" type="text" oninput="ChatsHelper.CompanionChatCreating.refresh(this.value)" />
         </div>
         <div class="ui large middle aligned selection list" role="list">
+            <div class="empty">Пользователи не найдены.</div>
             <div class="active dot-loader-wrapper" style="height: 20px; min-height: 20px;">
                 <div class="dot-loader">
                     <div class="dot"></div>
@@ -117,17 +170,32 @@
 @section scripts{
 @Scripts.Render("~/bundles/api", "~/bundles/grid", "~/bundles/gallery", "~/bundles/croppie")
 <script>
+    var currentUser = {
+        Id: '@Model.CurrentUser.Id',
+        AvatarSrc: '@Model.CurrentUser.AvatarSrc',
+        UserName: '@Model.CurrentUser.UserName'
+    };
     $(function () {
         @Html.Raw(Html.FormValidation<Mite.Models.ChatModel>("#chatCreateModal .form"))
-        ChatsApi.Loader.init({
-            Id: '@Model.CurrentUser.Id',
-            AvatarSrc: '@Model.CurrentUser.AvatarSrc',
-            UserName: '@Model.CurrentUser.UserName'
-        });
         ChatMessages.initHub();
         ChatsHelper.ChatCreating.init();
         ChatsHelper.CompanionChatCreating.init();
         $('#chatCreateModal .checkbox').checkbox();
+        $('.chat-tabs .item').tab({
+            onFirstLoad: function (tabPath) {
+                switch (tabPath) {
+                    case 'private':
+                        ChatsApi.Loader.init(currentUser);
+                        break;
+                    case 'public':
+                        PublicChats.Loader.init(currentUser);
+                        break;
+                    default:
+                        throw 'Unknown chat tab';
+                }
+            }
+        }).first().tab('change tab', 'private');
+        $('.user-chats.item').addClass('active');
     });
 </script>
 }

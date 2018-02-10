@@ -42,61 +42,18 @@
                     <p>Мы обнаружили ссылку на внешний ресурс, рекомендуем добавить её в раздел "Внешние ссылки".</p>
                 </div>
             </div>
-            <button type="button" class="ui primary button" onclick="updateUserProfile(this)">Сохранить</button>
-            <div class="ui error message" style="text-align: center" id="update-state-msg"></div>
+            <button type="button" class="ui primary button" onclick="UserSettingsApi.updateUserProfile(this)">Сохранить</button>
+            <div class="ui error message"></div>
+            <div class="ui green m-success message">Изменения успешно сохранены.</div>
         }
     </div>
 </div>
 <script>
-    function updateUserProfile(ev) {
-        var $form = $(ev).parents('form');
-        if (!$form.form('validate form')) {
-            return;
-        }
-        $.ajax({
-            url: '/User/Settings/UserProfile',
-            type: 'post',
-            dataType: 'json',
-            data: $form.serialize(),
-            beforeSend: function() {
-                $('#profileForm').addClass('loading');
-            },
-            success: function (resp) {
-                if (resp.status == undefined) {
-                    resp = JSON.parse(resp);
-                }
-                var $updateMsg = $('#update-state-msg');
-                if (resp.status == 1 || resp.status == 2) {
-                    $updateMsg.addClass('red').removeClass('green');
-                    var errorsStr = '';
-                    resp.data.forEach(function (val) {
-                        errorsStr += '<li>' + val + '</li>';
-                    });
-                    $updateMsg.html('<ul class="list">' + errorsStr + '</ul>');
-                    $updateMsg.css('text-align', 'left');
-                } else {
-                    $updateMsg.addClass('green').removeClass('red');
-                    $updateMsg.css('text-align', 'center');
-                    $updateMsg.html(resp.message);
-                }
-            },
-            error: function (resp) {
-                var $updateMsg = $('#update-state-msg');
-                $updateMsg.addClass('red').removeClass('green');
-                $updateMsg.css('text-align', 'center');
-                $updateMsg.html('Ошибка на сервере');
-            },
-            complete: function (jqXhr) {
-                $('#update-state-msg').removeClass('error');
-                $('#profileForm').removeClass('loading');
-            }
-        });
-    }
     $('#City').dropdown({
         fullTextSearch: true,
         match: 'text'
     });
-    $('#About').keyup(function (ev) {
+    $('#About').on('input', function (ev) {
         var rgx = /((.*vk.com.*)|(.*vkontakte.ru.*)|(.*artstation.com.*)|(.*dribbble.com.*)|(.*facebook.com.*)|(.*twitter.com.*)|(.*instagram.com))/i,
             $msg = $('#extServMsg');
         if ($(this).val().match(rgx)) {
@@ -105,58 +62,56 @@
             $msg.hide();
         }
     });
-    var cityPs = new PerfectScrollbar('#City~.menu', {
-        minScrollbarLength: 15
-    });
     $('#City~.search').on('input', function (ev) {
         cityPs.update();
     });
     $('.ui.checkbox').checkbox();
-    $('#profileForm').form({
-        on: 'submit',
-        fields: {
-            NickName: {
-                rules: [
-                    {
-                        type: 'empty',
-                        prompt: $('#NickName').data('valRequired')
-                    },
-                    {
-                        type: 'regExp',
-                        value: $("#NickName").data("valRegexPattern"),
-                        prompt: $("#NickName").data("valRegex")
-                    }
-                ]
-            },
-            FirstName: {
-                optional: true,
-                rules: [
-                    {
-                        type: 'regExp',
-                        value: $("#FirstName").data("valRegexPattern"),
-                        prompt: $("#FirstName").data("valRegex")
-                    }
-                ]
-            },
-            LastName: {
-                optional: true,
-                rules: [
-                    {
-                        type: 'regExp',
-                        value: $("#LastName").data("valRegexPattern"),
-                        prompt: $("#FirstName").data("valRegex")
-                    }
-                ]
-            },
-            Age: {
-                optional: true,
-                rules: [
-                    {
-                        type: 'integer[1..100]',
-                        prompt: 'Возраст введен с ошибкой'
-                    }
-                ]
-            }
-        }
-    });
+    @Html.FormValidation("#profileForm")
+    //$('#profileForm').form({
+    //    on: 'submit',
+    //    fields: {
+    //        NickName: {
+    //            rules: [
+    //                {
+    //                    type: 'empty',
+    //                    prompt: $('#NickName').data('valRequired')
+    //                },
+    //                {
+    //                    type: 'regExp',
+    //                    value: $("#NickName").data("valRegexPattern"),
+    //                    prompt: $("#NickName").data("valRegex")
+    //                }
+    //            ]
+    //        },
+    //        FirstName: {
+    //            optional: true,
+    //            rules: [
+    //                {
+    //                    type: 'regExp',
+    //                    value: $("#FirstName").data("valRegexPattern"),
+    //                    prompt: $("#FirstName").data("valRegex")
+    //                }
+    //            ]
+    //        },
+    //        LastName: {
+    //            optional: true,
+    //            rules: [
+    //                {
+    //                    type: 'regExp',
+    //                    value: $("#LastName").data("valRegexPattern"),
+    //                    prompt: $("#FirstName").data("valRegex")
+    //                }
+    //            ]
+    //        },
+    //        Age: {
+    //            optional: true,
+    //            rules: [
+    //                {
+    //                    type: 'integer[1..100]',
+    //                    prompt: 'Возраст введен с ошибкой'
+    //                }
+    //            ]
+    //        }
+    //    }
+    //});
 </script>

@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using Mite.DAL.Infrastructure;
 using System.Threading.Tasks;
 using Mite.Models;
@@ -14,10 +13,6 @@ using NLog;
 using AutoMapper;
 using Mite.BLL.Helpers;
 using Mite.CodeData.Enums;
-using System.Web.Hosting;
-using System.IO;
-using Newtonsoft.Json;
-using System.Text;
 
 namespace Mite.BLL.Services
 {
@@ -30,7 +25,7 @@ namespace Mite.BLL.Services
         /// <param name="model">Модель</param>
         /// <param name="inSession">Находится ли чат в сессии(недавно созданный)</param>
         /// <returns></returns>
-        Task<DataServiceResult> AddAsync(ChatMessageModel model, bool inSession);
+        Task<DataServiceResult> AddAsync(ChatMessageModel model, string currentUserId, bool inSession);
         Task<DataServiceResult> RemoveListAsync(List<Guid> ids, string userId);
         Task<DataServiceResult> ReadAsync(Guid id, string userId);
         int GetNewCount(string userId);
@@ -51,37 +46,59 @@ namespace Mite.BLL.Services
             this.userManager = userManager;
         }
 
-        public async Task<DataServiceResult> AddAsync(ChatMessageModel model, bool inSession)
+        public async Task<DataServiceResult> AddAsync(ChatMessageModel model, string currentUserId, bool inSession)
         {
             Chat chat = null;
-            if(inSession)
+            var blackListRepo = Database.GetRepo<BlackListUserRepository, BlackListUser>();
+            //В сессии могут находиться только приватные чаты(диалоги)
+            if (inSession)
             {
-                chat = await chatRepository.GetByMembersAsync(model.Recipients.Select(x => x.Id).Take(2));
+                var members = model.Recipients.Select(x => x.Id).Take(2);
+                var companionId = members.First(x => x != currentUserId);
+                var isInBlackList = (await blackListRepo.IsInBlackList(currentUserId, companionId)) ||
+                        (await blackListRepo.IsInBlackList(companionId, currentUserId));
+                if (isInBlackList)
+                    return DataServiceResult.Failed("Пользователь в черном списке");
+                chat = await chatRepository.GetByMembersAsync(members);
                 if(chat == null)
                 {
                     chat = new Chat
                     {
+                        Id = model.ChatId,
+                        Type = ChatTypes.Private,
                         Members = model.Recipients.Select(x => new ChatMember
                         {
                             EnterDate = DateTime.UtcNow,
                             Status = ChatMemberStatuses.InChat,
-                            UserId = x.Id
+                            UserId = x.Id,
+                            ChatId = model.ChatId
                         }).Take(2).ToList()
                     };
-                    chat.Id = model.ChatId;
                     await chatRepository.AddAsync(chat);
                 }
             }
             else
             {
                 chat = await chatRepository.GetWithMembersAsync(model.ChatId);
+                if(chat.Type == ChatTypes.Private && chat.Members.Count == 2)
+                {
+                    var companionId = chat.Members.First(x => x.UserId != currentUserId).UserId;
+                    var isInBlackList = (await blackListRepo.IsInBlackList(currentUserId, companionId)) || 
+                        (await blackListRepo.IsInBlackList(companionId, currentUserId));
+                    if (isInBlackList)
+                        return DataServiceResult.Failed("Пользователь в черном списке");
+                }
                 if (chat == null)
                     return DataServiceResult.Failed("Неизвестный чат");
                 if (!chat.Members.Any(x => x.UserId == model.Sender.Id))
                     return DataServiceResult.Failed("Неизвестный пользователь");
-                var currentMember = chat.Members.First(x => x.UserId == model.Sender.Id);
-                if (currentMember.Status == ChatMemberStatuses.Removed || currentMember.Status == ChatMemberStatuses.Removed)
-                    currentMember.Status = ChatMemberStatuses.InChat;
+                foreach(var member in chat.Members)
+                {
+                    if(member.Status == ChatMemberStatuses.Removed)
+                    {
+                        member.Status = ChatMemberStatuses.InChat;
+                    }
+                }
             }
 
             var key = CryptoHelper.CreateKey(chat.Id.ToString() + model.Sender.Id + SecKey);
@@ -158,13 +175,12 @@ namespace Mite.BLL.Services
             //Когда чат в сессии
             if (chat == null)
                 return new List<ChatMessageModel>();
-            if (!chat.Members.Any(x => x.UserId == userId))
+            if (chat.Type != ChatTypes.Public && !chat.Members.Any(x => x.UserId == userId))
                 throw new ArgumentException("Неизвестный пользователь");
             var offset = (page - 1) * range;
 
             var messages = await messagesRepository.GetAsync(chatId, range, offset, userId);
-            
-            return Mapper.Map<IEnumerable<ChatMessageModel>>(messages);
+            return Mapper.Map<IEnumerable<ChatMessageModel>>(messages, opts => opts.Items.Add("currentUserId", userId));
         }
 
         public int GetNewCount(string userId)

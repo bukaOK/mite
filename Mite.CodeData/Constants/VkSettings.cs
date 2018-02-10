@@ -15,5 +15,7 @@ namespace Mite.CodeData.Constants
         public const string Secret = "bfVzsqk5oyHvlGUwLM8P";
 #endif
         public const string DefaultAuthType = "Vkontakte";
+        public const string GroupKey = "41a514a84656587d21c2ea497ea1495cf18c51a2581e5b836ae15a6305ac7358b1bddfd0625630a32410f";
+        public const string GroupId = "143219082";
     }
 }

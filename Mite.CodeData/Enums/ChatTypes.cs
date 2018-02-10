@@ -10,7 +10,7 @@ namespace Mite.CodeData.Enums
     public enum ChatTypes : byte
     {
         /// <summary>
-        /// Скрытый чат
+        /// Скрытый чат(диалоги)
         /// </summary>
         Private = 0,
         /// <summary>

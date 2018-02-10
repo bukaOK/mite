@@ -5,6 +5,7 @@
      * @param {string} word1 падеж для 1
      * @param {string} word2 для 2,3,4
      * @param {string} word0 для 0,5,6,7,8,9
+     * @returns {string}
     */
     getWordCase: function (num, word1, word2, word0) {
         if (num >= 10 && num <= 20) {

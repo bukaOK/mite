@@ -51,7 +51,7 @@ namespace Mite.Controllers
                         node.Frequency),
                     node.Priority == null ? null : new XElement(
                         xmlns + "priority",
-                node.Priority.Value.ToString("F1", CultureInfo.InvariantCulture)));
+                    node.Priority.Value.ToString("F1", CultureInfo.InvariantCulture)));
                 root.Add(urlElement);
             }
 

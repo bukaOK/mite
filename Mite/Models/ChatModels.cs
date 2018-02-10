@@ -25,10 +25,10 @@ namespace Mite.Models
     public class ChatModel
     {
         public Guid Id { get; set; }
+        public string CreatorId { get; set; }
         [Required]
-        [DisplayName("Название")]        
+        [DisplayName("Название")]
         public string Name { get; set; }
-        [Required(ErrorMessage = "Выберите изображение")]
         public string ImageSrc { get; set; }
         [DisplayName("Тип чата")]
         public ChatTypes ChatType { get; set; }
@@ -43,12 +43,22 @@ namespace Mite.Models
     public class ShortChatModel
     {
         public Guid Id { get; set; }
+        public int MaxMembersCount { get; set; }
         public string CreatorId { get; set; }
         public string Name { get; set; }
         public string ImageSrc { get; set; }
         public ChatTypes ChatType { get; set; }
         public int NewMessagesCount { get; set; }
         public ChatMessageModel LastMessage { get; set; }
+    }
+    public class PublicChatModel
+    {
+        public Guid Id { get; set; }
+        public int MaxMembersCount { get; set; }
+        public string CreatorId { get; set; }
+        public string Name { get; set; }
+        public string ImageSrc { get; set; }
+        public int MembersCount { get; set; }
     }
     public class ChatMessageModel
     {
@@ -62,6 +72,10 @@ namespace Mite.Models
         /// Прочитано ли кем либо из получателей(кроме текущего пользователя)
         /// </summary>
         public bool Readed { get; set; }
+        /// <summary>
+        /// Прочитал ли текущий пользователь
+        /// </summary>
+        public bool CurrentRead { get; set; }
         [AllowHtml]
         public string Message { get; set; }
         public DateTime SendDate { get; set; }

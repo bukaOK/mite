@@ -68,6 +68,8 @@
     <Compile Include="IpApi\Requests\IpApiRequest.cs" />
     <Compile Include="IpApi\Responses\IpApiResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VkApi\Board\GetCommentsResponse.cs" />
+    <Compile Include="VkApi\Board\GetCommentsRequest.cs" />
     <Compile Include="VkApi\Converters\BoolConverter.cs" />
     <Compile Include="VkApi\Core\VkApiException.cs" />
     <Compile Include="VkApi\Core\VkParamAttribute.cs" />
@@ -78,6 +80,11 @@
     <Compile Include="VkApi\Groups\GroupsGetResponse.cs" />
     <Compile Include="VkApi\Likes\LikesGetListRequest.cs" />
     <Compile Include="VkApi\Likes\LikesGetListResponse.cs" />
+    <Compile Include="VkApi\Messages\SendingAllowedRequest.cs" />
+    <Compile Include="VkApi\Messages\SendingAllowedResponse.cs" />
+    <Compile Include="VkApi\Messages\SendRequest.cs" />
+    <Compile Include="VkApi\Messages\SendResponse.cs" />
+    <Compile Include="VkApi\Objects\BoardComment.cs" />
     <Compile Include="VkApi\Objects\Error.cs" />
     <Compile Include="VkApi\Objects\Group.cs" />
     <Compile Include="VkApi\Objects\Post.cs" />

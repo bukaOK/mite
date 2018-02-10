@@ -218,9 +218,6 @@
     $(function () {
         var userCardTmpl = $.templates('#miniUserCardTmpl');
         var grid = $('.services.grid').masonry();
-        var cityPs = new PerfectScrollbar('#cityFilter .scrolling.menu', {
-            minScrollbarLength: 15
-        });
         $('#cityFilter input[type="text"]').on('input', function (ev) {
             cityPs.update();
         });

@@ -25,8 +25,9 @@
      * @param {string} userId
     */
     add: function (btn, postId, userId) {
-        $(btn).addClass('loading disabled');
-        var self = this;
+        var $btn = $(btn),
+            self = this;
+        $btn.addClass('loading disabled');
         return $.ajax({
             url: self.url,
             type: 'post',
@@ -35,12 +36,8 @@
                 UserId: userId
             },
             success: function () {
-                $(btn).siblings('.label')[0].innerHTML++;
-                $(btn).children('.content').text('Из избранных');
-                iziToast.success({
-                    title: 'Успех!',
-                    message: 'Работа успешно добавлена в избранное'
-                });
+                $btn.siblings('.label')[0].innerHTML++;
+                $btn.hide().siblings('.button').show();
             },
             error: self.onError,
             complete: function () {
@@ -76,16 +73,12 @@
                     $grid.masonry('layout');
                 } else {
                     $btn.siblings('.label')[0].innerHTML--;
-                    $btn.children('.content').text('В избранное');
+                    $btn.hide().siblings('.button').show();
                 }
-                iziToast.success({
-                    title: 'Успех!',
-                    message: 'Работа успешно удалена из избранных.'
-                });
             },
             complete: function () {
                 if (!fromGrid) {
-                    $(btn).removeClass('loading disabled');
+                    $btn.removeClass('loading disabled');
                 }
             }
         });

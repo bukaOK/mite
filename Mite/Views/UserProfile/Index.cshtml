@@ -1,5 +1,6 @@
 ﻿@using Mite.CodeData.Enums
 @using Mite.Helpers
+@using Microsoft.AspNet.Identity
 @model Mite.Models.ProfileModel
 
 @{
@@ -62,45 +63,44 @@
             @SocialServicesHelper.RenderSocialLinksForProfile(Model.SocialLinks)
         </div>
         <div class="left aligned column">
-            @if (currentUserName != pageUserName && !Model.IsFollowing && User.Identity.IsAuthenticated)
-            {
-                <button class="ui green button" onclick="addFollower('@Model.UserId', this)">
-                    <i class="add user icon"></i>Подписаться
-                </button>
-                <button class="ui red button" onclick="deleteFollower('@Model.UserId', this)" style="display: none">
-                    <i class="remove user icon"></i>Отписаться
-                </button>
-            }
-            else if (Model.IsFollowing && User.Identity.IsAuthenticated)
-            {
-                <button class="ui red button" onclick="deleteFollower('@Model.UserId', this)">
-                    <i class="remove user icon"></i>Отписаться
-                </button>
-                <button class="ui green button" onclick="addFollower('@Model.UserId', this)" style="display: none">
-                    <i class="add user icon"></i>Подписаться
-                </button>
-            }
-            @if (User.IsInRole(RoleNames.Moderator))
+            @if (User.Identity.IsAuthenticated)
             {
                 <form class="ui form">
-                    <div class="ui icon top right pointing dropdown button" id="moderActionsDrop">
-                        <i class="configure icon"></i>
-                        <div class="menu">
-                            <a class="item" onclick="RatingMvc.recount('@Model.UserId', '@RatingRecountTypes.User', this)">Пересчитать рейтинг</a>
-                            <a class="item" onclick="DealsMvc.recountReliability('@Model.UserId', '@ReliabilityRecountTypes.User', this)">Пересчитать надежность</a>
+                    @if(currentUserName != pageUserName)
+                    {
+                        <button type="button" class="ui green button" onclick="addFollower('@Model.UserId', this)"@Html.Raw(Model.IsFollowing ? " style=\"display: none\"" : "")>
+                            <i class="add user icon"></i>Подписаться
+                        </button>
+                        <button type="button" class="ui red button" onclick="deleteFollower('@Model.UserId', this)"@Html.Raw(!Model.IsFollowing ? " style=\"display: none\"" : "")>
+                            <i class="remove user icon"></i>Отписаться
+                        </button>
+                        <div class="ui top center blue user-actions floating icon dropdown button">
+                            <i class="dropdown icon"></i>
+                            <div class="menu" role="menu">
+                                <div class="blist item" role="menuitem" onclick="BlackListApi.remove('@Model.UserId', this)" @Html.Raw(!Model.BlackListed ? "style=\"display: none\"" : "") title="Убрать из черного списка">
+                                    Убрать из ЧС
+                                </div>
+                                <div class="blist item" role="menuitem" onclick="BlackListApi.add('@Model.UserId', this)" @Html.Raw(Model.BlackListed ? "style=\"display: none\"" : "") title="Добавить в черный список">
+                                    Добавить в ЧС
+                                </div>
+                                @if (Model.CanWrite)
+                                {
+                                    <div class="item" role="menuitem" onclick="ChatsApi.createCompanionChat('@Model.UserId', this)">Написать</div>
+                                }
+                                @if (User.IsInRole(RoleNames.Moderator))
+                                {
+                                    <div class="item" onclick="RatingMvc.recount('@Model.UserId', '@RatingRecountTypes.User', this)" role="menuitem">Пересчитать рейтинг</div>
+                                    <div class="item" onclick="DealsMvc.recountReliability('@Model.UserId', '@ReliabilityRecountTypes.User', this)" role="menuitem">Пересчитать надежность</div>
+                                }
+                            </div>
                         </div>
-                    </div>
+                    }
+                    else
+                    {
+                        <a href="/user/settings" class="ui blue button"><i class="setting icon"></i>Настройки</a>
+                    }
                     <div class="ui error message"></div>
                 </form>
-                <script>
-                    $('#moderActionsDrop').dropdown({
-                        action: 'hide'
-                    });
-                </script>
-            }
-            else if (currentUserName == pageUserName)
-            {
-                <a href="/user/settings" class="ui blue button"><i class="setting icon"></i>Настройки</a>
             }
         </div>
     </div>
@@ -292,7 +292,7 @@ else
                 }
                 else
                 {
-                    <div class="ui tab four column basic segment grid" data-tab="posts/published"></div>
+                    <div class="ui tab three column basic segment grid" data-tab="posts/published"></div>
                     <div class="ui tab four column basic segment grid" data-tab="followers"></div>
                     <div class="ui tab three column basic segment grid" data-tab="services"></div>
                     <div class="ui tab stackable four column basic segment grid" data-tab="favorites"></div>
@@ -317,7 +317,7 @@ else
         }
         else
         {
-            <div class="ui tab three column basic segment grid" data-tab="posts/published"></div>
+            <div class="ui tab four column basic segment grid" data-tab="posts/published"></div>
             <div class="ui tab four column basic segment grid" data-tab="followers"></div>
             <div class="ui tab three column basic segment grid" data-tab="services"></div>
         }
@@ -382,7 +382,7 @@ else
             data: '=' + followingUserId,
             success: function (resp) {
                 $btn.hide();
-                $btn.siblings().show();
+                $btn.siblings('.button').show();
                 sendNotification('@NotificationTypes.Follower', '@Model.UserId');
             },
             error: function (jqXhr) {
@@ -434,6 +434,10 @@ else
     }
     $(function () {
         $('.radio.checkbox').checkbox();
+        $('.user-actions').dropdown({
+            action: 'hide',
+            //context: $(this).parents('.column')[0]
+        });
         $('#donateForm').form({
             on: 'submit',
             fields: {

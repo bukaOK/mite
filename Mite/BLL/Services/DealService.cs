@@ -18,6 +18,8 @@ using Mite.BLL.IdentityManagers;
 using Newtonsoft.Json;
 using Mite.BLL.DTO;
 using Microsoft.AspNet.Identity;
+using System.Web;
+using Mite.ExternalServices.VkApi.Messages;
 
 namespace Mite.BLL.Services
 {
@@ -159,8 +161,30 @@ namespace Mite.BLL.Services
                 await chatRepo.AddAsync(chat);
                 deal.ChatId = chat.Id;
                 await repo.AddAsync(deal);
-                //await userManager.SendEmailAsync(deal.AuthorId, "У вас новый заказ!", 
-                //    "Уважаемый автор! По одной из ваших услуг сделали заказ! С уважением, MiteGroup.");
+
+                var author = await userManager.FindByIdAsync(authorService.AuthorId);
+                var logins = await userManager.GetLoginsAsync(authorService.AuthorId);
+                var vkUserId = logins.First(x => x.LoginProvider == VkSettings.DefaultAuthType).ProviderKey;
+#if !DEBUG
+                if (author.MailNotify)
+                    await userManager.SendEmailAsync(deal.AuthorId, "Новый заказ!",
+                        "По одной из ваших услуг сделали заказ! С уважением, MiteGroup.");
+#endif
+                var canVkNotifyReq = new SendingAllowedRequest(httpClient, VkSettings.GroupKey)
+                {
+                    GroupId = VkSettings.GroupId,
+                    UserId = vkUserId
+                };
+                var canVkNotifyResp = await canVkNotifyReq.PerformAsync();
+                if (canVkNotifyResp.Allowed)
+                {
+                    var notifyReq = new SendRequest(httpClient, VkSettings.GroupKey)
+                    {
+                        UserId = vkUserId,
+                        Message = "У Вас новый заказ! Все заказы здесь: http://mitegroup.ru/user/deals/incoming/new. С уважением, MiteGroup."
+                    };
+                    await notifyReq.PerformAsync();
+                }
                 return DataServiceResult.Success(deal.Id);
             }
             catch(Exception e)
@@ -200,6 +224,8 @@ namespace Mite.BLL.Services
         {
             var currentUser = Mapper.Map<UserShortModel>(await userManager.FindByIdAsync(currentUserId));
             var deal = await repo.GetWithServiceAsync(id);
+            if (deal == null)
+                throw new HttpException(404, "Not found");
             var dealModel = Mapper.Map<DealModel>(deal);
             if (dealModel.DisputeChat != null)
                 dealModel.DisputeChat.CurrentUser = currentUser;
@@ -209,6 +235,9 @@ namespace Mite.BLL.Services
             if(companion != null)
                 companion = Mapper.Map<UserShortModel>(await userManager.FindByIdAsync(companion.Id));
             dealModel.Chat.Companion = companion;
+
+            var logins = await userManager.GetLoginsAsync(currentUserId);
+            dealModel.VkAuthenticated = logins.Any(x => x.LoginProvider == VkSettings.DefaultAuthType);
             return dealModel;
         }
 
@@ -521,13 +550,11 @@ namespace Mite.BLL.Services
             deal.Status = DealStatuses.Dispute;
 
             var chatRepo = Database.GetRepo<ChatRepository, Chat>();
-            var disputeChat = new Chat
+            var disputeChat = new Chat();
+            disputeChat.Members = new List<ChatMember>
             {
-                Members = new List<ChatMember>
-                {
-                    new ChatMember { UserId = deal.ClientId },
-                    new ChatMember { UserId = deal.AuthorId }
-                }
+                new ChatMember { UserId = deal.ClientId },
+                new ChatMember { UserId = deal.AuthorId }
             };
             deal.DisputeChatId = disputeChat.Id;
             using(var transaction = repo.BeginTransaction())

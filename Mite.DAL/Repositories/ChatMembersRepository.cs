@@ -17,6 +17,10 @@ namespace Mite.DAL.Repositories
         public ChatMembersRepository(AppDbContext dbContext) : base(dbContext)
         {
         }
+        public Task<int> GetCountAsync(Guid chatId)
+        {
+            return Table.CountAsync(x => x.ChatId == chatId);
+        }
         public async Task<IEnumerable<ChatMember>> GetByChatAsync(Guid chatId)
         {
             var members = await Table.AsNoTracking().Include(x => x.User).Include(x => x.Inviter)

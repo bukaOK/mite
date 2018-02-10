@@ -21,35 +21,56 @@ namespace Mite.DAL.Repositories
         public PostsRepository(AppDbContext db) : base(db)
         {
         }
-        public Task<Post> GetWithCollectionAsync(Guid id)
+        public Task<Post> GetWithCollectionsAsync(Guid id)
         {
-            return Table.Include(x => x.Collection).FirstOrDefaultAsync(x => x.Id == id);
+            return Table.AsNoTracking().Include(x => x.Collection).Include(x => x.ComicsItems).FirstOrDefaultAsync(x => x.Id == id);
         }
         public override async Task UpdateAsync(Post entity)
         {
-            var existingPost = await GetWithCollectionAsync(entity.Id);
-            DbContext.Entry(existingPost).CurrentValues.SetValues(entity);
+            var existingPost = await Table.Include(x => x.Collection).Include(x => x.ComicsItems)
+                .FirstOrDefaultAsync(x => x.Id == entity.Id);
 
-            if(entity.Collection.Count > 0)
+            if (entity.Collection.Any())
             {
                 var itemsToUpdate = existingPost.Collection.Where(x => entity.Collection.Any(y => y.Id == x.Id));
                 var itemsToAdd = entity.Collection.Where(x => !existingPost.Collection.Any(y => y.Id == x.Id));
-                var itemsToDel = existingPost.Collection.Except(itemsToUpdate);
+                var itemsToDel = existingPost.Collection.Except(itemsToUpdate).ToList();
 
                 foreach (var item in itemsToUpdate)
                 {
-                    DbContext.Entry(existingPost.Collection.First(x => x.Id == item.Id)).CurrentValues.SetValues(item);
+                    DbContext.Entry(item).CurrentValues.SetValues(entity.Collection.First(x => x.Id == item.Id));
                 }
-                foreach(var item in itemsToDel)
+                for(var i = 0; i < itemsToDel.Count; i++)
                 {
-                    DbContext.Entry(item).State = EntityState.Deleted;
+                    DbContext.Entry(itemsToDel[i]).State = EntityState.Deleted;
                 }
-                foreach(var item in itemsToAdd)
+                foreach (var item in itemsToAdd)
                 {
                     existingPost.Collection.Add(item);
                     DbContext.Entry(item).State = EntityState.Added;
                 }
             }
+            else if (entity.ComicsItems.Any())
+            {
+                var itemsToUpdate = existingPost.ComicsItems.Where(x => entity.ComicsItems.Any(y => y.Id == x.Id));
+                var itemsToAdd = entity.ComicsItems.Where(x => !existingPost.ComicsItems.Any(y => y.Id == x.Id));
+                var itemsToDel = existingPost.ComicsItems.Except(itemsToUpdate).ToList();
+
+                foreach (var item in itemsToUpdate)
+                {
+                    DbContext.Entry(item).CurrentValues.SetValues(entity.ComicsItems.First(x => x.Id == item.Id));
+                }
+                for(var i = 0; i < itemsToDel.Count; i++)
+                {
+                    DbContext.Entry(itemsToDel[i]).State = EntityState.Deleted;
+                }
+                foreach (var item in itemsToAdd)
+                {
+                    existingPost.ComicsItems.Add(item);
+                    DbContext.Entry(item).State = EntityState.Added;
+                }
+            }
+            DbContext.Entry(existingPost).CurrentValues.SetValues(entity);
             await SaveAsync();
         }
         public async override Task RemoveAsync(Guid id)
@@ -66,7 +87,7 @@ namespace Mite.DAL.Repositories
             query = "select SUM(\"Value\") from dbo.\"Ratings\" where \"OwnerId\"=@userId;";
             var newRating = (await Db.QueryFirstAsync<int?>(query, queryParams)) ?? 0;
             query = "update dbo.\"Users\" set \"Rating\"=@newRating where \"Id\"=@userId;";
-            await Db.ExecuteAsync(query, new { Id = id, userId = currentUserId, newRating = newRating });
+            await Db.ExecuteAsync(query, new { Id = id, userId = currentUserId, newRating });
         }
         /// <summary>
         /// Получить посты по пользователю
@@ -81,7 +102,7 @@ namespace Mite.DAL.Repositories
                 "left outer join dbo.\"TagPosts\" as tag_posts on tag_posts.\"Post_Id\"=posts.\"Id\" " +
                 "left outer join dbo.\"Tags\" as tags on tags.\"Id\"=tag_posts.\"Tag_Id\" ";
             if (postType == PostTypes.Favorite)
-                query += "right outer join dbo.\"FavoritePosts\" as favorites on favorites.\"PostId\"=posts.\"Id\" and favorites.\"UserId\"=@userId ";
+                query += "right outer join dbo.\"FavoritePosts\" as favorites on favorites.\"PostId\"=posts.\"Id\" where favorites.\"UserId\"=@userId ";
             else
                 query += "where posts.\"UserId\"=@userId and posts.\"Type\"=@postType ";
             switch (sort)
@@ -123,7 +144,7 @@ namespace Mite.DAL.Repositories
         /// <returns></returns>
         public Task<Post> GetWithTagsAsync(Guid id)
         {
-            return DbContext.Posts.Include(x => x.Tags).Include(x => x.Collection).FirstOrDefaultAsync(x => x.Id == id);
+            return DbContext.Posts.Include(x => x.Tags).Include(x => x.Collection).Include(x => x.ComicsItems).FirstOrDefaultAsync(x => x.Id == id);
         }
         /// <summary>
         /// Возвращает пост с тегами и комментариями
@@ -196,9 +217,9 @@ namespace Mite.DAL.Repositories
             }
             if (filter.OnlyFollowings)
             {
-                filter.Followings = await DbContext.Followers.Where(x => x.UserId == filter.CurrentUserId)
-                    .Select(x => x.FollowingUserId).ToListAsync();
-                query += "and users.\"Id\" = any(@followings) ";
+                var folQuery = "select \"FollowingUserId\" from dbo.\"Followers\" where \"UserId\"=@CurrentUserId;";
+                filter.Followings = (await Db.QueryAsync<string>(folQuery, filter)).ToList();
+                query += "and users.\"Id\" = any(@Followings) ";
             }
             var sortQuery = "order by posts.\"PublishDate\" desc";
             switch (filter.SortType)
@@ -246,8 +267,7 @@ namespace Mite.DAL.Repositories
         }
         public async Task<IEnumerable<Post>> GetGalleryByUserAsync(string userId)
         {
-            return await Table.AsNoTracking().Where(x => x.UserId == userId && x.Type == PostTypes.Published && (x.ContentType == PostContentTypes.Image
-                || x.ContentType == PostContentTypes.ImageCollection))
+            return await Table.AsNoTracking().Where(x => x.UserId == userId && x.Type == PostTypes.Published && x.ContentType != PostContentTypes.Document)
                 .ToListAsync();
         }
     }

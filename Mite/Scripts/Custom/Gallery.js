@@ -23,24 +23,30 @@ var MiteGallery = {
             });
         });
     },
-    initCollection: function (itemSelector) {
-        var colItems = [];
-        $(itemSelector).each(function (i, elem) {
-            elem.dataset.index = i;
-            colItems.push({
-                src: $(elem).attr('src'),
-                subHtml: '<h3 class="ui header">' + elem.dataset.title + '</h3>'
-            });
-        }).click(function () {
-            $(this).lightGallery({
-                dynamic: true,
-                dynamicEl: colItems,
-                index: this.dataset.index,
-                download: false,
-                nextHtml: '<i class="angle big right icon"></i>',
-                prevHtml: '<i class="angle big left icon"></i>'
-            });
+    /**
+     * Галерея коллекции
+     * @param {string} containerSel селектор контейнера
+    */
+    initCollection: function (containerSel) {
+        $(containerSel).lightGallery({
+            selector: '.col-item',
+            download: false,
+            nextHtml: '<i class="angle big right icon"></i>',
+            prevHtml: '<i class="angle big left icon"></i>'
         });
+    },
+    /**
+     * Галерея комикса
+     * @param {string} containerSel селектор контейнера
+    */
+    initComics: function (containerSel) {
+        $(containerSel).lightGallery({
+            selector: '.comics-item',
+            download: false,
+            nextHtml: '<i class="angle big right icon"></i>',
+            prevHtml: '<i class="angle big left icon"></i>'
+        });
+        $(containerSel).masonry();
     },
     /**
      * Галерея услуги

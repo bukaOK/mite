@@ -31,7 +31,7 @@ namespace Mite.DAL.Repositories
         /// <returns></returns>
         public async Task<int> GetServiceCountAsync(Guid id)
         {
-            return await Table.Where(x => x.Id == id).CountAsync();
+            return await DbContext.AuthorServices.CountAsync(x => x.ServiceTypeId == id);
         }
     }
 }

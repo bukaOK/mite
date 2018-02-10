@@ -20,7 +20,7 @@ namespace Mite.BLL.Services
         /// <returns></returns>
         Task<IEnumerable<string>> GetForUserAsync();
         Task<IEnumerable<Tag>> GetForModerAsync();
-        Task<IEnumerable<TagModel>> GetWithPopularityAsync(bool isConfirmed);
+        Task<IEnumerable<TagModel>> GetWithPopularityAsync(bool isConfirmed, int count);
     }
     public class TagsService : DataService, ITagsService
     {
@@ -47,9 +47,9 @@ namespace Mite.BLL.Services
             return tags;
         }
 
-        public async Task<IEnumerable<TagModel>> GetWithPopularityAsync(bool isConfirmed)
+        public async Task<IEnumerable<TagModel>> GetWithPopularityAsync(bool isConfirmed, int count)
         {
-            var tags = await Database.GetRepo<TagsRepository, Tag>().GetAllWithPopularityAsync(isConfirmed);
+            var tags = await Database.GetRepo<TagsRepository, Tag>().GetAllWithPopularityAsync(isConfirmed, count);
             return Mapper.Map<IEnumerable<TagModel>>(tags);
         }
     }

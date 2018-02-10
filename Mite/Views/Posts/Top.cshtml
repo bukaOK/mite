@@ -62,7 +62,10 @@
 <div class="ui stackable grid">
     <div class="three wide computer four wide tablet column">
         <div class="ui top-tags segment">
-            <h3 class="ui dividing header">Теги</h3>
+            <div class="ui dividing medium header">
+                Теги
+                <a class="ui blue label" onclick="showTagsModal()">показать все</a>
+            </div>
             @foreach(var tag in Model.Tags) {<a class="ui label" onclick="loadTag('#@tag.Name')">@tag.Name</a>}
         </div>
         <div id="vk_groups" style="width: 100%"></div>
@@ -87,6 +90,13 @@
         {
             <div class="ui posts three column basic segment grid"></div>
         }
+    </div>
+</div>
+<div class="ui small tags modal" role="dialog">
+    <i class="close icon"></i>
+    <div class="header" role="heading">Все теги</div>
+    <div class="content" role="document">
+        <div class="ui active loading basic segment"></div>
     </div>
 </div>
 <script id="topPostTmpl" type="text/x-jsrender">
@@ -114,7 +124,9 @@
                 </a>
                 {{if IsGif}}
                 <div class="active gif-wrapper">
-                    <button class="ui large circular icon primary button" onclick="loadFullGif('{{:FullPath}}', '{{:Id}}', $(this))"><i class="fire icon"></i></button>
+                    <button class="ui large circular icon primary button" onclick="loadFullGif('{{:FullPath}}', '{{:Id}}', $(this))">
+                        <i class="play icon" style="padding-left: 3px"></i>
+                    </button>
                     <span class="ui violet label">gif</span>
                 </div>
                 {{/if}}
@@ -132,8 +144,8 @@
                         {{:Description}}
                     </span>
                 </a>
-                {{for Tags}}
-                <a class="ui{{if !~root.IsImage && ~root.Cover != null}} invert{{/if}} label" onclick="loadTag('#{{>#data}}')">{{>#data}}</a>
+                {{for Tags ~IsImage=IsImage ~Cover=Cover}}
+                <a class="ui{{if !~IsImage && ~Cover != null}} violet{{/if}} label" onclick="loadTag('#{{>#data}}')">{{>#data}}</a>
                 {{/for}}
             </div>
             <div class="ui {{if !IsImage && Cover != null}}inverted {{/if}} divider"></div>
@@ -209,7 +221,7 @@
         </h2>
     </div>
 </script>
-@Scripts.Render("~/bundles/grid", "~/bundles/scroll")
+@Scripts.Render("~/bundles/grid", "~/bundles/scroll", "~/bundles/api")
 <script>
     var tagsInitialized = false;
     var userCardTmpl = $.templates('#miniUserCardTmpl');
@@ -227,6 +239,10 @@
             $(postSelector + ' .gif-wrapper').removeClass('active');
             $button.removeClass('loading');
         });
+    }
+    function showTagsModal() {
+        TagsApi.loadTop('.tags.modal>.content');
+        $('.tags.modal').modal('show');
     }
     $(function () {
         $('.ui.label').each(function (index, el) {

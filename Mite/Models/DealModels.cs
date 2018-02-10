@@ -24,6 +24,7 @@ namespace Mite.Models
         public DealStatuses Status { get; set; }
         public bool Payed { get; set; }
         public bool? VkReposted { get; set; }
+        public bool VkAuthenticated { get; set; }
         public AuthorServiceShowModel Service { get; set; }
     }
     public class DealAuthorModel : DealModel

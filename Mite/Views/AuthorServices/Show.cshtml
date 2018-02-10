@@ -31,10 +31,17 @@
             <form class="ui form" id="dealForm">
                 @Html.HiddenFor(x => x.Id)
                 <div class="field">
-                    <button type="button" class="ui animated fade fluid primary button" onclick="DealsApi.create(this)">
-                        <div class="hidden content"><i class="shop icon"></i></div>
-                        <div class="visible content">Сделать заказ</div>
-                    </button>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <button type="button" class="ui animated fade fluid primary button" onclick="DealsApi.create(this)">
+                            <div class="hidden content"><i class="shop icon"></i></div>
+                            <div class="visible content">Сделать заказ</div>
+                        </button>
+                    }
+                    else
+                    {
+                        <span><a href='@Url.Action("Register", "Account", new { ReturnUrl = Request.Path })'>Зарегистрируйтесь</a>, чтобы сделать заказ.</span>
+                    }
                 </div>
                 @if (User.IsInRole(RoleNames.Moderator))
                 {
@@ -99,6 +106,18 @@
                     <div class="content">
                         @Html.ActionLink(Model.Author.UserName, "Index", "UserProfile", new { name = Model.Author.UserName }, new { @class = "header" })
                         <p class="description" style="margin-top: 0">@Model.Author.Description</p>
+                        <div class="extra">
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                <button class="ui compact primary button" onclick="ChatsApi.createCompanionChat('@Model.Author.Id', this)">
+                                    Написать
+                                </button>
+                            }
+                            else
+                            {
+                                <span><a href='@Url.Action("Register", "Account", new { ReturnUrl = Request.Path })'>Зарегистрируйтесь</a>, чтобы написать автору.</span>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
@@ -131,6 +150,10 @@
     @Scripts.Render("~/bundles/api", "~/bundles/gallery")
     <script>
         $(function () {
+            $('.disabled.button').popup({
+                variation: 'top center',
+                on: 'hover'
+            });
             AuthorServiceApi.loadGallery('@Model.Id', $('#service-img'));
         });
     </script>

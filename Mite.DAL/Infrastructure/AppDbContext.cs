@@ -28,6 +28,7 @@ namespace Mite.DAL.Infrastructure
         public DbSet<ChatMessageUser> MessageUsers { get; set; }
         public DbSet<FavoritePost> FavoritePosts { get; set; }
         public DbSet<ChatMember> ChatMembers { get; set; }
+        public DbSet<BlackListUser> BlackListUsers { get; set; }
 
         public AppDbContext()
             : base("DefaultConnection")
