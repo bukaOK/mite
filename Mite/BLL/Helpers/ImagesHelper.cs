@@ -81,7 +81,7 @@ namespace Mite.BLL.Helpers
         /// <param name="width"></param>
         /// <param name="height"></param>
         /// <param name="adaptive"></param>
-        /// <returns>Полный путь к созданному изображению</returns>
+        /// <returns>Относительный путь к созданному изображению</returns>
         public static string Create(string saveFolder, string base64, int width, int? height = null, bool adaptive = true)
         {
             var imgFormat = Regex.Match(base64, @"data:image/(.+);base64,").Groups[1].Value;
@@ -91,9 +91,10 @@ namespace Mite.BLL.Helpers
             var savePath = "";
             do
             {
-                savePath = Path.Combine(savePath, $"{Guid.NewGuid()}.{imgFormat}");
+                savePath = Path.Combine(saveFolder, $"{Guid.NewGuid()}.{imgFormat}");
             } while (File.Exists(savePath));
 
+            var fullPath = HostingEnvironment.MapPath(savePath);
             using(var img = new MagickImage(Convert.FromBase64String(base64)))
             {
                 if (height == null)
@@ -103,7 +104,7 @@ namespace Mite.BLL.Helpers
                     img.AdaptiveResize(size);
                 else
                     img.Resize(size);
-                img.Write(savePath);
+                img.Write(fullPath);
             }
             return savePath;
         }

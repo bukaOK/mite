@@ -161,11 +161,11 @@ namespace Mite.BLL.Services
 
         public async Task<IdentityResult> UpdateUserAvatarAsync(string imagesFolder, string imageBase64, string userId)
         {
-            string fullPath;
+            string vPath;
             try
             {
                 //Раньше создавался оригинал и сжатая копия, сейчас только фиксированный размер
-                fullPath = ImagesHelper.Create(imagesFolder, imageBase64, 400);
+                vPath = ImagesHelper.Create(imagesFolder, imageBase64, 400);
             }
             catch (FormatException)
             {
@@ -175,7 +175,7 @@ namespace Mite.BLL.Services
             var existingUser = await userManager.FindByIdAsync(userId);
             var existingAvatarSrc = existingUser.AvatarSrc ?? PathConstants.AvatarSrc;
             var existingAvatarFolders = existingAvatarSrc.Split('/');
-            existingUser.AvatarSrc = FilesHelper.ToVirtualPath(fullPath);
+            existingUser.AvatarSrc = vPath;
             if(existingAvatarSrc != null && existingAvatarFolders[1] == "Public")
                 FilesHelper.DeleteFile(existingAvatarSrc);
 
