@@ -206,7 +206,7 @@ namespace Mite.Controllers
                 //Отправляем e-mail для подтверждения адреса эл. почты
                 var user = await userManager.FindByNameAsync(model.UserName);
                 string code = await userManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, "http");
+                var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, Request.Url.Scheme);
 #if !DEBUG
                 await userManager.SendEmailAsync(user.Id, "MiteGroup.Подтверждение почты.", $"Для подтверждения вашего аккаунта перейдите по <a href=\"{callbackUrl}\">ссылке.</a> MiteGroup.");
 #endif
@@ -253,7 +253,7 @@ namespace Mite.Controllers
                 await externalServices.Add(user.Id, loginInfo.Login.LoginProvider, accessToken);
                 //Отправляем e-mail для подтверждения адреса эл. почты
                 string code = await userManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, "http");
+                var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, Request.Url.Scheme);
 
                 await userManager.SendEmailAsync(user.Id, "MiteGroup.Подтверждение почты.", $"Для подтверждения вашего аккаунта перейдите по <a href=\"{callbackUrl}\">ссылке.</a> MiteGroup.");
                 if (!string.IsNullOrEmpty(returnUrl))
@@ -341,7 +341,7 @@ namespace Mite.Controllers
             if(user != null)
             {
                 var token = userManager.GeneratePasswordResetTokenAsync(user.Id);
-                var url = Url.Action("ResetPassword", "Account", new { code = token, userId = user.Id });
+                var url = Url.Action("ResetPassword", "Account", new { code = token, userId = user.Id }, Request.Url.Scheme);
                 await userManager.SendEmailAsync(user.Id, "MiteGroup.Сброс пароля", $"Для сброса пароля переходим <a href=\"{url}\">по ссылке</a>. " +
                     $"С уважением, MiteGroup.");
             }

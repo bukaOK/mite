@@ -13,6 +13,7 @@ using Mite.Extensions;
 using Mite.Models;
 using System.Collections.Generic;
 using Mite.Attributes.Filters;
+using NLog;
 
 namespace Mite.Controllers
 {
@@ -23,14 +24,16 @@ namespace Mite.Controllers
         private readonly IUserService _userService;
         private readonly AppUserManager _userManager;
         private readonly IAuthenticationManager _authManager;
+        private readonly ILogger logger;
         private readonly ICityService cityService;
 
         public UserSettingsController(IUserService userService, AppUserManager userManager, ICityService cityService,
-            IAuthenticationManager authManager)
+            IAuthenticationManager authManager, ILogger logger)
         {
             _userService = userService;
             _userManager = userManager;
             _authManager = authManager;
+            this.logger = logger;
             this.cityService = cityService;
         }
         public ViewResult Index()
@@ -169,9 +172,9 @@ namespace Mite.Controllers
         {
             var userId = User.Identity.GetUserId();
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(userId);
-            var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = userId, code = code }, "http");
+            var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId, code }, Request.Url.Scheme);
 
-            await _userManager.SendEmailAsync(userId, "MiteGroup.Подтверждение почты.", "Для подтверждения вашего аккаунта перейдите по <a href=\"" + callbackUrl + "\">ссылке.</a> MiteGroup.");
+            await _userManager.SendEmailAsync(userId, "MiteGroup.Подтверждение почты.", $"Для подтверждения вашего аккаунта перейдите по <a href=\"{callbackUrl}\">ссылке</a>. MiteGroup.");
         }
         [HttpPost]
         [ValidateAntiForgeryToken]

@@ -15,6 +15,7 @@ namespace Mite.Controllers
 
         public ActionResult Index()
         {
+            var some = Request.Url.Scheme;
             if (User.Identity.IsAuthenticated)
                 return RedirectToAction("Top", "Posts");
             var model = userService.GetLandingModel();
