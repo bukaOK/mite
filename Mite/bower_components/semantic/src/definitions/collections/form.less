@@ -89,7 +89,7 @@
 .ui.form input[type="text"],
 .ui.form input[type="file"],
 .ui.form input[type="url"],
-.ui.form [contenteditable="true"] {
+.dialog-area {
   width: @inputWidth;
   vertical-align: top;
 }
@@ -111,8 +111,7 @@
 .ui.form input[type="time"],
 .ui.form input[type="text"],
 .ui.form input[type="file"],
-.ui.form input[type="url"],
-.ui.form [contenteditable="true"] {
+.ui.form input[type="url"] {
   font-family: @inputFont;
   margin: 0em;
   outline: none;
@@ -132,7 +131,8 @@
 }
 
 /* Text Area */
-.ui.form textarea {
+.ui.form textarea,
+.dialog-area {
   margin: 0em;
   -webkit-appearance: none;
   tap-highlight-color:  rgba(255, 255, 255, 0);
@@ -378,15 +378,15 @@
 .ui.form input[type="time"]:focus,
 .ui.form input[type="text"]:focus,
 .ui.form input[type="file"]:focus,
-.ui.form input[type="url"]:focus,
-.ui.form [contenteditable="true"]:focus {
+.ui.form input[type="url"]:focus {
   color: @inputFocusColor;
   border-color: @inputFocusBorderColor;
   border-radius: @inputFocusBorderRadius;
   background: @inputFocusBackground;
   box-shadow: @inputFocusBoxShadow;
 }
-.ui.form textarea:focus {
+.ui.form textarea:focus,
+.dialog-area:focus {
   color: @textAreaFocusColor;
   border-color: @textAreaFocusBorderColor;
   border-radius: @textAreaFocusBorderRadius;

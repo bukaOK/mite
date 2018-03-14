@@ -1,4 +1,5 @@
-﻿@using Mite.Extensions
+﻿@using Mite.CodeData
+@using Mite.Extensions
 @model Mite.Models.ShortRegisterModel
 
 @{
@@ -12,60 +13,78 @@
             <i class="checkmark icon"></i>
             <span class="content">Регистрация</span>
         </h2>
-            <div class="ui segment">
-                <div class="ui yellow icon message">
-                    <i class="warning icon"></i>
-                    <div class="content">
-                        <div class="header">Внимание!</div>
-                        <p>Если вы уже зарегистрированы на сайте, перейдите по @Html.ActionLink("ссылке", "ExternalLogin", new { returnUrl = ViewBag.ReturnUrl })</p>
-                    </div>
+        <div class="ui segment">
+            <div class="ui yellow icon message">
+                <i class="warning icon"></i>
+                <div class="content">
+                    <div class="header">Внимание!</div>
+                    <p>Если вы уже зарегистрированы на сайте, перейдите по @Html.ActionLink("ссылке", "ExternalLogin", new { returnUrl = ViewBag.ReturnUrl })</p>
                 </div>
-                @Html.EditorFor(x => x.UserName, new { InputIcon = "hashtag" })
-                @Html.EditorFor(x => x.Email, new { InputIcon = "at" })
-                @Html.EditorFor(x => x.RegisterRole, new { Inline = true })
-                @Html.AntiForgeryToken()
-                <button type="submit" class="ui animated blue button">
-                    <span class="visible content">Зарегистрироваться</span>
-                    <span class="hidden content"><i class="checkmark icon"></i></span>
-                </button>
             </div>
-            @Html.ValidationSum()
+            @Html.EditorFor(x => x.UserName, new { InputIcon = "hashtag" })
+            @Html.EditorFor(x => x.Email, new { InputIcon = "at" })
+            @Html.EditorFor(x => x.RegisterRole, new { Inline = true })
+            <div class="field" style="display: none">
+                <div class="ui left icon input">
+                    <i class="key icon"></i>
+                    @Html.TextBoxFor(x => x.InviteKey, new { placeholder = Html.DisplayNameFor(x => x.InviteKey), value = ViewBag.InviteKey })
+                </div>
+            </div>
+            @Html.AntiForgeryToken()
+            <button type="submit" class="ui animated blue button">
+                <span class="visible content">Зарегистрироваться</span>
+                <span class="hidden content"><i class="checkmark icon"></i></span>
+            </button>
+        </div>
+        @Html.ValidationSum()
     }
 </div>
 <script>
     $(function () {
-            $('.ui.dropdown').dropdown();
-            $(".ui.form").form({
-                on: "submit",
-                fields: {
-                    UserName: {
-                        rules: [
-                            {
-                                type: "empty",
-                                prompt: $("#UserName").data("valRequired")
-                            },
-                            {
-                                type: "regExp",
-                                value: $("#UserName").data("valRegexPattern"),
-                                prompt: $("#UserName").data("valRegex")
-                            }
-                        ]
-                    },
-                    Email: {
-                        rules: [
-                            {
-                                type: "empty",
-                                prompt: $("#Email").data("valRequired")
-                            },
-                            {
-                                type: "email",
-                                prompt: "Введите правильный e-mail"
-                            }
-                        ]
-                    }
+        $('.ui.dropdown').dropdown();
+        $(".ui.form").form({
+            on: "submit",
+            fields: {
+                UserName: {
+                    rules: [
+                        {
+                            type: "empty",
+                            prompt: $("#UserName").data("valRequired")
+                        },
+                        {
+                            type: "regExp",
+                            value: $("#UserName").data("valRegexPattern"),
+                            prompt: $("#UserName").data("valRegex")
+                        }
+                    ]
+                },
+                Email: {
+                    rules: [
+                        {
+                            type: "empty",
+                            prompt: $("#Email").data("valRequired")
+                        },
+                        {
+                            type: "email",
+                            prompt: "Введите правильный e-mail"
+                        }
+                    ]
                 }
-            });
-            initPassStrength('#Password');
+            }
         });
+        $('[name=@Html.NameFor(x => x.RegisterRole)]').parents('.checkbox').checkbox({
+            onChange: function () {
+                if (this.value === '@((byte)RegisterRoles.Author)') {
+                    $('#InviteKey').parents('.field').show();
+                } else {
+                    $('#InviteKey').parents('.field').hide();
+                }
+            }
+        });
+        if ($('[name=@Html.NameFor(x => x.RegisterRole)]:checked').val() == '@((byte)RegisterRoles.Author)') {
+            $('#InviteKey').parents('.field').show();
+        }
+        initPassStrength('#Password');
+    });
 </script>
 

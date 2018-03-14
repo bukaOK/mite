@@ -53,17 +53,16 @@ namespace Mite.Extensions
 
                 str.Append($"{prop.Name}:{{rules:[");
 
-                if (propType == typeof(double) || propType == typeof(float) || propType == typeof(decimal)
-                    || propType == typeof(double?) || propType == typeof(float?) || propType == typeof(decimal?))
-                    str.Append("{type: 'decimal', prompt: 'Введите значение с плавающей точкой'},");
-
                 var rangeAttr = prop.GetCustomAttribute<RangeAttribute>();
-                if (rangeAttr != null)
+                if ((propType == typeof(int) || propType == typeof(long) || propType == typeof(int?) || propType == typeof(long?)) 
+                    && rangeAttr != null)
                 {
                     str.Append($"{{type: 'integer[{rangeAttr.Minimum}..{rangeAttr.Maximum}]',")
                             .Append($"prompt: '{rangeAttr.FormatErrorMessage(displayName)}'}},");
                 }
-                else if (propType == typeof(int) || propType == typeof(long) || propType == typeof(int?) || propType == typeof(long?))
+                else if (propType == typeof(int) || propType == typeof(long) || propType == typeof(int?) || propType == typeof(long?) ||
+                    propType == typeof(double) || propType == typeof(float) || propType == typeof(decimal)
+                    || propType == typeof(double?) || propType == typeof(float?) || propType == typeof(decimal?))
                 {
                     str.Append("{type: 'number', prompt: 'Введите численное значение.'},");
                 }

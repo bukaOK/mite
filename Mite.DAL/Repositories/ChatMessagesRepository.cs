@@ -65,13 +65,14 @@ namespace Mite.DAL.Repositories
         public async Task<IList<ChatMessage>> GetAsync(Guid chatId, int range, int offset, string userId)
         {
             var chat = await DbContext.Chats.FirstAsync(x => x.Id == chatId);
+            var isMember = await DbContext.ChatMembers.AnyAsync(x => x.UserId == userId);
 
             var query = "select msges.*, sender.\"Id\", sender.\"UserName\", sender.\"AvatarSrc\", msg_users.*, atts.* from dbo.\"ChatMessages\" " +
                 "as msges inner join dbo.\"Users\" as sender on sender.\"Id\"=msges.\"SenderId\" " +
                 "full outer join dbo.\"ChatMessageUsers\" as msg_users on msg_users.\"MessageId\"=msges.\"Id\" full outer join " +
                 "dbo.\"ChatMessageAttachments\" as atts on atts.\"MessageId\"=msges.\"Id\" where msges.\"Id\" in (" +
                 "select msges1.\"Id\" from dbo.\"ChatMessages\" msges1 inner join dbo.\"ChatMessageUsers\" msg_users1 on ";
-            if (chat.Type != ChatTypes.Public)
+            if (chat.Type != ChatTypes.Public || isMember)
                 query += "msges1.\"Id\"=msg_users1.\"MessageId\" where msg_users1.\"UserId\"=@userId and msges1.\"ChatId\"=@chatId ";
             else
                 query += "msges1.\"Id\"=msg_users1.\"MessageId\" where msges1.\"ChatId\"=@chatId ";

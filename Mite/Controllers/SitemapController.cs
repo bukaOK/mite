@@ -119,7 +119,7 @@ namespace Mite.Controllers
         private string AbsoluteRouteUrl(string routeName, object routeValues = null)
         {
             string scheme = Url.RequestContext.HttpContext.Request.Url.Scheme;
-            return Url.RouteUrl(routeName, routeValues, scheme);
+            return Url.RouteUrl(routeName, routeValues, "https");
         }
     }
     

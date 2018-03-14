@@ -60,34 +60,20 @@ namespace Mite.Controllers
             return View(post);
         }
         [Route("posts/add/{postType}", Name = "AddPost")]
-        public async Task<ActionResult> AddPost(PostContentTypes postType)
+        public ActionResult AddPost(PostContentTypes postType)
         {
             ViewBag.Title = "Добавление работы";
-            var tags = (await tagsService.GetForUserAsync()).ToList();
             
             switch (postType)
             {
                 case PostContentTypes.Image:
-                    return View("EditImagePost", new ImagePostModel
-                    {
-                        AvailableTags = tags
-                    });
+                    return View("EditImagePost", new ImagePostModel());
                 case PostContentTypes.Document:
-                    return View("EditWritePost", new WritingPostModel
-                    {
-                        Helper = helpersService.GetByUser(User.Identity.GetUserId()),
-                        AvailableTags = tags
-                    });
+                    return View("EditWritePost", new WritingPostModel());
                 case PostContentTypes.ImageCollection:
-                    return View("EditImageCollection", new ImagePostModel
-                    {
-                        AvailableTags = tags
-                    });
+                    return View("EditImageCollection", new ImagePostModel());
                 case PostContentTypes.Comics:
-                    return View("EditComicsItems", new ImagePostModel
-                    {
-                        AvailableTags = tags
-                    });
+                    return View("EditComicsItems", new ImagePostModel());
                 default:
                     return NotFound();
             }
@@ -106,7 +92,6 @@ namespace Mite.Controllers
             if (!post.CanEdit)
                 return BadRequest();
 
-            post.AvailableTags = (await tagsService.GetForUserAsync()).ToList();
             switch (post.ContentType)
             {
                 case PostContentTypes.Image:

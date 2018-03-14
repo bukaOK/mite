@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -8,9 +9,10 @@ namespace Mite.Helpers
 {
     public static class CryptoHelper
     {
+        const int IVBase64Size = 24;
+
         public static string CreateKey(string data)
         {
-            var sb = new StringBuilder();
             using (var hash = SHA256.Create())
             {
                 var result = hash.ComputeHash(Encoding.UTF8.GetBytes(data));
@@ -36,7 +38,6 @@ namespace Mite.Helpers
                     }
                 }
             }
-
             return tuple;
         }
         public async static Task<string> DecryptAsync(string encryptedData, string key, string iv)
@@ -64,6 +65,60 @@ namespace Mite.Helpers
         public static string Decrypt(string encryptedData, string key, string iv)
         {
             string plainText;
+
+            using (var aes = new AesCryptoServiceProvider())
+            {
+                aes.Key = Convert.FromBase64String(key);
+                aes.IV = Convert.FromBase64String(iv);
+                var decryptor = aes.CreateDecryptor();
+                using (var ms = new MemoryStream(Convert.FromBase64String(encryptedData)))
+                {
+                    using (var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
+                    {
+                        using (var sw = new StreamReader(cs))
+                        {
+                            plainText = sw.ReadToEnd();
+                        }
+                    }
+                }
+            }
+            return plainText;
+        }
+        /// <summary>
+        /// Расшифровывает, вектор находится в начале зашифрованных данных
+        /// </summary>
+        /// <param name="encryptedData">Вектор + данные в base64</param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public async static Task<string> DecryptAsync(string encryptedData, string key)
+        {
+            string plainText;
+            var iv = encryptedData.Substring(0, IVBase64Size);
+            encryptedData = encryptedData.Substring(IVBase64Size);
+
+            using (var aes = new AesCryptoServiceProvider())
+            {
+                aes.Key = Convert.FromBase64String(key);
+                aes.IV = Convert.FromBase64String(iv);
+                var decryptor = aes.CreateDecryptor();
+                using (var ms = new MemoryStream(Convert.FromBase64String(encryptedData)))
+                {
+                    using (var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
+                    {
+                        using (var sw = new StreamReader(cs))
+                        {
+                            plainText = await sw.ReadToEndAsync();
+                        }
+                    }
+                }
+            }
+            return plainText;
+        }
+        public static string Decrypt(string encryptedData, string key)
+        {
+            string plainText;
+            var iv = encryptedData.Substring(0, IVBase64Size);
+            encryptedData = encryptedData.Substring(IVBase64Size);
 
             using (var aes = new AesCryptoServiceProvider())
             {

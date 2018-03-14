@@ -1,0 +1,106 @@
+﻿@using Microsoft.AspNet.Identity
+@model Mite.Models.OrderShowModel
+
+@{
+    ViewBag.Title = $"Заказ: {Model.Title}";
+    var isOwner = User.Identity.GetUserId() == Model.User.Id; 
+}
+@section styles{
+    <style>
+        .order-info.list .link{
+            color: rgba(0,0,0,0.8);
+        }
+        .order-info.list a {
+            color: rgba(0,0,0,0.4);
+        }
+        .order-info.list a:hover {
+            color: rgba(0,0,0,0.8);
+        }
+        .ui.order-grid.grid{
+            flex-direction: row-reverse;
+        }
+    </style>
+}
+<div class="ui order-grid stackable grid">
+    <div class="six wide column">
+        <div class="ui segment">
+            <div class="ui dividing header">Информация</div>
+            <div class="ui blue message">
+                <div class="ui order-info large list" role="list">
+                    <div class="active item" role="listitem">Срок: @Model.Deadline</div>
+                    <div class="item" role="listitem">Количество заявок: @Model.Executers.Count</div>
+                    <div class="item" role="listitem">Тип заказа: @Html.ActionLink(Model.OrderType.Name, "Top", new { orderTypeId = Model.OrderType.Id })</div>
+                    <div class="item" role="listitem">Заказчик: @Html.ActionLink(Model.User.UserName, "Index", "UserProfile", new { name = Model.User.UserName }, null)</div>
+                </div>
+            </div>
+            @if(isOwner)
+            {
+                <button class="ui primary fluid button" onclick="$('#requestsModal').modal('show')">Просмотреть заявки</button>
+            }
+            @if (User.IsInRole(RoleNames.Author) && !isOwner)
+            {
+                <form class="ui form" id="orderRequestForm">
+                    @Html.HiddenFor(x => x.Id)
+                    <button type="button" class="ui fluid green button" @Html.Raw(Model.RequestSended ? "style=\"display: none\"" : "") title="Подать заявку на выполнение заказа" onclick="OrdersMvc.addRequest(this)">
+                        Подать заявку
+                    </button>
+                    <button type="button" class="ui fluid red button" @Html.Raw(Model.RequestSended ? "" : "style=\"display: none\"") title="Подать заявку на выполнение заказа" onclick="OrdersMvc.removeRequest(this)">
+                        Удалить заявку
+                    </button>
+                    <div class="ui error message"></div>
+                    <div class="ui m-success green message"></div>
+                </form>
+                <script>
+                    ViewHelper.disableFormSubmitting('#orderRequestForm');
+                </script>
+            }
+        </div>
+    </div>
+    <div class="ten wide column">
+        <div class="ui segment">
+            <h2 class="ui dividing header">@Model.Title</h2>
+            @if (!string.IsNullOrEmpty(Model.ImageSrc))
+            {
+                <img src="@Model.ImageSrc" class="ui image" />
+            }
+            <h3 class="ui header">Требования</h3>
+            @Html.Raw(Model.Description)
+        </div>
+    </div>
+</div>
+@if (isOwner)
+{
+    <div class="ui tiny scrolling modal" id="requestsModal">
+        <i class="close icon"></i>
+        <div class="header">Авторы</div>
+        <div class="content">
+            @if(Model.Executers != null && Model.Executers.Count > 0)
+            {
+                <div class="ui middle aligned large list">
+                    @foreach(var executer in Model.Executers)
+                    {
+                        <div class="item">
+                            <div class="right floated content">
+                                <button class="ui small circular blue button" onclick="OrdersMvc.choseExecuter('@executer.Id', '@Model.Id', this)">
+                                    Выбрать
+                                </button>
+                            </div>
+                            <img class="ui avatar image" src="@executer.AvatarSrc" />
+                            <div class="content">
+                                @Html.ActionLink(executer.UserName, "Index", "UserProfile", new { name = executer.UserName}, new { @class = "header"})
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <h4 class="ui center aligned header">Пока нет заявок</h4>
+            }
+        </div>
+    </div>
+}
+@section scripts{
+    @Scripts.Render("~/bundles/api")
+}
+

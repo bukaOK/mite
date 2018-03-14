@@ -80,7 +80,6 @@ namespace Mite.Models
         public UserShortModel User { get; set; }
         public IList<PostCollectionItemModel> Collection { get; set; }
         public IList<PostComicsItemModel> ComicsItems { get; set; }
-        public IList<string> AvailableTags { get; set; }
     }
     public class WritingPostModel
     {
@@ -99,7 +98,6 @@ namespace Mite.Models
         public PostTypes Type { get; set; }
         public bool IsPublished => Type == PostTypes.Published;
         public IList<string> Tags { get; set; }
-        public IList<string> AvailableTags { get; set; }
         public string Cover { get; set; }
         public HelperModel Helper { get; set; }
         public bool Blocked { get; set; }
@@ -123,7 +121,6 @@ namespace Mite.Models
         public bool Blocked { get; set; }
         public PostContentTypes ContentType { get; set; }
         public IList<string> Tags { get; set; }
-        public IList<string> AvailableTags { get; set; }
         public IList<PostCollectionItemModel> Collection { get; set; }
         public IList<PostComicsItemModel> ComicsItems { get; set; }
     }

@@ -14,6 +14,9 @@ using Mite.BLL.Helpers;
 using System.Linq;
 using Mite.CodeData.Constants;
 using Mite.DAL.Filters;
+using System.Web.Hosting;
+using Mite.DAL.DTO;
+using Mite.CodeData.Enums;
 
 namespace Mite.BLL.Services
 {
@@ -111,18 +114,21 @@ namespace Mite.BLL.Services
                 if(writingChat != null)
                 {
                     var companion = (await userManager.FindByIdAsync(writingChat.Members.First(x => x.UserId != userId).UserId));
-                    writingChat.ImageSrc = companion.AvatarSrc;
-                    writingChat.Name = companion.UserName;
-                    chats.Insert(0, writingChat);
+                    var wrChatDto = new UserChatDTO
+                    {
+                        NewMessagesCount = 0,
+                        Name = companion.UserName,
+                        ImageSrc = companion.AvatarSrc,
+                        ImageSrcCompressed = companion.AvatarSrc,
+                        CreatorId = writingChat.CreatorId,
+                        Status = ChatMemberStatuses.InChat,
+                        Type = ChatTypes.Private
+                    };
+                    chats.Insert(0, wrChatDto);
                 }
             }
-            var newMessagesCount = await Database.GetRepo<ChatMessagesRepository, ChatMessage>()
-                .GetNewCountAsync(userId, chats.Select(x => x.Id).ToList());
 
-            return Mapper.Map<List<ShortChatModel>>(chats, opts =>
-            {
-                opts.Items.Add("messagesCount", newMessagesCount);
-            });
+            return Mapper.Map<List<ShortChatModel>>(chats);
         }
 
         public async Task<List<PublicChatModel>> GetPublishedAsync(string userId, int page, string input)
@@ -152,7 +158,7 @@ namespace Mite.BLL.Services
                 var (imgSrc, compressedSrc) = await repo.RemoveAsync(id, userId);
                 if (!string.IsNullOrEmpty(imgSrc))
                 {
-                    ImagesHelper.DeleteImage(imgSrc, compressedSrc);
+                    FilesHelper.DeleteFiles(imgSrc, compressedSrc);
                 }
                 return Success;
             }
@@ -167,9 +173,9 @@ namespace Mite.BLL.Services
             var chat = await repo.GetAsync(model.Id);
             if (model.ImageSrc != null && !string.Equals(model.ImageSrc, chat.ImageSrc) && !string.Equals(model.ImageSrc, chat.ImageSrcCompressed))
             {
-                var (vPath, compressedVPath) = ImagesHelper.UpdateImage(chat.ImageSrc, chat.ImageSrcCompressed, model.ImageSrc);
-                chat.ImageSrc = vPath;
-                chat.ImageSrcCompressed = compressedVPath;
+                chat.ImageSrc = ImagesHelper.UpdateImage(chat.ImageSrc, model.ImageSrc);
+                FilesHelper.DeleteFile(chat.ImageSrc);
+                chat.ImageSrcCompressed = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(chat.ImageSrc), 100));
             }
             chat.Name = model.Name;
             chat.Type = model.ChatType;

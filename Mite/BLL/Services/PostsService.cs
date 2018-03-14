@@ -25,6 +25,11 @@ namespace Mite.BLL.Services
         Task<DataServiceResult> AddPostAsync(PostModel postModel, string userId);
         Task<DataServiceResult> DeletePostAsync(Guid postId);
         Task<DataServiceResult> UpdatePostAsync(PostModel postModel);
+        /// <summary>
+        /// Для редактирования
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <returns></returns>
         Task<PostModel> GetWithTagsAsync(Guid postId);
         /// <summary>
         /// Возвращает вместе с тегами и владельцем поста
@@ -144,24 +149,22 @@ namespace Mite.BLL.Services
                 switch (post.ContentType)
                 {
                     case PostContentTypes.Image:
-                        ImagesHelper.DeleteImage(post.Content, post.Content_50);
+                        FilesHelper.DeleteFiles(post.Content, post.Content_50);
                         break;
                     case PostContentTypes.ImageCollection:
-                        ImagesHelper.DeleteImage(post.Content, post.Content_50);
-                        foreach(var colItem in post.Collection)
-                        {
-                            ImagesHelper.DeleteImage(colItem.ContentSrc, colItem.ContentSrc_50);
-                        }
+                        FilesHelper.DeleteFiles(post.Content, post.Content_50);
+                        FilesHelper.DeleteFiles(post.Collection.Select(x => x.ContentSrc));
+                        FilesHelper.DeleteFiles(post.Collection.Select(x => x.ContentSrc_50));
                         break;
                     case PostContentTypes.Document:
                         if(!string.IsNullOrEmpty(post.Cover))
-                            ImagesHelper.DeleteImage(post.Cover, post.Cover_50);
+                            FilesHelper.DeleteFiles(post.Cover, post.Cover_50);
                         FilesHelper.DeleteFile(post.Content);
                         break;
                     case PostContentTypes.Comics:
-                        ImagesHelper.DeleteImage(post.Content, post.Content_50);
-                        foreach (var item in post.ComicsItems)
-                            ImagesHelper.DeleteImage(item.ContentSrc, item.ContentSrc_50);
+                        FilesHelper.DeleteFiles(post.Content, post.Content_50);
+                        FilesHelper.DeleteFiles(post.ComicsItems.Select(x => x.ContentSrc));
+                        FilesHelper.DeleteFiles(post.ComicsItems.Select(x => x.ContentSrc_50));
                         break;
                 }
                 await repo.RemoveAsync(postId);

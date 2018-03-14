@@ -1,0 +1,120 @@
+﻿<script id="topPostTmpl" type="text/x-jsrender">
+    <div class="column">
+        <div class="ui segment {{if !IsImage && Cover != null}}invert{{/if}}{{if !ShowAdultContent}} hide-adult-content{{/if}} post-item" id="post{{:Id}}"
+             {{if !IsImage && Cover != null}} style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})" {{/if}}>
+            <div class="extra content">
+                <a href="/user/profile/{{:User.UserName}}" class="username" data-username="{{:User.UserName}}">
+                    <img src="{{:User.AvatarSrc}}" class="ui avatar image" width="28" height="28" />
+                    {{:User.ShowName}}
+                </a>
+                <div class="ui user-card flowing popup" style="width: 360px;min-height: 50px;">
+                    <div class="dot-loader">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="ui {{if !IsImage && Cover != null}}inverted {{/if}}divider"></div>
+            {{if IsImage}}
+            <div class="img-content">
+                <a href="/posts/showpost/{{:Id}}">
+                    <img src="{{:Content}}" class="ui image" />
+                </a>
+                {{if IsGif}}
+                <div class="active gif-wrapper">
+                    <button class="ui large circular icon primary button" onclick="loadFullGif('{{:FullPath}}', '{{:Id}}', $(this))">
+                        <i class="play icon" style="padding-left: 3px"></i>
+                    </button>
+                    <span class="ui violet label">gif</span>
+                </div>
+                {{/if}}
+            </div>
+            {{else}}
+            <a class="content" href="/posts/showpost/{{:Id}}">
+                {{:Content}}
+            </a>
+            {{/if}}
+            <div class="ui {{if !IsImage && Cover != null}}inverted {{/if}}divider"></div>
+            <div class="extra content">
+                <a class="ui {{if !IsImage && Cover != null}}inverted {{/if}}header" style="margin-bottom: 5px" href="/posts/showpost/{{:Id}}">
+                    {{:Title}}
+                    <span class="sub header">
+                        {{:Description}}
+                    </span>
+                </a>
+                {{for Tags ~IsImage=IsImage ~Cover=Cover}}
+                <a class="ui{{if !~IsImage && ~Cover != null}} violet{{/if}} label" onclick="loadTag('#{{>#data}}')">{{>#data}}</a>
+                {{/for}}
+            </div>
+            <div class="ui {{if !IsImage && Cover != null}}inverted {{/if}} divider"></div>
+            <div class="extra content">
+                <span>{{:PublicTimeStr}}</span>
+                <div class="right floated" style="float: right">
+                    <span title="Рейтинг"><i class="yellow star icon"></i>{{:Rating}}</span>
+                    <span title="Просмотры"><i class="{{if IsImage}}blue{{else}}black{{/if}} unhide icon"></i>{{:Views}}</span>
+                    <span title="Комментарии"><i class="green comments outline icon"></i>{{:CommentsCount}}</span>
+                </div>
+            </div>
+            {{if !ShowAdultContent}}
+            <div class="ui center aligned dimmer">
+                <div class="content">
+                    <h2 class="ui inverted header">Взрослый контент(18+)</h2>
+                    <button class="ui primary button" onclick="$(this).parents('.post-item').dimmer('hide')">Показать</button>
+                </div>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+</script>
+<script id="miniUserCardTmpl" type="text/x-jsrender">
+    <div class="ui grid">
+        <div class="five wide column">
+            <img class="ui tiny circular image" src="{{:AvatarSrc}}" />
+        </div>
+        <div class="user-info eleven wide column">
+            <div class="ui grid">
+                <div class="row">
+                    <div class="column">
+                        <a href="/user/profile/{{:UserName}}">
+                            <h3 class="ui blue header">
+                                {{:UserName}}
+                                <span class="sub header">{{:About}}</span>
+                            </h3>
+                        </a>
+                    </div>
+                </div>
+                <div class="statistics row">
+                    <div class="six wide column">
+                        <div class="ui mini statistic">
+                            <div class="value">{{:FollowersCount}}</div>
+                            <div class="label">{{:FollowersWord}}</div>
+                        </div>
+                    </div>
+                    <div class="five wide column">
+                        <div class="ui mini statistic">
+                            <div class="value">{{:Rating}}</div>
+                            <div class="label">Рейтинг</div>
+                        </div>
+                    </div>
+                    <div class="five wide column">
+                        <div class="ui mini statistic">
+                            <div class="value">{{:PostsCount}}</div>
+                            <div class="label">{{:PostsCountWord}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/html" id="emptyResultTmpl">
+    <div class="column">
+        <h2 class="ui center aligned icon header" style="color: #6D6788; margin-top: 20px;">
+            <i class="meh outline icon"></i>
+            <span class="content">
+                К сожалению, по вашему запросу ничего не найдено.
+            </span>
+        </h2>
+    </div>
+</script>

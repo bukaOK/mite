@@ -1,7 +1,4 @@
 ﻿using Autofac;
-using Autofac.Integration.SignalR;
-using Duke.Owin.VkontakteMiddleware;
-using Duke.Owin.VkontakteMiddleware.Provider;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.AspNet.SignalR;
@@ -15,6 +12,8 @@ using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
 using Mite.DAL.Migrations;
 using Owin;
+using Owin.Security.Providers.VKontakte;
+using Owin.Security.Providers.VKontakte.Provider;
 using System;
 using System.Data.Entity;
 using System.Security.Claims;
@@ -104,14 +103,14 @@ namespace Mite
                 }
             });
 
-            app.UseVkontakteAuthentication(new VkAuthenticationOptions
+            app.UseVKontakteAuthentication(new VKontakteAuthenticationOptions
             {
-                AppId = VkSettings.AppId,
-                AppSecret = VkSettings.Secret,
+                ClientId = VkSettings.AppId,
+                ClientSecret = VkSettings.Secret,
                 AuthenticationType = VkSettings.DefaultAuthType,
                 Caption = "Вконтакте",
-                Scope = "offline,market",
-                Provider = new VkAuthenticationProvider
+                Scope = new[] { "market" },
+                Provider = new VKontakteAuthenticationProvider
                 {
                     OnAuthenticated = context =>
                     {

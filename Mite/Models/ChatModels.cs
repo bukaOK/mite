@@ -48,6 +48,7 @@ namespace Mite.Models
         public string Name { get; set; }
         public string ImageSrc { get; set; }
         public ChatTypes ChatType { get; set; }
+        public ChatMemberStatuses MemberStatus { get; set; }
         public int NewMessagesCount { get; set; }
         public ChatMessageModel LastMessage { get; set; }
     }

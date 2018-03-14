@@ -1,32 +1,248 @@
-﻿body, html{
-    min-height: 100%;
-}
-.grid.main {    
-    background-image: url("images/water-back.jpg");
-    padding: 140px 0;
-}
-footer{
-    background-color: rgb(109, 103, 136);
-    padding-top: 10px;
-    width: 100%;
-}
-footer .ui.grid{
+﻿html, body {
+    height: 100%;
     margin: 0;
 }
-.logo.image{
-    margin-bottom: -60px;
+@media (orientation: landscape){
+    .side-wrap {
+        width: 100%;
+        height: 100vh;
+    }
+    .side-wrap > .ui.secondary.inverted.menu{
+        position: absolute;
+    }
+    .side {
+        width: 50%;
+    }
+    .side:hover:not(.active) {
+        width: 55%;
+    }
+    .active.side {
+        width: 100%;
+    }
+    .right.mobile.menu{
+        display: none !important;
+    }
 }
-article.ui.grid{
+@media (orientation: portrait){
+    .right.menu:not(.mobile){
+        display: none !important;
+    }
+    header.menu{
+        margin: 0 !important;
+    }
+    
+    header.menu .header.main.item{
+        margin-left: 5px;
+    }
+    .side-wrap {
+        width: 100%;
+        height: 50vh;
+    }
+    .side {
+        height: 50%;
+    }
+    .sides{
+        flex-direction: column;
+    }
+    .active.side {
+        height: 100%;
+    }
 }
-.content-wrap{
-    width: 500px !important;
+.side-wrap > .ui.secondary.inverted.menu {
+    position: absolute;
+    background: rgba(27,28,29, 0.7);
+    width: 100%;
+    z-index: 9999;
+    width: 100%;
 }
-.pusher, body {
-    background-color: white !important;
+.ui.dropdown .menu .item{
+    width: 100%;
 }
-input[type="text"],input[type="email"],input[type="password"]{
-    font-weight: bold;
+.ui.dropdown .ui.menu.inverted {
+    background-color: #1b1c1d;
 }
-.land.button{
-    margin-bottom: 7px;
+.ui.dropdown .ui.menu.inverted .item{
+    color: rgba(255,255,255,.9) !important;
+    border-radius: 0;
+}
+.ui.dropdown .ui.menu.inverted .item:hover{
+    color: #fff !important;
+    background: rgba(255,255,255, .08) !important; 
+}
+.side-wrap > .secondary.menu .header.item {
+    padding: 0 10px;
+    height: 100%;
+    margin-left: 5px;
+}
+
+.side-wrap > .fixed.menu .item {
+    background-color: transparent !important;
+}
+
+.sides {
+    width: 100%;
+    height: 100%;
+    display: flex;
+}
+
+.side {
+    position: relative;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    transition: all .3s;
+}
+.side > .author {
+    position: absolute;
+    bottom: 10px;
+    font-size: 0.7em;
+    color: rgba(255, 255, 255, 0.8);
+    transition: all .3s;
+}
+.author.side > .author {
+    left: 10px;
+}
+.author.side > .author:hover {
+    color: #FF695E;
+}
+
+.client.side > .author {
+    right: 10px;
+}
+.client.side > .author:hover {
+    color: #54C8FF;
+}
+
+.side > .ui.dimmer {
+    position: static;
+    opacity: 0;
+    transition: all .3s linear;
+    display: flex;
+}
+.side > .ui.reg.dimmer {
+    display: none;
+}
+.side.active > .ui.reg.dimmer {
+    opacity: 1;
+    display: flex;
+    background-color: rgba(0,0,0,0.5);
+}
+.side.active > .chose.dimmer {
+    display: none;
+}
+.side:hover:not(.active) > .ui.chose.dimmer {
+    opacity: 1;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+}
+
+.author.side {
+    background-image: url(../Content/images/land/girl_new.jpg);
+}
+.client.side {
+    background-image: url(../Content/images/land/flow_new.jpg);
+}
+
+.author.wrap:not(.active), .client.wrap:not(.active) {
+    display: none;
+}
+.ui.segment.two-click{
+    border: none;
+    box-shadow: 0 10px 10px 1px rgba(0,0,0,0.1);
+    margin-top: 8em;
+}
+.two-click-out{
+    margin-top: -100px;
+}
+.user.example {
+    display: flex;
+    flex-direction: column;
+}
+.user.example > .image {
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 0 5px 3px rgba(0,0,0,0.3);
+    border-radius: 100px;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto;
+}
+.user.example > .content{
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8em;
+}
+
+.info-item {
+    text-align: center;
+}
+.two-click-out img,
+.two-click-out video{
+    width: 100%;
+}
+.progress-seg {
+    background: rgb(17, 71, 109);
+    padding: 80px 0 40px;
+    margin-top: -50px;
+}
+.features{
+    margin-top: 30px;
+}
+.reg.wrap {
+    display: none;
+    margin-top: 50px;
+    padding: 50px 0 10px;
+    background-color: rgb(185, 225, 237);
+}
+
+.reg.box {
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    width: 500px;
+    height: 300px;
+    border-radius: 5px;
+    box-shadow: 0 2px 30px rgba(0, 0, 0, 0.2);
+    background: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.wave {
+    opacity: .4;
+    position: absolute;
+    top: 25%;
+    left: -30%;
+    background: #0af;
+    width: 800px;
+    height: 800px;
+    transform-origin: 50% 48%;
+    border-radius: 43%;
+    animation: drift 3000ms infinite linear;
+}
+
+.wave.three {
+    animation: drift 5000ms infinite linear;
+}
+
+.wave.two {
+    animation: drift 7000ms infinite linear;
+    opacity: .1;
+    background: yellow;
+}
+
+.title {
+    position: absolute;
+    left: 0;
+    bottom: 70px;
+    width: 100%;
+    z-index: 1;
+    text-align: center;
+    font-size: 24px;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+    text-indent: .3em;
+}
+@keyframes drift {
+    from { transform: rotate(0deg); }
+
+    from { transform: rotate(360deg); }
 }

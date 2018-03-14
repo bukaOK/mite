@@ -17,8 +17,6 @@ namespace Mite.DAL.Entities
         public string CreatorId { get; set; }
         public User Creator { get; set; }
         public List<ChatMember> Members { get; set; }
-        [Obsolete("Заменено Members")]
-        public List<User> Users { get; set; }
         public List<ChatMessage> Messages { get; set; }
     }
 }

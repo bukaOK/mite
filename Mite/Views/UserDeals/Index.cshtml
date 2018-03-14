@@ -2,7 +2,7 @@
 @using Mite.CodeData.Enums
 @using Mite.Helpers
 @{
-    ViewBag.Title = "Заказы";
+    ViewBag.Title = "Сделки";
     var isAuthor = User.IsInRole(RoleNames.Author);
     var isModer = User.IsInRole(RoleNames.Moderator);
 }
@@ -17,7 +17,7 @@
     </style>
 }
 <div class="ui segment">
-    <h2 class="ui dividing header">Заказы</h2>
+    <h2 class="ui dividing header">Сделки</h2>
     @if (isAuthor || isModer)
     {
         <div class="ui secondary stackable menu" role="tablist">
@@ -150,9 +150,11 @@
     <div class="ui divided items">
         {{for}}
         <div class="item">
+            {{if ImageSrc}}
             <a class="ui tiny image" href="@Url.Action("Show", "Deals")/{{:Id}}">
                 <img src="{{:ImageSrc}}" />
             </a>
+            {{/if}}
             <div class="content">
                 <a class="header" href="@Url.Action("Show", "Deals")/{{:Id}}">{{:Title}}</a>
                 <div class="meta">
@@ -172,8 +174,8 @@
 </script>
 <script type="text/html" id="emptyDealsTmpl">
     <h3 class="ui center aligned header">
-        <i class="frown icon"></i>
-        Заказы не найдены
+        <i class="meh outline icon"></i>
+        Сделки не найдены
     </h3>
 </script>
 <script type="text/html" id="errorDealsTmpl">
@@ -181,7 +183,7 @@
         <i class="warning circle icon"></i>
         <div class="content">
             <div class="header">Упс...</div>
-            <p>Ошибка при загрузке заказов</p>
+            <p>Ошибка при загрузке сделок</p>
         </div>
     </div>
 </script>
@@ -272,11 +274,10 @@
             },
             onSuccess: function (resp, tab) {
                 if (resp.length == 0 && TabFilter.page == 1) {
-                    html = $('#emptyDealsTmpl').html();
-                    tab.content.html(html);
+                    tab.content.html($('#emptyDealsTmpl').html());
                 } else if (resp.length > 0) {
-                    var tmpl = $.templates('#dealsTmpl');
-                    html = tmpl.render(resp);
+                    var tmpl = $.templates('#dealsTmpl')
+                        html = tmpl.render(resp);
 
                     if (TabFilter.loadNextPage) {
                         tab.content.append(html);

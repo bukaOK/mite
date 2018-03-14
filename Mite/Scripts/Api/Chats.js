@@ -6,7 +6,7 @@
  * @param {number} chatType тип чата
  * @param {ShortUser} currentUser текущий пользователь
  */
-function Chat(chatId, chatName, chatType, currentUser) {
+function Chat(chatId, chatName, chatType, memberStatus, currentUser) {
     var tmpl = $.templates('#chatTmpl');
     this.chatId = chatId;
     this.chatItem = $('.chat-item[data-id="' + chatId + '"]');
@@ -16,6 +16,7 @@ function Chat(chatId, chatName, chatType, currentUser) {
             Name: chatName,
             ChatType: chatType,
             CreatorId: this.chatItem.data('creatorId'),
+            MemberStatus: memberStatus,
             ImageSrc: this.chatItem.children('.image').attr('src'),
             MaxMembersCount: this.chatItem.data('maxMembersCount')
         }));
@@ -51,7 +52,8 @@ Chat.prototype.initListeners = function () {
         selectOnKeydown: false,
         action: 'hide',
         context: self.chatWrap,
-        onChange: function (value, text, $selectedItem) {
+        onChange: function (value, text, $choise) {
+            $choise = $(this).find('.item[data-value="' + value + '"]');
             switch (value) {
                 case 'mem':
                     self.ChatMembersLoader.showModal();
@@ -61,6 +63,12 @@ Chat.prototype.initListeners = function () {
                     break;
                 case 'updateChat':
                     self.ChatUpdater.showModal();
+                    break;
+                case 'exit':
+                    ChatMembers.Api.exit(self.chatId, $choise[0]);
+                    break;
+                case 'enter':
+                    ChatMembers.Api.enter(self.chatId, $choise[0]);
                     break;
                 default:
                     throw 'Unknown value';
@@ -205,7 +213,7 @@ var ChatsApi = {
                     });
                     nChat = items[nIndex];
                     items.unshift(nChat);
-                    items.splice(nIndex, 1);
+                    items.splice(nIndex + 1, 1);
                 }
                 self.loadNext();
                 if (items.length > 0 && hasUrlChat) {
@@ -220,12 +228,12 @@ var ChatsApi = {
          * @param {string} chatName имя чата
          * @param {number} chatType тип чата
         */
-        initChat: function (chatId, chatName, chatType) {
+        initChat: function (chatId, chatName, chatType, memberStatus) {
             var lastChatId = $('.chat-items .chat-item.active').removeClass('active').data('id');
             $('.chat-item[data-id="' + chatId + '"]').addClass('active')
                 .find('.ui.msg-count.label').removeClass('active').text(0);
             if (!window.chats[chatId]) {
-                window.chats[chatId] = new Chat(chatId, chatName, chatType, this.currentUser);
+                window.chats[chatId] = new Chat(chatId, chatName, chatType, memberStatus, this.currentUser);
                 window.chats[chatId].ChatLoader.loadNext().then(function () {
                     window.chats[chatId].readMessages();
                 });

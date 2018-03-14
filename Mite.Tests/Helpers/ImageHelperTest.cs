@@ -7,7 +7,7 @@ using Mite.BLL.Helpers;
 
 namespace Mite.Tests.Helpers
 {
-    [TestClass]
+    //[TestClass]
     public class ImageHelperTest
     {
         private const string ImagesDir = @"C:\Users\Buka\Desktop\TestImages\";

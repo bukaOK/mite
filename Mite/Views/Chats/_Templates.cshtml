@@ -9,7 +9,7 @@
     <div class="ui chat-wrap segments" data-id="{{:Id}}">
         <div class="ui chat-header two column grid segment">
             <div class="column">
-                <h4 class="ui header"><b>{{:Name}}</b></h4>
+                <span class="ui small header"><b>{{:Name}}</b></span>
             </div>
         </div>
         <div class="ui msg-chat-wrapper segment">
@@ -33,7 +33,11 @@
     <div class="ui chat-wrap segments" data-id="{{:Id}}">
         <div class="ui chat-header two column grid segment">
             <div class="column">
+                {{if ChatType == @((byte)ChatTypes.Private)}}
+                <a class="ui small header" href="/user/profile/{{:Name}}" style="display: block"><b>{{:Name}}</b></a>
+                {{else}}
                 <h4 class="ui header"><b>{{:Name}}</b></h4>
+                {{/if}}
             </div>
             <div class="right aligned column">
                 <div class="msg-actions">
@@ -41,12 +45,19 @@
                 </div>
                 {{if ChatType == @((byte)ChatTypes.PrivateGroup) || ChatType == @((byte)ChatTypes.Public)}}
                 <div class="ui inline dropdown chat-menu">
-                    <i class="ellipsis vertical icon"></i>
+                    <i class="ellipsis vertical icon" title="Действия"></i>
                     <div class="menu" role="menu">
                         <a class="item" role="menuitem" data-value="mem">Участники</a>
                         <a class="item" role="menuitem" data-value="addMem">Добавить участников</a>
                         {{if CreatorId == '@currentUserId'}}
                         <a class="item" role="menuitem" data-value="updateChat">Изменить чат</a>
+                        {{/if}}
+                        {{if MemberStatus == @((byte)ChatMemberStatuses.InChat)}}
+                        <a class="exit item" role="menuitem" data-value="exit">Выйти</a>
+                        <a class="enter item" role="menuitem" data-value="enter" style="display: none">Войти</a>
+                        {{else MemberStatus == @((byte)ChatMemberStatuses.CameOut)}}
+                        <a class="enter item" role="menuitem" data-value="enter">Войти</a>
+                        <a class="exit item" role="menuitem" data-value="exit" style="display: none">Выйти</a>
                         {{/if}}
                     </div>
                 </div>
@@ -79,7 +90,7 @@
                     <li><b>Enter</b> для отправки сообщения</li>
                 </ul>
             </div>
-            <label class="ui compact blue icon circular att-btn button">
+            <label class="ui compact blue icon circular att-btn button" title="Прикрепить">
                 <i class="attach icon"></i>
                 <input class="att-input" type="file" multiple style="display: none" />
             </label>
@@ -90,7 +101,7 @@
             </div>
             <span class="type-label" style="display: none"></span>
             <button type="button" class="ui right floated compact icon circular emoji-btn button">
-                <i class="smile icon"></i>
+                <i class="smile outline icon"></i>
             </button>
             <div class="ui emoji popup">
                 <div class="em-wrapper">
@@ -289,22 +300,18 @@
     <div class="column" data-id="{{:Id}}">
         {{if IsImage}}
         <div class="ui small image">
-            <div class="ui dimmer">
+            <div class="ui center aligned dimmer">
                 <div class="content">
-                    <div class="center">
-                        <i class="big remove icon"></i>
-                    </div>
+                    <i class="big remove icon"></i>
                 </div>
             </div>
             <img src="{{:Src}}" />
         </div>
         {{else}}
         <div class="ui segment">
-            <div class="ui dimmer">
+            <div class="ui center aligned dimmer">
                 <div class="content">
-                    <div class="center">
-                        <i class="big remove icon"></i>
-                    </div>
+                    <i class="big remove icon"></i>
                 </div>
             </div>
             <p>{{:Name}}</p>
@@ -320,11 +327,9 @@
     {{else}}
     <div class="column">
         <div class="ui segment">
-            <div class="ui dimmer">
+            <div class="ui center aligned dimmer">
                 <div class="content">
-                    <div class="center">
-                        <i class="download icon"></i>
-                    </div>
+                    <i class="download icon"></i>
                 </div>
             </div>
             <p>{{:Name}}</p>
@@ -346,7 +351,7 @@
 </script>
 <script type="text/x-jsrender" id="chatItemTmpl">
     <div class="item chat-item" data-creator-id="{{:CreatorId}}" data-id="{{:Id}}" data-max-members-count="{{:MaxMembersCount}}"
-         onclick="ChatsApi.Loader.initChat('{{:Id}}', '{{:Name}}', {{:ChatType}})">
+         onclick="ChatsApi.Loader.initChat('{{:Id}}', '{{:Name}}', {{:ChatType}}, {{:MemberStatus}})">
         <img class="ui tiny circular image" src="{{:ImageSrc}}" />
         <div class="content">
             <div class="ui small header">

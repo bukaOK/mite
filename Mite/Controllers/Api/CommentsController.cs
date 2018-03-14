@@ -46,8 +46,11 @@ namespace Mite.Controllers.Api
             {
                 Id = User.Identity.GetUserId()
             };
-            if (!ModelState.IsValid)
+            if (string.IsNullOrEmpty(model.Content))
+            {
+                ModelState.AddModelError("Content", "Пустой комментарий");
                 return BadRequest(ModelState);
+            }
 
             if (!(await blackListService.CanCommentAsync(model)))
             {

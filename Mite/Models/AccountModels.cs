@@ -43,6 +43,9 @@ namespace Mite.Models
         [UIData(typeof(RegisterRoles))]
         [DisplayName("Тип пользователя")]
         public byte? RegisterRole { get; set; }
+        [UIHint("TextBox")]
+        [DisplayName("Пригласительный ключ")]
+        public string InviteKey { get; set; }
     }
     public class RegisterModel
     {
@@ -58,7 +61,7 @@ namespace Mite.Models
         [DisplayName("E-mail")]
         [UIHint("TextBox")]
         public string Email { get; set; }
-        [Checked]
+        [Checked, Required(ErrorMessage = "Выберите тип пользователя")]
         [UIHint("RadioButtonListOptional")]
         [UIData(typeof(RegisterRoles))]
         [DisplayName("Тип пользователя")]
@@ -75,7 +78,9 @@ namespace Mite.Models
         [DisplayName("Подтвердите пароль")]
         [UIHint("TextBox")]
         public string ConfirmPassword { get; set; }
-        public string RefererId { get; set; }
+        [UIHint("TextBox")]
+        [DisplayName("Пригласительный ключ")]
+        public string InviteKey { get; set; }
     }
     public class ResetPasswordModel
     {

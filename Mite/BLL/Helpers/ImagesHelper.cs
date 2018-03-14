@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Hosting;
 
@@ -15,24 +16,12 @@ namespace Mite.BLL.Helpers
         private const string CompressedPostfix = "compressed";
         private static readonly string ImagesFolder = HostingEnvironment.ApplicationVirtualPath + "Public/images/";
 
-        /// <summary>
-        /// Получаем расширение оригинального файла
-        /// </summary>
-        /// <param name="path">Путь к файлу</param>
-        /// <returns></returns>
-        public static string GetFormat(string path)
-        {
-            var pathArr = path.Split('.');
-            return pathArr[pathArr.Length - 1];
-        }
         public static bool IsAnimatedImage(string path)
         {
-            if(path.Split('.').Last() == "gif")
+            if(Path.GetExtension(path) == ".gif")
             {
-                using (var img = Image.FromFile(path))
-                {
-                    return img.GetFrameCount(new FrameDimension(img.FrameDimensionsList[0])) > 1;
-                }
+                var info = MagickFormatInfo.Create(path);
+                return info.IsMultiFrame;
             }
             return false;
         }
@@ -40,79 +29,115 @@ namespace Mite.BLL.Helpers
         /// Обновляем изображение
         /// </summary>
         /// <param name="oldVPath">Путь(вирт.) к старому оригинальному изображению</param>
-        /// <param name="oldCompressedVPath">Путь(вирт.) к старому сжатому изображению</param>
         /// <param name="base64">Строка изображения с base64</param>
         /// <returns>vPath - вирт. путь к изобр., compressedVPath - вирт. путь к сжатому изобр.</returns>
-        public static (string vPath, string compressedVPath) UpdateImage(string oldVPath, string oldCompressedVPath, string base64)
+        public static string UpdateImage(string oldVPath,string base64)
         {
-            string vPath = null, compressedVPath = null;
+            string vPath = null;
             try
             {
                 vPath = FilesHelper.CreateImage(ImagesFolder, base64);
                 var fullPath = HostingEnvironment.MapPath(vPath);
-                Compressed.Compress(fullPath);
-                compressedVPath = Compressed.CompressedVirtualPath(fullPath);
                 //Удаляем старые
                 FilesHelper.DeleteFile(oldVPath);
-                FilesHelper.DeleteFile(oldCompressedVPath);
-                return (vPath, compressedVPath);
+                return vPath;
             }
             catch(Exception e)
             {
-                DeleteImage(vPath, compressedVPath);
+                if (vPath != null)
+                    FilesHelper.DeleteFile(vPath);
                 throw e;
             }
         }
-        public static (string vPath, string compressedVPath) CreateImage(string imagesFolder, string base64)
+        /// <summary>
+        /// Обновляем изображение
+        /// </summary>
+        /// <param name="oldVPath">Путь(вирт.) к старому оригинальному изображению</param>
+        /// <param name="file">Поток с изображением</param>
+        /// <returns>vPath - вирт. путь к изобр., compressedVPath - вирт. путь к сжатому изобр.</returns>
+        public static string UpdateImage(string oldVPath, HttpPostedFileBase file)
         {
-            string vPath = null, compressedVPath = null;
+            string vPath = null;
             try
             {
-                vPath = FilesHelper.CreateImage(imagesFolder, base64);
+                vPath = FilesHelper.CreateImage(ImagesFolder, file);
                 var fullPath = HostingEnvironment.MapPath(vPath);
-                Compressed.Compress(fullPath);
-                compressedVPath = Compressed.CompressedVirtualPath(fullPath);
-
-                return (vPath, compressedVPath);
+                //Удаляем старые
+                FilesHelper.DeleteFile(oldVPath);
+                return vPath;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                DeleteImage(vPath, compressedVPath);
+                if (vPath != null)
+                    FilesHelper.DeleteFile(vPath);
                 throw e;
             }
         }
-        public static (string vPath, string compressedVPath) CreateImage(string imagesFolder, HttpPostedFileBase image)
+        /// <summary>
+        /// Создает изображение с заданной шириной и высотой
+        /// </summary>
+        /// <param name="base64">Изображение в base64</param>
+        /// <param name="saveFolder">Папка для сохранения</param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="adaptive"></param>
+        /// <returns>Полный путь к созданному изображению</returns>
+        public static string Create(string saveFolder, string base64, int width, int? height = null, bool adaptive = true)
         {
-            string vPath = null, compressedVPath = null;
-            try
+            var imgFormat = Regex.Match(base64, @"data:image/(.+);base64,").Groups[1].Value;
+            if (imgFormat == "jpeg")
+                imgFormat = "jpg";
+            base64 = Regex.Replace(base64, @"data:image/(.+);base64,", "");
+            var savePath = "";
+            do
             {
-                vPath = FilesHelper.CreateFile(imagesFolder, image);
-                var fullPath = HostingEnvironment.MapPath(vPath);
-                Compressed.Compress(fullPath);
-                compressedVPath = Compressed.CompressedVirtualPath(fullPath);
+                savePath = Path.Combine(savePath, $"{Guid.NewGuid()}.{imgFormat}");
+            } while (File.Exists(savePath));
 
-                return (vPath, compressedVPath);
-            }
-            catch(Exception e)
+            using(var img = new MagickImage(Convert.FromBase64String(base64)))
             {
-                DeleteImage(vPath, compressedVPath);
-                throw e;
+                if (height == null)
+                    height = width * img.Height / img.Width;
+                var size = new MagickGeometry(width, (int)height);
+                if (adaptive)
+                    img.AdaptiveResize(size);
+                else
+                    img.Resize(size);
+                img.Write(savePath);
             }
+            return savePath;
         }
-        public static void DeleteImage(string vPath, string compressedVPath)
+        /// <summary>
+        /// Изменить размер изображения
+        /// </summary>
+        /// <param name="path">Полный путь к изображению</param>
+        /// <param name="width">Ширина изображения</param>
+        /// <param name="height">Высота(если null - с сохранением пропорций)</param>
+        /// <param name="adaptive">Ч/з билинейную интерполяцию. Подходит, если нужно небольшое изображение(высокая скорость)</param>
+        /// <returns>Полный путь к измененному изображению</returns>
+        public static string Resize(string path, int width, int? height = null, bool adaptive = true)
         {
-            var fullImgPath = HostingEnvironment.MapPath(vPath);
-            FilesHelper.DeleteFile(vPath);
-            if (string.IsNullOrEmpty(compressedVPath))
-                FilesHelper.DeleteFile(Compressed.CompressedVirtualPath(fullImgPath));
-            else
-                FilesHelper.DeleteFile(compressedVPath);
+            var match = Regex.Match(path, @"(?<path>.+)\\(?<fileName>[\w\d-]+)\.(?<ext>[\w\d]+)", RegexOptions.Compiled);
+            var savePath = Path.Combine(match.Groups["path"].Value, $"{match.Groups["fileName"].Value}_{width}.{match.Groups["ext"].Value}");
+
+            using (var img = new MagickImage(path))
+            {
+                if (height == null)
+                    height = width * img.Height / img.Width;
+                var size = new MagickGeometry(width, (int)height);
+                if (adaptive)
+                    img.AdaptiveResize(size);
+                else
+                    img.Resize(size);
+                img.Write(savePath);
+            }
+            return savePath;
         }
         public static class Compressed
         {
             public static string CompressedVirtualPath(string path)
             {
-                var compressedFullPath = CompressedPath(path, "jpg");
+                var compressedFullPath = CompressedPath(path);
                 var virtualPath = compressedFullPath.Replace(HostingEnvironment.ApplicationPhysicalPath, string.Empty);
                 if (virtualPath[0] != '\\' && virtualPath[0] != '/')
                     virtualPath = "\\" + virtualPath;
@@ -136,7 +161,7 @@ namespace Mite.BLL.Helpers
                 var folder = path.Replace(pathArr[pathArr.Length - 1], "");
 
                 //Основываясь на названии самого изображения, создаем название сжатого изображения
-                var format = customFormat ?? GetFormat(path);
+                var format = customFormat ?? "jpg";
                 var compressedName = $"{fileName}_{CompressedPostfix}.{format}";
 
                 return folder + compressedName;

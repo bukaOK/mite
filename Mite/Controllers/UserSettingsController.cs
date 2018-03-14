@@ -74,6 +74,20 @@ namespace Mite.Controllers
 
             return PartialView(model);
         }
+        public ActionResult Invite()
+        {
+            var user = _userManager.FindById(CurrentUserId);
+            return PartialView(new InviteSettingsModel
+            {
+                InviteKey = user.InviteId.ToString()
+            });
+        }
+        [HttpPost]
+        public async Task<ActionResult> GenerateInvite()
+        {
+            var invite = await _userService.GenerateInviteAsync(CurrentUserId);
+            return Json(new { inviteId = invite });
+        }
         public ActionResult Notifications()
         {
             var logins = _userManager.GetLogins(CurrentUserId);

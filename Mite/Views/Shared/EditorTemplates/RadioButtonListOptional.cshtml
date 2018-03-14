@@ -28,8 +28,8 @@
     {
         <div class="field">
             <div class="ui radio checkbox">
-                @Html.RadioButton("", item.Value, item.Selected)
-                @Html.Label("", item.Text)
+                <input type="radio" name="@Html.Name("")" value="@item.Value" @Html.Raw(item.Selected ? "checked" : "") />
+                <label>@item.Text</label>
             </div>
         </div>
     }

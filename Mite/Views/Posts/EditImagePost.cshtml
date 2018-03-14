@@ -9,14 +9,15 @@
     <h2 class="ui dividing header">@ViewBag.Title</h2>
     <form class="ui stackable two column center aligned grid form" id="imgPostForm">
         <div class="column">
-            <input type="file" id="img-download" style="display: none">
-            <label for="img-download" class="ui labeled icon large primary button">
-                Загрузить
-                <i class="cloud download icon"></i>
+            <label class="ui dashed drop-zone segment" ondragover="FileReaderHelper.dragOverHandler(event)" ondrop="FileReaderHelper.dropHandler(event)">
+                <span class="ui small blue header"><i class="cloud download icon"></i>Перетащите или нажмите</span>
+                <input type="file" onchange="FileReaderHelper.inputDownloadHandler(event)" style="display: none" />
             </label>
-            <div class="ui section divider horizontal">Или</div>
-            <div class="ui dashed segment" id="drop-zone">
-                <h3 class="ui disabled grey">Перетащите сюда</h3>
+            <div class="img-wrapper" id="img-wrapper">
+                @if (!string.IsNullOrEmpty(Model.Content))
+                {
+                    <img src="@Model.Content" alt="@Model.Header" style="max-width: 100%" />
+                }
             </div>
         </div>
         <div class="left aligned column">
@@ -25,14 +26,10 @@
             @Html.EditorFor(x => x.Description)
             <div class="field">
                 <div class="ui fluid search multiple selection dropdown" id="select-tags">
-                    @Html.HiddenFor(x => x.Tags, new { Value = tagsRow })
+                    <i class="dropdown icon"></i>
+                    <input type="hidden" name="Tags" id="Tags" value="@tagsRow" />
                     <div class="default text">Теги</div>
-                    <div class="menu">
-                        @foreach (var tagName in Model.AvailableTags)
-                        {
-                            <div class="item" data-value="@tagName">@tagName</div>
-                        }
-                    </div>
+                    <div class="menu"></div>
                 </div>
             </div>
             <div class="ui blue icon message">
@@ -49,12 +46,6 @@
             </div>
         </div>
         <div class="ten wide column">
-            <div class="img-wrapper" id="img-wrapper">
-                @if (!string.IsNullOrEmpty(Model.Content))
-                {
-                    <img src="@Model.Content" alt="@Model.Header" style="max-width: 100%" />
-                }
-            </div>
             <button type="button" class="ui green button" id="save-btn">Сохранить</button>
             <div class="ui error message" id="result-msg"></div>
         </div>
@@ -128,17 +119,7 @@
         ViewHelper.activateSidebarItem('#editImageItem');
         ViewHelper.disableFormSubmitting('#imgPostForm');
         $('.ui.checkbox').checkbox();
-        $('#select-tags').dropdown({
-            allowAdditions: true,
-            fullTextSearch: true,
-            keys: {
-                delimiter: 13
-            },
-            showOnFocus: false,
-            forceSelection: false,
-            match: 'text'
-        });
-        new PerfectScrollbar('#select-tags>.menu')
+        TagsApi.loadDropdown('#select-tags', '@tagsRow'.split(','));
         //Отправляем форму
         $('#save-btn').click(function(ev) {
             var $saveBtn = $(this);
@@ -161,12 +142,5 @@
                 savePost(true);
             }
         });
-        //Настраиваем загрузку файлов
-        var dropZone = document.getElementById("drop-zone");
-        dropZone.ondragover = FileReaderHelper.dragOverHandler;
-        dropZone.ondrop = FileReaderHelper.dropHandler;
-
-        var inputDownload = document.getElementById("img-download");
-        inputDownload.onchange = FileReaderHelper.inputDownloadHandler;
     });
 </script>

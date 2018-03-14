@@ -1,0 +1,119 @@
+﻿
+@{
+    ViewBag.Title = "Заказы";
+}
+@section styles{
+    <style>
+        .items.tab{
+            margin: 0;
+        }
+    </style>
+}
+<div class="ui segment">
+    <h2 class="ui dividing header">Мои заказы</h2>
+    <div class="ui stackable grid">
+        <div class="three wide column">
+            <div class="ui vertical secondary pointing menu" role="tablist">
+                <a class="active item" role="tab" data-tab="open">Открытые</a>
+                <a class="item" role="tab" data-tab="chosed">Выбран исполнитель</a>
+                <a class="item" role="tab" data-tab="closed">Закрыт</a>
+            </div>
+        </div>
+        <div class="thirteen wide column">
+            <div class="ui items tab" role="tabpanel" data-tab="open"></div>
+            <div class="ui items tab" role="tabpanel" data-tab="chosed"></div>
+            <div class="ui items tab" role="tabpanel" data-tab="closed"></div>
+            <div class="dot-loader-wrapper">
+                <div class="dot-loader">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/html" id="orderEmptyTmpl">
+    <h3 class="ui center aligned header">
+        <i class="meh outline icon"></i>
+        Заказы не найдены
+    </h3>
+</script>
+<script type="text/html" id="errorOrdersTmpl">
+    <div class="ui icon red message">
+        <i class="warning circle icon"></i>
+        <div class="content">
+            <div class="header">Упс...</div>
+            <p>Ошибка при загрузке заказов</p>
+        </div>
+    </div>
+</script>
+<script type="text/x-jsrender" id="orderTmpl">
+    <div class="item">
+        {{if ImageSrc}}
+        <div class="image"><img src="{{:ImageSrc}}" width="{{:width}}" height="{{:height}}" /></div>
+        {{/if}}
+        <div class="content">
+            <a class="header" href="@Url.Action("Show", "Orders")/{{:Id}}">{{:Title}}</a>
+            <div class="meta">{{:Requests}}</div>
+            <div class="description">{{:Description}}</div>
+            <div class="extra">
+                <a class="ui teal label" href="@Url.Action("Top", "Orders")?orderTypeId={{:OrderType.Id}}" title="Тип заказа"><i class="tag icon"></i>{{:OrderType.Name}}</a>
+                <div class="ui label" title="Цена"><i class="ruble icon"></i>{{:Price}}</div>
+                <div class="ui label" title="Время выполнения"><i class="calendar icon"></i>{{:Deadline}}</div>
+            </div>
+        </div>
+    </div>
+</script>
+@section scripts{
+    @Scripts.Render("~/bundles/jsrender")
+    <script>
+        $(function () {
+            ViewHelper.activateSidebarItem('.orders.item');
+            TabFilter.range = 30;
+            var tabs = [];
+            tabs.push(new Tab({
+                name: 'open',
+                isActive: true,
+                parentTab: null
+            }));
+            tabs.push(new Tab({
+                name: 'chosed',
+                isActive: false,
+                parentTab: null
+            }));
+            tabs.push(new Tab({
+                name: 'closed',
+                isActive: false,
+                parentTab: null
+            }));
+            TabFilter.Tabs.items = tabs;
+            TabFilter.init('@Url.Action("Index", "UserOrders")', {
+                beforeLoad: function () {
+                    $('.dot-loader-wrapper').addClass('active');
+                },
+                onSuccess: function (resp, tab) {
+                    if (resp.length == 0 && TabFilter.page == 1) {
+                        tab.content.html($('#orderEmptyTmpl').html());
+                    } else if (resp.length > 0) {
+                        var tmpl = $.templates('#orderTmpl'),
+                            html = tmpl.render(resp);
+
+                        if (TabFilter.loadNextPage) {
+                            tab.content.append(html);
+                        } else {
+                            tab.content.html(html);
+                        }
+                    }
+                },
+                onError: function (jqXhr, tab) {
+                    tab.content.html($('#errorOrdersTmpl').html());
+                },
+                onComplete: function (jqXhr) {
+                    $('.dot-loader-wrapper').removeClass('active');
+                }
+            });
+        });
+    </script>
+}
+

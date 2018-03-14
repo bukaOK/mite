@@ -17,7 +17,7 @@ namespace Mite.DAL.Repositories
         /// <param name="targetId">Кого занесли</param>
         /// <param name="checkingUserId">Кто занес в черный список</param>
         /// <returns></returns>
-        public async Task<bool> IsInBlackList(string targetId, string checkingUserId)
+        public async Task<bool> IsInBlackListAsync(string targetId, string checkingUserId)
         {
             return await DbContext.BlackListUsers.AnyAsync(x => x.CallerId == checkingUserId && x.ListedUserId == targetId);
         }

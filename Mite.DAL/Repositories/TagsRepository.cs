@@ -27,11 +27,14 @@ namespace Mite.DAL.Repositories
         /// </summary>
         /// <param name="isConfirmed">Подтвержденные/неподтвержденные</param>
         /// <returns></returns>
-        public Task<IEnumerable<TagDTO>> GetAllWithPopularityAsync(bool isConfirmed, int count = 50)
+        public Task<IEnumerable<TagDTO>> GetAllWithPopularityAsync(bool? isConfirmed, int count = 50)
         {
-            var query = "select tags.*, COUNT(tags.\"Id\") as \"Popularity\" "
-                + "from dbo.\"Tags\" tags left outer join dbo.\"TagPosts\" tagposts on tagposts.\"Tag_Id\"=tags.\"Id\"" +
-                " where \"IsConfirmed\"=@isConfirmed group by tags.\"Id\" order by \"Popularity\" desc limit @count;";
+            var query = "select tags.*, COUNT(tags.\"Id\") as \"Popularity\" " +
+                "from dbo.\"Tags\" tags left outer join dbo.\"TagPosts\" tagposts on tagposts.\"Tag_Id\"=tags.\"Id\" " +
+                "where \"Checked\"=true ";
+            if(isConfirmed != null)
+                query += "and \"IsConfirmed\"=@isConfirmed ";
+            query += "group by tags.\"Id\" order by \"Popularity\" desc limit @count;";
             return Db.QueryAsync<TagDTO>(query, new { isConfirmed, count });
         }
         public async Task<IEnumerable<TagDTO>> GetAllWithPopularityAsync()

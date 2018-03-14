@@ -13,9 +13,9 @@ namespace Mite.Infrastructure.Binders
         {
             var valueResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
 
-            return valueResult == null
-                ? base.BindModel(controllerContext, bindingContext)
-                : double.Parse(valueResult.AttemptedValue, CultureInfo.InvariantCulture);
+            if (double.TryParse(valueResult.AttemptedValue, NumberStyles.Number, CultureInfo.InvariantCulture, out double result))
+                return result;
+            return base.BindModel(controllerContext, bindingContext);
         }
     }
 }

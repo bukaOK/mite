@@ -46,7 +46,9 @@ var MiteGallery = {
             nextHtml: '<i class="angle big right icon"></i>',
             prevHtml: '<i class="angle big left icon"></i>'
         });
-        $(containerSel).masonry();
+        $(containerSel).masonry().imagesLoaded(function () {
+            $(containerSel).masonry('layout');
+        });
     },
     /**
      * Галерея услуги

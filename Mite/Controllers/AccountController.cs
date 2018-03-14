@@ -13,6 +13,7 @@ using Mite.CodeData.Constants;
 using Mite.Attributes.Filters;
 using Mite.ExternalServices.Google;
 using System.Security.Claims;
+using Mite.CodeData;
 
 namespace Mite.Controllers
 {
@@ -186,22 +187,8 @@ namespace Mite.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Register(RegisterModel model, string returnUrl)
         {
-            if (Request.Url.Host == "test.mitegroup.ru")
-            {
-                var allowedList = new List<string>
-                {
-                    "landenor",
-                    "dindon",
-                    "lex",
-                    "lex7",
-                    "lex_client"
-                };
-                if (!allowedList.Contains(model.UserName.ToLower()))
-                {
-                    ModelState.AddModelError("", "Регистрация запрещена.");
-                    return View(model);
-                }
-            }
+            if ((RegisterRoles?)model.RegisterRole == RegisterRoles.Author && string.IsNullOrEmpty(model.InviteKey))
+                ModelState.AddModelError("InviteKey", "Введите код приглашения");
 #if !DEBUG
             var recaptchaResult = await googleService.RecaptchaValidateAsync(Request["g-recaptcha-response"]);
             if (!recaptchaResult)
@@ -213,14 +200,13 @@ namespace Mite.Controllers
             {
                 return View(model);
             }
-            model.RefererId = Session["refid"] as string;
             var result = await userService.RegisterAsync(model);
             if (result.Succeeded)
             {
                 //Отправляем e-mail для подтверждения адреса эл. почты
                 var user = await userManager.FindByNameAsync(model.UserName);
                 string code = await userManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, "http");
+                var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, "http");
 #if !DEBUG
                 await userManager.SendEmailAsync(user.Id, "MiteGroup.Подтверждение почты.", $"Для подтверждения вашего аккаунта перейдите по <a href=\"{callbackUrl}\">ссылке.</a> MiteGroup.");
 #endif
@@ -238,6 +224,8 @@ namespace Mite.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ExternalRegister(ShortRegisterModel model, string returnUrl)
         {
+            if ((RegisterRoles?)model.RegisterRole == RegisterRoles.Author && string.IsNullOrEmpty(model.InviteKey))
+                ModelState.AddModelError("InviteKey", "Введите код приглашения");
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -252,7 +240,7 @@ namespace Mite.Controllers
             {
                 UserName = model.UserName,
                 Email = model.Email,
-                RefererId = Session["refid"] as string,
+                InviteKey = model.InviteKey,
                 RegisterRole = model.RegisterRole
             };
             var result = await userService.RegisterAsync(regModel, loginInfo);
@@ -265,7 +253,7 @@ namespace Mite.Controllers
                 await externalServices.Add(user.Id, loginInfo.Login.LoginProvider, accessToken);
                 //Отправляем e-mail для подтверждения адреса эл. почты
                 string code = await userManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, "http");
+                var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, "http");
 
                 await userManager.SendEmailAsync(user.Id, "MiteGroup.Подтверждение почты.", $"Для подтверждения вашего аккаунта перейдите по <a href=\"{callbackUrl}\">ссылке.</a> MiteGroup.");
                 if (!string.IsNullOrEmpty(returnUrl))
@@ -299,7 +287,7 @@ namespace Mite.Controllers
                 return Json(JsonStatuses.ValidationError, "Ваш e-mail не подтвержден");
 
             var code = await userManager.GeneratePasswordResetTokenAsync(user.Id);
-            var callbackUrl = Url.Action("ResetPassword", "Account", new { email = user.Email, code = code }, Request.Url.Scheme);
+            var callbackUrl = Url.Action("ResetPassword", "Account", new { email = user.Email, code }, Request.Url.Scheme);
             var msg = $"Для восстановления пароля перейдите по ссылке -> <a href=\"{callbackUrl}\">жмак</a>";
             await userManager.SendEmailAsync(user.Id, "Восстановление пароля", msg);
             return Json(JsonStatuses.Success, "На ваш почтовый ящик отправлено сообщение с ссылкой для восстановления. Если сообщения нет во входящих, проверьте папку \"Спам\".");
@@ -321,7 +309,7 @@ namespace Mite.Controllers
             var result = await userManager.ConfirmEmailAsync(userId, code);
             if (User.Identity.IsAuthenticated)
             {
-                return Redirect($"http://{Request.Url.Host}/user/settings/security");
+                return Redirect($"{Request.Url.Scheme}://{Request.Url.Host}/user/settings/security");
             }
             else
             {

@@ -1,18 +1,24 @@
 ﻿using Hangfire;
-using Mite.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+using Mite.BLL.Services;
 using System.Web.Mvc;
 
 namespace Mite.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly IUserService userService;
+
+        public HomeController(IUserService userService)
+        {
+            this.userService = userService;
+        }
+
         public ActionResult Index()
         {
-            return RedirectToAction("Top", "Posts");
+            if (User.Identity.IsAuthenticated)
+                return RedirectToAction("Top", "Posts");
+            var model = userService.GetLandingModel();
+            return View("Land", model);
         }
         public ActionResult Help()
         {

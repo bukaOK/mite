@@ -55,9 +55,15 @@ namespace Mite.DAL.Entities
         /// Услуга, к которой относится сделка
         /// </summary>
         [ForeignKey("Service")]
-        public Guid ServiceId { get; set; }
+        public Guid? ServiceId { get; set; }
         public AuthorService Service { get; set; }
-        //[ForeignKey("Chat")]
+        /// <summary>
+        /// Заказ, к которой относится сделка
+        /// </summary>
+        [ForeignKey("Order")]
+        public Guid? OrderId { get; set; }
+        public Order Order { get; set; }
+        [ForeignKey("Chat")]
         public Guid ChatId { get; set; }
         public Chat Chat { get; set; }
         [ForeignKey("DisputeChat")]
@@ -67,7 +73,6 @@ namespace Mite.DAL.Entities
         /// Привязанный к сделке модератор
         /// </summary>
         [ForeignKey("Moder")]
-
         public string ModerId { get; set; }
         public User Moder { get; set; }
         [ForeignKey("Client")]

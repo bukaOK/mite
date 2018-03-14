@@ -17,7 +17,7 @@
 }
 <div class="ui stackable grid">
     <div class="thirteen wide column">
-        <div class="ui @*active*@ tab" data-tab="private" role="tabpanel">
+        <div class="ui active tab" data-tab="private" role="tabpanel">
             <div class="ui stackable grid">
                 <div class="five wide column">
                     <div class="ui chat-items-wrap segment">
@@ -77,8 +77,8 @@
     </div>
     <div class="three wide column">
         <div class="ui vertical chat-tabs menu" role="tablist">
-            <a class="item" role="tab" data-tab="private">Приватные</a>
-            <a class="item" role="tab" data-tab="public">Публичные</a>
+            <a class="item" role="tab" data-tab="private">Мои</a>
+            <a class="item" role="tab" data-tab="public">Открытые</a>
         </div>
         <button class="ui fluid green inverted button" onclick="$('#chatCreateModal').modal('show')">
             Создать чат
@@ -107,17 +107,16 @@
                     </div>
                 </div>
             </div>
-            @Html.HiddenFor(x => x.ChatType, new { Value = ChatTypes.PrivateGroup })
             <div class="inline fields">
                 <label>@Html.DisplayNameFor(x => x.ChatType)</label>
                 <div class="field">
-                    <div class="ui radio checkbox" title="Чат будет доступен всем пользователям">
+                    <div class="ui radio checkbox" title="Чат будет доступен лишь приглашённым участниками чата">
                         @Html.RadioButtonFor(x => x.ChatType, ChatTypes.PrivateGroup, new { @checked = true })
                         <label>Приватный</label>
                     </div>
                 </div>
                 <div class="field">
-                    <div class="ui radio checkbox" title="Чат будет доступен лишь приглашённым участниками чата">
+                    <div class="ui radio checkbox" title="Чат будет доступен всем пользователям">
                         @Html.RadioButtonFor(x => x.ChatType, ChatTypes.Public)
                         <label>Публичный</label>
                     </div>

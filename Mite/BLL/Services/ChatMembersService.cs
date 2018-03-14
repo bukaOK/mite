@@ -143,7 +143,7 @@ namespace Mite.BLL.Services
         {
             var chat = await Database.GetRepo<ChatRepository, Chat>().GetAsync(chatId);
             var member = await membersRepository.GetAsync(memberId, chatId);
-            if (member.InviterId != currentUserId && chat.CreatorId != currentUserId)
+            if (member == null || member.Status != ChatMemberStatuses.InChat && member.InviterId != currentUserId && chat.CreatorId != currentUserId)
                 return DataServiceResult.Failed("Действие запрещено");
             try
             {
@@ -160,7 +160,7 @@ namespace Mite.BLL.Services
         public async Task<DataServiceResult> ExitAsync(Guid chatId, string userId)
         {
             var member = await membersRepository.GetAsync(chatId, userId);
-            if (member == null)
+            if (member == null || member.Status != ChatMemberStatuses.InChat)
                 return DataServiceResult.Failed("Пользователь не является участником чата");
             try
             {

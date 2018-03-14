@@ -74,6 +74,40 @@ namespace Mite.BLL.Helpers
                 return Regex.Replace(virtualPath, "~", "") + imageName;
             }
         }
+        public static string CreateImage(string virtualPath, HttpPostedFileBase file)
+        {
+            var path = HostingEnvironment.MapPath(virtualPath);
+            if (file.ContentType.Split('/')[0] != "image")
+                throw new ArgumentException("Неверный формат");
+
+            var imgFormat = file.ContentType.Split('/')[1];
+            if (imgFormat == "jpeg")
+                imgFormat = "jpg";
+
+            string imageName;
+            string imagePath;
+            //Проверяем на то, есть ли уже изображения с таким именем
+            do
+            {
+                imageName = Guid.NewGuid() + "." + imgFormat;
+                imagePath = path[path.Length - 1] == '\\' ? path + imageName : path + "\\" + imageName;
+            } while (File.Exists(imagePath));
+            //Сохраняем на диск
+            file.SaveAs(imagePath);
+
+            var optimizer = new ImageOptimizer();
+            optimizer.LosslessCompress(imagePath);
+
+            virtualPath += virtualPath[virtualPath.Length - 1] == '/' ? "" : "/";
+            return Regex.Replace(virtualPath, "~", "") + imageName;
+        }
+        public static string ToVirtualPath(string path)
+        {
+            var vPath = path.Replace(HostingEnvironment.ApplicationPhysicalPath, string.Empty);
+            if (vPath[0] != '/' && vPath[0] != '\\')
+                vPath = "/" + vPath;
+            return vPath.Replace('\\', '/');
+        }
         public static string CreateFile(string virtualPath, string base64, string ext)
         {
             if (string.IsNullOrEmpty(virtualPath))
@@ -142,6 +176,20 @@ namespace Mite.BLL.Helpers
             }
         }
         /// <summary>
+        /// Удалить несколько файлов
+        /// </summary>
+        /// <param name="virtualPaths"></param>
+        public static void DeleteFiles(params string[] virtualPaths)
+        {
+            foreach (var vPath in virtualPaths)
+                DeleteFile(vPath);
+        }
+        public static void DeleteFiles(IEnumerable<string> virtualPaths)
+        {
+            foreach (var vPath in virtualPaths)
+                DeleteFile(vPath);
+        }
+        /// <summary>
         /// Удаляем файл по полному пути
         /// </summary>
         /// <param name="path"></param>
@@ -198,9 +246,10 @@ namespace Mite.BLL.Helpers
                 return "";
 
             var reader = new StreamReader(HostingEnvironment.MapPath(path));
-            var str = await reader.ReadToEndAsync();
+            var buffer = new char[charsCount];
+            var cropped = await reader.ReadBlockAsync(buffer, 0, charsCount) < charsCount;
             reader.Close();
-            return HandleReading(str, path, charsCount);
+            return HandleReading(new string(buffer), path, cropped);
         }
         public static string ReadDocument(string path, int charsCount)
         {
@@ -208,33 +257,28 @@ namespace Mite.BLL.Helpers
                 return "";
 
             var reader = new StreamReader(HostingEnvironment.MapPath(path));
-            var str = reader.ReadToEnd();
+            var buffer = new char[charsCount];
+            var cropped = reader.ReadBlock(buffer, 0, charsCount) < charsCount;
             reader.Close();
-            return HandleReading(str, path, charsCount);
+            return HandleReading(new string(buffer), path, cropped);
         }
-        private static string HandleReading(string str, string path, int charsCount)
+        private static string HandleReading(string substr, string path, bool cropped)
         {
-            //После удаляем картинки, т.к. они будут некорректно отображаться
-            str = Regex.Replace(str, @"<img.+(>|\/>)", "");
-            str = Regex.Replace(str, @"<table>.+</table>", "");
-
-            var substr = str.Substring(0, str.Length < charsCount ? str.Length : charsCount);
-
+            //После удаляем картинки и таблицы, т.к. они будут некорректно отображаться
+            substr = Regex.Replace(substr, @"(<img[^>]*>?)|(<table((?!<\/table>).)*(<\/table>)?)", "");
+             
             //Удаляем все недооткрытые(вроде <p) в конце теги
-            substr = Regex.Replace(substr, @"(<|<\/|<(h3|h2|p|i|b)[^>]*>*)$", "");
-
+            substr = Regex.Replace(substr, @"(<|<\/|<(h3|h2|p|i|b|table|img)[^>]*>*)$", "");
             substr = Regex.Replace(substr, @"(<h3[^>]*|h2[^>]*)", "<p");
 
             var tags = new[] { "p", "i", "b" };
             var closeTagsStack = new Stack<string>();
-            if (charsCount < GetDocCharsCount(path))
-            {
+            if (cropped)
                 substr += "...";
-            }
 
             foreach (var tag in tags)
             {
-                substr = Regex.Replace(substr, $"<\\/{tag}[ ]*$", $"<\\/{tag}>");
+                substr = Regex.Replace(substr, $"<\\/{tag}\\s*$", $"<\\/{tag}>");
                 //Проверяем, закрыт ли тег в конце, т.к. мы обрезали строку
                 var lastTagMatches = Regex.Matches(substr, $"<{tag}[^>]*>");
                 if (lastTagMatches.Count == 0)

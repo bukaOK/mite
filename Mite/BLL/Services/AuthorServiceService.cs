@@ -64,9 +64,8 @@ namespace Mite.BLL.Services
         public async Task<DataServiceResult> AddAsync(AuthorServiceModel model)
         {
             var authorService = Mapper.Map<AuthorService>(model);
-            var tuple = ImagesHelper.CreateImage(PathConstants.VirtualImageFolder, model.ImageBase64);
-            authorService.ImageSrc = tuple.vPath;
-            authorService.ImageSrc_50 = tuple.compressedVPath;
+            authorService.ImageSrc = FilesHelper.CreateImage(PathConstants.VirtualImageFolder, model.ImageBase64);
+            authorService.ImageSrc_50 = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(authorService.ImageSrc), 500));
             authorService.CreateDate = DateTime.UtcNow;
 
             try

@@ -71,6 +71,7 @@
     <Compile Include="Enums\HelperTypes.cs" />
     <Compile Include="Enums\MessageAttachmentTypes.cs" />
     <Compile Include="Enums\NotificationTypes.cs" />
+    <Compile Include="Enums\OrderStatuses.cs" />
     <Compile Include="Enums\OrderTypes.cs" />
     <Compile Include="Enums\PaymentType.cs" />
     <Compile Include="Enums\PostContentTypes.cs" />

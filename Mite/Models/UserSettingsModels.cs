@@ -82,6 +82,10 @@ namespace Mite.Models
         [UIHint("Toggle")]
         public bool MailNotify { get; set; }
     }
+    public class InviteSettingsModel
+    {
+        public string InviteKey { get; set; }
+    }
     public class EmailSettingsModel
     {
         public string Email { get; set; }

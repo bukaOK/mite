@@ -15,7 +15,7 @@
         <div class="two fields">
             <div class="field">
                 <label>@Html.DisplayNameFor(x => x.Price)</label>
-                @Html.TextBoxFor(x => x.Price, new { placeholder = Model.Price ?? Model.Service.Price })
+                @Html.TextBoxFor(x => x.Price, new { placeholder = Model.Price ?? Model.Service?.Price ?? Model.Order.Price })
             </div>
             <div class="field">
                 <label>@Html.DisplayNameFor(x => x.DeadlineStr)</label>

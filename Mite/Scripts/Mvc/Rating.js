@@ -40,7 +40,7 @@ var RatingMvc = {
         var isRate = $(btn).data('isRate'),
             commentRating = $(btn).find('.rating')[0],
             rateValue = isRate ? 0 : 1;
-        return $.post('ratecomment', {
+        return $.post('/rating/ratecomment', {
             CommentId: commentId,
             UserId: userId,
             Value: rateValue
@@ -74,7 +74,7 @@ var RatingMvc = {
     */
     ratePost: function (rateValue, notificType, userId, postId) {
         var currentPostRating = $('#post-rating').data('rating');
-        return $.post('ratepost', {
+        return $.post('/rating/ratepost', {
             Id: $("#CurrentRating_Id").val(),
             Value: rateValue,
             PostId: $("#CurrentRating_PostId").val()

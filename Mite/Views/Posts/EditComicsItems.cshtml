@@ -45,14 +45,9 @@
             @Html.EditorFor(x => x.Description)
             <div class="field">
                 <div class="ui fluid search multiple selection dropdown" id="select-tags">
-                    <input type="hidden" name="Tags" value="@tagsRow" />
+                    <input type="hidden" name="Tags" id="Tags" />
                     <div class="default text">Теги</div>
-                    <div class="menu">
-                        @foreach (var tagName in Model.AvailableTags)
-                        {
-                            <div class="item" data-value="@tagName">@tagName</div>
-                        }
-                    </div>
+                    <div class="menu"></div>
                 </div>
             </div>
             <div class="ui error message"></div>
@@ -161,7 +156,7 @@
 </script>
 @section scripts{
     @Scripts.Render("~/bundles/api")
-    <script>
+<script>
         $(function () {
             @Html.Raw(Html.FormValidation<Mite.Models.ImagePostModel>(".p-form"))
             $('.p-item-form').form({
@@ -188,16 +183,7 @@
                     }
                 }
             });
-            $('#select-tags').dropdown({
-                allowAdditions: true,
-                fullTextSearch: true,
-                keys: {
-                    delimiter: 13
-                },
-                showOnFocus: false,
-                forceSelection: false,
-                match: 'text'
-            });
+            TagsApi.loadDropdown('#select-tags', '@tagsRow'.split(','));
         });
-    </script>
+</script>
 }

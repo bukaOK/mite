@@ -1,8 +1,6 @@
 ﻿using Mite.CodeData.Enums;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 
 namespace Mite.Models
@@ -50,5 +48,15 @@ namespace Mite.Models
         public ServiceSortFilter SortFilter { get; set; }
         public int? Min { get; set; }
         public int? Max { get; set; }
+    }
+    public class OrderTopFilterModel : BaseFilterModel
+    {
+        public Guid? OrderTypeId { get; set; }
+        public IEnumerable<SelectListItem> OrderTypes { get; set; }
+        public Guid? CityId { get; set; }
+        public IEnumerable<SelectListItem> Cities { get; set; }
+        public int? MinPrice { get; set; }
+        public int? MaxPrice { get; set; }
+        public string Input { get; set; }
     }
 }

@@ -1,16 +1,13 @@
 ﻿using Dapper;
 using Mite.BLL.DTO;
+using Mite.CodeData.Constants;
 using Mite.CodeData.Enums;
 using Mite.DAL.Core;
 using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
-using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.Entity;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace Mite.DAL.Repositories
 {
@@ -57,6 +54,24 @@ namespace Mite.DAL.Repositories
                 DbContext.Entry(user).Property(x => x.Reliability).IsModified = true;
                 await SaveAsync();
             }
+        }
+        public int Count(string roleName)
+        {
+            var query = "select count(*) from dbo.\"Users\" users inner join dbo.\"UserRoles\" user_roles on " +
+                "user_roles.\"UserId\"=users.\"Id\" inner join dbo.\"Roles\" roles on roles.\"Id\"=user_roles.\"RoleId\" " +
+                "where roles.\"Name\"=@roleName;";
+            return Db.QueryFirst<int>(query, new { roleName });
+        }
+        /// <summary>
+        /// Огр. кол-во пользователей(для лендинга)
+        /// </summary>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public IEnumerable<User> RandomUsers(int count)
+        {
+            var query = $"select * from dbo.\"Users\" where \"AvatarSrc\" is not null and \"AvatarSrc\"!='{PathConstants.AvatarSrc}' " +
+                $"order by random() limit {count};";
+            return Db.Query<User>(query);
         }
     }
 }

@@ -13,8 +13,13 @@ namespace Mite.Tests.DAL.Repositories
     public class PostsRepoTest
     {
         private const string ConnectionString = @"Data Source=194.87.103.114\SQLEXPRESS,1433;Initial Catalog=MiteDb;User ID=Buka;Password=Evd$utTC";
-        private readonly PostsRepository repo = new PostsRepository(new AppDbContext());
+        PostsRepository repository;
 
+        [TestInitialize]
+        public void Init()
+        {
+            repository = new PostsRepository(new AppDbContext());
+        }
         [TestMethod]
         public async Task GetByFilterTest()
         {

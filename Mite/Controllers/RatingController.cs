@@ -33,7 +33,7 @@ namespace Mite.Controllers
             {
                 
                 await ratingService.RatePostAsync(postModel);
-                return Ok();
+                return Json(JsonStatuses.Success);
             }
             catch(Exception)
             {
@@ -58,7 +58,7 @@ namespace Mite.Controllers
             try
             {
                 await ratingService.RateCommentAsync(commentModel);
-                return Ok();
+                return Json(JsonStatuses.Success);
             }
             catch (Exception)
             {

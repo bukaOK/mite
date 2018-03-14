@@ -1,0 +1,268 @@
+﻿@using Mite.Helpers
+@model Mite.Models.OrderTopFilterModel
+
+@{
+    ViewBag.Title = "Заказы";
+    var isMobile = ViewHelper.IsMobileDevice(Request);
+}
+@section styles{
+    <style>
+        #ordersEmptyMsg:not(.active){
+            display: none;
+        }
+        .ui.orders.items {
+            margin: 0;
+        }
+    </style>
+}
+<form class="ui stackable form menu">
+    @Html.HiddenFor(x => x.OrderTypeId)
+    <div class="item">
+        <div class="ui small labeled input" title="Нажмите Enter для поиска">
+            <input type="number" placeholder="Цена от" id="minPrice" />
+        </div>
+    </div>
+    <div class="item">
+        <div class="ui small input" title="Нажмите Enter для поиска">
+            <input type="number" placeholder="Цена до" id="maxPrice" />
+        </div>
+    </div>
+    <div class="item">
+        <div class="ui inline dropdown" id="cityFilter">
+            @Html.HiddenFor(x => x.CityId)
+            <i class="building icon"></i>
+            <span class="text">Любой город</span>
+            <i class="dropdown icon"></i>
+            <div class="menu">
+                <div class="ui icon search input">
+                    <i class="search icon"></i>
+                    <input type="text" placeholder="Введите название..." />
+                </div>
+                <div class="scrolling menu">
+                    <div class="item" data-value="">Любой город</div>
+                    @foreach (var city in Model.Cities)
+                    {
+                        if (city.Selected)
+                        {
+                            <div class="active item" data-value="@city.Value">@city.Text</div>
+                        }
+                        else
+                        {
+                            <div class="item" data-value="@city.Value">@city.Text</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="right item" id="searchItem">
+        <div class="ui transparent icon input">
+            <input type="text" placeholder="Название услуги" title="Поиск" role="search" onfocus="$('#searchItem').addClass('maximised')"
+                   onblur="$('#searchItem').removeClass('maximised')" id="orderSearch" />
+            <i class="search link icon" onclick="SearchFilters.changeFilter()"></i>
+        </div>
+    </div>
+</form>
+<div class="ui stackable grid">
+    <div class="four wide column">
+        <div class="ui segment">
+            <h3 class="ui dividing header">
+                Типы заказов
+                <a class="ui blue label" onclick="loadOrderType('')">Сбросить</a>
+            </h3>
+            @foreach (var orderType in Model.OrderTypes)
+            {<a class="ui otype label" data-id="@orderType.Value" onclick="loadOrderType('@orderType.Value')">@orderType.Text</a>}
+        </div>
+        <div id="vk_groups"></div>
+        <div class="ui segment">
+            <h4 class="ui dividing header">Реклама</h4>
+            <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+            <!-- TopAd -->
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-7675079294669395"
+                 data-ad-slot="2018290469"
+                 data-ad-format="auto"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+    </div>
+    <div class="twelve wide column">
+        <div class="ui segment">
+            <h3 class="ui blue center aligned icon header" id="ordersEmptyMsg">
+                <i class="meh outline icon"></i>
+                <span class="content">К сожалению, по вашему запросу ничего не найдено.</span>
+            </h3>
+            <div class="ui orders divided unstackable items"></div>
+            <div class="active dot-loader-wrapper" style="height: 20px">
+                <div class="dot-loader">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/x-jsrender" id="orderTmpl">
+    <div class="item">
+        {{if ImageSrc}}
+        <div class="image"><img src="{{:ImageSrc}}" width="{{:width}}" height="{{:height}}" /></div>
+        {{/if}}
+        <div class="content">
+            <a class="header" href="@Url.Action("Show", "Orders")/{{:Id}}">{{:Title}}</a>
+            <div class="meta">{{:Requests}}</div>
+            <div class="description">{{:Description}}</div>
+            <div class="extra">
+                <a class="ui teal label" onclick="loadOrderType('{{:OrderType.Id}}')" title="Тип заказа"><i class="tag icon"></i>{{:OrderType.Name}}</a>
+                <a class="ui label" href="/user/profile/{{:UserName}}" title="Заказчик"><i class="user icon"></i>{{:UserName}}</a>
+                <div class="ui label" title="Цена"><i class="ruble icon"></i>{{:Price}}</div>
+                <div class="ui label" title="Время выполнения"><i class="calendar icon"></i>{{:Deadline}}</div>
+            </div>
+        </div>
+    </div>
+</script>
+@section scripts{
+    <script type="text/javascript" src="//vk.com/js/api/openapi.js?146"></script>
+    @Scripts.Render("~/bundles/grid")
+    <script>
+        function loadOrderType(typeId) {
+            $('#OrderTypeId').val(typeId);
+            $('.otype.active').removeClass('active');
+            if (typeId)
+                $('.otype[data-id="' + typeId + '"]').addClass('active');
+            SearchFilters.changeFilter();
+        }
+        $(function () {
+            var itemsContainer = $('.orders.items');
+            $('#sortType').dropdown({
+                onChange: function () {
+                    if (SearchFilters.initialized) {
+                        SearchFilters.changeFilter();
+                    }
+                }
+            });
+            $('#cityFilter').dropdown({
+                forceSelection: false,
+                match: 'text',
+                onChange: function () {
+                    if (SearchFilters.initialized) {
+                        SearchFilters.changeFilter();
+                    }
+                }
+            });
+            $('input[type="number"]').focusin(function (ev) {
+                $(this).siblings('.label').addClass('violet');
+            }).focusout(function (ev) {
+                $(this).siblings('.label').removeClass('violet');
+            });
+            $('#minPrice,#maxPrice').focusin(function (ev) {
+                $(this).siblings('.label').addClass('violet');
+            }).focusout(function (ev) {
+                $(this).siblings('.label').removeClass('violet');
+            });
+            $('#minPrice,#maxPrice,#orderSearch').keypress(function (ev) {
+                if (ev.keyCode === 13 || ev.which === 13) {
+                    SearchFilters.changeFilter();
+                }
+            });
+            SearchFilters.init({
+                beforeLoad: function () {
+                    $('.dot-loader-wrapper').addClass('active');
+                },
+                onSuccess: function (resp) {
+                    if (resp.length > 0) {
+                        $('#ordersEmptyMsg').removeClass('active');
+                        var isSmallScreen = window.innerWidth < 767;
+                        resp.forEach(function (elem) {
+                            if (elem.ImageSrc && isSmallScreen) {
+                                elem.width = 125;
+                                elem.height = elem.FullHeight * elem.width / elem.FullWidth;
+                            } else {
+                                elem.width = 175;
+                                elem.height = elem.FullHeight * elem.width / elem.FullWidth;
+                            }
+                        });
+                        var tmpl = $.templates('#orderTmpl');
+                        var html = tmpl.render(resp);
+
+                        if (SearchFilters._loadNextPage) {
+                            itemsContainer.append(html);
+                        } else {
+                            itemsContainer.html(html);
+                        }
+                    } else {
+                        $('#ordersEmptyMsg').addClass('active');
+                        itemsContainer.children('.item').remove();
+                    }
+                },
+                onError: function () {
+                    iziToast.error({
+                        title: 'Упс!',
+                        message: 'Ошибка сервера.'
+                    });
+                },
+                onComplete: function () {
+                    $('.dot-loader-wrapper').removeClass('active');
+                },
+                ajax: {
+                    url: '@Url.Action("Top", "Orders")'
+                },
+                filters: [
+                    {
+                        name: 'cityId',
+                        selector: '#CityId',
+                        getVal: function () {
+                            return $(this.selector).val()
+                        },
+                        updateState: function (newVal) {
+                            $('#cityFilter').dropdown('set selected', newVal);
+                        }
+                    },
+                    {
+                        name: 'minPrice',
+                        selector: '#minPrice',
+                        getVal: function () {
+                            return $(this.selector).val();
+                        },
+                        updateState: function (newVal) {
+                            $(this.selector).val(newVal);
+                        }
+                    },
+                    {
+                        name: 'maxPrice',
+                        selector: '#maxPrice',
+                        getVal: function () {
+                            return $(this.selector).val();
+                        },
+                        updateState: function (newVal) {
+                            $(this.selector).val(newVal);
+                        }
+                    },
+                    {
+                        name: 'orderTypeId',
+                        selector: '#OrderTypeId',
+                        getVal: function () {
+                            return $(this.selector).val();
+                        },
+                        updateState: function (newVal) {
+                            $(this.selector).val(newVal);
+                            $('.otype[data-id="' + newVal + '"]').addClass('active');
+                        }
+                    },
+                    {
+                        name: 'input',
+                        selector: '#orderSearch',
+                        getVal: function () {
+                            return $(this.selector).val();
+                        },
+                        updateState: function (newVal) {
+                            $(this.selector).val(newVal);
+                        }
+                    },
+                ]
+            });
+            VK.Widgets.Group("vk_groups", { mode: 3, no_cover: 1, width: $('#vk_groups')[0].offsetWidth }, 143219082);
+        });
+    </script>
+}
+

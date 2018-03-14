@@ -7,6 +7,7 @@ using Mite.DAL.Entities;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Mite.CodeData.Constants;
+using System.Data.Entity;
 
 namespace Mite.BLL.IdentityManagers
 {
@@ -66,6 +67,11 @@ namespace Mite.BLL.IdentityManagers
             var userIdentity = await base.CreateIdentityAsync(user, authenticationType);
             userIdentity.AddClaim(new Claim(ClaimConstants.AvatarSrc, user.AvatarSrc));
             return userIdentity;
+        }
+        public async Task<User> GetByInviteIdAsync(Guid inviteId)
+        {
+            var user = await Users.FirstOrDefaultAsync(x => x.InviteId == inviteId);
+            return user;
         }
     }
 }

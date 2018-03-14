@@ -141,5 +141,18 @@
                 $btn.removeClass('loading disabled');
             }
         });
+    },
+    generateInvite: function (btn) {
+        $(btn).addClass('loading disabled');
+        return $.post('/user/settings/generateinvite', null, function (resp) {
+            $('#InviteKey').val(resp.inviteId);
+        }).fail(function () {
+            iziToast.error({
+                title: 'Упс!',
+                message: 'Ошибка при создании ключа'
+            });
+        }).always(function () {
+            $(btn).removeClass('loading disabled');
+        });
     }
 }

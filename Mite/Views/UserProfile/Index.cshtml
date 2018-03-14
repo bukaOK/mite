@@ -45,14 +45,12 @@
         </div>
         <div class="column">
             <div class="ui centered circular image" id="avatar-img">
-                <div class="ui dimmer">
+                <div class="ui center aligned dimmer">
                     <div class="content">
-                        <div class="center">
-                            <a class="ui huge black circular avatar icon button" href="@Url.Action("ChangeAvatar", "UserSettings")"><i class="photo icon"></i></a>
-                        </div>
+                        <a class="ui huge black circular avatar icon button" href="@Url.Action("ChangeAvatar", "UserSettings")"><i class="photo icon"></i></a>
                     </div>
                 </div>
-                <img src="@Model.AvatarSrc" width="150" />
+                <img src="@Model.AvatarSrc" width="150" height="150" />
             </div>
             <h2 class="ui header">
                 @Model.UserName
@@ -598,6 +596,9 @@ else
                                 elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.PublishDate).getTime());
                             } else{
                                 elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.LastEdit).getTime());
+                            }
+                            if (elem.FullWidth) {
+                                
                             }
                         });
                     }

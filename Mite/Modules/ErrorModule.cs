@@ -19,8 +19,10 @@ namespace Mite.Modules
 
         public void Init(HttpApplication context)
         {
+#if !DEBUG
             context.EndRequest += EndRequest_Handler;
             context.Error += Error_Handler;
+#endif
         }
 
         private void Error_Handler(object sender, EventArgs e)
@@ -47,7 +49,7 @@ namespace Mite.Modules
                 resp.StatusCode = 404;
             if (errorCodes.Contains(resp.StatusCode))
             {
-                //resp.Clear();
+                resp.Clear();
                 var content = File.ReadAllText(HostingEnvironment.MapPath($"/Views/ErrorPages/{resp.StatusCode}.html"));
                 resp.Write(content);
             }

@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Mite.Tests.BLL.Services
 {
     [TestClass]
-    public class PostsService
+    public class PostsServiceTest
     {
         [TestMethod]
         public void TestMethod1()

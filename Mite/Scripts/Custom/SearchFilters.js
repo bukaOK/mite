@@ -37,7 +37,7 @@
             SearchFilters.callbacks.onSuccess(resp.data);
         },
         error: function (jqXhr) {
-            SearchFilters.callbacks.onError(resp);
+            SearchFilters.callbacks.onError(jqXhr);
         },
         complete: function (jqXhr) {
             SearchFilters.callbacks.onComplete(jqXhr);
@@ -99,7 +99,9 @@
         var filters = this.filters;
 
         filters.forEach(function (elem, index) {
-            str += elem.name + '=' + elem.getVal() + '&';
+            var val = elem.getVal();
+            if(val || val === 0)
+                str += elem.name + '=' + val + '&';
         });
         return str.substr(0, str.length - 1);
     },

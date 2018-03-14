@@ -7,6 +7,7 @@ using System.Web.Http;
 using Mite.Models;
 using Mite.DAL.Entities;
 using Mite.DAL.Repositories;
+using Mite.CodeData.Constants;
 
 namespace Mite.Controllers.Api
 {
@@ -23,7 +24,8 @@ namespace Mite.Controllers.Api
         [AllowAnonymous]
         public async Task<IEnumerable<TagModel>> GetForUser()
         {
-            var tags = await _unitOfWork.GetRepo<TagsRepository, Tag>().GetAllWithPopularityAsync();
+            var confirmed = User.IsInRole(RoleNames.Moderator) ? null : (bool?)true;
+            var tags = await _unitOfWork.GetRepo<TagsRepository, Tag>().GetAllWithPopularityAsync(confirmed, 200);
             return Mapper.Map<IEnumerable<TagModel>>(tags);
         }
         [HttpGet]

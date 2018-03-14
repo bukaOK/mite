@@ -53,7 +53,7 @@
         </div>
         <span class="type-label" style="display: none"></span>
         <button type="button" class="ui right floated compact icon circular emoji-btn button">
-            <i class="smile icon"></i>
+            <i class="smile outline icon"></i>
         </button>
         <div class="ui emoji popup">
             <div class="em-wrapper">
@@ -144,22 +144,18 @@
     <div class="column" data-id="{{:Id}}">
         {{if IsImage}}
         <div class="ui small image">
-            <div class="ui dimmer">
+            <div class="ui center aligned dimmer">
                 <div class="content">
-                    <div class="center">
-                        <i class="big remove icon"></i>
-                    </div>
+                    <i class="big remove icon"></i>
                 </div>
             </div>
             <img src="{{:Src}}" />
         </div>
         {{else}}
         <div class="ui segment">
-            <div class="ui dimmer">
+            <div class="ui center aligned dimmer">
                 <div class="content">
-                    <div class="center">
-                        <i class="big remove icon"></i>
-                    </div>
+                    <i class="big remove icon"></i>
                 </div>
             </div>
             <p>{{:Name}}</p>
@@ -175,11 +171,9 @@
     {{else}}
     <div class="column">
         <div class="ui segment">
-            <div class="ui dimmer">
+            <div class="ui center aligned dimmer">
                 <div class="content">
-                    <div class="center">
-                        <i class="download icon"></i>
-                    </div>
+                    <i class="download icon"></i>
                 </div>
             </div>
             <p>{{:Name}}</p>

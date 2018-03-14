@@ -13,6 +13,7 @@ using NLog;
 using AutoMapper;
 using Mite.BLL.Helpers;
 using Mite.CodeData.Enums;
+using System.Web.Hosting;
 
 namespace Mite.BLL.Services
 {
@@ -55,8 +56,8 @@ namespace Mite.BLL.Services
             {
                 var members = model.Recipients.Select(x => x.Id).Take(2);
                 var companionId = members.First(x => x != currentUserId);
-                var isInBlackList = (await blackListRepo.IsInBlackList(currentUserId, companionId)) ||
-                        (await blackListRepo.IsInBlackList(companionId, currentUserId));
+                var isInBlackList = (await blackListRepo.IsInBlackListAsync(currentUserId, companionId)) ||
+                        (await blackListRepo.IsInBlackListAsync(companionId, currentUserId));
                 if (isInBlackList)
                     return DataServiceResult.Failed("Пользователь в черном списке");
                 chat = await chatRepository.GetByMembersAsync(members);
@@ -80,18 +81,22 @@ namespace Mite.BLL.Services
             else
             {
                 chat = await chatRepository.GetWithMembersAsync(model.ChatId);
-                if(chat.Type == ChatTypes.Private && chat.Members.Count == 2)
+                var currentMember = chat.Members.FirstOrDefault(x => x.UserId == currentUserId);
+                if(currentMember == null)
+                    return DataServiceResult.Failed("Неизвестный пользователь");
+                if (currentMember.Status != ChatMemberStatuses.InChat)
+                    return DataServiceResult.Failed("Вы не состоите в чате");
+                if (chat.Type == ChatTypes.Private && chat.Members.Count == 2)
                 {
                     var companionId = chat.Members.First(x => x.UserId != currentUserId).UserId;
-                    var isInBlackList = (await blackListRepo.IsInBlackList(currentUserId, companionId)) || 
-                        (await blackListRepo.IsInBlackList(companionId, currentUserId));
+                    var isInBlackList = (await blackListRepo.IsInBlackListAsync(currentUserId, companionId)) || 
+                        (await blackListRepo.IsInBlackListAsync(companionId, currentUserId));
                     if (isInBlackList)
                         return DataServiceResult.Failed("Пользователь в черном списке");
                 }
                 if (chat == null)
                     return DataServiceResult.Failed("Неизвестный чат");
-                if (!chat.Members.Any(x => x.UserId == model.Sender.Id))
-                    return DataServiceResult.Failed("Неизвестный пользователь");
+                    
                 foreach(var member in chat.Members)
                 {
                     if(member.Status == ChatMemberStatuses.Removed)
@@ -136,9 +141,8 @@ namespace Mite.BLL.Services
                     switch (att.Type)
                     {
                         case AttachmentTypes.Image:
-                            var tuple = ImagesHelper.CreateImage(AttachmentsFolder, file);
-                            att.Src = tuple.vPath;
-                            att.CompressedSrc = tuple.compressedVPath;
+                            att.Src = FilesHelper.CreateImage(AttachmentsFolder, file);
+                            att.CompressedSrc = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(att.Src), 500));
                             break;
                         default:
                             att.Src = FilesHelper.CreateFile(AttachmentsFolder, file);

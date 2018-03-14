@@ -194,10 +194,10 @@
                 <div class="ui form">
                     <div class="field">
                         <div class="ui fluid search multiple selection dropdown" id="select-tags">
-                            @Html.HiddenFor(x => x.Tags, new { Value = tagsRow })
+                            <i class="dropdown icon"></i>
+                            <input type="hidden" name="tags" id="Tags" />
                             <div class="default text">Теги</div>
-                            <div class="menu">
-                            </div>
+                            <div class="menu"></div>
                         </div>
                     </div>
                     <div class="field">
@@ -226,35 +226,8 @@
                     $('#moderActionsDropdown').dropdown({
                         action: 'hide'
                     });
-                    $.ajax({
-                        url: '/api/tags',
-                        type: 'get',
-                        success: function (data) {
-                            var tagsMenu = $('#select-tags');
-                            var tagsItems = '';
-                            for (var i = 0; i < data.length; i++) {
-                                tagsItems += '<div class="item" data-value="' + data[i].Name + '">' + data[i].Name + '</div>'
-                            }
-                            tagsMenu.children('.menu').html(tagsItems);
-                            tagsMenu.dropdown({
-                                allowAdditions: true,
-                                fullTextSearch: true,
-                                keys: {
-                                    delimiter: false
-                                },
-                                showOnFocus: false,
-                                match: 'text',
-                                forceSelection: false
-                            });
-                        },
-                        error: function (jqXhr) {
-                            iziToast.error({
-                                title: 'Упс!',
-                                message: 'Теги не загружены.'
-                            });
-                        }
-                    });
-                })
+                    TagsApi.loadDropdown('#select-tags', '@tagsRow'.split(','));
+                });
             </script>
         }
     </div>
@@ -539,7 +512,6 @@
         });
     }
     $(function () {
-        initVkWidget();
         $('.modal').click(function(){
             return false;
         });
@@ -557,5 +529,6 @@
             loadUserGallery();
             MiteGallery.initComics('.comics-content');
         }
+        initVkWidget();
     });
 </script>

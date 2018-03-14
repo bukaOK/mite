@@ -56,7 +56,7 @@ namespace Mite.DAL.Repositories
         public async Task<Chat> GetWithLastMessageAsync(Guid chatId)
         {
             var query = "select distinct on(chats.\"Id\") * from dbo.\"Chats\" chats left outer join dbo.\"ChatMessages\" msgs " +
-                "on msgs.\"ChatId\"=chats.\"Id\" inner join dbo.\"Users\" sender on sender.\"Id\"=msgs.\"SenderId\" " +
+                "on msgs.\"ChatId\"=chats.\"Id\" left outer join dbo.\"Users\" sender on sender.\"Id\"=msgs.\"SenderId\" " +
                 "where chats.\"Id\"=@chatId order by chats.\"Id\", msgs.\"SendDate\" desc";
             return (await Db.QueryAsync<Chat, ChatMessage, User, Chat>(query, (chat, msg, sender) =>
             {
@@ -66,31 +66,35 @@ namespace Mite.DAL.Repositories
                     chat.Messages = new List<ChatMessage> { msg };
                 }
                 return chat;
-            }, new { chatId })).First();
+            }, new { chatId })).FirstOrDefault();
         }
         public Task<Chat> GetByMembersAsync(IEnumerable<string> userIds)
         {
             return Table.FirstOrDefaultAsync(x => x.Type == ChatTypes.Private && 
                 userIds.Count() == x.Members.Count && x.Members.All(y => userIds.Contains(y.UserId)));
         }
-        public async Task<IEnumerable<Chat>> GetByUserAsync(string userId)
+        public async Task<IEnumerable<UserChatDTO>> GetByUserAsync(string userId)
         {
-            var query = "select * from (select distinct on(chats.\"Id\") chats.*, last_msg.*, companion.* " +
-                "from dbo.\"Chats\" as chats left outer join (select msgs.*, sender.* from dbo.\"ChatMessages\" as msgs " +
-                "left outer join dbo.\"ChatMessageUsers\" as msg_users on msg_users.\"MessageId\"=msgs.\"Id\" " +
-                "left outer join dbo.\"Users\" as sender on msgs.\"SenderId\"=sender.\"Id\" " +
-                "where msg_users.\"UserId\"=@UserId order by msgs.\"SendDate\" desc) as last_msg on last_msg.\"ChatId\"=chats.\"Id\" " +
+            var query = "select * from (select distinct on(chats.\"Id\") chats.*, msgs_count.\"MessagesCount\" as \"NewMessagesCount\", " +
+                "chat_members.\"Status\", last_msg.*, companion.* from dbo.\"Chats\" as chats " +
+                "left outer join (select msgs.\"ChatId\", count(msgs.\"ChatId\") as \"MessagesCount\" from dbo.\"ChatMessages\" msgs " +
+                    "left outer join dbo.\"ChatMessageUsers\" msg_users on msg_users.\"MessageId\"=msgs.\"Id\" " +
+                    "where msg_users.\"UserId\"=@userId and msg_users.\"Read\"=false group by msgs.\"ChatId\") as msgs_count on msgs_count.\"ChatId\"=chats.\"Id\" " +
+                "left outer join (select msgs.*, sender.* from dbo.\"ChatMessages\" as msgs " +
+                    "left outer join dbo.\"ChatMessageUsers\" as msg_users on msg_users.\"MessageId\"=msgs.\"Id\" " +
+                    "left outer join dbo.\"Users\" as sender on msgs.\"SenderId\"=sender.\"Id\" " +
+                    "where msg_users.\"UserId\"=@UserId order by msgs.\"SendDate\" desc) as last_msg on last_msg.\"ChatId\"=chats.\"Id\" " +
                 "inner join dbo.\"ChatMembers\" as chat_members on chat_members.\"ChatId\"=chats.\"Id\" left outer join " +
                 "(select * from dbo.\"ChatMembers\" as ch_mem1 inner join dbo.\"Users\" as mem on mem.\"Id\"=ch_mem1.\"UserId\" " +
                 "where ch_mem1.\"UserId\" != @userId) as companion on companion.\"ChatId\"=chats.\"Id\" " +
                 "where chats.\"Type\"!=@DisputeType and chats.\"Type\"!=@DealType and chat_members.\"UserId\"=@UserId and " +
                 "chat_members.\"Status\"!=@RemovedStatus order by chats.\"Id\", last_msg.\"SendDate\" desc) as tbl order by tbl.\"SendDate\" desc;";
-            return await Db.QueryAsync<Chat, ChatMessage, User, User, Chat>(query, (chat, msg, sender, companion) =>
+            return await Db.QueryAsync<UserChatDTO, ChatMessage, User, User, UserChatDTO>(query, (chat, msg, sender, companion) =>
             {
                 if(msg != null)
                 {
                     msg.Sender = sender;
-                    chat.Messages = new List<ChatMessage> { msg };
+                    chat.LastMessage = msg;
                 }
                 if (string.IsNullOrEmpty(chat.ImageSrc) && companion != null)
                     chat.ImageSrc = companion.AvatarSrc;

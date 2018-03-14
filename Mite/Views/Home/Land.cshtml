@@ -1,7 +1,11 @@
-﻿
+﻿@using Mite.Helpers
+@model Mite.Models.LandingModel
 @{
     ViewBag.Title = "Главная";
     Layout = null;
+    var authorWord = ViewHelper.GetWordCase(Model.AuthorsCount, "автор", "автора", "авторов");
+    var usersWord = ViewHelper.GetWordCase(Model.ClientsCount, "пользователь", "пользователя", "пользователей");
+    var isMobile = ViewHelper.IsMobileDevice(Request);
 }
 <!DOCTYPE html>
 <html lang="ru">
@@ -24,161 +28,389 @@
     <meta name="theme-color" content="#b540c6">
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="MiteGroup - открытая площадка для публикации любых авторских работ." />
+    <meta name="description" content="MiteGroup - открытая площадка для публикации и заказа работ в сферах: арт, литература, дизайн, фото и многие другие." />
+    <meta name="keywords" content="арт,аниме арты,арт сайт,арт на заказ,рисунки сайт,выложить арт,выложить рисунок,портрет,портрет на заказ,дизайн,фото дизайн,дизайн кухни,литература,фото,фото заказ," />
     <noscript><meta http-equiv="refresh" content="0;URL=/home/badjs" /></noscript>
-    <title>MiteGroup</title>
-    <meta name="description" content="Добро пожаловать в наше творческое сообщество!"/>
+    <title>MiteGroup - площадка для публикации работ и продажи услуг в сферах искусства</title>
     @Styles.Render("~/Content/semantic", "~/Content/landing")
 </head>
-<body>    
+<body>
     <!-- Yandex.Metrika counter -->
-    <script type="text/javascript"> (function (d, w, c) { (w[c] = w[c] || []).push(function() { try { w.yaCounter45009220 = new Ya.Metrika({ id:45009220, clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true }); } catch(e) { } }); var n = d.getElementsByTagName("script")[0], s = d.createElement("script"), f = function () { n.parentNode.insertBefore(s, n); }; s.type = "text/javascript"; s.async = true; s.src = "https://mc.yandex.ru/metrika/watch.js"; if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); } })(document, window, "yandex_metrika_callbacks"); </script> <noscript><div><img src="https://mc.yandex.ru/watch/45009220" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <article class="ui stackable main center aligned middle aligned grid">
-        <div class="content-wrap column">
-            <img src="~/Content/images/some-logo.png" class="ui centered logo image" />
-            <div class="ui basic segment">
-                @Html.ActionLink("Зарегистрироваться", "Register", "Account", null, new { @class = "ui blue button" })
-                <div class="ui horizontal inverted divider">Или</div>
-                @Html.ActionLink("Войти", "Login", "Account", null, new { @class = "ui primary button" })
+    <script type="text/javascript">(function (d, w, c) { (w[c] = w[c] || []).push(function () { try { w.yaCounter45009220 = new Ya.Metrika({ id: 45009220, clickmap: true, trackLinks: true, accurateTrackBounce: true, webvisor: true }); } catch (e) { } }); var n = d.getElementsByTagName("script")[0], s = d.createElement("script"), f = function () { n.parentNode.insertBefore(s, n); }; s.type = "text/javascript"; s.async = true; s.src = "https://mc.yandex.ru/metrika/watch.js"; if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); } })(document, window, "yandex_metrika_callbacks");</script> <noscript><div><img src="https://mc.yandex.ru/watch/45009220" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <div class="ui thin right sidebar vertical inverted borderless menu">
+        
+    </div>
+    <div class="side-wrap">
+        <header class="ui secondary inverted menu">
+            <div class="ui container">
+                <a class="header main item" href="/">
+                    <img src="/Content/images/mite-logo-icon.png">
+                </a>
+                <div class="right menu" role="list">
+                    @Html.ActionLink("Условия пользования", "Terms", "Home", null, new { @class = "item", role = "listitem" })
+                    @Html.ActionLink("Политика конфиденциальности", "Privacy", "Home", null, new { @class = "item", role = "listitem" })
+                    <div class="item">
+                        @Html.ActionLink("Войти", "Login", "Account", null, new { @class = "ui violet inverted basic button" })
+                    </div>
+                </div>
+                <div class="right mobile menu">
+                    <div class="ui dropdown item">
+                        <i class="sidebar icon"></i>Меню
+                        <div class="ui inverted menu">
+                            @Html.ActionLink("Условия пользования", "Terms", "Home", null, new { @class = "item" })
+                            @Html.ActionLink("Политика конфиденциальности", "Privacy", "Home", null, new { @class = "item" })
+                            @Html.ActionLink("Войти", "Login", "Account", null, new { @class = "item" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <div class="sides">
+            <div class="author side">
+                <div class="ui center aligned chose dimmer">
+                    <div class="content">
+                        <h2 class="ui inverted header">
+                            <span class="content">Я - автор</span>
+                            <span class="sub header">
+                                Публикация работ, продажа услуг, заработок на рекламе и многое другое.
+                            </span>
+                        </h2>
+                        <button class="ui chose circular red inverted basic button">Выбрать</button>
+                    </div>
+                </div>
+                <div class="ui center aligned reg dimmer">
+                    <div class="content">
+                        <h2 class="ui inverted header">
+                            <span class="content">MiteGroup</span>
+                            <span class="sub header">Создавай вместе с нами.</span>
+                        </h2>
+                        @Html.ActionLink("Регистрация", "Register", "Account", null, new { @class = "ui circular violet inverted button" })
+                    </div>
+                </div>
+                @Html.ActionLink("Автор: NightArt", "Index", "UserProfile", new { name = "NightArt" }, new { @class = "author" })
+            </div>
+            <div class="client side">
+                <div class="ui center aligned chose dimmer">
+                    <div class="content">
+                        <h2 class="ui inverted header">
+                            <span class="content">Я - клиент</span>
+                            <span class="sub header">
+                                Выбор автора для заказов в любой сфере искусства.
+                            </span>
+                        </h2>
+                        <button class="ui chose circular blue inverted basic button">Выбрать</button>
+                    </div>
+                </div>
+                <div class="ui center aligned reg dimmer">
+                    <div class="content">
+                        <h2 class="ui inverted header">
+                            <span class="content">MiteGroup</span>
+                            <span class="sub header">Общайся, оценивай, заказывай.</span>
+                        </h2>
+                        @Html.ActionLink("Регистрация", "Register", "Account", null, new { @class = "ui circular violet inverted button" })
+                    </div>
+                </div>
+                @Html.ActionLink("Автор: MortemPhoto", "Index", "UserProfile", new { name = "MortemPhoto" }, new { @class = "author" })
             </div>
         </div>
-    </article>
-    <div class="ui hidden divider"></div>
-    <article class="ui container">
-        <div class="ui stackable grid">
-            <div class="row">
-                <div class="seven wide column">
-                    <div class="ui basic segment">
-                        <h2 class="ui header">Ничего лишнего</h2>
-                        <p>Добавляйте анимацию, изображения, фотографии, литературу, статьи -
-                        любое искусство наш сервис встретит приветливым дизайном и удобным функционалом. </p>
-                        <p>А тем кто пишет, теперь не придётся использовать сторонние редакторы - ведь всё есть у нас!</p>
-                    </div>
-                </div>
-                <div class="nine wide column">
-                    <div class="ui basic segment">
-                        <img class="ui image" src="~/Content/images/land/makeDoc.gif" />
-                    </div>
-                </div>
+    </div>
+    <div class="author wrap">
+        <div class="ui hidden divider"></div>
+        <div class="ui info-item container two-click segment">
+            <div class="two-click-out">
+                <h2 class="ui center aligned header">
+                    <span class="content">Публикуй в 2 клика</span>
+                    <span class="sub header">Добавляйте арт, комиксы, рассказы, анимацию и многое другое.</span>
+                </h2>
+                @if (isMobile)
+                {
+                    <img src="~/Content/images/land/miteMakeDoc.gif" />
+                }
+                else
+                {
+                    <video loop autoplay src="~/Content/images/land/miteMakeDoc.mp4"></video>
+                }
             </div>
-            <div class="ui divider"></div>
-            <div class="computer tablet only row">
-                <div class="nine wide column">
-                    <div class="ui basic segment">
-                        <img class="ui image" src="~/Content/images/land/posts.png" />
-                    </div>
-                </div>
-                <div class="seven wide column">
-                    <div class="ui basic segment">
-                        <h2 class="ui header">Рейтинги - наше всё</h2>
-                        <p>Рейтинг - краеугольный камень MiteGroup, заработать его можно от создания публикаций до обычного комментирования.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="mobile only row">
-                <div class="seven wide column">
-                    <div class="ui basic segment">
-                        <h2 class="ui header">Рейтинги - наше всё</h2>
-                        <p>Рейтинг - краеугольный камень MiteGroup, заработать его можно от создания публикаций до обычного комментирования.</p>
-                    </div>
-                </div>
-                <div class="nine wide column">
-                    <div class="ui basic segment">
-                        <img class="ui image" src="~/Content/images/land/posts.png" />
-                    </div>
-                </div>
-            </div>
-            <div class="ui divider"></div>
-            <div class="row">
-                <div class="seven wide column">
-                    <div class="ui basic segment">
-                        <h2 class="ui header">Зарабатывай на том, что нравится</h2>
-                        <p>MiteGroup изначально был задуман как проект для развития и заработка на своём хобби. Приглашайте своих друзей и знакомых, занимающихся творчеством, и зарабатывайте вместе!</p>
-                    </div>
-                </div>
-                <div class="nine wide column">
-                    <div class="ui basic segment">
-                        <img class="ui image" src="~/Content/images/land/cash.png" />
-                    </div>
-                </div>
-            </div>
-            <div class="ui divider"></div>
-            <div class="row">
-                <div class="center aligned column">
-                    <div class="ui basic segment">
-                        <h2 class="ui header">Теперь дело за вами</h2>
-                        <button class="ui active large violet inverted basic land button" onclick="scrollToTop()">Начинаем</button>
-                        <button class="ui large blue land button" onclick="$('#tagsModal').modal('show')">Хочу ещё посмотреть</button>
-                    </div>
-                </div>
-            </div>
-            <div class="ui hidden divider"></div>
         </div>
-    </article>
-    <footer>
-        <div class="ui computer tablet only grid container">
-            <div class="row">
-                <div class="ten wide column">
-                    <div class="ui inverted horizontal link list">
-                        @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "item" })
-                        @Html.ActionLink("Условия пользования", "Terms", "Home", null, new { @class = "item" })
-                        @Html.ActionLink("Политика конфиденциальности", "Privacy", "Home", null, new { @class = "item" })
+        <div class="info-item progress-seg">
+            <div class="ui container">
+                <h2 class="ui center aligned inverted header">
+                    <span class="content">Минимальные комиссии</span>
+                    <span class="sub header">Комиссия MiteGroup - всего <b>4%</b>!</span>
+                </h2>
+                <div class="ui teal progress" data-percent="96">
+                    <div class="bar">
+                        <div class="progress"></div>
                     </div>
                 </div>
-                <div class="six wide right aligned column">
-                    <div class="ui inverted horizontal link list">
-                        <a href="/" class="item">&copy; MiteGroup</a>
-                    </div>
+                <div class="ui inverted divider"></div>
+                <h2 class="ui center aligned inverted header">
+                    <span class="content">Дружное сообщество</span>
+                    <span class="sub header">С нами уже @Model.AuthorsCount @authorWord, присоединяйся!</span>
+                </h2>
+                <div class="ui eight column doubling grid">
+                    @foreach (var item in Model.Users)
+                    {
+                        <div class="column">
+                            <div class="user example">
+                                <a class="image" href="@Url.Action("Index", "UserProfile", new { name = item.UserName })" style="background-image: url(@item.AvatarSrc)"></a>
+                                @Html.ActionLink(item.UserName, "Index", "UserProfile", new { name = item.UserName }, new { @class = "content" })
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
-        <div class="ui mobile only grid center aligned container">
-            <div class="ui basic segment" style="padding-top: 0">
-                <div class="ui inverted divided list">
-                    @Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "item" })
-                    @Html.ActionLink("Условия пользования", "Terms", "Home", null, new { @class = "item" })
-                    @Html.ActionLink("Политика конфиденциальности", "Privacy", "Home", null, new { @class = "item" })
-                    <a href="/" class="item">&copy; MiteGroup</a>
+        <div class="features info-item">
+            <div class="ui container">
+                <div class="ui three column stackable internally celled grid">
+                    <div class="row">
+                        <div class="column">
+                            <h2 class="ui violet icon header">
+                                <i class="comments outline icon violet"></i>
+                                <span class="content">
+                                    Общение без границ
+                                    <span class="sub header">
+                                        Создавай приватные и публичные чаты на любые темы!
+                                    </span>
+                                </span>
+                            </h2>
+                        </div>
+                        <div class="column">
+                            <h2 class="ui violet icon header">
+                                <i class="outline star icon"></i>
+                                <span class="content">
+                                    Пятибальные рейтинги
+                                    <span class="sub header">
+                                        Считаешь, что лайков недостаточно для оценки работ? Мы тоже.
+                                    </span>
+                                </span>
+                            </h2>
+                        </div>
+                        <div class="column">
+                            <h2 class="ui violet icon header">
+                                <i class="handshake icon"></i>
+                                <span class="content">
+                                    Безопасные сделки
+                                    <span class="sub header">
+                                        Денежные средства будут в системе до окончания сделки,
+                                        а любые споры помогут разрешить наши модераторы.
+                                    </span>
+                                </span>
+                            </h2>
+                        </div>
+                    </div>
+                    <div class="centered row">
+                        <div class="column">
+                            <h2 class="ui violet icon header">
+                                <i class="archive icon violet"></i>
+                                <span class="content">
+                                    Чем проще - тем лучше
+                                    <span class="sub header">
+                                        Сосредоточьтесь на работе, а все сложности по обработке сделок,
+                                        заказов и отзывов оставьте нам.
+                                    </span>
+                                </span>
+                            </h2>
+                        </div>
+                        <div class="column">
+                            <h2 class="ui violet icon header">
+                                <i class="heart outline icon violet"></i>
+                                <span class="content">
+                                    Всё лучшее - авторам
+                                    <span class="sub header">
+                                        70% наших доходов от рекламы передается
+                                        авторам на основе их рейтинга и активности.
+                                    </span>
+                                </span>
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="client wrap">
+        <div class="ui hidden divider"></div>
+        <div class="ui info-item container two-click segment">
+            <div class="two-click-out">
+                <h2 class="ui center aligned header">
+                    <span class="content">Создай заказ в 2 клика</span>
+                    <span class="sub header">Встроенный редактор поможет максимально точно передать требования к выполнению заказа.</span>
+                </h2>
+                @if (isMobile)
+                {
+                    <img src="~/Content/images/land/miteMakeOrder.gif" />
+                }
+                else
+                {
+                    <video autoplay loop src="~/Content/images/land/miteMakeOrder.mp4"></video>
+                }
+            </div>
+        </div>
+        <div class="info-item progress-seg">
+            <div class="ui container">
+                <h2 class="ui center aligned inverted header">
+                    <span class="content">Полная отдача</span>
+                    <span class="sub header">Никаких комиссий и выплат.</span>
+                </h2>
+                <div class="ui teal progress" data-percent="100">
+                    <div class="bar">
+                        <div class="progress"></div>
+                    </div>
+                </div>
+                <div class="ui inverted divider"></div>
+                <h2 class="ui center aligned inverted header">
+                    <span class="content">Дружное сообщество</span>
+                    <span class="sub header">С нами уже @(Model.AuthorsCount + Model.ClientsCount) @usersWord, присоединяйся!</span>
+                </h2>
+                <div class="ui seven column stackable grid">
+                    @foreach (var item in Model.Users)
+                    {
+                        <div class="column">
+                            <div class="user example">
+                                <a class="image" href="@Url.Action("Index", "UserProfile", new { name = item.UserName })" style="background-image: url(@item.AvatarSrc)"></a>
+                                @Html.ActionLink(item.UserName, "Index", "UserProfile", new { name = item.UserName }, new { @class = "content" })
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="features info-item">
+            <div class="ui container">
+                <div class="ui three column stackable internally celled grid">
+                    <div class="row">
+                        <div class="column">
+                            <h2 class="ui violet icon header">
+                                <i class="tags icon"></i>
+                                <span class="content">
+                                    Работы на любой вкус
+                                    <span class="sub header">
+                                        У нас вы найдете рассказы, стихи, эскизы, анимацию,
+                                        комиксы и многое другое!
+                                    </span>
+                                </span>
+                            </h2>
+                        </div>
+                        <div class="column">
+                            <h2 class="ui violet icon header">
+                                <i class="comments outline icon violet"></i>
+                                <span class="content">
+                                    Общение без границ
+                                    <span class="sub header">
+                                        Создавай приватные и публичные чаты на любые темы!
+                                    </span>
+                                </span>
+                            </h2>
+                        </div>
+                        <div class="column">
+                            <h2 class="ui violet icon header">
+                                <i class="outline star icon"></i>
+                                <span class="content">
+                                    Пятибальные рейтинги
+                                    <span class="sub header">
+                                        Считаешь, что лайков недостаточно для оценки работ? Мы тоже.
+                                    </span>
+                                </span>
+                            </h2>
+                        </div>
+                    </div>
+                    <div class="centered row">
+                        <div class="column">
+                            <h2 class="ui violet icon header">
+                                <i class="address card outline icon violet"></i>
+                                <span class="content">
+                                    Выбирай лучших
+                                    <span class="sub header">
+                                        Каталог услуг сделает поиск простым как никогда, а отзывы и
+                                        система надежности позволит выбрать наиболее рентабельных авторов.
+                                    </span>
+                                </span>
+                            </h2>
+                        </div>
+                        <div class="column">
+                            <h2 class="ui violet icon header">
+                                <i class="handshake icon"></i>
+                                <span class="content">
+                                    Безопасные сделки
+                                    <span class="sub header">
+                                        Денежные средства будут в системе до окончания сделки,
+                                        а любые споры помогут разрешить наши модераторы.
+                                    </span>
+                                </span>
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="reg wrap">
+        <div class="ui container">
+            <div class="reg box">
+                <div class="wave one"></div>
+                <div class="wave two"></div>
+                <div class="wave three"></div>
+                <div class="title">
+                    <h2 class="ui inverted header">Это всегда будет бесплатно</h2>
+                    @Html.ActionLink("Регистрация", "Register", "Account", null, new { @class = "ui violet inverted large circular button" })
+                </div>
+            </div>
+            <div class="ui section divider"></div>
+            <div class="ui basic segment stackable center aligned grid">
+                <div class="four wide column">
+                    <h3 class="ui header">Теги</h3>
+                    <div class="ui link list" role="list">
+                        @Html.ActionLink("Все работы", "Top", "Posts", null, new { @class = "item", role = "listitem" })
+                        @Html.ActionLink("Арт", "Top", "Posts", new { tags = "арт" }, new { @class = "item", role = "listitem" })
+                        @Html.ActionLink("Литература", "Top", "Posts", new { tags = "литература" }, new { @class = "item", role = "listitem" })
+                        @Html.ActionLink("Фото", "Top", "Posts", new { tags = "фотография" }, new { @class = "item", role = "listitem" })
+                        @Html.ActionLink("Анимация", "Top", "Posts", new { tags = "анимация" }, new { @class = "item", role = "listitem" })
+                    </div>
+                </div>
+                <div class="five wide column">
+                    <h3 class="ui header">Помощь</h3>
+                    <div class="ui link list" role="list">
+                        @Html.ActionLink("Условия пользования", "Terms", "Home", null, new { @class = "item", role = "listitem" })
+                        @Html.ActionLink("Политика конфиденциальности", "Privacy", "Home", null, new { @class = "item", role = "listitem" })
+                    </div>
+                </div>
+                <div class="seven wide column">
+                    <h3 class="ui header">MiteGroup</h3>
+                    <p>MiteGroup - открытая площадка, позволяющая авторам свободно публиковать работы и услуги в различных сферах искусства.</p>
+                    <a class="ui circular vk icon button" href="https://vk.com/mitegroup" title="ВКонтакте" target="_blank">
+                        <i class="vk icon"></i>
+                    </a>
+                    <a class="ui circular twitter icon button" href="https://twitter.com/fanmitegroup" title="Твиттер" target="_blank">
+                        <i class="twitter icon"></i>
+                    </a>
                 </div>
             </div>
         </div>
     </footer>
-    <div class="ui small modal" id="tagsModal">
-        <div class="header">Ваши предпочтения</div>
-        <div class="content">
-            <div class="ui fluid four item stackable menu">
-                @Html.ActionLink("Арт", "Top", "Posts", new { tags = "арт" }, new { @class = "item"})
-                @Html.ActionLink("Литература", "Top", "Posts", new { tags = "литература" }, new { @class = "item" })
-                @Html.ActionLink("Фото", "Top", "Posts", new { tags = "фотография" }, new { @class = "item" })
-                @Html.ActionLink("Анимация", "Top", "Posts", new { tags = "анимация" }, new { @class = "item" })
-            </div>
-            <div class="ui horizontal divider">Или</div>
-            <div class="ui action fluid input">
-                <input type="text" placeholder="Другое..." id="tagInput">
-                <button class="ui primary button" onclick="goToTag()">Искать</button>
-            </div>
-        </div>
-    </div>
     @Scripts.Render("~/bundles/jquery", "~/bundles/semantic", "~/bundles/scroll")
     <script>
-        function scrollToTop() {
-            try{
-                yaCounter45009220.reachGoal('BeginUse');
-            }
-            catch (e) {
-                console.log('yaCounter is not defined.');
-            }
-            $(window).scrollTo('.main.grid', 1800, {
-                easing: 'easeOutExpo',
-                offset: -10
-            });
-        }
-        function goToTag() {
-            location.href = '/posts/top?tags=' + $('#tagInput').val();
-        }
         $(function () {
-            $('#tagsModal').modal({
-                transition: 'vertical flip'
+            $('.ui.dropdown').dropdown();
+            $('.chose.button').click(function () {
+                var side = $(this).parents('.side').addClass('active'),
+                    isAuthor = side.hasClass('author');
+                side.siblings('.side').width(0).find('.author').hide();
+                if (window.innerHeight > window.innerWidth)
+                    side.siblings('.side').height(0);
+                if (isAuthor) {
+                    $('.author.wrap').addClass('active');
+                } else {
+                    $('.client.wrap').addClass('active');
+                }
+                $('.reg.wrap').show();
+                $('.ui.progress').progress({
+                    showActivity: false
+                });
+
+                var waveSize = $('.reg.box').width() + 300;
+                $('.wave').width(waveSize).height(waveSize);
             });
         });
     </script>

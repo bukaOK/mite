@@ -19,6 +19,7 @@ namespace Mite.BLL.Services
         Task<DataServiceResult> AddCityToUserAsync(Guid cityId, string userId);
         Task<CityModel> GetByNameAsync(string cityName);
         IEnumerable<SelectListItem> GetCitiesSelectList(User user);
+        Task<IEnumerable<SelectListItem>> GetSelectListAsync(string userId);
     }
     public class CityService : CrudService<CityModel, CitiesRepository, City>, ICityService
     {
@@ -47,13 +48,13 @@ namespace Mite.BLL.Services
 
         public async Task<CityModel> GetByNameAsync(string cityName)
         {
-            var city = await Database.GetRepo<CitiesRepository, City>().GetAsync(cityName);
+            var city = await Repo.GetAsync(cityName);
             return Mapper.Map<CityModel>(city);
         }
 
         public IEnumerable<SelectListItem> GetCitiesSelectList(User user)
         {
-            foreach(var city in Database.GetRepo<CitiesRepository, City>().GetAll())
+            foreach(var city in Repo.GetAll())
             {
                 var item = new SelectListItem
                 {
@@ -64,6 +65,25 @@ namespace Mite.BLL.Services
                     item.Selected = true;
                 yield return item;
             }
+        }
+
+        public async Task<IEnumerable<SelectListItem>> GetSelectListAsync(string userId)
+        {
+            var cities = await Repo.GetAllAsync();
+            var user = string.IsNullOrEmpty(userId) ? null : await userManager.FindByIdAsync(userId);
+            return cities.Select(city =>
+            {
+                var item = new SelectListItem
+                {
+                    Text = $"{city.Name}",
+                    Value = city.Id.ToString(),
+                };
+                if (user != null && city.Id == user.CityId)
+                {
+                    item.Selected = true;
+                }
+                return item;
+            });
         }
     }
 }

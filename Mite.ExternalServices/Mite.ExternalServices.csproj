@@ -31,14 +31,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AutoMapper, Version=6.2.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
-      <HintPath>..\packages\AutoMapper.6.2.1\lib\net45\AutoMapper.dll</HintPath>
+    <Reference Include="AutoMapper, Version=6.2.2.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.6.2.2\lib\net45\AutoMapper.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.4.12\lib\net45\NLog.dll</HintPath>
+      <HintPath>..\packages\NLog.4.4.13\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -68,12 +68,15 @@
     <Compile Include="IpApi\Requests\IpApiRequest.cs" />
     <Compile Include="IpApi\Responses\IpApiResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VkApi\Auth\TokenResponse.cs" />
     <Compile Include="VkApi\Board\GetCommentsResponse.cs" />
     <Compile Include="VkApi\Board\GetCommentsRequest.cs" />
     <Compile Include="VkApi\Converters\BoolConverter.cs" />
     <Compile Include="VkApi\Core\VkApiException.cs" />
     <Compile Include="VkApi\Core\VkParamAttribute.cs" />
     <Compile Include="VkApi\Core\VkRequest.cs" />
+    <Compile Include="VkApi\Friends\FriendsSearchRequest.cs" />
+    <Compile Include="VkApi\Friends\FriendsSearchResponse.cs" />
     <Compile Include="VkApi\Groups\GroupsGetByIdRequest.cs" />
     <Compile Include="VkApi\Groups\GroupsGetByIdResponse.cs" />
     <Compile Include="VkApi\Groups\GroupsGetRequest.cs" />
@@ -91,6 +94,8 @@
     <Compile Include="VkApi\Objects\User.cs" />
     <Compile Include="VkApi\Users\UsersGetRequest.cs" />
     <Compile Include="VkApi\Users\UsersGetResponse.cs" />
+    <Compile Include="VkApi\Users\UsersSearchRequest.cs" />
+    <Compile Include="VkApi\Users\UsersSearchResponse.cs" />
     <Compile Include="VkApi\Wall\GetRepostsRequest.cs" />
     <Compile Include="VkApi\Wall\GetRepostsResponse.cs" />
     <Compile Include="VkApi\Wall\WallGetRequest.cs" />

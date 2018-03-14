@@ -4,20 +4,15 @@
 @using Mite.CodeData.Enums
 @using Microsoft.AspNet.Identity
 @using Mite.BLL.Services
-@using Mite.BLL.IdentityManagers
+@using Mite.Models
 
 @{ 
     var isMobile = ViewHelper.IsMobileDevice(Request);
-    var newDealsCount = 0;
-    var newMessagesCount = 0;
-    var emailConfirmed = false;
     var currentUserId = User.Identity.GetUserId();
-    var resolver = DependencyResolver.Current;
+    var layoutModel = new LayoutModel();
     if (User.Identity.IsAuthenticated)
     {
-        newDealsCount = resolver.GetService<IDealService>().GetNewCount(currentUserId);
-        newMessagesCount = resolver.GetService<IChatMessagesService>().GetNewCount(currentUserId);
-        emailConfirmed = resolver.GetService<AppUserManager>().IsEmailConfirmed(currentUserId);
+        layoutModel = DependencyResolver.Current.GetService<ILayoutService>().GetModel(currentUserId);
     }
 }
 <!DOCTYPE html>
@@ -135,28 +130,29 @@
             </div>
             <a class="violet user-chats item" href="@Url.Action("UserChats", "Chats")">
                 <i class="mail icon"></i>Сообщения
-                <div class="ui right violet label" @Html.Raw(newMessagesCount > 0 ? "" : "style=\"display:none\"")>
-                    @newMessagesCount
+                <div class="ui right violet label" @Html.Raw(layoutModel.NewMessagesCount > 0 ? "" : "style=\"display:none\"")>
+                    @layoutModel.NewMessagesCount
                 </div>
             </a>
             <a class="violet notifications item" href="/user/notifications">
-                <i class="feed icon"></i>
-                Уведомления
+                <i class="feed icon"></i>Уведомления
                 <div class="ui right violet label" style="display: none">0</div>
             </a>
             <a href="@Url.Action("Index", "UserSettings")" class="violet user-settings item">
-                <i class="settings icon"></i>
-                Настройки
+                <i class="settings icon"></i>Настройки
+            </a>
+            <a href="@Url.Action("Index", "UserOrders")" class="violet orders item">
+                <i class="book icon"></i>Заказы
             </a>
             <a href="@Url.Action("Index", "UserDeals")" class="violet deals item">
-                Заказы
-                @if (newDealsCount > 0)
+                <i class="handshake icon"></i>Сделки
+                @if (layoutModel.NewDealsCount > 0)
                 {
-                    <div class="ui right violet label">@newDealsCount</div>
+                    <div class="ui right violet label">@layoutModel.NewDealsCount</div>
                 }
                 else
                 {
-                    <div class="ui right violet label" style="display: none">@newDealsCount</div>
+                    <div class="ui right violet label" style="display: none">@layoutModel.NewDealsCount</div>
                 }
             </a>
             <a href="@Url.Action("Index", "Cash")" class="violet item" id="cashItem">
@@ -176,36 +172,42 @@
                    data-content="@Html.Raw(User.Identity.IsAuthenticated ? "Публикации" : "Главная")">
                     <img class="logo" src="/Content/images/mite-logo-icon.png" alt="Логотип" />
                 </a>
-                <a href="/posts/top?tags=арт" class="computer tablet only item">Арт</a>
-                <a href="/posts/top?tags=литература" class="computer tablet only item">Литература</a>
-                <a href="/posts/top?tags=фотография" class="computer tablet only item">Фото</a>
-                @Html.ActionLink("Услуги", "Top", "AuthorServices", null, new { @class = "item"})
+                @Html.ActionLink("Арт", "Top", "Posts", new { tags = "арт" }, new { @class = "computer tablet only item" })
+                @Html.ActionLink("Литература", "Top", "Posts", new { tags = "литература" }, new { @class = "computer tablet only item" })
+                @Html.ActionLink("Фото", "Top", "Posts", new { tags = "фото" }, new { @class = "computer tablet only item" })
+                @Html.ActionLink("Услуги", "Top", "AuthorServices", null, new { @class = "item" })
+
                 @if (Request.IsAuthenticated)
                 {
+                    @Html.ActionLink("Заказы", "Top", "Orders", null, new { @class = "item" })
                     <div class="right menu">
                         @if (isMobile)
                         {
                             <a class="item menu-btn"><i class="list layout icon"></i>Меню</a>
                         }
-                        else if(User.IsInRole(RoleNames.Author))
+                        else
                         {
                             <div class="item">
                                 <div class="ui dropdown top right pointing violet button" id="addPostMenu">
                                     Добавить
                                     <div class="menu">
-                                        @Html.RouteLink("Изображение", "AddPost", new { postType = PostContentTypes.Image.ToString().ToLower() }, new { @class = "item", title = "Арт, фото" })
-                                        @Html.RouteLink("Документ", "AddPost", new { postType = PostContentTypes.Document.ToString().ToLower() }, new { @class = "item", title = "Статьи, рассказы, стихи" })
-                                        @Html.RouteLink("Коллекцию", "AddPost", new { postType = PostContentTypes.ImageCollection.ToString().ToLower() }, new { @class = "item", title = "Коллекция изображений" })
-                                        @Html.RouteLink("Комикс", "AddPost", new { postType = PostContentTypes.Comics.ToString().ToLower() }, new { @class = "item", title = "Комиксы, манга" })
-                                        @Html.ActionLink("Услугу", "Add", "AuthorServices", null, new { @class = "item", title = "Услуги" })
+                                        @if (User.IsInRole(RoleNames.Author))
+                                        {
+                                            @Html.RouteLink("Изображение", "AddPost", new { postType = PostContentTypes.Image.ToString().ToLower() }, new { @class = "item", title = "Арт, фото" })
+                                            @Html.RouteLink("Документ", "AddPost", new { postType = PostContentTypes.Document.ToString().ToLower() }, new { @class = "item", title = "Статьи, рассказы, стихи" })
+                                            @Html.RouteLink("Коллекцию", "AddPost", new { postType = PostContentTypes.ImageCollection.ToString().ToLower() }, new { @class = "item", title = "Коллекция изображений" })
+                                            @Html.RouteLink("Комикс", "AddPost", new { postType = PostContentTypes.Comics.ToString().ToLower() }, new { @class = "item", title = "Комиксы, манга" })
+                                            @Html.ActionLink("Услугу", "Add", "AuthorServices", null, new { @class = "item", title = "Услуги" })
+                                            @Html.ActionLink("Заказ", "Add", "Orders", null, new { @class = "item", title = "Заказы" })
+                                        }
+                                        else
+                                        {
+                                            @Html.ActionLink("Заказ", "Add", "Orders", null, new { @class = "item", title = "Заказы" })
+                                        }
                                     </div>
                                 </div>
                             </div>
                             <a class="item menu-btn" style="display: none"><i class="list layout icon"></i>Меню</a>
-                        }
-                        else
-                        {
-                            <a class="item menu-btn" style="display: none">Меню</a>
                         }
                     </div>
                 }
@@ -226,7 +228,7 @@
             @RenderBody()
         </article>
         @if (User.Identity.IsAuthenticated)
-        {
+                {
             <div class="ui right fixed vertical icon user-menu menu">
                 @if (User.IsInRole("admin"))
                 {
@@ -245,8 +247,8 @@
                 </a>
                 <a href="@Url.Action("UserChats", "Chats")" class="violet user-chats item" data-content="Сообщения">
                     <i class="mail icon"></i>
-                    <div class="ui floating right violet label" @Html.Raw(newMessagesCount > 0 ? "" : "style=\"display:none\"")>
-                        @newMessagesCount
+                    <div class="ui floating right violet label" @Html.Raw(layoutModel.NewMessagesCount > 0 ? "" : "style=\"display:none\"")>
+                        @layoutModel.NewMessagesCount
                     </div>
                 </a>
                 <a class="violet notifications item">
@@ -259,15 +261,18 @@
                 <a href="@Url.Action("Index", "UserSettings")" class="violet user-settings item" data-content="Настройки">
                     <i class="settings icon"></i>
                 </a>
-                <a class="violet deals item" href="@Url.Action("Index", "UserDeals")" data-content="Заказы">
+                <a href="@Url.Action("Index", "UserOrders")" class="violet orders item" data-content="Заказы">
                     <i class="book icon"></i>
-                    @if(newDealsCount > 0)
+                </a>
+                <a class="violet deals item" href="@Url.Action("Index", "UserDeals")" data-content="Сделки">
+                    <i class="handshake outline icon"></i>
+                    @if(layoutModel.NewDealsCount > 0)
                     {
-                        <div class="ui violet floating label">@newDealsCount</div>
+                        <div class="ui violet floating label">@layoutModel.NewDealsCount</div>
                     }
                     else
                     {
-                        <div class="ui violet floating label" style="display: none">@newDealsCount</div>
+                        <div class="ui violet floating label" style="display: none">@layoutModel.NewDealsCount</div>
                     }
                 </a>
                 <a href="@Url.Action("Index", "Cash")" class="violet cash item" data-content="Счёт">
@@ -307,6 +312,20 @@
             </div>
         </footer>
     </div>
+    <div class="ui tiny modal" id="userReviewModal">
+        <div class="header">Помогите нам стать лучше</div>
+        <div class="content">
+            <form class="ui form">
+                <div class="field">
+                    <textarea id="reviewText" rows="3" placeholder="Что добавить? Что убрать? Что упростить?"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="actions">
+            <button class="ui violet ok button">Отправить</button>
+            <button class="ui blue deny button">Всё идеально</button>
+        </div>
+    </div>
     <script id="eventTmpl" type="text/x-jsrender">
         <div class="event">
             <div class="label">
@@ -322,25 +341,62 @@
             </div>
         </div>
     </script>
-    @RenderSection("scripts", false)
-    @if (!emailConfirmed && !Request.Path.ToLower().Contains("user/settings"))
+    <script>
+    @if(User.Identity.IsAuthenticated && !layoutModel.EmailConfirmed && !layoutModel.HasExternalLogins && !Request.Path.ToLower().Contains("user/settings"))
     {
-        <script>
+        <text>
+        if (localStorage.getItem('hideEmailConfirmWarn') !== 'true') {
             iziToast.warning({
                 title: 'E-mail не подтвержден!',
                 message: 'При утере пароля вы не сможете восстановить доступ.',
                 buttons: [
                     ['<button>Подтвердить</button>', function () {
                         location.href = '@Url.Action("Security", "UserSettings")';
+                    }],
+                    ['<button>Больше не показывать</button>', function (inst, toast) {
+                        localStorage.setItem('hideEmailConfirmWarn', 'true');
+                        inst.hide(toast);
                     }]
                 ],
                 position: 'topLeft',
                 //maxWidth: 300,
                 timeout: false
             });
-        </script>
+        }
+        </text>
     }
-    <script>
+        @if(User.Identity.IsAuthenticated && layoutModel.User.RegisterDate < new DateTime(2018, 3, 13))
+    {
+        <text>
+        if (localStorage.getItem('userIconsWarn') !== 'true') {
+            iziToast.warning({
+                title: 'Внимание!',
+                message: 'Если у вас пропали некоторые иконки, очистите кэш браузера.',
+                buttons: [
+                    ['<button>Ясно</button>', function (inst, toast) {
+                        localStorage.setItem('userIconsWarn', 'true');
+                        inst.hide(toast);
+                    }]
+                ],
+                timeout: false,
+                close: false
+            });
+        }
+        </text>
+    }
+        @if (!layoutModel.ReviewLeft && layoutModel.RegisterDayLeft)
+    {
+        <text>
+        $('#userReviewModal').modal({
+            onApprove: function () {
+                UserReviewsApi.add($('#reviewText').val());
+            },
+            onDeny: function () {
+                UserReviewsApi.add(null);
+            }
+        }).modal('show');
+        </text>
+    }
         $(function () {
             $('article').css('margin-bottom', $('footer').height() + 50 + 'px');
             $('#addPostMenu').dropdown({
@@ -390,5 +446,6 @@
             });
         });
     </script>
+    @RenderSection("scripts", false)
 </body>
 </html>

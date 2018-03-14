@@ -8,6 +8,8 @@ namespace Mite.Models
     public class DealModel
     {
         public long Id { get; set; }
+        public string Title => Service?.Title ?? Order.Title;
+        public string Description => Service?.Description ?? Order.Description;
         public virtual double? Price { get; set; }
         public virtual string DeadlineStr { get; set; }
         public virtual string Demands { get; set; }
@@ -26,6 +28,7 @@ namespace Mite.Models
         public bool? VkReposted { get; set; }
         public bool VkAuthenticated { get; set; }
         public AuthorServiceShowModel Service { get; set; }
+        public OrderShowModel Order { get; set; }
     }
     public class DealAuthorModel : DealModel
     {

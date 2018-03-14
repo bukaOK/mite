@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.Hosting;
 
 namespace Mite.Infrastructure.Automapper
 {
@@ -37,9 +38,9 @@ namespace Mite.Infrastructure.Automapper
                 {
                     if (!string.IsNullOrEmpty(src.ImageSrc))
                     {
-                        var tuple = ImagesHelper.CreateImage(PathConstants.VirtualImageFolder, src.ImageSrc);
-                        dest.ImageSrcCompressed = tuple.compressedVPath;
-                        return tuple.vPath;
+                        var imageSrc = FilesHelper.CreateImage(PathConstants.VirtualImageFolder, src.ImageSrc);
+                        dest.ImageSrcCompressed = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(imageSrc), 100));
+                        return imageSrc;
                     }
                     return null;
                 }))
@@ -54,27 +55,29 @@ namespace Mite.Infrastructure.Automapper
                 .ForMember(dest => dest.Emojies, opt => opt.UseValue(EmojiHelper.GetEmojies()));
 
             CreateMap<Chat, ShortChatModel>()
-                .ForMember(dest => dest.NewMessagesCount, opt => opt.ResolveUsing((src, dest, val, context) =>
-                {
-                    if(context.Items.TryGetValue("messagesCount", out object newCounts))
-                    {
-                        return (newCounts as IEnumerable<NewMessagesCountDTO>).FirstOrDefault(x => x.ChatId == src.Id)?.MessagesCount ?? 0;
-                    }
-                    return 0;
-                }))
                 .ForMember(dest => dest.ChatType, opt => opt.MapFrom(src => src.Type))
-                .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => string.IsNullOrEmpty(src.ImageSrc) 
+                .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => string.IsNullOrEmpty(src.ImageSrc)
                     ? "/Content/images/doubt-ava.png"
                     : string.IsNullOrEmpty(src.ImageSrcCompressed) ? src.ImageSrc : src.ImageSrcCompressed))
                 .ForMember(dest => dest.LastMessage, opt => opt.ResolveUsing(src =>
                 {
                     var lastMsg = src.Messages?[0];
-                    if(lastMsg != null)
+                    if (lastMsg != null)
                         lastMsg.Chat = null;
                     return lastMsg;
                 }));
-            CreateMap<PublicChatDTO, ShortChatModel>()
-                .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => src.ImageSrcCompressed ?? src.ImageSrc));
+            CreateMap<UserChatDTO, ShortChatModel>()
+                .ForMember(dest => dest.MemberStatus, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.ChatType, opt => opt.MapFrom(src => src.Type))
+                .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => string.IsNullOrEmpty(src.ImageSrc)
+                    ? "/Content/images/doubt-ava.png"
+                    : string.IsNullOrEmpty(src.ImageSrcCompressed) ? src.ImageSrc : src.ImageSrcCompressed))
+                .ForMember(dest => dest.NewMessagesCount, opt => opt.MapFrom(src => src.NewMessagesCount ?? 0));
+
+            CreateMap<PublicChatDTO, PublicChatModel>()
+                .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => src.ImageSrcCompressed ?? src.ImageSrc 
+                    ?? "/Content/images/doubt-ava.png"));
+
             CreateMap<ChatMessage, ChatMessageModel>()
                 .ForMember(dest => dest.CurrentRead, opt => opt.ResolveUsing((src, dest, val, context) =>
                 {

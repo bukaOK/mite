@@ -29,9 +29,11 @@ namespace Mite.DAL.Infrastructure
         public DbSet<FavoritePost> FavoritePosts { get; set; }
         public DbSet<ChatMember> ChatMembers { get; set; }
         public DbSet<BlackListUser> BlackListUsers { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderRequest> OrderRequests { get; set; }
+        public DbSet<UserReview> UserReviews { get; set; }
 
-        public AppDbContext()
-            : base("DefaultConnection")
+        public AppDbContext() : base("DefaultConnection")
         {
         }
         public AppDbContext(string connection) : base(connection) {}
@@ -46,13 +48,13 @@ namespace Mite.DAL.Infrastructure
             modelBuilder.Entity<IdentityUserLogin>().ToTable("UserLogins");
             modelBuilder.Entity<IdentityUserClaim>().ToTable("UserClaims");
 
-            modelBuilder.Entity<Chat>().HasMany(x => x.Users).WithMany()
-                .Map(x =>
-                {
-                    x.ToTable("ChatUsers");
-                    x.MapLeftKey("ChatId");
-                    x.MapRightKey("UserId");
-                });
+            //modelBuilder.Entity<Chat>().HasMany(x => x.Users).WithMany()
+            //    .Map(x =>
+            //    {
+            //        x.ToTable("ChatUsers");
+            //        x.MapLeftKey("ChatId");
+            //        x.MapRightKey("UserId");
+            //    });
 
         }
     }

@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Web.Hosting;
 
 namespace Mite.Infrastructure.Automapper
 {
@@ -63,9 +64,9 @@ namespace Mite.Infrastructure.Automapper
                 {
                     if (!string.IsNullOrEmpty(src.ImageBase64))
                     {
-                        var tuple = ImagesHelper.CreateImage(PathConstants.VirtualImageFolder, src.ImageBase64);
-                        dest.ImageSrc_50 = tuple.compressedVPath;
-                        return tuple.vPath;
+                        var imageSrc = FilesHelper.CreateImage(PathConstants.VirtualImageFolder, src.ImageBase64);
+                        dest.ImageSrc_50 = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(imageSrc), 500));
+                        return imageSrc;
                     }
                     else
                     {
@@ -91,7 +92,7 @@ namespace Mite.Infrastructure.Automapper
                 }));
             CreateMap<AuthorService, ProfileServiceModel>()
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description.Length > 300 ? 
-                    src.Description.Take(300) + "..." : src.Description))
+                    src.Description.Substring(0, 300) + "..." : src.Description))
                 .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => src.ImageSrc_50))
                 .ForMember(dest => dest.Deadline, opt => opt.MapFrom(src => GetDeadline(src.DeadlineNum, src.DeadlineType)))
                 .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.Author));

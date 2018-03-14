@@ -40,7 +40,7 @@ namespace Mite.DAL.Entities
         /// </summary>
         public int Rating { get; set; }
         /// <summary>
-        /// Теги пользователя
+        /// Теги, на которые подписался пользователь
         /// </summary>
         public IList<Tag> Tags { get; set; }
         /// <summary>
@@ -66,6 +66,10 @@ namespace Mite.DAL.Entities
         /// Уведомлять ли по почте
         /// </summary>
         public bool MailNotify { get; set; }
+        /// <summary>
+        /// Id для приглашения других участников
+        /// </summary>
+        public Guid? InviteId { get; set; }
         /// <summary>
         /// Кто может писать пользователю
         /// </summary>

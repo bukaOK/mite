@@ -59,7 +59,7 @@
             <div class="img-content">
                 {{if IsPublished}}
                 <a href="@Url.Action("ShowPost", "Posts")/{{:Id}}">
-                    <img src="{{:Content}}" class="ui image" />
+                    <img src="{{:Content}}" class="ui image" {{if width}}width="{{:width}}" height="{{:height}}"{{/if}} />
                 </a>
                 {{else}}
                 <a href="/posts/edit/{{:Id}}">
@@ -108,12 +108,10 @@
                 {{/if}}
             </div>
             {{if !ShowAdultContent}}
-            <div class="ui dimmer">
+            <div class="ui center aligned dimmer">
                 <div class="content">
-                    <div class="center">
-                        <h2 class="ui inverted header">Взрослый контент(18+)</h2>
-                        <button class="ui primary button" onclick="$(this).parents('.post-item').dimmer('hide')">Показать</button>
-                    </div>
+                    <h2 class="ui inverted header">Взрослый контент(18+)</h2>
+                    <button class="ui primary button" onclick="$(this).parents('.post-item').dimmer('hide')">Показать</button>
                 </div>
             </div>
             {{/if}}
@@ -177,12 +175,10 @@
                 </div>
             </div>
             {{if !ShowAdultContent}}
-            <div class="ui dimmer">
+            <div class="ui center aligned dimmer">
                 <div class="content">
-                    <div class="center">
-                        <h2 class="ui inverted header">Взрослый контент(18+)</h2>
-                        <button class="ui primary button" onclick="$(this).parents('.post-item').dimmer('hide')">Показать</button>
-                    </div>
+                    <h2 class="ui inverted header">Взрослый контент(18+)</h2>
+                    <button class="ui primary button" onclick="$(this).parents('.post-item').dimmer('hide')">Показать</button>
                 </div>
             </div>
             {{/if}}
@@ -193,7 +189,6 @@
     <div class="column" data-service-id="{{:Id}}">
         <div class="ui service-item segment">
             <div class="extra content">
-                <a href="@Url.Action("Top", "AuthorServices")?serviceType={{:ServiceType.Id}}" class="ui right floated teal tag label">{{:ServiceType.Name}}</a>
                 @if (currentUserName == pageUserName)
                 {
                     <div class="ui violet compact buttons">
@@ -241,7 +236,7 @@
 <script type="text/html" id="emptyPostTmpl">
     <div class="sixteen wide column">
         <h2 class="ui center aligned icon header" style="color: #6D6788; margin-top: 20px;">
-            <i class="frown icon"></i>
+            <i class="meh outline icon"></i>
             <span class="content">
                 Работы не найдены.
             </span>
@@ -251,7 +246,7 @@
 <script type="text/html" id="emptyBlockedTmpl">
     <div class="sixteen wide column">
         <h2 class="ui center aligned icon header" style="color: #6D6788">
-            <i class="smile icon"></i>
+            <i class="smile outline icon"></i>
             <span class="content">У вас нет заблокированных работ.</span>
         </h2>
     </div>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Mite.Models
@@ -7,7 +8,6 @@ namespace Mite.Models
     {
         public Guid Id { get; set; }
         public Guid PostId { get; set; }
-        [Required]
         public string Content { get; set; }
         public DateTime PublicTime { get; set; }
         public int Rating { get; set; }

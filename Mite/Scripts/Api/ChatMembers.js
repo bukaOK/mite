@@ -178,6 +178,20 @@ var ChatMembers = {
             });
         },
         /**
+         * Войти в чат, из которого ранее выходил
+         * @param {HTMLElement|string} item элемент для обновления
+        */
+        enter: function (chatId, item) {
+            return this._send(this.url + 'enter', 'post', {
+                chatId: chatId
+            }, function (resp) {
+                $(item).hide().siblings('.exit').show();
+                iziToast.success({
+                    title: 'Вы успешно вошли.'
+                });
+            });
+        },
+        /**
          * Исключаем пользователя из чата
          * @param {string} chatId
          * @param {string} userId
@@ -206,14 +220,14 @@ var ChatMembers = {
          * Выход пользователя из чата
          * @param {string} chatId
         */
-        exit: function (chatId) {
+        exit: function (chatId, item) {
             var self = ChatMembers.Api;
-            return self._send(self.url + 'exit', 'post', null, {
+            return self._send(self.url + 'exit', 'post', {
                 chatId: chatId
             }, function (resp) {
+                $(item).hide().siblings('.enter').show();
                 iziToast.success({
-                    title: 'Успех!',
-                    message: 'Вы успешно вышли.'
+                    title: 'Вы успешно вышли.'
                 });
             });
         },

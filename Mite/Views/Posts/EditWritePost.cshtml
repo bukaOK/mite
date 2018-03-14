@@ -6,7 +6,6 @@
     var tagsRow = Model.Tags == null ? string.Empty : string.Join(",", Model.Tags);
     var isEdit = !string.IsNullOrEmpty(Model.Header);
 }
-@Scripts.Render("~/bundles/editor")
 <div class="ui edit post segment">
     <h2 class="ui dividing header">@ViewBag.Title</h2>
     <div class="ui center aligned grid" style="margin-bottom: 0">
@@ -39,10 +38,10 @@
     @using (Html.BeginForm("AddPost", "Posts", FormMethod.Post, new { @class = "ui form", id = "writeEditForm" }))
     {
         <div class="field">
-            @Html.TextBoxFor(x => x.Header, new { placeholder = Html.DisplayNameFor(x => x.Header), oninput = "onHeaderInput(this)"})
+            @Html.TextBoxFor(x => x.Header, new { placeholder = Html.DisplayNameFor(x => x.Header), oninput = "onHeaderInput(this)" })
         </div>
         @Html.HiddenFor(x => x.Cover)
-        <input type="file" id="wrapperImg" style="display: none"/>
+        <input type="file" id="wrapperImg" style="display: none" />
         <div class="two fields">
             <div class="field">
                 @Html.TextAreaFor(x => x.Description, new { @placeholder = Html.DisplayNameFor(y => y.Description) })
@@ -50,14 +49,10 @@
             </div>
             <div class="field">
                 <div class="ui fluid search multiple selection dropdown" id="select-tags">
-                    @Html.HiddenFor(x => x.Tags, new { Value = tagsRow })
+                    <i class="dropdown icon"></i>
+                    <input type="hidden" name="Tags" id="Tags" />
                     <div class="default text">Теги</div>
-                    <div class="menu">
-                        @foreach (var tagName in Model.AvailableTags)
-                        {
-                            <div class="item" data-value="@tagName">@tagName</div>
-                        }
-                    </div>
+                    <div class="menu"></div>
                 </div>
                 <div class="ui blue icon message">
                     <i class="info icon"></i>
@@ -66,7 +61,7 @@
                             Внимание!
                         </div>
                         <p>
-                            Вы также можете добавлять другие тематические теги, 
+                            Вы также можете добавлять другие тематические теги,
                             <b>не включенные в список сервиса</b> (теги, содержащие названия, бренды и пр., будут удаляться).
                         </p>
                     </div>
@@ -107,17 +102,26 @@
         <button class="ui green ok button">Да</button>
     </div>
 </div>
+@Scripts.Render("~/bundles/editor", "~/bundles/api")
 <script>
     function initEditPopup(){
-        var $editBtn = $('.ct-ignition__button--edit');
-        $editBtn.popup({
+        var $editBtn = $('.ct-ignition__button--edit').popup({
             on: 'manual',
             position: 'right center',
             content: 'Нажми на меня!'
         });
+        var $initialContent = $('#initial-content').popup({
+            content: 'Нажмите сюда, чтобы начать!',
+            variation: 'small'
+        });
         $editBtn.popup('show');
-        $editBtn.click(function(ev){
+        $editBtn.click(function (ev) {
             $editBtn.popup('hide');
+
+            $initialContent.popup('show');
+            $initialContent.click(function () {
+                $initialContent.popup('hide');
+            });
             $.ajax({
                 url: '@Url.Action("InitHelper", "UserHelpers")',
                 data: {
@@ -310,24 +314,12 @@
     $(function () {
         ViewHelper.activateSidebarItem('#editDocItem');
         ViewHelper.disableFormSubmitting('#writeEditForm');
-        $('#select-tags').dropdown({
-            allowAdditions: true,
-            fullTextSearch: true,
-            keys: {
-                delimiter: 13
-            },
-            showOnFocus: false,
-            forceSelection: false,
-            match: 'text'
-        });
+        TagsApi.loadDropdown('#select-tags', '@tagsRow'.split(','));
 
         @Html.Raw(Html.FormValidation<Mite.Models.WritingPostModel>("#writeEditForm"))
         var editor = ContentTools.EditorApp.get();
 
         editor.init('*[data-editable]', 'data-name');
-        $('#initial-content').popup({
-            content: 'Нажмите сюда, чтобы начать!',
-        });
 
         editor.inspector().show = function () { return false; }
         editor.addEventListener('saved',

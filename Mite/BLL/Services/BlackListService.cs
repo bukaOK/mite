@@ -56,8 +56,8 @@ namespace Mite.BLL.Services
 
         private async Task<bool> HasActionAccessAsync(string firstUserId, string secondUserId)
         {
-            return (await blackListRepo.IsInBlackList(firstUserId, secondUserId)) ||
-                        (await blackListRepo.IsInBlackList(secondUserId, firstUserId));
+            return (await blackListRepo.IsInBlackListAsync(firstUserId, secondUserId)) ||
+                        (await blackListRepo.IsInBlackListAsync(secondUserId, firstUserId));
         }
     }
 }

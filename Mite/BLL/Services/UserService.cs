@@ -17,6 +17,7 @@ using System.Web.Hosting;
 using Mite.BLL.Helpers;
 using Mite.CodeData;
 using Mite.CodeData.Constants;
+using System.Linq;
 
 namespace Mite.BLL.Services
 {
@@ -29,7 +30,12 @@ namespace Mite.BLL.Services
 
         Task<IdentityResult> UpdateUserAsync(ProfileSettingsModel settings, string userId);
         Task<DataServiceResult> UpdateUserAsync(NotifySettingsModel model, string userId);
-
+        /// <summary>
+        /// Генерирует код для приглашения
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task<string> GenerateInviteAsync(string userId);
         /// <summary>
         /// Обновляем аватар пользователя
         /// </summary>
@@ -39,6 +45,7 @@ namespace Mite.BLL.Services
         /// <returns></returns>
         Task<IdentityResult> UpdateUserAvatarAsync(string imagesFolder, string imageBase64, string userId);
         Task<ProfileModel> GetUserProfileAsync(string name, string currentUserId);
+        LandingModel GetLandingModel();
         SocialLinksModel GetSocialLinks(string userId);
         Task<SocialLinksModel> GetSocialLinksAsync(string userId);
         Task UpdateSocialLinksAsync(SocialLinksModel model, string userId);
@@ -52,6 +59,7 @@ namespace Mite.BLL.Services
     {
         private readonly AppUserManager userManager;
         private readonly AppSignInManager signInManager;
+        private const string InviteSecKey = "{257A1E31-DE0F-48A0-81FF-DAC65BE56442}";
 
         public UserService(AppUserManager userManager, AppSignInManager signInManager, IUnitOfWork unitOfWork,
             ILogger logger): base(unitOfWork, logger)
@@ -91,22 +99,27 @@ namespace Mite.BLL.Services
                     errors.Add("Пользователь с таким именем уже существует.");
                 return new IdentityResult(errors);
             }
-
-            var refid = registerModel.RefererId;
-            if (refid != null)
-            {
-                var referer = await userManager.FindByIdAsync(refid);
-                if (referer == null)
-                    registerModel.RefererId = null;
-            }
-
+            if(registerModel.RegisterRole == null)
+                return new IdentityResult(new[] { "Выберите тип пользователя" });
+            
             var user = new User
             {
                 UserName = registerModel.UserName,
                 Email = registerModel.Email,
                 RegisterDate = DateTime.UtcNow,
-                RefererId = registerModel.RefererId
             };
+            if ((RegisterRoles?)registerModel.RegisterRole == RegisterRoles.Author)
+            {
+                if(!Guid.TryParse(registerModel.InviteKey, out Guid gInvite))
+                    return new IdentityResult(new[] { "Неизвестный пригласитель" });
+                else
+                {
+                    var inviter = await userManager.GetByInviteIdAsync(gInvite);
+                    if (inviter == null)
+                        return new IdentityResult(new[] { "Неизвестный пригласитель" });
+                    user.RefererId = inviter.Id;
+                }
+            }
             var result = external
                 ? await userManager.CreateAsync(user)
                 : await userManager.CreateAsync(user, registerModel.Password);
@@ -148,13 +161,11 @@ namespace Mite.BLL.Services
 
         public async Task<IdentityResult> UpdateUserAvatarAsync(string imagesFolder, string imageBase64, string userId)
         {
-            string imagePath;
             string fullPath;
             try
             {
-                imagePath = FilesHelper.CreateImage(imagesFolder, imageBase64);
-                fullPath = HostingEnvironment.MapPath(imagePath);
-                ImagesHelper.Compressed.Compress(fullPath);
+                //Раньше создавался оригинал и сжатая копия, сейчас только фиксированный размер
+                fullPath = ImagesHelper.Create(imagesFolder, imageBase64, 400);
             }
             catch (FormatException)
             {
@@ -164,7 +175,7 @@ namespace Mite.BLL.Services
             var existingUser = await userManager.FindByIdAsync(userId);
             var existingAvatarSrc = existingUser.AvatarSrc ?? PathConstants.AvatarSrc;
             var existingAvatarFolders = existingAvatarSrc.Split('/');
-            existingUser.AvatarSrc = imagePath;
+            existingUser.AvatarSrc = FilesHelper.ToVirtualPath(fullPath);
             if(existingAvatarSrc != null && existingAvatarFolders[1] == "Public")
                 FilesHelper.DeleteFile(existingAvatarSrc);
 
@@ -206,8 +217,8 @@ namespace Mite.BLL.Services
             {
                 userModel.IsFollowing = await followersRepo.IsFollowerAsync(currentUserId, user.Id);
                 userModel.IsFollower = await followersRepo.IsFollowerAsync(user.Id, currentUserId);
-                userModel.CanWrite = !(await blackListRepo.IsInBlackList(currentUserId, user.Id));
-                userModel.BlackListed = await blackListRepo.IsInBlackList(user.Id, currentUserId);
+                userModel.CanWrite = !(await blackListRepo.IsInBlackListAsync(currentUserId, user.Id));
+                userModel.BlackListed = await blackListRepo.IsInBlackListAsync(user.Id, currentUserId);
             }
             return userModel;
         }
@@ -286,6 +297,27 @@ namespace Mite.BLL.Services
             {
                 return CommonError("Внутренняя ошибка", e);
             }
+        }
+
+        public LandingModel GetLandingModel()
+        {
+            var usersRepo = Database.GetRepo<UserRepository, User>();
+            return new LandingModel
+            {
+                AuthorsCount = usersRepo.Count(RoleNames.Author),
+                ClientsCount = usersRepo.Count(RoleNames.Client),
+                PostsCount = Database.GetRepo<PostsRepository, Post>().GetCount(),
+                ServicesCount = Database.GetRepo<AuthorServiceRepository, AuthorService>().GetCount(),
+                Users = Mapper.Map<IEnumerable<UserShortModel>>(usersRepo.RandomUsers(8))
+            };
+        }
+
+        public async Task<string> GenerateInviteAsync(string userId)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            user.InviteId = Guid.NewGuid();
+            await userManager.UpdateAsync(user);
+            return user.InviteId.ToString();
         }
     }
 }

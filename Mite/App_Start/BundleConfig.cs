@@ -11,7 +11,7 @@ namespace Mite
             bundles.Add(new ScriptBundle("~/bundles/jquery", "https://code.jquery.com/jquery-3.2.1.min.js").Include(
                 "~/Scripts/jquery-3.1.1.js"
             ));
-            bundles.Add(new ScriptBundle("~/bundles/semantic", "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.js")
+            bundles.Add(new ScriptBundle("~/bundles/semantic", "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.0/semantic.min.js")
                 .Include("~/bower_components/semantic/dist/semantic.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/site")

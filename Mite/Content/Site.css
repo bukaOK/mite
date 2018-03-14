@@ -87,6 +87,11 @@ form.login>.segment, form.register>.segment{
 .segment .ui.dimmer{
     z-index: 890;
 }
+.ui.dimmer.center.aligned{
+    display: flex;
+    align-content: center;
+    justify-content: center;
+}
 .ui.dimmer .meta{
     vertical-align: top;
     padding-top: 10px;

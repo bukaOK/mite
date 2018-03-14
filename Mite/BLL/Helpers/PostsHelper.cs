@@ -7,7 +7,6 @@ using Mite.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Hosting;
 
 namespace Mite.BLL.Helpers
@@ -31,9 +30,8 @@ namespace Mite.BLL.Helpers
         {
             if (post.Content == model.Content || string.IsNullOrEmpty(model.Content))
                 return;
-            var tuple = ImagesHelper.UpdateImage(post.Content, post.Content_50, model.Content);
-            post.Content = tuple.vPath;
-            post.Content_50 = tuple.compressedVPath;
+            post.Content = ImagesHelper.UpdateImage(post.Content, model.Content);
+            post.Content_50 = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(post.Content), 500));
         }
         /// <summary>
         /// Обновляем контент документа, а также обложку
@@ -49,22 +47,22 @@ namespace Mite.BLL.Helpers
             //Заменяем
             if (!string.IsNullOrEmpty(model.Cover) && !string.IsNullOrEmpty(post.Cover))
             {
-                var tuple = ImagesHelper.UpdateImage(post.Cover, post.Cover_50, model.Cover);
-                post.Cover = tuple.vPath;
-                post.Cover_50 = tuple.compressedVPath;
+                post.Cover = ImagesHelper.UpdateImage(imagesFolder, model.Cover);
+                FilesHelper.DeleteFile(post.Cover_50);
+                post.Cover_50 = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(post.Cover), 500));
             }
             //Добавляем
             else if (!string.IsNullOrEmpty(model.Cover) && string.IsNullOrEmpty(post.Cover))
             {
-                var tuple = ImagesHelper.CreateImage(imagesFolder, model.Cover);
-                post.Cover = tuple.vPath;
-                post.Cover_50 = tuple.compressedVPath;
+                post.Cover = FilesHelper.CreateImage(imagesFolder, model.Cover);
+                post.Cover_50 = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(post.Cover), 500));
             }
             //Удаляем
             else if (string.IsNullOrEmpty(model.Cover) && !string.IsNullOrEmpty(post.Cover))
             {
-                ImagesHelper.DeleteImage(post.Cover, post.Cover_50);
+                FilesHelper.DeleteFiles(post.Cover, post.Cover_50);
                 post.Cover = null;
+                post.Cover_50 = null;
             }
         }
         /// <summary>
@@ -84,25 +82,22 @@ namespace Mite.BLL.Helpers
                 postItem.Description = modelItem.Description;
                 if (postItem.ContentSrc != modelItem.Content || string.IsNullOrEmpty(model.Content))
                 {
-                    var tuple = ImagesHelper.UpdateImage(postItem.ContentSrc, postItem.ContentSrc_50, modelItem.Content);
-                    postItem.ContentSrc = tuple.vPath;
-                    postItem.ContentSrc_50 = tuple.compressedVPath;
+                    postItem.ContentSrc = ImagesHelper.UpdateImage(imagesFolder, modelItem.Content);
+                    FilesHelper.DeleteFile(postItem.ContentSrc_50);
+                    postItem.ContentSrc_50 = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(postItem.ContentSrc), 500));
                 }
             }
             foreach (var modelItem in itemsToAdd)
             {
                 modelItem.Id = Guid.NewGuid();
                 var postItem = Mapper.Map<PostCollectionItem>(modelItem);
-                var tuple = ImagesHelper.CreateImage(imagesFolder, modelItem.Content);
                 postItem.PostId = post.Id;
-                postItem.ContentSrc = tuple.vPath;
-                postItem.ContentSrc_50 = tuple.compressedVPath;
+                postItem.ContentSrc = FilesHelper.CreateImage(imagesFolder, modelItem.Content);
+                postItem.ContentSrc_50 = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(postItem.ContentSrc), 500));
                 post.Collection.Add(postItem);
             }
-            foreach (var postItem in itemsToDel)
-            {
-                ImagesHelper.DeleteImage(postItem.ContentSrc, postItem.ContentSrc_50);
-            }
+            FilesHelper.DeleteFiles(itemsToDel.Select(x => x.ContentSrc));
+            FilesHelper.DeleteFiles(itemsToDel.Select(x => x.ContentSrc_50));
             post.Collection = post.Collection.Except(itemsToDel).ToList();
         }
         /// <summary>
@@ -122,24 +117,23 @@ namespace Mite.BLL.Helpers
                 postItem.Page = modelItem.Page;
                 if (postItem.ContentSrc != modelItem.Content)
                 {
-                    var tuple = ImagesHelper.UpdateImage(postItem.ContentSrc, postItem.ContentSrc_50, modelItem.Content);
-                    postItem.ContentSrc = tuple.vPath;
-                    postItem.ContentSrc_50 = tuple.compressedVPath;
+                    postItem.ContentSrc = ImagesHelper.UpdateImage(postItem.ContentSrc, modelItem.Content);
+                    FilesHelper.DeleteFile(postItem.ContentSrc_50);
+                    postItem.ContentSrc_50 = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(postItem.ContentSrc), 500));
                 }
             }
             foreach (var modelItem in itemsToAdd)
             {
                 modelItem.Id = Guid.NewGuid();
                 var postItem = Mapper.Map<ComicsItem>(modelItem);
-                var tuple = ImagesHelper.CreateImage(imagesFolder, modelItem.Content);
                 postItem.PostId = post.Id;
-                postItem.ContentSrc = tuple.vPath;
-                postItem.ContentSrc_50 = tuple.compressedVPath;
+                postItem.ContentSrc = FilesHelper.CreateImage(imagesFolder, modelItem.Content);
+                postItem.ContentSrc_50 = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(postItem.ContentSrc), 500));
                 post.ComicsItems.Add(postItem);
             }
             foreach (var postItem in itemsToDel)
             {
-                ImagesHelper.DeleteImage(postItem.ContentSrc, postItem.ContentSrc_50);
+                FilesHelper.DeleteFiles(postItem.ContentSrc, postItem.ContentSrc_50);
             }
             post.ComicsItems = post.ComicsItems.Except(itemsToDel).ToList();
         }
@@ -157,18 +151,16 @@ namespace Mite.BLL.Helpers
                 default:
                     throw new ArgumentException("Неизвестный тип контента");
             }
-            var tuple = ImagesHelper.CreateImage(imagesFolder, post.Content);
-            post.Content = tuple.vPath;
-            post.Content_50 = tuple.compressedVPath;
+            post.Content = FilesHelper.CreateImage(imagesFolder, post.Content);
+            post.Content_50 = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(post.Content), 500));
 
             var lastPost = 0;
             foreach (var item in contentItems)
             {
                 try
                 {
-                    tuple = ImagesHelper.CreateImage(imagesFolder, item.ContentSrc);
-                    item.ContentSrc = tuple.vPath;
-                    item.ContentSrc_50 = tuple.compressedVPath;
+                    item.ContentSrc = FilesHelper.CreateImage(imagesFolder, item.ContentSrc);
+                    item.ContentSrc_50 = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(item.ContentSrc), 500));
                     lastPost++;
                 }
                 catch (Exception e)
@@ -187,9 +179,8 @@ namespace Mite.BLL.Helpers
         {
             if (!string.IsNullOrEmpty(post.Cover))
             {
-                var tuple = ImagesHelper.CreateImage(imagesFolder, post.Cover);
-                post.Cover = tuple.vPath;
-                post.Cover_50 = tuple.compressedVPath;
+                post.Cover = FilesHelper.CreateImage(imagesFolder, post.Cover);
+                post.Cover_50 = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(post.Cover), 500));
             }
             post.Content = FilesHelper.CreateDocument(documentsFolder, post.Content);
         }
@@ -200,13 +191,14 @@ namespace Mite.BLL.Helpers
                 post.Content = FilesHelper.CreateImage(imagesFolder, post.Content);
 
                 var fullCPath = HostingEnvironment.MapPath(post.Content);
-                ImagesHelper.Compressed.Compress(fullCPath);
-                post.Content_50 = ImagesHelper.Compressed.CompressedVirtualPath(fullCPath);
+                post.Content_50 = FilesHelper.ToVirtualPath(ImagesHelper.Resize(fullCPath, 500));
             }
             catch (Exception e)
             {
-                FilesHelper.DeleteFile(post.Content);
-                FilesHelper.DeleteFile(post.Content_50);
+                if(post.Content != null)
+                    FilesHelper.DeleteFile(post.Content);
+                if (post.Content_50 != null)
+                    FilesHelper.DeleteFile(post.Content_50);
                 throw e;
             }
         }

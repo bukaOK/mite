@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ImageMagick;
 using Mite.BLL.Helpers;
 using Mite.CodeData.Enums;
 using Mite.DAL.DTO;
@@ -6,6 +7,7 @@ using Mite.DAL.Entities;
 using Mite.Models;
 using NLog;
 using System;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Web;
@@ -20,9 +22,7 @@ namespace Mite.Infrastructure.Automapper
         public PostProfile()
         {
             CreateMap<Post, PostModel>()
-                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.ContentType == PostContentTypes.Image 
-                    ? File.Exists(src.Content) ? src.Content : src.Content_50 ?? ImagesHelper.Compressed.CompressedVirtualPath(src.Content)
-                    : src.Content))
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
                 .ForMember(dest => dest.Header, opt => opt.MapFrom(src => src.Title))
                 .ForMember(dest => dest.CurrentRating, opt => opt.Ignore());
 
@@ -43,7 +43,7 @@ namespace Mite.Infrastructure.Automapper
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString("N")))
                 .ForMember(dest => dest.Header, opt => opt.MapFrom(src => src.Title))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description.Length > 200
-                    ? src.Description.Take(200) + "..." : src.Description))
+                    ? src.Description.Substring(0, 200) + "..." : src.Description))
                 .ForMember(dest => dest.IsPublished, opt => opt.MapFrom(src => src.PublishDate != null))
                 .ForMember(dest => dest.CanEdit, opt => opt.MapFrom(src => (src.PublishDate == null) || (src.PublishDate != null && (DateTime.UtcNow - src.PublishDate).Value.TotalDays <= 3)))
                 .ForMember(dest => dest.IsImage, opt => opt.ResolveUsing(src => src.ContentType != PostContentTypes.Document))
@@ -102,7 +102,7 @@ namespace Mite.Infrastructure.Automapper
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString("N")))
                 .ForMember(dest => dest.Cover, opt => opt.MapFrom(src => src.Cover_50 ?? src.Cover))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description.Length > 200 
-                    ? src.Description.Take(200) + "..." : src.Description))
+                    ? src.Description.Substring(0, 200) + "..." : src.Description))
                 .ForMember(dest => dest.IsImage, opt => opt.MapFrom(src => src.ContentType != PostContentTypes.Document))
                 .ForMember(dest => dest.Content, opt => opt.ResolveUsing((src, dest, value, context) =>
                 {

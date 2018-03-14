@@ -16,6 +16,7 @@
         <a class="item" data-tab="userprofile">Профиль</a>
         <a class="item" data-tab="changeavatar">Изменить аватар</a>
         <a class="item" data-tab="security">Безопасность</a>
+        <a class="item" data-tab="invite">Приглашения</a>
         <a class="item" data-tab="socialservices">Внешние сервисы</a>
         <a class="item" data-tab="notifications">Уведомления</a>
     </nav>
@@ -34,6 +35,9 @@
                 @{Html.RenderAction("EmailSettings");}
             </div>
         </div>
+    </div>
+    <div class="ui tab" data-tab="invite">
+        @{ Html.RenderAction("Invite"); }
     </div>
     <div class="ui tab" data-tab="socialservices">
         @{Html.RenderAction("SocialServices");}

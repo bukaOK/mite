@@ -20,12 +20,27 @@ using Mite.BLL.DTO;
 using Microsoft.AspNet.Identity;
 using System.Web;
 using Mite.ExternalServices.VkApi.Messages;
+using System.Web.Hosting;
 
 namespace Mite.BLL.Services
 {
     public interface IDealService : IDataService
     {
+        /// <summary>
+        /// Создание сделки к услуге
+        /// </summary>
+        /// <param name="authorServiceId">Id услуги</param>
+        /// <param name="clientId">Id заказчика</param>
+        /// <returns></returns>
         Task<DataServiceResult> CreateAsync(Guid authorServiceId, string clientId);
+        /// <summary>
+        /// Создание сделки к заказу
+        /// </summary>
+        /// <param name="orderId">Id заказа</param>
+        /// <param name="executerId">Id исполнителя(автора)</param>
+        /// <param name="callerId">Id делающего запрос(для проверки)</param>
+        /// <returns></returns>
+        Task<DataServiceResult> CreateAsync(Guid orderId, string executerId, string callerId);
         Task<DataServiceResult> RemoveAsync(long id);
         /// <summary>
         /// Обновление(новая сделка)
@@ -129,8 +144,6 @@ namespace Mite.BLL.Services
 
         public async Task<DataServiceResult> CreateAsync(Guid authorServiceId, string clientId)
         {
-            var chatRepo = Database.GetRepo<ChatRepository, Chat>();
-
             var authorService = await Database.GetRepo<AuthorServiceRepository, AuthorService>().GetAsync(authorServiceId);
             if (authorService == null)
                 return DataServiceResult.Failed("Не найдена услуга");
@@ -146,9 +159,14 @@ namespace Mite.BLL.Services
             };
             if (!string.IsNullOrEmpty(authorService.VkRepostConditions))
                 deal.VkReposted = false;
+            return await CreateAsync(deal);
+        }
+        private async Task<DataServiceResult> CreateAsync(Deal deal)
+        {
+            var chatRepo = Database.GetRepo<ChatRepository, Chat>();
             try
             {
-                var members = new List<string> { authorService.AuthorId, clientId };
+                var members = new List<string> { deal.AuthorId, deal.ClientId };
                 var chat = new Chat
                 {
                     Type = ChatTypes.Deal
@@ -162,38 +180,40 @@ namespace Mite.BLL.Services
                 deal.ChatId = chat.Id;
                 await repo.AddAsync(deal);
 
-                var author = await userManager.FindByIdAsync(authorService.AuthorId);
-                var logins = await userManager.GetLoginsAsync(authorService.AuthorId);
-                var vkUserId = logins.First(x => x.LoginProvider == VkSettings.DefaultAuthType).ProviderKey;
+                var author = await userManager.FindByIdAsync(deal.AuthorId);
+                var logins = await userManager.GetLoginsAsync(deal.AuthorId);
+                var vkUserId = logins.FirstOrDefault(x => x.LoginProvider == VkSettings.DefaultAuthType).ProviderKey;
 #if !DEBUG
                 if (author.MailNotify)
                     await userManager.SendEmailAsync(deal.AuthorId, "Новый заказ!",
                         "По одной из ваших услуг сделали заказ! С уважением, MiteGroup.");
 #endif
-                var canVkNotifyReq = new SendingAllowedRequest(httpClient, VkSettings.GroupKey)
+                if (vkUserId != null)
                 {
-                    GroupId = VkSettings.GroupId,
-                    UserId = vkUserId
-                };
-                var canVkNotifyResp = await canVkNotifyReq.PerformAsync();
-                if (canVkNotifyResp.Allowed)
-                {
-                    var notifyReq = new SendRequest(httpClient, VkSettings.GroupKey)
+                    var canVkNotifyReq = new SendingAllowedRequest(httpClient, VkSettings.GroupKey)
                     {
-                        UserId = vkUserId,
-                        Message = "У Вас новый заказ! Все заказы здесь: http://mitegroup.ru/user/deals/incoming/new. С уважением, MiteGroup."
+                        GroupId = VkSettings.GroupId,
+                        UserId = vkUserId
                     };
-                    await notifyReq.PerformAsync();
+                    var canVkNotifyResp = await canVkNotifyReq.PerformAsync();
+                    if (canVkNotifyResp.Allowed)
+                    {
+                        var notifyReq = new SendRequest(httpClient, VkSettings.GroupKey)
+                        {
+                            UserId = vkUserId,
+                            Message = "У Вас новый заказ! Все заказы здесь: http://mitegroup.ru/user/deals/incoming/new. С уважением, MiteGroup."
+                        };
+                        await notifyReq.PerformAsync();
+                    }
                 }
                 return DataServiceResult.Success(deal.Id);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 logger.Error("Ошибка при создании сделки: " + e.Message);
                 return DataServiceResult.Failed("Ошибка при создании сделки");
             }
         }
-
         public async Task<IEnumerable<DealUserModel>> GetIncomingAsync(DealStatuses dealType, string authorId)
         {
             var deals = await repo.GetIncomingAsync(dealType, authorId);
@@ -426,9 +446,8 @@ namespace Mite.BLL.Services
                 return DataServiceResult.Failed("Внесите изменения");
             try
             {
-                var tuple = ImagesHelper.CreateImage(PathConstants.VirtualImageFolder, imageBase64);
-                deal.ImageResultSrc = tuple.vPath;
-                deal.ImageResultSrc_50 = tuple.compressedVPath;
+                deal.ImageResultSrc = FilesHelper.CreateImage(PathConstants.VirtualImageFolder, imageBase64);
+                deal.ImageResultSrc_50 = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(deal.ImageResultSrc), 500));
 
                 await repo.UpdateAsync(deal);
                 return DataServiceResult.Success();
@@ -468,7 +487,6 @@ namespace Mite.BLL.Services
 
             var client = await userManager.FindByIdAsync(deal.ClientId);
             var author = await userManager.FindByIdAsync(deal.AuthorId);
-            var service = await serviceRepo.GetAsync(deal.ServiceId);
             using (var transaction = repo.BeginTransaction())
             {
                 try
@@ -497,10 +515,15 @@ namespace Mite.BLL.Services
 
                     client.Reliability += resultCoef;
                     author.Reliability += resultCoef;
-                    service.Reliability += resultCoef;
+
+                    if(deal.ServiceId != null)
+                    {
+                        var service = await serviceRepo.GetAsync(deal.ServiceId);
+                        service.Reliability += resultCoef;
+                        await serviceRepo.UpdateAsync(service);
+                    }
                     await userManager.UpdateAsync(client);
                     await userManager.UpdateAsync(author);
-                    await serviceRepo.UpdateAsync(service);
 
                     transaction.Commit();
                     return DataServiceResult.Success();
@@ -633,6 +656,26 @@ namespace Mite.BLL.Services
                 logger.Error($"Id: {deal.Id}. Ошибка при попытке оставить отзыв к сделке: {e.Message}");
                 return DataServiceResult.Failed("Внутренняя ошибка");
             }
+        }
+
+        public async Task<DataServiceResult> CreateAsync(Guid orderId, string executerId, string callerId)
+        {
+            var order = await Database.GetRepo<OrderRepository, Order>().GetAsync(orderId);
+            if (order == null)
+                return DataServiceResult.Failed("Заказ не найден");
+            if (order.UserId != callerId)
+                return DataServiceResult.Failed("Неизвестный пользователь");
+            if (order.UserId == executerId)
+                return DataServiceResult.Failed("Вы не можете создавать сделки к своим заказам");
+            var deal = new Deal
+            {
+                OrderId = orderId,
+                ClientId = order.UserId,
+                AuthorId = executerId,
+                CreateDate = DateTime.UtcNow,
+                Status = DealStatuses.New
+            };
+            return await CreateAsync(deal);
         }
     }
 }

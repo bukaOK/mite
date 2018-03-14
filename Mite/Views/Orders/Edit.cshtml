@@ -1,0 +1,215 @@
+﻿@using Mite.Extensions
+@using Mite.CodeData.Enums
+@using Mite.Helpers
+@model Mite.Models.OrderEditModel
+
+@{
+    var newOrder = string.IsNullOrEmpty(Model.Header);
+    ViewBag.Title = newOrder ? "Добавить заказ" : "Редактировать заказ";
+}
+@section styles{
+    <style>
+        [data-editable]{
+            padding: 0;
+            clear: both;
+        }
+    </style>
+}
+<div class="ui segment">
+    <h2 class="ui dividing header">@ViewBag.Title</h2>
+    <form class="ui two column grid form" id="orderForm">
+        @Html.HiddenFor(x => x.Id)
+        <div class="center aligned column">
+            <h3 class="ui header">Изображение заказа(необязательно).</h3>
+            <label class="ui dashed drop-zone segment">
+                <span class="ui small blue header"><i class="cloud download icon"></i>Перетащите или нажмите</span>
+                <input type="file" onchange="FileReaderHelper.inputDownloadHandler(event)" name="@Html.NameFor(x => x.ImageStream)" />
+            </label>
+            <div class="ui indicating progress">
+                <div class="bar">
+                    <div class="progress"></div>
+                </div>
+                <div class="label">Загрузка изображения</div>
+            </div>
+            <div class="img-wrapper field">
+                @if (!string.IsNullOrEmpty(Model.ImageSrc))
+                {
+                    <img src="@Model.ImageSrc" class="ui image" />
+                }
+            </div>
+        </div>
+        <div class="column">
+            <div class="field">
+                @Html.LabelFor(x => x.Header)
+                @Html.TextBoxFor(x => x.Header, new { placeholder = "Портрет по фото" })
+            </div>
+            <div class="fields">
+                <div class="ten wide field">
+                    @Html.LabelFor(x => x.OrderTypeId)
+                    <div class="ui search selection dropdown" id="orderTypes">
+                        @Html.HiddenFor(x => x.OrderTypeId)
+                        <div class="default text">@Html.DisplayNameFor(x => x.OrderTypeId)</div>
+                        <div class="menu">
+                            @foreach (var item in Model.OrderTypes)
+                            {
+                                <div class="item" data-value="@item.Value">@item.Text</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="six wide field">
+                    @Html.LabelFor(x => x.Price)
+                    @Html.TextBoxFor(x => x.Price, new { placeholder = "1000" })
+                </div>
+            </div>
+            <div class="fields">
+                <div class="field">
+                    @Html.LabelFor(x => x.DeadlineNum)
+                    <div class="ui action input">
+                        @Html.TextBoxFor(x => x.DeadlineNum, new { placeholder = Html.DisplayNameFor(x => x.DeadlineNum), onchange = "updateDeadline(this)" })
+                        <div class="ui compact selection dropdown" id="deadlineDropdown">
+                            @Html.HiddenFor(x => x.DeadlineType)
+                            <div class="text">@ViewHelper.GetEnumDisplayName(DurationTypes.Hour)</div>
+                            <i class="dropdown icon"></i>
+                            <div class="menu">
+                                <div class="item" data-text="час" data-value="@DurationTypes.Hour">Час</div>
+                                <div class="item" data-text="день" data-value="@DurationTypes.Day">День</div>
+                                <div class="item" data-text="неделя" data-value="@DurationTypes.Week">Неделя</div>
+                                <div class="item" data-text="месяц" data-value="@DurationTypes.Month">Месяц</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <label>@Html.DisplayNameFor(x => x.Description)</label>
+                @Html.HiddenFor(x => x.Description)
+                <div data-editable data-name="@Html.NameFor(x => x.Description)">
+                    @if (string.IsNullOrEmpty(Model.Description))
+                    {
+                        <p data-ce-placeholder="Нажми на меня!" id="initialContent"></p>
+                    }
+                    else
+                    {
+                        @Html.Raw(Model.Description)
+                    }
+                </div>
+            </div>
+            <div class="ui error message"></div>
+            <div class="ui green m-success message"></div>
+        </div>
+    </form>
+</div>
+@section scripts{
+@Scripts.Render("~/bundles/api", "~/bundles/editor")
+<script>
+    function initEditPopup(){
+        var $editBtn = $('.ct-ignition__button--edit').popup({
+            on: 'manual',
+            position: 'right center',
+            content: 'Написать требования'
+        });
+        $editBtn.popup('show');
+        $editBtn.click(function (ev) {
+            $editBtn.popup('hide');
+            localStorage.setItem('orderEditHelper', 'true');
+        });
+    }
+    var deadlineItems = [
+        {
+            val: '@DurationTypes.Hour',
+            words: ['Час', 'Часа', 'Часов']
+        },
+        {
+            val: '@DurationTypes.Day',
+            words: ['День', 'Дня', 'Дней']
+        },
+        {
+            val: '@DurationTypes.Week',
+            words: ['Неделя', 'Недели', 'Недель']
+        },
+        {
+            val: '@DurationTypes.Month',
+            words: ['Месяц', 'Месяца', 'Месяцев']
+        }
+    ];
+
+    ContentTools.DEFAULT_TOOLS = [
+        ['bold', 'italic', 'link'],
+        ['heading', 'subheading', 'paragraph', 'unordered-list', 'ordered-list', 'table'],
+        ['undo', 'redo', 'remove']
+    ];
+    ContentTools.Tools.Heading.tagName = "h2";
+    ContentTools.Tools.Subheading.tagName = "h3";
+    $.getJSON('/bower_components/ContentTools/translations/ru.json', function (data) {
+        ContentEdit.addTranslations('ru', data);
+        ContentEdit.LANGUAGE = 'ru';
+    });
+
+    var editor = ContentTools.EditorApp.get();
+
+    editor.init('*[data-editable]', 'data-name');
+
+    editor.inspector().show = function () { return false; }
+    editor.addEventListener('saved',
+        function (ev) {
+            var $form = $('#orderForm'),
+                content = ev.detail().regions.Description;
+            $('#Description').val(content);
+            if (!$form.form('validate form')) {
+                return false;
+            }
+            var isNew = @newOrder.ToString().ToLower();
+            var imgStream = document.querySelector('[name=ImageStream]');
+            if (imgStream.files.length && imgStream.files[0].Size > 10) {
+                $form.form('add errors', ['Размер изображения не может быть больше 10 мбайт.']);
+                alert('Изображение не может иметь размер больше 10 мбайт.');
+                return false;
+            }
+            if (content === '' || (isNew && content === undefined)) {
+                $form.form('add errors', ['Заполните контент.'])
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Заполните контент.'
+                });
+                return false;
+            }
+            if (isNew) {
+                OrdersMvc.add('#orderForm');
+            } else {
+                OrdersMvc.update('#orderForm');
+            }
+    });
+
+    function updateDeadline(input) {
+        var inputVal = input.value,
+            $dropdown = $(input).siblings('.dropdown');
+        $dropdown.find('.menu>.item').each(function (index, item) {
+            for (var i = 0; i < deadlineItems.length; i++) {
+                var itemWords = deadlineItems[i];
+                if (itemWords.val === item.dataset.value) {
+                    var word = ViewHelper.getWordCase(+inputVal, itemWords.words[0], itemWords.words[1], itemWords.words[2]);
+                    item.dataset.text = word.toLowerCase();
+                    item.innerHTML = word;
+                    break;
+                }
+            }
+        });
+        var currentVal = $dropdown.dropdown('get value'),
+            items = $dropdown.dropdown('get item', currentVal);
+        if (items) {
+            $dropdown.children('.text').html(items[0].dataset.text);
+        }
+    }
+    if (localStorage.getItem('orderEditHelper') !== 'true') {
+        initEditPopup();
+    }
+    ViewHelper.disableFormSubmitting('#orderForm');
+    $('#orderTypes').dropdown({
+        fullTextSearch: true,
+        match: 'text'
+    });
+    $('#deadlineDropdown').dropdown();
+    @Html.FormValidation("#orderForm")
+</script>
+}

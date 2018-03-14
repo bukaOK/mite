@@ -20,7 +20,7 @@ namespace Mite.Controllers
     [Authorize]
     public class PaymentsController : BaseController
     {
-        private const double Comission = 0.02;
+        private const double Comission = 0.04;
 
         private readonly AppUserManager userManager;
         private readonly ILogger logger;
@@ -106,18 +106,8 @@ namespace Mite.Controllers
                     var operationId = (string)result.ResultData;
                     await paymentService.AddAsync(-sum, operationId, user.Id, PaymentType.YandexWallet);
 
-                    if(user.RefererId != null)
-                    {
-                        //Перечисляем рефералу
-                        await cashService.AddAsync(user.Id, user.RefererId, comissionSum / 2, CashOperationTypes.Referal);
-                        //Перечисляем системе
-                        await cashService.AddAsync(user.Id, null, comissionSum / 2, CashOperationTypes.Comission);
-                    }
-                    else
-                    {
-                        //Перечисляем только системе
-                        await cashService.AddAsync(user.Id, null, comissionSum, CashOperationTypes.Comission);
-                    }
+                    //Перечисляем системе
+                    await cashService.AddAsync(user.Id, null, comissionSum, CashOperationTypes.Comission);
                     return Json(JsonStatuses.Success);
                 }
                 else
