@@ -1,0 +1,19 @@
+﻿@model IEnumerable<Mite.Models.AdminUserReviewModel>
+
+<table class="ui celled table">
+    <thead>
+        <tr>
+            <th>Отзыв</th>
+            <th>Пользователь</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var review in Model)
+        {
+            <tr>
+                <td>@review.Review</td>
+                <td>@Html.RouteLink(review.User.UserName, "UserProfile", new { name = review.User.UserName })</td>
+            </tr>
+        }
+    </tbody>
+</table>

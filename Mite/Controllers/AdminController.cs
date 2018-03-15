@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Identity;
+﻿using AutoMapper;
+using Microsoft.AspNet.Identity;
 using Mite.Attributes.Filters;
 using Mite.BLL.IdentityManagers;
 using Mite.CodeData.Constants;
@@ -8,6 +9,7 @@ using Mite.DAL.Infrastructure;
 using Mite.DAL.Repositories;
 using Mite.ExternalServices.YandexMoney;
 using Mite.Models;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -60,6 +62,12 @@ namespace Mite.Controllers
             };
             var repo = unitOfWork.GetRepo<PostsRepository, Post>();
             model.PostsCount = repo.GetCount();
+            return PartialView(model);
+        }
+        public ActionResult Reviews()
+        {
+            var reviews = unitOfWork.GetRepo<ReviewsRepository, UserReview>().GetAll();
+            var model = Mapper.Map<IEnumerable<AdminUserReviewModel>>(reviews);
             return PartialView(model);
         }
     }

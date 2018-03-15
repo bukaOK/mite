@@ -21,19 +21,17 @@ namespace Mite.Controllers
     [AjaxOnly("Index")]
     public class UserSettingsController : BaseController
     {
-        private readonly IUserService _userService;
-        private readonly AppUserManager _userManager;
-        private readonly IAuthenticationManager _authManager;
-        private readonly ILogger logger;
+        private readonly IUserService userService;
+        private readonly AppUserManager userManager;
+        private readonly IAuthenticationManager authManager;
         private readonly ICityService cityService;
 
         public UserSettingsController(IUserService userService, AppUserManager userManager, ICityService cityService,
-            IAuthenticationManager authManager, ILogger logger)
+            IAuthenticationManager authManager)
         {
-            _userService = userService;
-            _userManager = userManager;
-            _authManager = authManager;
-            this.logger = logger;
+            this.userService = userService;
+            this.userManager = userManager;
+            this.authManager = authManager;
             this.cityService = cityService;
         }
         public ViewResult Index()
@@ -53,17 +51,17 @@ namespace Mite.Controllers
             }
             var imagesFolder = HostingEnvironment.ApplicationVirtualPath + "Public/images/";
 
-            var result = await _userService.UpdateUserAvatarAsync(imagesFolder, base64Str, User.Identity.GetUserId());
-            var updatedUser = await _userManager.FindByIdAsync(User.Identity.GetUserId());
+            var result = await userService.UpdateUserAvatarAsync(imagesFolder, base64Str, User.Identity.GetUserId());
+            var updatedUser = await userManager.FindByIdAsync(User.Identity.GetUserId());
 
             if (!result.Succeeded) return Json(JsonStatuses.Error, "Неудача при сохранении");
 
-            User.Identity.AddUpdateClaim(_authManager, ClaimConstants.AvatarSrc, updatedUser.AvatarSrc);
+            User.Identity.AddUpdateClaim(authManager, ClaimConstants.AvatarSrc, updatedUser.AvatarSrc);
             return Json(JsonStatuses.Success, "Аватарка обновлена");
         }
         public ActionResult UserProfile()
         {
-            var user = _userManager.FindById(CurrentUserId);
+            var user = userManager.FindById(CurrentUserId);
             var model = new ProfileSettingsModel
             {
                 NickName = user.UserName,
@@ -79,7 +77,7 @@ namespace Mite.Controllers
         }
         public ActionResult Invite()
         {
-            var user = _userManager.FindById(CurrentUserId);
+            var user = userManager.FindById(CurrentUserId);
             return PartialView(new InviteSettingsModel
             {
                 InviteKey = user.InviteId.ToString()
@@ -88,13 +86,13 @@ namespace Mite.Controllers
         [HttpPost]
         public async Task<ActionResult> GenerateInvite()
         {
-            var invite = await _userService.GenerateInviteAsync(CurrentUserId);
+            var invite = await userService.GenerateInviteAsync(CurrentUserId);
             return Json(new { inviteId = invite });
         }
         public ActionResult Notifications()
         {
-            var logins = _userManager.GetLogins(CurrentUserId);
-            var user = _userManager.FindById(CurrentUserId);
+            var logins = userManager.GetLogins(CurrentUserId);
+            var user = userManager.FindById(CurrentUserId);
             var model = new NotifySettingsModel
             {
                 VkAuthenticated = logins.Any(x => x.LoginProvider == VkSettings.DefaultAuthType),
@@ -105,7 +103,7 @@ namespace Mite.Controllers
         [HttpPost]
         public async Task<ActionResult> Notifications(NotifySettingsModel model)
         {
-            var result = await _userService.UpdateUserAsync(model, CurrentUserId);
+            var result = await userService.UpdateUserAsync(model, CurrentUserId);
             if (result.Succeeded)
                 return Ok();
             return InternalServerError();
@@ -116,15 +114,15 @@ namespace Mite.Controllers
             if (!ModelState.IsValid)
                 return Json(JsonStatuses.ValidationError, GetModelErrors());
 
-            var result = await _userService.UpdateUserAsync(settings, User.Identity.GetUserId());
+            var result = await userService.UpdateUserAsync(settings, User.Identity.GetUserId());
             if (!result.Succeeded)
             {
                 return Json(JsonStatuses.Error, result.Errors);
             }
-            var updatedUser = await _userManager.FindByIdAsync(User.Identity.GetUserId());
+            var updatedUser = await userManager.FindByIdAsync(User.Identity.GetUserId());
 
-            User.Identity.AddUpdateClaim(_authManager, ClaimTypes.Name, updatedUser.UserName);
-            User.Identity.AddUpdateClaim(_authManager, ClaimConstants.AvatarSrc, updatedUser.AvatarSrc);
+            User.Identity.AddUpdateClaim(authManager, ClaimTypes.Name, updatedUser.UserName);
+            User.Identity.AddUpdateClaim(authManager, ClaimConstants.AvatarSrc, updatedUser.AvatarSrc);
             return Json(JsonStatuses.Success, "Сохранено");
 
         }
@@ -140,7 +138,7 @@ namespace Mite.Controllers
             {
                 return Json(JsonStatuses.ValidationError, "Ошибка валидации");
             }
-            var result = await _userManager.ChangePasswordAsync(User.Identity.GetUserId(), model.OldPass, model.NewPass);
+            var result = await userManager.ChangePasswordAsync(User.Identity.GetUserId(), model.OldPass, model.NewPass);
 
             if (result.Succeeded)
             {
@@ -152,17 +150,17 @@ namespace Mite.Controllers
         [ValidateAntiForgeryToken]
         public async Task ChangePhoneNum(string num)
         {
-            var code = await _userManager.GenerateChangePhoneNumberTokenAsync(User.Identity.GetUserId(), num);
+            var code = await userManager.GenerateChangePhoneNumberTokenAsync(User.Identity.GetUserId(), num);
             var msg = "Ваш код подтверждения: " + code;
-            await _userManager.SendSmsAsync(User.Identity.GetUserId(), msg);
+            await userManager.SendSmsAsync(User.Identity.GetUserId(), msg);
         }
         public ActionResult EmailSettings()
         {
             var userId = User.Identity.GetUserId();
             var model = new EmailSettingsModel
             {
-                Email = User.Identity.GetClaimValue(ClaimTypes.Email) ?? _userManager.GetEmail(userId),
-                Confirmed = _userManager.IsEmailConfirmed(userId)
+                Email = User.Identity.GetClaimValue(ClaimTypes.Email) ?? userManager.GetEmail(userId),
+                Confirmed = userManager.IsEmailConfirmed(userId)
             };
             return PartialView(model);
         }
@@ -171,10 +169,10 @@ namespace Mite.Controllers
         public async Task SendEmailConfirmation()
         {
             var userId = User.Identity.GetUserId();
-            var code = await _userManager.GenerateEmailConfirmationTokenAsync(userId);
+            var code = await userManager.GenerateEmailConfirmationTokenAsync(userId);
             var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId, code }, Request.Url.Scheme);
 
-            await _userManager.SendEmailAsync(userId, "MiteGroup.Подтверждение почты.", $"Для подтверждения вашего аккаунта перейдите по <a href=\"{callbackUrl}\">ссылке</a>. MiteGroup.");
+            await userManager.SendEmailAsync(userId, "MiteGroup.Подтверждение почты.", $"Для подтверждения вашего аккаунта перейдите по <a href=\"{callbackUrl}\">ссылке</a>. MiteGroup.");
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -185,13 +183,13 @@ namespace Mite.Controllers
                 return Json(JsonStatuses.ValidationError, GetModelErrors());
             }
             var errors = new List<string>();
-            var user = await _userManager.FindByIdAsync(User.Identity.GetUserId());
+            var user = await userManager.FindByIdAsync(User.Identity.GetUserId());
 
-            var emailUser = await _userManager.FindByEmailAsync(model.NewEmail);
+            var emailUser = await userManager.FindByEmailAsync(model.NewEmail);
             if (emailUser != null && emailUser.Id != user.Id)
                 errors.Add("Такой e-mail уже существует");
 
-            var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
+            var isPasswordValid = await userManager.CheckPasswordAsync(user, model.Password);
             if (!isPasswordValid)
                 errors.Add("Неверный пароль");
 
@@ -204,18 +202,18 @@ namespace Mite.Controllers
 
             user.EmailConfirmed = false;
             user.Email = model.NewEmail;
-            await _userManager.UpdateAsync(user);
+            await userManager.UpdateAsync(user);
             return Json(JsonStatuses.Success, "E-mail успешно обновлен");
         }
         public PartialViewResult SocialServices()
         {
-            var links = _userService.GetSocialLinks(User.Identity.GetUserId());
+            var links = userService.GetSocialLinks(User.Identity.GetUserId());
             return PartialView(links);
         }
         [HttpPost]
         public async Task<HttpStatusCodeResult> UpdateSocialServices(SocialLinksModel model)
         {
-            await _userService.UpdateSocialLinksAsync(model, User.Identity.GetUserId());
+            await userService.UpdateSocialLinksAsync(model, User.Identity.GetUserId());
             return Ok();
         }
     }

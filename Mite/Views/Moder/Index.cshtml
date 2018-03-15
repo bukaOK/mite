@@ -2,66 +2,60 @@
 @{
     ViewBag.Title = "Панель модератора";
 }
-@section Styles{
-    <style>
-        body, .pusher {
-            background-color: white !important;
-        }
-    </style>
-}
-@Scripts.Render("~/bundles/api", "~/bundles/clipboard")
-<h1>Панель модератора</h1>
-<nav class="ui stackable pointing secondary tabs menu" style="border: none">
-    <a class="active item" data-tab="tagunchecked">Непроверенные теги</a>
-    <a class="item" data-tab="tagchecked">Проверенные теги</a>
-    <a class="item" data-tab="cities">Города</a>
-    <a class="item" data-tab="servicetypes" role="tab">Типы услуг</a>
-</nav>
-<div class="ui loading basic segment tab" data-tab="tagunchecked">
-    <table class="ui celled table unchecked">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Название</th>
-                <th>Действие</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-</div>
-<div class="ui loading basic segment tab" data-tab="tagchecked">
-    <button class="ui primary button" onclick="showTagAddModal(this)">Добавить тег</button>
-    <div class="ui input">
-        <input type="text" oninput="handleTagInput(this.value)" placeholder="Введите тег..." />
+<div class="ui segment">
+    <h2 class="ui header">Панель модератора</h2>
+    <nav class="ui stackable pointing secondary tabs menu" style="border: none">
+        <a class="active item" data-tab="tagunchecked">Непроверенные теги</a>
+        <a class="item" data-tab="tagchecked">Проверенные теги</a>
+        <a class="item" data-tab="cities">Города</a>
+        <a class="item" data-tab="servicetypes" role="tab">Типы услуг</a>
+    </nav>
+    <div class="ui loading basic segment tab" data-tab="tagunchecked">
+        <table class="ui celled table unchecked">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Название</th>
+                    <th>Действие</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
-    <table class="ui celled table checked">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Название</th>
-                <th>Действие</th>
-                <th>Подтвержден</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-</div>
-<div class="ui loading basic segment tab" data-tab="cities">
-    <button class="ui primary button" onclick="showCityAddModal(this)">Добавить город</button>
-    <table class="ui celled table">
-        <thead>
-            <tr>
-                <th>Название</th>
-                <th>Регион</th>
-                <th>Федеральный округ</th>
-                <th>Действие</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-</div>
-<div class="ui tab" data-tab="servicetypes" role="tabpanel">
-    @{ Html.RenderPartial("AuthorServiceTypes", new Mite.Models.ServiceTypeModel()); }
+    <div class="ui loading basic segment tab" data-tab="tagchecked">
+        <button class="ui primary button" onclick="showTagAddModal(this)">Добавить тег</button>
+        <div class="ui input">
+            <input type="text" oninput="handleTagInput(this.value)" placeholder="Введите тег..." />
+        </div>
+        <table class="ui celled table checked">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Название</th>
+                    <th>Действие</th>
+                    <th>Подтвержден</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="ui loading basic segment tab" data-tab="cities">
+        <button class="ui primary button" onclick="showCityAddModal(this)">Добавить город</button>
+        <table class="ui celled table">
+            <thead>
+                <tr>
+                    <th>Название</th>
+                    <th>Регион</th>
+                    <th>Федеральный округ</th>
+                    <th>Действие</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="ui tab" data-tab="servicetypes" role="tabpanel">
+        @{ Html.RenderPartial("AuthorServiceTypes", new Mite.Models.ServiceTypeModel()); }
+    </div>
 </div>
 <script id="tagRowTmpl" type="text/x-jsrender">
     <tr data-id="{{:Id}}" data-name="{{:Name}}" data-confirmed="{{:IsConfirmed}}" data-checked="{{:Checked}}">
@@ -111,11 +105,11 @@
             <div class="two fields">
                 <div class="field">
                     <label>Id старого тега</label>
-                    <input type="text" id="oldTagBind" autocomplete="off"/>
+                    <input type="text" id="oldTagBind" autocomplete="off" />
                 </div>
                 <div class="field">
                     <label>Id нового тега</label>
-                    <input type="text" id="newTagBind" autocomplete="off"/>
+                    <input type="text" id="newTagBind" autocomplete="off" />
                 </div>
             </div>
         </form>
@@ -125,6 +119,7 @@
     </div>
 </div>
 @{ Html.RenderPartial("_CityEdit", new Mite.Models.CityModel()); }
+@Scripts.Render("~/bundles/api", "~/bundles/clipboard")
 <script>
     function showTagChangeModal(ev) {
         var $tagRow = $(ev).parents('tr');

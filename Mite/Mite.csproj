@@ -401,7 +401,6 @@
     <Compile Include="Core\CrudApiController.cs" />
     <Compile Include="Extensions\ClaimsExtensions.cs" />
     <Compile Include="Extensions\HtmlExtensions.cs" />
-    <Compile Include="Extensions\UrlHelperExtensions.cs" />
     <Compile Include="Extensions\ValidationExtensions.cs" />
     <Compile Include="Hubs\Clients\ChatHubClient.cs" />
     <Compile Include="Helpers\ClaimsHelper.cs" />
@@ -436,6 +435,7 @@
     <Compile Include="Infrastructure\Automapper\RatingProfile.cs" />
     <Compile Include="Infrastructure\Automapper\TagProfile.cs" />
     <Compile Include="Infrastructure\Automapper\UserProfile.cs" />
+    <Compile Include="Infrastructure\Automapper\UserReviewProfile.cs" />
     <Compile Include="Infrastructure\Binders\BinderConfig.cs" />
     <Compile Include="Infrastructure\Binders\DecimalModelBinder.cs" />
     <Compile Include="Infrastructure\Binders\DoubleModelBinder.cs" />
@@ -1099,6 +1099,7 @@
     <Content Include="Views\UserOrders\Index.cshtml" />
     <Content Include="Views\UserSettings\Invite.cshtml" />
     <Content Include="Views\Home\Faq.cshtml" />
+    <Content Include="Views\Admin\Reviews.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
