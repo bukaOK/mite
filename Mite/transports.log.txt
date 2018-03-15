@@ -30821,3 +30821,36 @@ SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(3683061a-8f13-4444-
 SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(3683061a-8f13-4444-a184-09c209d849ed)
 SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(3683061a-8f13-4444-a184-09c209d849ed)
 SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(3683061a-8f13-4444-a184-09c209d849ed)
+SignalR.Transports.TransportHeartBeat Information: 0 : Connection 316c824f-b8ba-4206-824a-2df17417486a is New.
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: 316c824f-b8ba-4206-824a-2df17417486a, transport: WebSocketTransport, message: {"C":"d-DE6BEA82-B,0|C,0|D,0|E,1","S":1,"M":[]}
+SignalR.Transports.WebSocketTransport Verbose: 0 : Sending outgoing message. Connection id: 316c824f-b8ba-4206-824a-2df17417486a, transport: WebSocketTransport, message: {"C":"d-DE6BEA82-B,0|C,0|D,0|E,2|F,0","G":"z57GIypSKA8jcOUHtb3LRqxcCtvORnTg8avB3PLQg4eJXpmYBrS+bOtE1rQGKUH6MqQaqLgsiReVIy5ux4IMY+g5qgonCo3Ae1QTuy1Qjp7MaXO+uwVPS1qKUzhiBEXgp0Uh3mglWJYQh+zZviqANviq9DFURuSzPmziXzb3hZ2S5aoV9qnCj2sIX38psEPm","M":[]}
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : KeepAlive(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.WebSocketTransport Information: 0 : CloseSocket(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.TransportHeartBeat Verbose: 0 : 316c824f-b8ba-4206-824a-2df17417486a is dead
+SignalR.Transports.TransportHeartBeat Verbose: 0 : 316c824f-b8ba-4206-824a-2df17417486a is dead
+SignalR.Transports.TransportHeartBeat Verbose: 0 : 316c824f-b8ba-4206-824a-2df17417486a is dead
+SignalR.Transports.TransportHeartBeat Verbose: 0 : 316c824f-b8ba-4206-824a-2df17417486a is dead
+SignalR.Transports.TransportHeartBeat Verbose: 0 : 316c824f-b8ba-4206-824a-2df17417486a is dead
+SignalR.Transports.TransportHeartBeat Verbose: 0 : 316c824f-b8ba-4206-824a-2df17417486a is dead
+SignalR.Transports.TransportHeartBeat Verbose: 0 : 316c824f-b8ba-4206-824a-2df17417486a is dead
+SignalR.Transports.TransportHeartBeat Information: 0 : Removing connection 316c824f-b8ba-4206-824a-2df17417486a
+SignalR.Transports.WebSocketTransport Information: 0 : Abort(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.WebSocketTransport Information: 0 : End(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.WebSocketTransport Verbose: 0 : Cancel(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.WebSocketTransport Verbose: 0 : DrainWrites(316c824f-b8ba-4206-824a-2df17417486a)
+SignalR.Transports.WebSocketTransport Information: 0 : CompleteRequest (316c824f-b8ba-4206-824a-2df17417486a)

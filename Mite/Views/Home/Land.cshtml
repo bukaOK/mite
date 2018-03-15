@@ -4,7 +4,7 @@
     ViewBag.Title = "Главная";
     Layout = null;
     var authorWord = ViewHelper.GetWordCase(Model.AuthorsCount, "автор", "автора", "авторов");
-    var usersWord = ViewHelper.GetWordCase(Model.ClientsCount, "пользователь", "пользователя", "пользователей");
+    var usersWord = ViewHelper.GetWordCase(Model.ClientsCount + Model.AuthorsCount, "пользователь", "пользователя", "пользователей");
     var isMobile = ViewHelper.IsMobileDevice(Request);
 }
 <!DOCTYPE html>
@@ -264,7 +264,7 @@
                     <span class="content">Дружное сообщество</span>
                     <span class="sub header">С нами уже @(Model.AuthorsCount + Model.ClientsCount) @usersWord, присоединяйся!</span>
                 </h2>
-                <div class="ui seven column stackable grid">
+                <div class="ui eight column doubling grid">
                     @foreach (var item in Model.Users)
                     {
                         <div class="column">
@@ -400,9 +400,9 @@
                 if (window.innerHeight > window.innerWidth)
                     side.siblings('.side').height(0);
                 if (isAuthor) {
-                    $('.author.wrap').addClass('active');
+                    $('.author.wrap').css('margin-top', window.innerHeight).addClass('active');
                 } else {
-                    $('.client.wrap').addClass('active');
+                    $('.client.wrap').css('margin-top', window.innerHeight).addClass('active');
                 }
                 $('.reg.wrap').show();
                 $('.ui.progress').progress({
