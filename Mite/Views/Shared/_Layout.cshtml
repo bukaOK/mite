@@ -49,6 +49,7 @@
     <title>@ViewBag.Title</title>
     <script src='https://www.google.com/recaptcha/api.js'></script>
     <script type="text/javascript" src="https://vk.com/js/api/share.js?93" charset="windows-1251"></script>
+    <script type="text/javascript" src="//vk.com/js/api/openapi.js?152"></script>
 </head>
 <body class="pushable" style="height: 100% !important">
     @Scripts.Render("~/bundles/jquery", "~/bundles/semantic", "~/bundles/site", "~/bundles/jsrender")
@@ -79,7 +80,7 @@
                 } else {
                     $('.notify.popup > .feed').prepend(html);
                 }
-                $('.notifications.item').popup('reposition');
+                $('.user-menu>.notifications.item').popup('reposition');
                 label.show();
             }
             notifyHub.client.addMessage = function (msg) {

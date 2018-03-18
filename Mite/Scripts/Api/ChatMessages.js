@@ -91,7 +91,7 @@ var ChatMessages = {
             var tmpl = $.templates('#messageTmpl');
             chatLoader.updateScrollState(true);
             if (!self.dealChat) {
-                chatItem.find('.description').html(msg.Message);
+                chatItem.find('.description').html(ChatsHelper.truncChatItemMessage(msg.Message));
                 chatItem.find('.send-date').text('Сегодня');
                 chatItem.find('.msg-count.label').addClass('active')[0].innerHTML++;
             }
@@ -261,7 +261,7 @@ var ChatMessages = {
                     var chat = window.chats[resp.ChatId],
                         chatLoader = chat.ChatLoader;
                     if (!ChatMessages.dealChat) {
-                        chat.chatItem.find('.description').html(message);
+                        chat.chatItem.find('.description').html(ChatsHelper.truncChatItemMessage(message));
                         chat.chatItem.find('.ui.msg-count.label').removeClass('active').text(0);
                     }
                     $('.chat[data-id="' + resp.ChatId + '"] .event[data-status="new"]').each(function (index, elem) {

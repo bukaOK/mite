@@ -56,7 +56,7 @@ namespace Mite.Controllers
             userRating.PostId = post.Id;
 
             post.CurrentRating = userRating;
-            await postsService.AddViews(postId);
+            await postsService.AddViewsAsync(postId);
             return View(post);
         }
         [Route("posts/add/{postType}", Name = "AddPost")]

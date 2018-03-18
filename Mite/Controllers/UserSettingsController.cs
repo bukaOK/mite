@@ -13,7 +13,6 @@ using Mite.Extensions;
 using Mite.Models;
 using System.Collections.Generic;
 using Mite.Attributes.Filters;
-using NLog;
 
 namespace Mite.Controllers
 {
@@ -59,9 +58,9 @@ namespace Mite.Controllers
             User.Identity.AddUpdateClaim(authManager, ClaimConstants.AvatarSrc, updatedUser.AvatarSrc);
             return Json(JsonStatuses.Success, "Аватарка обновлена");
         }
-        public ActionResult UserProfile()
+        public async Task<ActionResult> UserProfile()
         {
-            var user = userManager.FindById(CurrentUserId);
+            var user = await userManager.FindByIdAsync(CurrentUserId);
             var model = new ProfileSettingsModel
             {
                 NickName = user.UserName,
@@ -70,14 +69,14 @@ namespace Mite.Controllers
                 LastName = user.LastName,
                 Age = user.Age,
                 About = user.Description,
-                Cities = cityService.GetCitiesSelectList(user),
+                Cities = await cityService.GetSelectListAsync(CurrentUserId),
             };
 
             return PartialView(model);
         }
-        public ActionResult Invite()
+        public async Task<ActionResult> Invite()
         {
-            var user = userManager.FindById(CurrentUserId);
+            var user = await userManager.FindByIdAsync(CurrentUserId);
             return PartialView(new InviteSettingsModel
             {
                 InviteKey = user.InviteId.ToString()
@@ -89,10 +88,10 @@ namespace Mite.Controllers
             var invite = await userService.GenerateInviteAsync(CurrentUserId);
             return Json(new { inviteId = invite });
         }
-        public ActionResult Notifications()
+        public async Task<ActionResult> Notifications()
         {
-            var logins = userManager.GetLogins(CurrentUserId);
-            var user = userManager.FindById(CurrentUserId);
+            var logins = await userManager.GetLoginsAsync(CurrentUserId);
+            var user = await userManager.FindByIdAsync(CurrentUserId);
             var model = new NotifySettingsModel
             {
                 VkAuthenticated = logins.Any(x => x.LoginProvider == VkSettings.DefaultAuthType),
@@ -156,11 +155,10 @@ namespace Mite.Controllers
         }
         public ActionResult EmailSettings()
         {
-            var userId = User.Identity.GetUserId();
             var model = new EmailSettingsModel
             {
-                Email = User.Identity.GetClaimValue(ClaimTypes.Email) ?? userManager.GetEmail(userId),
-                Confirmed = userManager.IsEmailConfirmed(userId)
+                Email = User.Identity.GetClaimValue(ClaimTypes.Email) ?? userManager.GetEmail(CurrentUserId),
+                Confirmed = userManager.IsEmailConfirmed(CurrentUserId)
             };
             return PartialView(model);
         }
@@ -205,9 +203,9 @@ namespace Mite.Controllers
             await userManager.UpdateAsync(user);
             return Json(JsonStatuses.Success, "E-mail успешно обновлен");
         }
-        public PartialViewResult SocialServices()
+        public async Task<ActionResult> SocialServices()
         {
-            var links = userService.GetSocialLinks(User.Identity.GetUserId());
+            var links = await userService.GetSocialLinksAsync(User.Identity.GetUserId());
             return PartialView(links);
         }
         [HttpPost]

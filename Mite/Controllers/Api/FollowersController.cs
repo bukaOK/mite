@@ -8,6 +8,8 @@ using System.Web.Http;
 using System.Net;
 using NLog;
 using Mite.DAL.Repositories;
+using Mite.Hubs.Clients;
+using Mite.CodeData.Enums;
 
 namespace Mite.Controllers.Api
 {

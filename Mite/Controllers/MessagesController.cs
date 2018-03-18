@@ -17,10 +17,14 @@ namespace Mite.Controllers
     public class MessagesController : BaseController
     {
         private readonly IChatMessagesService messagesService;
+        private readonly ChatHubClient chatHubClient;
+        private readonly NotifyHubClient notifyHubClient;
 
-        public MessagesController(IChatMessagesService messagesService)
+        public MessagesController(IChatMessagesService messagesService, ChatHubClient chatHubClient, NotifyHubClient notifyHubClient)
         {
             this.messagesService = messagesService;
+            this.chatHubClient = chatHubClient;
+            this.notifyHubClient = notifyHubClient;
         }
         [HttpPost]
         public async Task<ActionResult> Add(ChatMessageModel model)
@@ -46,10 +50,10 @@ namespace Mite.Controllers
                 if (string.IsNullOrEmpty(message.Chat.ImageSrc) || message.Chat.ImageSrc == PathConstants.AvatarSrc)
                     message.Chat.ImageSrc = User.Identity.GetClaimValue(ClaimConstants.AvatarSrc);
 
-                ChatHubClient.AddMessage(message);
-                NotifyHubClient.NewMessage(message);
+                chatHubClient.AddMessage(message);
+                notifyHubClient.NewMessage(message);
                 if (message.Chat.ChatType == ChatTypes.Public)
-                    ChatHubClient.AddPublicMessage(message);
+                    chatHubClient.AddPublicMessage(message);
 
                 return Json(JsonStatuses.Success, message);
             }

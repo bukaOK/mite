@@ -240,7 +240,6 @@ namespace Mite.BLL.Services
         public async Task<SocialLinksModel> GetSocialLinksAsync(string userId)
         {
             var repo = Database.GetRepo<SocialLinksRepository, SocialLinks>();
-
             var socialLinks = await repo.GetAsync(userId);
             if (socialLinks == null)
             {

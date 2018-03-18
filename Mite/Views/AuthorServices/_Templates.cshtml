@@ -53,7 +53,6 @@
     <div class="column">
         <div class="ui service-item segment">
             <div class="extra content">
-                <a class="ui right floated teal tag label" onclick="loadServiceType('{{:ServiceType.Id}}')">{{:ServiceType.Name}}</a>
                 <a href="/user/profile/{{:User.UserName}}" class="username" data-username="{{:User.UserName}}">
                     <img src="{{:User.AvatarSrc}}" class="ui avatar image" />
                     {{:User.ShowName}}
@@ -78,6 +77,9 @@
                     {{:Title}}
                     <span class="sub header">{{:Description}}</span>
                 </a>
+            </div>
+            <div class="extra content">
+                <a class="ui teal tag label" onclick="loadServiceType('{{:ServiceType.Id}}')">{{:ServiceType.Name}}</a>
             </div>
             <div class="ui divider"></div>
             <div class="extra content">

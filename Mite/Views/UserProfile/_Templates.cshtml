@@ -189,10 +189,11 @@
     <div class="column" data-service-id="{{:Id}}">
         <div class="ui service-item segment">
             <div class="extra content">
+                <a class="ui right floated teal tag label" onclick="loadServiceType('{{:ServiceType.Id}}')">{{:ServiceType.Name}}</a>
                 @if (currentUserName == pageUserName)
                 {
                     <div class="ui violet compact buttons">
-                        <a class="ui button" href="@Url.Action("Edit", "AuthorServices")/{{:Id}}">Редактировать</a>
+                        <a class="ui button" href="@Url.Action("Edit", "AuthorServices")/{{:Id}}" title="Редактировать">Ред.</a>
                         <div class="ui floating dropdown icon button">
                             <i class="dropdown icon"></i>
                             <div class="menu">
@@ -200,10 +201,6 @@
                             </div>
                         </div>
                     </div>
-                }
-                else
-                {
-                    <a class="ui primary compact button" href="@Url.Action("Show", "AuthorServices")/{{:Id}}">Смотреть</a>
                 }
             </div>
             <div class="ui divider"></div>
@@ -221,14 +218,16 @@
             </div>
             <div class="ui divider"></div>
             <div class="extra content">
-                <i class="calendar violet icon"></i>
-                <span>Срок: {{:Deadline}}</span>
-                {{if Price != null && Price > 0}}
+                <span title="Срок выполнения"><i class="calendar violet icon"></i>{{:Deadline}}</span>
+                <span title="Рейтинг"><i class="yellow star icon"></i>{{:Rating}}</span>
+                <span title="Надёжность"><i class="blue check circle icon"></i>{{:Reliability}}</span>
                 <div class="right">
-                    <i class="ruble green icon"></i>
-                    <span>Цена: {{:Price}}</span>
+                    {{if Price != null && Price > 0}}
+                    <span title="Цена"><i class="ruble green icon"></i>{{:Price}}</span>
+                    {{else}}
+                    <span title="Цена"><i class="ruble green icon"></i>Бесплатно</span>
+                    {{/if}}
                 </div>
-                {{/if}}
             </div>
         </div>
     </div>

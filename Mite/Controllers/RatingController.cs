@@ -6,6 +6,8 @@ using Microsoft.AspNet.Identity;
 using Mite.Core;
 using System.Web.Mvc;
 using Mite.CodeData.Enums;
+using Mite.Hubs.Clients;
+using System.Linq;
 
 namespace Mite.Controllers
 {
@@ -14,11 +16,13 @@ namespace Mite.Controllers
     {
         private readonly IRatingService ratingService;
         private readonly IBlackListService blackListService;
+        private readonly IPostsService postsService;
 
-        public RatingController(IRatingService ratingService, IBlackListService blackListService)
+        public RatingController(IRatingService ratingService, IBlackListService blackListService, IPostsService postsService)
         {
             this.ratingService = ratingService;
             this.blackListService = blackListService;
+            this.postsService = postsService;
         }
         [HttpPost]
         public async Task<ActionResult> RatePost(PostRatingModel postModel)
@@ -31,9 +35,14 @@ namespace Mite.Controllers
                 return Json(JsonStatuses.ValidationError, "Пользователь в черном списке");
             try
             {
-                
-                await ratingService.RatePostAsync(postModel);
-                return Json(JsonStatuses.Success);
+                var result = await ratingService.RatePostAsync(postModel);
+                if (result.Succeeded)
+                {
+                    if (postModel.IsTop)
+                        await postsService.AddViewsAsync(postModel.PostId);
+                    return Json(JsonStatuses.Success);
+                }
+                return Json(JsonStatuses.ValidationError, result.Errors.FirstOrDefault());
             }
             catch(Exception)
             {

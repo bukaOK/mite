@@ -132,6 +132,10 @@ namespace Mite.Models
         public byte Value { get; set; }
         [Required]
         public Guid PostId { get; set; }
+        /// <summary>
+        /// Оценка производилась в топе или на странице работы(true если в топе)
+        /// </summary>
+        public bool IsTop { get; set; }
         public string UserId { get; set; }
     }
 

@@ -12,7 +12,7 @@
         {
             <tr>
                 <td>@review.Review</td>
-                <td>@Html.RouteLink(review.User.UserName, "UserProfile", new { name = review.User.UserName })</td>
+                <td>@Html.ActionLink(review.User.UserName, "Index", "UserProfile", new { name = review.User.UserName }, null)</td>
             </tr>
         }
     </tbody>

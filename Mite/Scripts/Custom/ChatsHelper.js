@@ -26,6 +26,22 @@
             oldVal = +chatsLabel.text(),
             newVal = oldVal - minusVal;
         chatsLabel.text(newVal > 0 ? newVal : 0);
+        if (newVal === 0)
+            chatsLabel.hide();
+    },
+    /**
+     * Обрабатывает вставку сообщения в .dialog-area
+     * @param {Event} e
+     */
+    handleMessagePaste: function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        var clipboardData = e.clipboardData || window.clipboardData,
+            pastedData = clipboardData.getData('Text');
+        pastedData = pastedData.replace(/(<span[^>]*>|<\/span>|<div[^>]*>)/g, '')
+            .replace(/<\/div>/g, '<br>');
+        e.target.innerHTML = pastedData;
     },
     ChatCreating: {
         init: function () {

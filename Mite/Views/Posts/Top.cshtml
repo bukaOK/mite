@@ -13,9 +13,11 @@
         .tags.modal .basic.segment:not(.loading){
             padding: 0;
         }
+        .right.floated{
+            float: right;
+        }
     </style>
 }
-<script type="text/javascript" src="//vk.com/js/api/openapi.js?146"></script>
 <div class="active loader-wrapper"><div class="ui active loader"></div></div>
 <div class="ui stackable menu">
     <div class="item">
@@ -113,7 +115,7 @@
     </div>
 </div>
 @{ Html.RenderPartial("_TopTemplates"); }
-@Scripts.Render("~/bundles/grid", "~/bundles/scroll", "~/bundles/api")
+@Scripts.Render("~/bundles/grid", "~/bundles/scroll", "~/bundles/api", "~/bundles/insertion")
 <script>
     var tagsInitialized = false;
     var userCardTmpl = $.templates('#miniUserCardTmpl');
@@ -139,7 +141,7 @@
         $('.tags.modal').modal('show');
     }
     $(function () {
-        $('.ui.label').each(function (index, el) {
+        $('.top-tags .ui.label').each(function (index, el) {
             if ($(this).height() > 12) {
                 $(this).css('margin-top', '2px');
             }
@@ -162,11 +164,51 @@
                 }
             }
         });
+        insertionQ('.post-item').every(function (elem) {
+            var $elem = $(elem);
+            if ($elem.hasClass('hide-adult-content')) {
+                $elem.dimmer({
+                    closable: false
+                }).dimmer('show');
+            }
+            $elem.find('a.username').popup({
+                position: 'bottom left',
+                popup: $(this).siblings('.user-card.popup')[0],
+                variation: 'basic',
+                hoverable: true,
+                inline: true,
+                transition: 'slide top',
+                preserve: true,
+                onShow: function (item) {
+                    $.getJSON('/userprofile/getuserprofile', 'name=' + item.dataset.username, function (resp) {
+                        var respData = resp.data;
+                        respData.PostsCountWord = ViewHelper.getWordCase(respData.PostsCount, 'Работа', 'Работы', 'Работ');
+                        respData.FollowersWord = ViewHelper.getWordCase(respData.FollowersCount, 'Подписка', 'Подписки', 'Подписок');
+                        $(item).popup('change content', userCardTmpl.render(resp.data))
+                            .popup('reposition').addClass('initialized');
+                    });
+                }
+            });
+            var $rating = $elem.find('.ui.rating').rating({
+                onRate: function (rateValue) {
+                    var rateInst = this;
+                    RatingMvc.ratePost({
+                        rateValue: rateValue,
+                        lastRateValue: +this.dataset.rating,
+                        postRating: +this.dataset.fullRating,
+                        postId: this.dataset.postId,
+                        postAuthorId: this.dataset.userId,
+                        isTop: true,
+                        rateObj: this
+                    });
+                }
+            });
+        });
         $('#postsSearch').keydown(function (ev) {
             if (ev.which === 13) {
                 SearchFilters.changeFilter();
             }
-        })
+        });
         SearchFilters.init({
             beforeLoad: function () {
                 $('.loader-wrapper').addClass('active');
@@ -195,45 +237,12 @@
                 else if (SearchFilters._page <= 1) {
                     grid.html($('#emptyResultTmpl').html());
                 }
-                var $dimm = $('.post-item.hide-adult-content:not(.dimmed,.dimmable)');
-                $dimm.dimmer({
-                    closable: false
-                });
-                $dimm.dimmer('show');
-                grid.masonry('reloadItems');
-                grid.imagesLoaded(function () {
+
+                grid.masonry('reloadItems').imagesLoaded(function () {
                     $('.loader-wrapper').removeClass('active');
                     grid.masonry('layout');
                 }).progress(function () {
                     grid.masonry('layout');
-                });
-                $('a.username:not(.initialized)').popup({
-                    position: 'bottom left',
-                    popup: $(this).siblings('.user-card.popup')[0],
-                    variation: 'basic',
-                    hoverable: true,
-                    inline: true,
-                    transition: 'slide top',
-                    preserve: true,
-                    onShow: function (item) {
-                        var $popup = this;
-                        $.ajax({
-                            url: '/userprofile/getuserprofile',
-                            data: 'name=' + item.dataset.username,
-                            type: 'get',
-                            success: function (resp) {
-                                if (resp.status === undefined) {
-                                    resp = JSON.parse(resp);
-                                }
-                                var respData = resp.data;
-                                respData.PostsCountWord = ViewHelper.getWordCase(respData.PostsCount, 'Работа', 'Работы', 'Работ');
-                                respData.FollowersWord = ViewHelper.getWordCase(respData.FollowersCount, 'Подписка', 'Подписки', 'Подписок');
-                                $(item).popup('change content', userCardTmpl.render(resp.data));
-                                $(item).popup('reposition');
-                                item.classList.add('initialized');
-                            }
-                        });
-                    }
                 });
             },
             onError: function () {

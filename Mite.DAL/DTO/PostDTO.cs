@@ -46,6 +46,10 @@ namespace Mite.DAL.DTO
         public int Views { get; set; }
         public PostTypes Type { get; set; }
         public PostContentTypes ContentType { get; set; }
+        /// <summary>
+        /// Рейтинг, который оставил текущий пользователь
+        /// </summary>
+        public int CurrentRating { get; set; }
         public List<Rating> Ratings { get; set; }
         /// <summary>
         /// Элементы коллекции(если работа - коллекция)

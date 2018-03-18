@@ -25,6 +25,7 @@
     "air-datepicker": "^2.2.3",
     "sweetalert2": "^6.9.1",
     "simplebar": "^2.4.4",
-    "izitoast": "^1.2.0"
+    "izitoast": "^1.2.0",
+    "insertionQuery": "^1.0.4"
   }
 }

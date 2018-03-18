@@ -54,6 +54,7 @@ var RatingMvc = {
                     message: resp.message
                 });
             } else {
+                NotificationsApi.add(notificationType, userId, postId + '#com' + commentId);
                 if (isRate) {
                     commentRateIcon.addClass('outline');
                     commentRating.innerHTML--;
@@ -62,22 +63,20 @@ var RatingMvc = {
                     commentRating.innerHTML++;
                 }
                 $(btn).data('isRate', !isRate);
-                sendNotification(notificationType, userId, postId + '#com' + commentId);
             }
         });
     },
     /**
+     * @typedef {{rateValue: number, lastRateValue: number, postRating: number, postAuthorId: string, ratingId: string, postId: string, isTop: boolean, rateObj: HTMLElement|string}} PostRateSettings
      * Оценка поста
-     * @param {string} notificType тип уведомления
-     * @param {string} userId id пользователя
-     * @param {string} postId id поста
+     * @param {PostRateSettings} settings новое значение рейтинга
     */
-    ratePost: function (rateValue, notificType, userId, postId) {
-        var currentPostRating = $('#post-rating').data('rating');
+    ratePost: function (settings) {
         return $.post('/rating/ratepost', {
-            Id: $("#CurrentRating_Id").val(),
-            Value: rateValue,
-            PostId: $("#CurrentRating_PostId").val()
+            Id: settings.ratingId,
+            Value: settings.rateValue,
+            PostId: settings.postId,
+            IsTop: settings.isTop === true
         }, function (resp) {
             if (resp.status === undefined)
                 resp = JSON.parse(resp);
@@ -86,14 +85,19 @@ var RatingMvc = {
                     title: 'Упс!',
                     message: resp.message
                 });
-                $('.ui.rating').rating('set rating', currentPostRating);
+                $(settings.rateObj).rating('set rating', settings.lastRateValue);
             } else {
-                var newRating = rateValue - lastRateValue,
-                    newPostRating = currentPostRating + newRating;
-                $("#post-rating").text("(" + newPostRating + ")").data('rating', currentPostRating + newRating);
-
-                lastRateValue = rateValue;
-                sendNotification(notificType, userId, postId);
+                NotificationsApi.add(NotificationTypes.postRating, settings.postAuthorId, settings.postId);
+                var newRating = settings.rateValue - settings.lastRateValue,
+                    newPostRating = settings.postRating + newRating;
+                if (settings.isTop) {
+                    $(settings.rateObj).siblings('.right.floated').find('.rate-value').text(newPostRating);
+                    settings.rateObj.dataset.fullRating = newPostRating;
+                    
+                } else {
+                    $("#post-rating").text("(" + newPostRating + ")").data('rating', newPostRating);
+                }
+                settings.rateObj.dataset.rating = settings.rateValue;
             }
         });
     },

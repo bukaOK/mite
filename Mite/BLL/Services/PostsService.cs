@@ -52,7 +52,7 @@ namespace Mite.BLL.Services
         /// </summary>
         /// <param name="postId">Id поста</param>
         /// <returns></returns>
-        Task AddViews(Guid postId);
+        Task AddViewsAsync(Guid postId);
         Task<DataServiceResult> PublishPost(Guid postId);
         Task<IEnumerable<TopPostModel>> GetTopAsync(PostTopFilterModel filter, string currentUserId);
     }
@@ -305,7 +305,7 @@ namespace Mite.BLL.Services
             return postModels;
         }
 
-        public Task AddViews(Guid postId)
+        public Task AddViewsAsync(Guid postId)
         {
             return Database.GetRepo<PostsRepository, Post>().AddView(postId);
         }

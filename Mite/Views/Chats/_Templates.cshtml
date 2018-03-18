@@ -41,7 +41,7 @@
             </div>
             <div class="right aligned column">
                 <div class="msg-actions">
-                    <button class="ui red compact small button" onclick="ChatMessages.Api.remove()">Удалить</button>
+                    <button class="ui red small compact button" onclick="ChatMessages.Api.remove()">Удалить</button>
                 </div>
                 {{if ChatType == @((byte)ChatTypes.PrivateGroup) || ChatType == @((byte)ChatTypes.Public)}}
                 <div class="ui inline dropdown chat-menu">
@@ -78,7 +78,7 @@
         <form class="ui clearing form segment" data-chat-id="{{:Id}}">
             <div class="ui attachments three column grid segment"></div>
             <div class="field">
-                <div class="dialog-area" ondrop="return false" ondragover="return false" contenteditable="true" data-state="begin" oninput="ChatMessages.inputHandle('{{:Id}}', this)"></div>
+                <div class="dialog-area" onpaste="ChatsHelper.handleMessagePaste(event)" ondrop="return false" ondragover="return false" contenteditable="true" data-state="begin" oninput="ChatMessages.inputHandle('{{:Id}}', this)"></div>
             </div>
             <button type="button" class="ui right floated compact labeled icon primary msgSend button">
                 <i class="send outline icon"></i>

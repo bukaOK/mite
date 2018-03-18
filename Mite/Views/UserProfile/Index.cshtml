@@ -66,10 +66,10 @@
                 <form class="ui form">
                     @if(currentUserName != pageUserName)
                     {
-                        <button type="button" class="ui green button" onclick="addFollower('@Model.UserId', this)"@Html.Raw(Model.IsFollowing ? " style=\"display: none\"" : "")>
+                        <button type="button" class="ui green button" onclick="FollowersApi.add('@Model.UserId', this)"@Html.Raw(Model.IsFollowing ? " style=\"display: none\"" : "")>
                             <i class="add user icon"></i>Подписаться
                         </button>
-                        <button type="button" class="ui red button" onclick="deleteFollower('@Model.UserId', this)"@Html.Raw(!Model.IsFollowing ? " style=\"display: none\"" : "")>
+                        <button type="button" class="ui red button" onclick="FollowersApi.delete('@Model.UserId', this)"@Html.Raw(!Model.IsFollowing ? " style=\"display: none\"" : "")>
                             <i class="remove user icon"></i>Отписаться
                         </button>
                         <div class="ui top center blue user-actions floating icon dropdown button">
@@ -124,19 +124,19 @@
         <div class="column">
             @if (currentUserName != pageUserName && !Model.IsFollowing && User.Identity.IsAuthenticated)
             {
-                <button class="ui primary button" onclick="addFollower('@Model.UserId', this)">
+                <button class="ui primary button" onclick="FollowersApi.add('@Model.UserId', this)">
                     <i class="add user icon"></i>Подписаться
                 </button>
-                <button class="ui red button" onclick="deleteFollower('@Model.UserId', this)" style="display: none">
+                <button class="ui red button" onclick="FollowersApi.delete('@Model.UserId', this)" style="display: none">
                     <i class="remove user icon"></i>Отписаться
                 </button>
             }
             @if (Model.IsFollowing)
             {
-                <button class="ui red button" onclick="deleteFollower('@Model.UserId', this)">
+                <button class="ui red button" onclick="FollowersApi.delete('@Model.UserId', this)">
                     <i class="remove user icon"></i>Отписаться
                 </button>
-                <button class="ui primary button" onclick="addFollower('@Model.UserId', this)" style="display: none">
+                <button class="ui primary button" onclick="FollowersApi.add('@Model.UserId', this)" style="display: none">
                     <i class="add user icon"></i>Подписаться
                 </button>
             }
@@ -350,68 +350,6 @@ else
             },
             error: function(){
                 alert('Ошибка при попытке публикации');
-            }
-        });
-    }
-    function sendNotification(notificType, targetUserId){
-        $.ajax({
-            url: '/api/notification',
-            type: 'post',
-            data: {
-                NotificationType: notificType,
-                User: {
-                    Id: targetUserId
-                }
-            },
-            success: function(){
-                window.hubReady.done(function(){
-                    $.connection.notifyHub.server.newNotification(targetUserId, notificType, null);
-                });
-            }
-        });
-    }
-    function addFollower(followingUserId, btn) {
-        var $btn = $(btn);
-        $btn.addClass('loading disabled');
-
-        $.ajax({
-            url: '/api/followers',
-            type: 'post',
-            data: '=' + followingUserId,
-            success: function (resp) {
-                $btn.hide();
-                $btn.siblings('.button').show();
-                sendNotification('@NotificationTypes.Follower', '@Model.UserId');
-            },
-            error: function (jqXhr) {
-                alert('Ошибка сервера');
-            },
-            complete: function(){
-                $btn.removeClass('loading disabled');
-            }
-        });
-
-    }
-    function deleteFollower(followingUserId, btn) {
-        var $btn = $(btn);
-        $btn.addClass('loading disabled');
-
-        $.ajax({
-            url: '/api/followers',
-            type: 'delete',
-            data: '=' + followingUserId,
-            success: function (resp) {
-                $btn.hide();
-                $btn.siblings().show();
-            },
-            error: function (jqXhr) {
-                iziToast.error({
-                    title: 'Упс!',
-                    message: 'Ошибка сервера.'
-                });
-            },
-            complete: function(){
-                $btn.removeClass('loading disabled');
             }
         });
     }

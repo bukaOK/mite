@@ -939,8 +939,11 @@
     <Content Include="Scripts\Api\Chats.js" />
     <Content Include="Scripts\Api\ChatUpdating.js" />
     <Content Include="Scripts\Api\Cities.js" />
+    <Content Include="Scripts\Api\Comments.js" />
     <Content Include="Scripts\Api\Deals.js" />
     <Content Include="Scripts\Api\FavoritePosts.js" />
+    <Content Include="Scripts\Api\Followers.js" />
+    <Content Include="Scripts\Api\Notifications.js" />
     <Content Include="Scripts\Api\Payments.js" />
     <Content Include="Scripts\Api\PublicChats.js" />
     <Content Include="Scripts\Api\ServiceTypes.js" />

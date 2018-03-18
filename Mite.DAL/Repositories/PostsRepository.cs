@@ -204,22 +204,23 @@ namespace Mite.DAL.Repositories
                         tagNamesStr.Append("or ");
                 }
                 //Запрос для получения кол-ва совпадений тегов для каждого поста
-                var tagsCountQuery = "select COUNT(\"Tag_Id\") as \"TagsCount\", \"Post_Id\" from dbo.\"Tags\" as tags " +
+                var tagsCountQuery = "select \"Post_Id\" from dbo.\"Tags\" as tags " +
                         "inner join dbo.\"TagPosts\" as tag_posts on tags.\"Id\"=tag_posts.\"Tag_Id\" " +
-                        $"where {tagNamesStr.ToString()} group by \"Post_Id\";";
+                        $"where {tagNamesStr.ToString()} group by \"Post_Id\" having count(\"Tag_Id\") >= {filter.Tags.Length}";
 
-                var tagsCountRes = await Db.QueryAsync(tagsCountQuery);
+                //var tagsCountRes = await Db.QueryAsync(tagsCountQuery);
                 //Чтобы у поста было точное кол-во совпадений с тегами(т.е. написали в запросе 2 тега - должно совпасть 2 тега или больше)
-                filter.TagPostsIds = tagsCountRes.Where(x => (int)x.TagsCount >= filter.Tags.Length)
-                    .Select(x => (Guid)x.Post_Id).ToList();
+                //filter.TagPostsIds = tagsCountRes.Where(x => (int)x.TagsCount >= filter.Tags.Length)
+                //    .Select(x => (Guid)x.Post_Id).ToList();
 
-                query += "and posts.\"Id\"=any(@TagPostsIds) ";
+                //query += "and posts.\"Id\"=any(@TagPostsIds) ";
+                query += $"and posts.\"Id\"=any({tagsCountQuery}) ";
             }
             if (filter.OnlyFollowings)
             {
-                var folQuery = "select \"FollowingUserId\" from dbo.\"Followers\" where \"UserId\"=@CurrentUserId;";
-                filter.Followings = (await Db.QueryAsync<string>(folQuery, filter)).ToList();
-                query += "and users.\"Id\" = any(@Followings) ";
+                var folQuery = "select flw.\"FollowingUserId\" from dbo.\"Followers\" flw where flw.\"UserId\"=@CurrentUserId";
+                //filter.Followings = (await Db.QueryAsync<string>(folQuery, filter)).ToList();
+                query += $"and users.\"Id\" = any({folQuery}) ";
             }
             var sortQuery = "order by posts.\"PublishDate\" desc";
             switch (filter.SortType)
@@ -234,20 +235,23 @@ namespace Mite.DAL.Repositories
                     sortQuery = "order by posts.\"PublishDate\" asc";
                     break;
             }
-            query += $"{sortQuery} limit {filter.Range} offset {filter.Offset};";
+            query += $"{sortQuery} limit {filter.Range} offset {filter.Offset}";
             filter.PostIds = (await Db.QueryAsync<Guid>(query, filter)).ToList();
 
-            query = "select posts.*, (select count(*) from dbo.\"Comments\" as comments where comments.\"PostId\"=posts.\"Id\") " +
-                "as \"CommentsCount\", users.*, tags.* from dbo.\"Posts\" as posts " +
+            var finalQuery = "select posts.*, (select count(*) from dbo.\"Comments\" as comments where comments.\"PostId\"=posts.\"Id\") " +
+                "as \"CommentsCount\", rating.\"Value\" as \"CurrentRating\", users.*, tags.* from dbo.\"Posts\" as posts " +
                 "inner join dbo.\"Users\" as users on posts.\"UserId\"=users.\"Id\" " +
                 "left outer join dbo.\"TagPosts\" as tag_posts on tag_posts.\"Post_Id\"=posts.\"Id\" " +
-                $"left outer join dbo.\"Tags\" as tags on tags.\"Id\"=tag_posts.\"Tag_Id\" where posts.\"Id\"=any(@PostIds) {sortQuery};";
+                "left outer join dbo.\"Tags\" as tags on tags.\"Id\"=tag_posts.\"Tag_Id\" " +
+                "left outer join (select rtn.\"Value\", rtn.\"PostId\" from dbo.\"Ratings\" rtn where rtn.\"UserId\"=@CurrentUserId) " +
+                $"as rating on rating.\"PostId\"=posts.\"Id\" where posts.\"Id\"=any(@PostIds) {sortQuery};";
+                //$"where posts.\"Id\"=any(@PostIds) {sortQuery};";
 
             var posts = new List<PostDTO>();
-            await Db.QueryAsync<PostDTO, User, Tag, PostDTO>(query, (post, user, tag) =>
+            await Db.QueryAsync<PostDTO, User, Tag, PostDTO>(finalQuery, (post, user, tag) =>
             {
-                var dto = posts.FirstOrDefault(x => x.Id == post.Id);
-                if (dto == null)
+                var existingPost = posts.FirstOrDefault(x => x.Id == post.Id);
+                if (existingPost == null)
                 {
                     post.User = user;
                     post.Tags = new List<Tag>();
@@ -256,7 +260,7 @@ namespace Mite.DAL.Repositories
                     posts.Add(post);
                 }
                 else if (tag != null)
-                    dto.Tags.Add(tag);
+                    existingPost.Tags.Add(tag);
                 return post;
             }, filter);
             return posts;

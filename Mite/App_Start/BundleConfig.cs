@@ -47,6 +47,7 @@ namespace Mite
             ));
             bundles.Add(new ScriptBundle("~/bundles/datepicker").Include(
                 "~/bower_components/air-datepicker/dist/js/datepicker.min.js"));
+            bundles.Add(new ScriptBundle("~/bundles/insertion").Include("~/bower_components/insertionQuery/insQ.js"));
 
             //CSS
             bundles.Add(new StyleBundle("~/Content/semantic").Include(

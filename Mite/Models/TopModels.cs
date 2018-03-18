@@ -60,6 +60,7 @@ namespace Mite.Models
         }
 
         public int Rating { get; set; }
+        public int CurrentRating { get; set; }
         public int Views { get; set; }
         public int CommentsCount { get; set; }
         /// <summary>

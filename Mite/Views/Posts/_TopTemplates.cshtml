@@ -14,6 +14,7 @@
                         <div class="dot"></div>
                     </div>
                 </div>
+                <span class="right floated" title="Время публикации">{{:PublicTimeStr}}</span>
             </div>
             <div class="ui {{if !IsImage && Cover != null}}inverted {{/if}}divider"></div>
             {{if IsImage}}
@@ -49,12 +50,21 @@
             </div>
             <div class="ui {{if !IsImage && Cover != null}}inverted {{/if}} divider"></div>
             <div class="extra content">
-                <span>{{:PublicTimeStr}}</span>
-                <div class="right floated" style="float: right">
-                    <span title="Рейтинг"><i class="yellow star icon"></i>{{:Rating}}</span>
+                @if (Request.IsAuthenticated)
+                {
+                    <div class="ui star rating" data-full-rating="{{:Rating}}" data-post-id="{{:Id}}" data-user-id="{{:User.Id}}" data-rating="{{:CurrentRating}}" data-max-rating="5"></div>
+                    <div class="right floated">
+                        <span class="post-rating" title="Рейтинг"><i class="yellow star icon"></i><span class="rate-value">{{:Rating}}</span></span>
+                        <span title="Просмотры"><i class="{{if IsImage}}blue{{else}}black{{/if}} unhide icon"></i>{{:Views}}</span>
+                        <span title="Комментарии"><i class="green comments outline icon"></i>{{:CommentsCount}}</span>
+                    </div>
+                }
+                else
+                {
+                    <span class="post-rating" title="Рейтинг"><i class="yellow star icon"></i><span class="rate-value">{{:Rating}}</span></span>
                     <span title="Просмотры"><i class="{{if IsImage}}blue{{else}}black{{/if}} unhide icon"></i>{{:Views}}</span>
                     <span title="Комментарии"><i class="green comments outline icon"></i>{{:CommentsCount}}</span>
-                </div>
+                }
             </div>
             {{if !ShowAdultContent}}
             <div class="ui center aligned dimmer">

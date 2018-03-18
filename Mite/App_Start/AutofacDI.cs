@@ -21,6 +21,7 @@ using System.Web;
 using Mite.Modules;
 using Autofac.Integration.SignalR;
 using Mite.Hubs.Clients;
+using Mite.Hubs.Clients.Core;
 
 namespace Mite
 {
@@ -65,6 +66,8 @@ namespace Mite
             builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
                 .AssignableTo<IDataService>()
                 .AsImplementedInterfaces();
+            builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+                .AsClosedTypesOf(typeof(HubClient<>));
 
             builder.RegisterType<HttpClient>().SingleInstance();
             builder.RegisterType<YaHttpClient>().As<IHttpClient>();

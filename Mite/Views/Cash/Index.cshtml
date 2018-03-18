@@ -63,7 +63,6 @@
         <div class="ui segment">
             <nav class="ui secondary stackable tabs menu" style="border: none">
                 <a class="active item" data-tab="payhistory">История операций</a>
-                <a class="item" data-tab="referals">Рефералы</a>
                 @if (User.IsInRole(RoleNames.Author))
                 {
                     <a class="item" data-tab="ad">Реклама</a>
@@ -76,55 +75,13 @@
                 <div class="ui tab" data-tab="ad">
                     @{Html.RenderAction("Advertising");}
                 </div>
-                        }
+            }
         </div>
     </div>
 </div>
 @section scripts{
     @Scripts.Render("~/bundles/clipboard", "~/bundles/api", "~/bundles/inputmask")
 }
-<script id="referalsTmpl" type="text/x-jsrender">
-    <div class="ui blue message">
-        <p>Чтобы пользователь стал вашим <b class="help word" data-tooltip="Пользователь, которого Вы пригласили.">рефералом</b>, следуйте следующим пунктам: </p>
-        <ol>
-            <li>Скопируйте ссылку, приведенную ниже.</li>
-            <li>Отправьте её знакомым, которые занимаются творчеством(рисуют, пишут, фотографируют и пр.)</li>
-            <li>После регистрации на сайте пользователь станет Вашим рефералом, и Вы сможете получать часть средств, которые он выведет из системы.</li>
-        </ol>
-    </div>
-    <div class="ui fluid action input">
-        <input type="text" value="http://@Request.Url.Host/?refid=@User.Identity.GetUserId()" readonly 
-               style="background-color: #e0e0e0 !important" id="refLink"/>
-        <button class="ui green button" data-clipboard-target="#refLink" id="refCopyBtn">
-            <i class="copy icon"></i>
-            Копировать
-        </button>
-    </div>
-    <table class="ui very basic celled table">
-        <thead>
-            <tr>
-                <th>Ник пользователя</th>
-                <th>Доход</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{if data.length > 0}}
-            {{for data}}
-            <tr>
-                <td>{{:UserName}}</td>
-                <td>{{:Income}}</td>
-            </tr>
-            {{/for}}
-            {{else}}
-            <tr>
-                <td colspan="2">
-                    <h4 class="ui centered header">У вас пока нет рефералов.</h4>
-                </td>
-            </tr>
-            {{/if}}
-        </tbody>
-    </table>
-</script>
 <script id="paymentsTmpl" type="text/x-jsrender">
     <table class="ui inverted violet table">
         <thead>
@@ -162,27 +119,12 @@
 *@
 
 <script>
-    function loadReferals() {
-        $.ajax({
-            url: '/cash/referals',
-            type: 'post',
-            success: function (resp) {
-                if (resp.status == undefined) {
-                    resp = JSON.parse(resp);
-                }
-                var tmpl = $.templates('#referalsTmpl');
-                var html = tmpl.render(resp);
-                $('.tab[data-tab="referals"]').html(html);
-                $('.tab[data-tab="referals"]').removeClass('loading');
-            }
-        });
-    }
     function loadPayments(){
         $.ajax({
             type: 'post',
             url: '/cash/paymentshistory',
-            success: function(resp){
-                if(resp.status == undefined){
+            success: function (resp) {
+                if (resp.status == undefined) {
                     resp = JSON.parse(resp);
                 }
                 var dateOptions = {
@@ -192,10 +134,10 @@
                     hour: 'numeric',
                     minute: 'numeric'
                 };
-                resp.data.forEach(function(elem){
+                resp.data.forEach(function (elem) {
                     var dateIso = elem.Date;
                     dateIso += dateIso[dateIso.length - 1] == 'Z' ? '' : 'Z';
-                    
+
                     elem.Date = new Date(dateIso).toLocaleString("ru", dateOptions);
                 });
                 var tmpl = $.templates('#paymentsTmpl');
@@ -203,11 +145,9 @@
                 $('.tab[data-tab="payhistory"]').html(html);
                 $('.tab[data-tab="payhistory"]').removeClass('loading');
             }
-        })
+        });
     }
     $(function () {
-        new Clipboard('#refCopyBtn');
-        loadReferals();
         loadPayments();
         $('.ui.checkbox').checkbox();
         $('.cash.item').addClass('active');

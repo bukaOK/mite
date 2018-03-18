@@ -1,4 +1,114 @@
 ﻿var TagsApi = {
+    initModerTags: function () {
+        return $.post('/moder/tags', function (resp) {
+            if (resp.status == undefined) {
+                resp = JSON.parse(resp);
+            }
+            var tagsRowTmpl = $.templates('#tagRowTmpl');
+            var confirmedHtml = tagsRowTmpl.render(resp.data.Confirmed);
+            var uncheckedHtml = tagsRowTmpl.render(resp.data.Unchecked);
+            var checkedHtml = tagsRowTmpl.render(resp.data.Checked);
+
+            $('.tab[data-tab="tagconfirmed"] tbody').html(confirmedHtml);
+            $('.tab[data-tab="tagunchecked"] tbody').html(uncheckedHtml);
+            $('.tab[data-tab="tagchecked"] tbody').html(checkedHtml);
+            $('.tab').removeClass('loading');
+        });
+    },
+    /** 
+     * Помечает тег как проверенный
+     * @param {HTMLElement} btn 
+     */
+    checkTag: function (btn) {
+        var $tagRow = $(btn).parents('tr'),
+            data = {
+                Id: $tagRow.data('id'),
+                Name: $tagRow.data('name'),
+                IsConfirmed: $tagRow.data('confirmed'),
+                Checked: true
+            };
+        return $.ajax({
+            url: '/api/tags',
+            type: 'put',
+            data: data,
+            success: function () {
+                $tagRow[0].remove();
+                var trToInsert = $.templates('#tagRowTmpl').render(data);
+                $('table.checked').prepend(trToInsert);
+            },
+            error: function () {
+                alert('Ошибка!');
+            }
+        });
+    },
+    /**
+     * Привязать один тег к другому
+     * @param {string} oldId id старого тега
+     * @param {string} newId id нового тега
+     */
+    bindTag: function (oldId, newId) {
+        if (oldId == '' || newId == '') {
+            alert('Поля не могут быть пустыми');
+            return;
+        }
+        return $.ajax({
+            url: '/moder/bindtag',
+            data: {
+                fromId: oldId,
+                toId: newId
+            },
+            type: 'post',
+            success: function () {
+                alert('Привязка успешна');
+                $('tr[data-id="' + oldId + '"]')[0].remove();
+            },
+            error: function (jqXhr) {
+                alert('Ошибка сервера');
+            }
+        });
+    },
+    /**
+     * Подтвердить тег
+     * @param {HTMLElement} btn
+     */
+    confirmTag: function (btn) {
+        var $row = $(btn).parents('tr'),
+            data = {
+            Id: $row.data('id'),
+            Name: $row.data('name'),
+            IsConfirmed: true,
+            Checked: true
+        };
+        return $.ajax({
+            url: '/api/tags',
+            type: 'put',
+            data: data,
+            success: function (resp) {
+                $row.remove();
+                var tagRowHtml = $.templates('#tagRowTmpl').render(data);
+                $('table.checked tbody').prepend(tagRowHtml);
+            },
+            error: function (jqXhr) {
+                alert('Ошибка сервера');
+            }
+        });
+    },
+    /**
+     * Удалить тег
+     * @param {HTMLElement} btn
+     */
+    deleteTag: function (btn) {
+        return $.ajax({
+            url: '/api/tags/' + $(ev).parents('tr').data('id'),
+            type: 'delete',
+            success: function () {
+                $(ev).parents('tr').remove();
+            },
+            error: function () {
+                alert('Ошибка во время удаления');
+            }
+        });
+    },
     /**
      * Загрузить список тегов для выпадающего списка
      * @param {string} selector селектор списка

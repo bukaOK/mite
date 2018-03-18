@@ -120,14 +120,13 @@ namespace Mite.DAL.Repositories
             switch (filter.SortFilter)
             {
                 case ServiceSortFilter.Popular:
-                    query += "order by services.\"Rating\" desc ";
+                    query += "order by services.\"Rating\" desc, services.\"CreateDate\" desc ";
                     break;
                 case ServiceSortFilter.Reliable:
-                    query += "order by services.\"Reliability\" desc ";
+                    query += "order by services.\"Reliability\" desc, services.\"CreateDate\" desc ";
                     break;
             }
             query += "limit @Range offset @Offset;";
-
 
             return Db.QueryAsync<AuthorService, AuthorServiceType, User, AuthorService>(query, (service, serviceType, user) =>
                 {

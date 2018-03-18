@@ -20,37 +20,18 @@
         <a class="item" data-tab="socialservices">Внешние сервисы</a>
         <a class="item" data-tab="notifications">Уведомления</a>
     </nav>
-    <div class="ui active tab" data-tab="userprofile">
-        @{Html.RenderAction("UserProfile");}
-    </div>
-    <div class="ui tab" data-tab="changeavatar">
-        @{Html.RenderPartial("ChangeAvatar");}
-    </div>
-    <div class="ui tab" data-tab="security">
-        <div class="ui stackable basic segment grid">
-            <div class="six wide column">
-                @{Html.RenderPartial("_ChangePass", new Mite.Models.ChangePassModel());}
-            </div>
-            <div class="six wide column">
-                @{Html.RenderAction("EmailSettings");}
-            </div>
-        </div>
-    </div>
-    <div class="ui tab" data-tab="invite">
-        @{ Html.RenderAction("Invite"); }
-    </div>
-    <div class="ui tab" data-tab="socialservices">
-        @{Html.RenderAction("SocialServices");}
-    </div>
-    <div class="ui tab" data-tab="notifications">
-        @{Html.RenderAction("Notifications");}
-    </div>
+    <div class="ui loading active tab" data-tab="userprofile"></div>
+    <div class="ui loading tab" data-tab="changeavatar"></div>
+    <div class="ui loading tab" data-tab="security"></div>
+    <div class="ui loading tab" data-tab="invite"></div>
+    <div class="ui loading tab" data-tab="socialservices"></div>
+    <div class="ui loading tab" data-tab="notifications"></div>
 </div>
 @section scripts{
     @Scripts.Render("~/bundles/api")
     <script>
         $(function () {
-            var tabs = new MiteTab('.ui.tabs.menu .item', '/user/settings');
+            var tabs = new MiteTab('.ui.tabs.menu .item', '/user/settings', true);
             ViewHelper.disableFormSubmitting('form');
         });
     </script>

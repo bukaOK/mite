@@ -2,7 +2,11 @@
 @{ 
     var changePassModel = new Mite.Models.ChangePassModel();
 }
-<div class="ui basic segment">
-    <h3>Изменить пароль</h3>
-    @{Html.RenderPartial("_ChangePass", changePassModel);}
+<div class="ui stackable basic segment grid">
+    <div class="six wide column">
+        @{Html.RenderPartial("_ChangePass", new Mite.Models.ChangePassModel());}
+    </div>
+    <div class="six wide column">
+        @{Html.RenderAction("EmailSettings");}
+    </div>
 </div>

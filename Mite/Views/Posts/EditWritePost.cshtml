@@ -122,12 +122,7 @@
             $initialContent.click(function () {
                 $initialContent.popup('hide');
             });
-            $.ajax({
-                url: '@Url.Action("InitHelper", "UserHelpers")',
-                data: {
-                    helperType: '@HelperTypes.EditDocBtn'
-                }
-            });
+            localStorage.setItem('editDocHelper', 'true');
         });
     }
     function onHeaderInput(headerInput) {
@@ -367,9 +362,8 @@
         });
         var wrapperInput = document.getElementById("wrapperImg");
         wrapperInput.onchange = inputDownloadHandler;
-        @if (!Model.Helper.EditDocBtn)
-        {
-            <text>initEditPopup();</text>
+        if (localStorage.getItem('editDocHelper') !== 'true') {
+            initEditPopup();
         }
     });
 </script>

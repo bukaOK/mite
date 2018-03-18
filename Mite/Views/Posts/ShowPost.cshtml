@@ -171,7 +171,7 @@
                                 <span>Оценить</span>
                                 @Html.HiddenFor(x => x.CurrentRating.Id)
                                 @Html.HiddenFor(x => x.CurrentRating.PostId)
-                                <div class="ui star rating" data-rating="@Model.CurrentRating.Value" data-max-rating="5"></div>
+                                <div class="ui star rating" data-last-rate="@Model.CurrentRating.Value" data-rating="@Model.CurrentRating.Value" data-max-rating="5"></div>
                                 <span id="post-rating" data-rating="@Model.Rating">(@Model.Rating)</span>
                             </div>
                         }
@@ -235,7 +235,7 @@
     <div class="row">
         <div class="twelve wide computer twelve wide tablet sixteen wide mobile centered column">
             <div class="ui large comments">
-                <h4 class="ui header" id="comments-count">
+                <h4 class="ui header" id="comments-count" data-count="@Model.CommentsCount">
                     @Model.CommentsCount @ViewHelper.GetWordCase(Model.CommentsCount, "комментарий", "комментария", "комментариев")
                 </h4>
                 @if (User.Identity.IsAuthenticated)
@@ -244,7 +244,7 @@
                         <div class="field">
                             <textarea name="CommentContent" id="CommentContent" rows="3" data-reply-user-id data-reply-comment></textarea>
                         </div>
-                        <button type="button" class="ui primary small right labeled icon button" onclick="sendComment('@Model.Id')">
+                        <button type="button" class="ui primary small right labeled icon button" onclick="CommentsApi.add('@Model.Id', '@Model.User.Id')">
                             Комментировать<i class="icon write"></i>
                         </button>
                         <a href="" id="reply-user"></a>
@@ -286,7 +286,7 @@
                 <div class="actions">
                     <a onclick="addReply('{{:User.UserName}}', '{{:Id}}', '{{:User.Id}}')">Ответить</a>
                     {{if User.Id == '@User.Identity.GetUserId()'}}
-                    <a data-comment-id="{{:Id}}" onclick="deleteComment(this)">Удалить</a>
+                    <a data-comment-id="{{:Id}}" onclick="CommentsApi.delete(this)">Удалить</a>
                     {{/if}}
                     {{if CurrentRating == null || CurrentRating.Value == 0}}
                     <a data-is-rate="false" title="Нравится!" onclick="RatingMvc.rateComment(this, '{{:Id}}', '{{:User.Id}}', '@NotificationTypes.CommentRating', '@Model.Id')"><i class="thumbs outline up violet icon"></i><span class="rating">{{:Rating}}</span></a>
@@ -300,7 +300,6 @@
 </script>
 @Scripts.Render("~/bundles/scroll", "~/bundles/gallery", "~/bundles/api", "~/bundles/grid")
 <script>
-    var commentsCount = @Model.CommentsCount;
     var isImage = @((Model.ContentType == PostContentTypes.Image).ToString().ToLower());
     var isComics = @((Model.ContentType == PostContentTypes.Comics).ToString().ToLower());
     var isCollection = @((Model.ContentType == PostContentTypes.ImageCollection).ToString().ToLower());
@@ -311,113 +310,6 @@
         var date = new Date(dateIso);
 
         $('.post-time').html(DateTimeHelper.toDateString(date, 'long', true) + ',' + DateTimeHelper.toTimeString(date));
-    }
-    function loadCommentsCount(){
-        var elem = document.getElementById('comments-count');
-        elem.innerHTML = commentsCount + " " +
-            ViewHelper.getWordCase(commentsCount, 'комментарий', 'комментария', 'комментариев');
-    }
-    var lastRateValue;
-    function initComments(postId, sort) {
-        return $.ajax({
-            type: 'get',
-            url: '/api/comments/',
-            data: {
-                sort: sort,
-                postId: postId
-            },
-            success: function (data) {
-                data.forEach(function(item){
-                    var dateIso = item.PublicTime;
-                    dateIso += dateIso[dateIso.length - 1] == 'Z' ? '' : 'Z';
-                    item.PublicDateStr = ViewHelper.getPastTense(new Date(dateIso).getTime());
-                });
-                var tmpl = $.templates('#commentTmpl');
-                var html = tmpl.render(data);
-                $('#comments-wrapper').html(html);
-                scrollToComment();
-            },
-            error: function (jqXhr) {
-                iziToast.error({
-                    title: 'Упс!',
-                    message: 'Комментарии не загружены.'
-                });
-            }
-        });
-    }
-    function sendComment(postId) {
-        if (!$('#comments-form').form('form validation')) {
-            return;
-        }
-        var commentContent = $('#CommentContent'),
-            model = {
-                Content: commentContent.val(),
-                PostId: postId
-            };
-        var replyCommentId = commentContent.data('replyComment');
-        if(replyCommentId != null && replyCommentId != '') {
-            model.ParentComment = {
-                Id: replyCommentId,
-                User: {
-                    Id: commentContent.data('replyUserId')
-                }
-            };
-        }
-        $.ajax({
-            type: 'post',
-            url: '/api/comments/',
-            data: model,
-            success: function (data) {
-                sendNotification('@NotificationTypes.PostComment', '@Model.User.Id', '@Model.Id#com' + data.Id);
-                if(replyCommentId != null && replyCommentId != '') {
-                    sendNotification('@NotificationTypes.CommentReply', model.ParentComment.User.Id, '@Model.Id#com' + data.Id);
-                }
-                commentsCount++;
-                loadCommentsCount();
-                var tmpl = $.templates('#commentTmpl');
-
-                var dateIso = data.PublicTime;
-                dateIso += dateIso[dateIso.length - 1] == 'Z' ? '' : 'Z';
-                data.PublicDateStr = ViewHelper.getPastTense(new Date(dateIso).getTime());
-
-                var html = tmpl.render(data);
-                $('#comments-wrapper').prepend(html);
-            },
-            error: function (jqXhr) {
-                var errors = [];
-                if (jqXhr.status === 400) {
-                    var resp = jqXhr.responseJSON;
-                    for (var key in resp.ModelState) {
-                        resp.ModelState[key].forEach(function (val) {
-                            errors.push(val);
-                        });
-                    }
-                } else {
-                    errors.push('Внутренняя ошибка');
-                }
-                $('#comments-form').form('add errors', errors);
-            }
-        });
-    }
-    function deleteComment(ev){
-        var commentId = $(ev).data('commentId');
-        var comment = $(ev).parents('.comment');
-
-        $.ajax({
-            url: '/api/comments/' + commentId,
-            type: 'delete',
-            success: function(data){
-                commentsCount--;
-                loadCommentsCount();
-                $('#com' + commentId).remove();
-            },
-            error: function (jqXhr) {
-                iziToast.error({
-                    title: 'Упс!',
-                    message: 'Ошибка при удалении комментария.'
-                });
-            }
-        });
     }
     function loadUserGallery(){
         return $.ajax({
@@ -447,34 +339,19 @@
         $('#CommentContent').removeData('replyComment')
             .removeData('replyUserId');
     }
-    function sendNotification(notificType, targetUserId, sourceValue){
-        $.ajax({
-            url: '/api/notification',
-            type: 'post',
-            data: {
-                NotificationType: notificType,
-                User: {
-                    Id: targetUserId
-                },
-                SourceValue: sourceValue
-            },
-            success: function(data){
-                window.hubReady.done(function(){
-                    $.connection.notifyHub.server.newNotification(targetUserId, notificType, sourceValue);
-                });
-            },
-            error: function (jqXhr) {
-                iziToast.error({
-                    title: 'Упс!',
-                    message: 'Ошибка при отправке уведомления.'
-                });
-            }
-        });
-    }
     function initRating(){
         $('.ui.rating').rating({
             onRate: function (rateValue) {
-                RatingMvc.ratePost(rateValue, '@NotificationTypes.PostRating', '@Model.User.Id', '@Model.Id');
+                RatingMvc.ratePost({
+                    rateValue: rateValue,
+                    lastRateValue: this.dataset.lastRate,
+                    postRating: $('#post-rating').data('rating'),
+                    rateObj: $('.ui.rating')[0],
+                    isTop: false,
+                    postId: '@Model.Id',
+                    ratingId: '@Model.CurrentRating.Id',
+                    postAuthorId: '@Model.User.Id'
+                });
             }
         });
     }
@@ -502,22 +379,12 @@
             text: '<span class="ui vk small compact button"><i class="vk icon"></i>Поделиться</span>'
         });
     }
-    function scrollToComment(){
-        if(location.hash == ''){
-            return;
-        }
-        $(window).scrollTo(location.hash, 2200, {
-            easing: 'easeOutExpo',
-            offset: 20
-        });
-    }
     $(function () {
         $('.modal').click(function(){
             return false;
         });
         loadPostTime();
-        lastRateValue = $(".ui.rating").data("rating");
-        initComments('@Model.Id', @((byte)SortFilter.Old));
+        CommentsApi.init('@Model.Id', @((byte)SortFilter.Old));
         initRating();
         initFormValidation();
         if (isImage) {

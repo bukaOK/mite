@@ -6,9 +6,9 @@ using System.Collections.Generic;
 
 namespace Mite.Hubs.Clients
 {
-    public class ChatHubClient : HubClient
+    public class ChatHubClient : HubClient<ChatHub>
     {
-        public static void AddMessage(ChatMessageModel message)
+        public void AddMessage(ChatMessageModel message)
         {
             if (message.Attachments == null)
                 message.Attachments = new List<MessageAttachmentModel>();
@@ -20,7 +20,7 @@ namespace Mite.Hubs.Clients
                 }
             }
         }
-        public static void AddPublicMessage(ChatMessageModel message)
+        public void AddPublicMessage(ChatMessageModel message)
         {
             if (message.Attachments == null)
                 message.Attachments = new List<MessageAttachmentModel>();
