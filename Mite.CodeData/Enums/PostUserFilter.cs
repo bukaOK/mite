@@ -12,7 +12,7 @@ namespace Mite.CodeData.Enums
         /// </summary>
         All,
         /// <summary>
-        /// Только тех, на кого пользователь подписан
+        /// Только тех тегов/пользователей, на кого пользователь подписан
         /// </summary>
         OnlyFollowings
     }

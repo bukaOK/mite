@@ -6,26 +6,37 @@
         #City ~ .menu .ps__rail-y {
             margin: 5px 0;
         }
+        [data-tab=usertags] .ui.label{
+            margin-bottom: 5px;
+        }
     </style>
 }
 <div class="ui segment">
     <h2 class="ui dividing header">
         Настройки
     </h2>
-    <nav class="ui stackable pointing secondary tabs menu" style="border: none">
-        <a class="item" data-tab="userprofile">Профиль</a>
-        <a class="item" data-tab="changeavatar">Изменить аватар</a>
-        <a class="item" data-tab="security">Безопасность</a>
-        <a class="item" data-tab="invite">Приглашения</a>
-        <a class="item" data-tab="socialservices">Внешние сервисы</a>
-        <a class="item" data-tab="notifications">Уведомления</a>
-    </nav>
-    <div class="ui loading active tab" data-tab="userprofile"></div>
-    <div class="ui loading tab" data-tab="changeavatar"></div>
-    <div class="ui loading tab" data-tab="security"></div>
-    <div class="ui loading tab" data-tab="invite"></div>
-    <div class="ui loading tab" data-tab="socialservices"></div>
-    <div class="ui loading tab" data-tab="notifications"></div>
+    <div class="ui stackable grid">
+        <div class="four wide column">
+            <nav class="ui vertical pointing secondary tabs menu" role="tablist">
+                <a class="item" data-tab="userprofile" role="tab">Профиль</a>
+                <a class="item" data-tab="changeavatar" role="tab">Изменить аватар</a>
+                <a class="item" data-tab="security" role="tab">Безопасность</a>
+                <a class="item" data-tab="invite" role="tab">Приглашения</a>
+                <a class="item" data-tab="socialservices" role="tab">Внешние сервисы</a>
+                <a class="item" data-tab="notifications" role="tab">Уведомления</a>
+                <a class="item" data-tab="usertags" role="tab">Теги</a>
+            </nav>
+        </div>
+        <div class="twelve wide column">
+            <div class="ui loading active tab" data-tab="userprofile" role="tabpanel"></div>
+            <div class="ui loading tab" data-tab="changeavatar" role="tabpanel"></div>
+            <div class="ui loading tab" data-tab="security" role="tabpanel"></div>
+            <div class="ui loading tab" data-tab="invite" role="tabpanel"></div>
+            <div class="ui loading tab" data-tab="socialservices" role="tabpanel"></div>
+            <div class="ui loading tab" data-tab="notifications" role="tabpanel"></div>
+            <div class="ui loading tab" data-tab="usertags" role="tabpanel"></div>
+        </div>
+    </div>
 </div>
 @section scripts{
     @Scripts.Render("~/bundles/api")

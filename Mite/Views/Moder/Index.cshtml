@@ -5,10 +5,11 @@
 <div class="ui segment">
     <h2 class="ui header">Панель модератора</h2>
     <nav class="ui stackable pointing secondary tabs menu" style="border: none">
-        <a class="active item" data-tab="tagunchecked">Непроверенные теги</a>
-        <a class="item" data-tab="tagchecked">Проверенные теги</a>
-        <a class="item" data-tab="cities">Города</a>
+        <a class="active item" data-tab="tagunchecked" role="tab">Непроверенные теги</a>
+        <a class="item" data-tab="tagchecked" role="tab">Проверенные теги</a>
+        <a class="item" data-tab="cities" role="tab">Города</a>
         <a class="item" data-tab="servicetypes" role="tab">Типы услуг</a>
+        <a class="item" data-tab="facts" role="tab">Факты</a>
     </nav>
     <div class="ui loading basic segment tab" data-tab="tagunchecked">
         <table class="ui celled table unchecked">
@@ -55,6 +56,20 @@
     </div>
     <div class="ui tab" data-tab="servicetypes" role="tabpanel">
         @{ Html.RenderPartial("AuthorServiceTypes", new Mite.Models.ServiceTypeModel()); }
+    </div>
+    <div class="ui loading basic segment tab" data-tab="facts">
+        <button class="ui primary button" onclick="showFactsAddModal(this)">Добавить</button>
+        <table class="ui celled table">
+            <thead>
+                <tr>
+                    <th>Название</th>
+                    <th>Описание</th>
+                    <th>Использован</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
 </div>
 <script id="tagRowTmpl" type="text/x-jsrender">
@@ -119,6 +134,7 @@
     </div>
 </div>
 @{ Html.RenderPartial("_CityEdit", new Mite.Models.CityModel()); }
+@{ Html.RenderPartial("Facts", new Mite.Models.DailyFactModel()); }
 @Scripts.Render("~/bundles/api", "~/bundles/clipboard")
 <script>
     function showTagChangeModal(ev) {

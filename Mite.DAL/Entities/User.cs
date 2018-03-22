@@ -36,6 +36,10 @@ namespace Mite.DAL.Entities
         /// </summary>
         public bool ShowAd { get; set; }
         /// <summary>
+        /// Показывать только подписки
+        /// </summary>
+        public bool ShowOnlyFollowings { get; set; }
+        /// <summary>
         /// Рейтинг(только для авторов)
         /// </summary>
         public int Rating { get; set; }

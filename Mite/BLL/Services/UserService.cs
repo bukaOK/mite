@@ -6,7 +6,6 @@ using Mite.BLL.IdentityManagers;
 using Mite.BLL.Core;
 using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
-using Mite.Helpers;
 using Mite.Models;
 using Microsoft.AspNet.Identity;
 using System.Collections.Generic;
@@ -17,7 +16,7 @@ using System.Web.Hosting;
 using Mite.BLL.Helpers;
 using Mite.CodeData;
 using Mite.CodeData.Constants;
-using System.Linq;
+using System.Web;
 
 namespace Mite.BLL.Services
 {
@@ -43,7 +42,7 @@ namespace Mite.BLL.Services
         /// <param name="imageBase64">Само изображение(в кодировке base64)</param>
         /// <param name="userId">Id пользователя</param>
         /// <returns></returns>
-        Task<IdentityResult> UpdateUserAvatarAsync(string imagesFolder, string imageBase64, string userId);
+        Task<IdentityResult> UpdateUserAvatarAsync(string imagesFolder, HttpPostedFileBase img, string userId);
         Task<ProfileModel> GetUserProfileAsync(string name, string currentUserId);
         LandingModel GetLandingModel();
         SocialLinksModel GetSocialLinks(string userId);
@@ -159,13 +158,13 @@ namespace Mite.BLL.Services
             return result;
         }
 
-        public async Task<IdentityResult> UpdateUserAvatarAsync(string imagesFolder, string imageBase64, string userId)
+        public async Task<IdentityResult> UpdateUserAvatarAsync(string imagesFolder, HttpPostedFileBase img, string userId)
         {
             string vPath;
             try
             {
                 //Раньше создавался оригинал и сжатая копия, сейчас только фиксированный размер
-                vPath = ImagesHelper.Create(imagesFolder, imageBase64, 400);
+                vPath = ImagesHelper.Create(imagesFolder, img, 400);
             }
             catch (FormatException)
             {
@@ -175,7 +174,6 @@ namespace Mite.BLL.Services
             var existingUser = await userManager.FindByIdAsync(userId);
             var existingAvatarSrc = existingUser.AvatarSrc ?? PathConstants.AvatarSrc;
             var existingAvatarFolders = existingAvatarSrc.Split('/');
-            existingUser.AvatarSrc = vPath;
             if(existingAvatarSrc != null && existingAvatarFolders[1] == "Public")
                 FilesHelper.DeleteFile(existingAvatarSrc);
 
@@ -185,6 +183,7 @@ namespace Mite.BLL.Services
             {
                 FilesHelper.DeleteFileFull(ImagesHelper.Compressed.CompressedPath(fullAvatarSrc, "jpg"));
             }
+            existingUser.AvatarSrc = vPath;
             var result = await userManager.UpdateAsync(existingUser);
             return result;
         }

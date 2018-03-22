@@ -2,7 +2,9 @@
 using Microsoft.AspNet.Identity;
 using Mite.BLL.Core;
 using Mite.BLL.IdentityManagers;
+using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
+using Mite.DAL.Repositories;
 using Mite.Models;
 using NLog;
 using System;
@@ -19,10 +21,12 @@ namespace Mite.BLL.Services
         private readonly IDealService dealService;
         private readonly IChatMessagesService messagesService;
         private readonly IUserReviewService reviewService;
+        private readonly UserRepository userRepository;
 
         public LayoutService(IUnitOfWork database, ILogger logger, AppUserManager userManager, IDealService dealService,
             IChatMessagesService messagesService, IUserReviewService reviewService) : base(database, logger)
         {
+            userRepository = database.GetRepo<UserRepository, User>();
             this.userManager = userManager;
             this.dealService = dealService;
             this.messagesService = messagesService;
@@ -41,7 +45,8 @@ namespace Mite.BLL.Services
                 NewDealsCount = dealService.GetNewCount(userId),
                 ReviewLeft = reviewService.IsReviewLeft(userId),
                 RegisterDayLeft = timeLeft.TotalDays > 1,
-                User = Mapper.Map<UserShortModel>(user)
+                User = Mapper.Map<UserShortModel>(user),
+                //HasTags = userRepository.HasAnyTags(userId)
             };
         }
     }

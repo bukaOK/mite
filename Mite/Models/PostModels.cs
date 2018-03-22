@@ -57,6 +57,7 @@ namespace Mite.Models
         public DateTime LastEdit { get; set; }
         public DateTime? PublishDate { get; set; }
         public bool CanEdit => (PublishDate == null) || (PublishDate != null && (DateTime.UtcNow - PublishDate).Value.TotalDays <= 3);
+        public List<string> AvailableTags { get; set; }
         /// <summary>
         /// Список имен тегов
         /// </summary>
@@ -97,6 +98,7 @@ namespace Mite.Models
         public string Description { get; set; }
         public PostTypes Type { get; set; }
         public bool IsPublished => Type == PostTypes.Published;
+        public IList<string> AvailableTags { get; set; }
         public IList<string> Tags { get; set; }
         public string Cover { get; set; }
         public HelperModel Helper { get; set; }
@@ -121,6 +123,7 @@ namespace Mite.Models
         public bool Blocked { get; set; }
         public PostContentTypes ContentType { get; set; }
         public IList<string> Tags { get; set; }
+        public IList<string> AvailableTags { get; set; }
         public IList<PostCollectionItemModel> Collection { get; set; }
         public IList<PostComicsItemModel> ComicsItems { get; set; }
     }

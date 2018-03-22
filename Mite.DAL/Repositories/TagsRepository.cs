@@ -157,5 +157,16 @@ namespace Mite.DAL.Repositories
             query = "insert into dbo.\"TagPosts\"(\"Tag_Id\", \"Post_Id\") values(@TagId, @PostId);";
             await Db.ExecuteAsync(query, tagPostsToAdd);
         }
+        /// <summary>
+        /// Получить теги, на которые подписан пользователь
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public Task<IEnumerable<Tag>> GetForUserAsync(string userId)
+        {
+            var query = "select tags.* from dbo.\"UserTags\" usertags inner join dbo.\"Tags\" tags on tags.\"Id\"=usertags.\"TagId\" " +
+                "where \"UserId\"=@userId;";
+            return Db.QueryAsync<Tag>(query, new { userId });
+        }
     }
 }

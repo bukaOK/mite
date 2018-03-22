@@ -44,12 +44,12 @@
         $('#cityModal .header').html('Изменение города');
         var $form = $('#cityForm');
 
-        $form.find('[name="Id"]').val($tr.data('id'))
-        $form.find('[name="Name"]').val($tr.data('name'));
-        $form.find('[name="District"]').val($tr.data('district'));
-        $form.find('[name="Region"]').val($tr.data('region'));
-        $form.find('[name="TimeZone"]').val($tr.data('timezone'));
-        $form.find('[name="Population"]').val($tr.data('population'));
+        $form.find('[name="@Html.NameFor(x => x.Id)"]').val($tr.data('id'));
+        $form.find('[name="@Html.NameFor(x => x.Name)"]').val($tr.data('name'));
+        $form.find('[name="@Html.NameFor(x => x.District)"]').val($tr.data('district'));
+        $form.find('[name="@Html.NameFor(x => x.Region)"]').val($tr.data('region'));
+        $form.find('[name="@Html.NameFor(x => x.TimeZone)"]').val($tr.data('timezone'));
+        $form.find('[name="@Html.NameFor(x => x.Population)"]').val($tr.data('population'));
 
         document.getElementById('cityModal').dataset.cityId = id;
         $('#cityModal').modal('show');

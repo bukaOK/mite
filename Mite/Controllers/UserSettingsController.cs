@@ -13,6 +13,10 @@ using Mite.Extensions;
 using Mite.Models;
 using System.Collections.Generic;
 using Mite.Attributes.Filters;
+using System;
+using NLog;
+using AutoMapper;
+using System.Web;
 
 namespace Mite.Controllers
 {
@@ -23,14 +27,18 @@ namespace Mite.Controllers
         private readonly IUserService userService;
         private readonly AppUserManager userManager;
         private readonly IAuthenticationManager authManager;
+        private readonly ITagsService tagsService;
+        private readonly ILogger logger;
         private readonly ICityService cityService;
 
         public UserSettingsController(IUserService userService, AppUserManager userManager, ICityService cityService,
-            IAuthenticationManager authManager)
+            IAuthenticationManager authManager, ITagsService tagsService, ILogger logger)
         {
             this.userService = userService;
             this.userManager = userManager;
             this.authManager = authManager;
+            this.tagsService = tagsService;
+            this.logger = logger;
             this.cityService = cityService;
         }
         public ViewResult Index()
@@ -42,18 +50,19 @@ namespace Mite.Controllers
             return PartialView();
         }
         [HttpPost]
-        public async Task<ActionResult> ChangeAvatar(string base64Str)
+        public async Task<ActionResult> ChangeAvatar(HttpPostedFileBase img)
         {
-            if (string.IsNullOrEmpty(base64Str))
-            {
-                return Json(JsonStatuses.Error, "Изображение не загружено");
-            }
+            if (img == null)
+                return Json(JsonStatuses.ValidationError, "Изображение не загружено");
+            if (string.IsNullOrEmpty(img.ContentType) || img.ContentType.Split('/').FirstOrDefault() != "image")
+                return Json(JsonStatuses.ValidationError, "Файл должен быть изображением");
+
             var imagesFolder = HostingEnvironment.ApplicationVirtualPath + "Public/images/";
 
-            var result = await userService.UpdateUserAvatarAsync(imagesFolder, base64Str, User.Identity.GetUserId());
-            var updatedUser = await userManager.FindByIdAsync(User.Identity.GetUserId());
+            var result = await userService.UpdateUserAvatarAsync(imagesFolder, img, CurrentUserId);
+            var updatedUser = await userManager.FindByIdAsync(CurrentUserId);
 
-            if (!result.Succeeded) return Json(JsonStatuses.Error, "Неудача при сохранении");
+            if (!result.Succeeded) return Json(JsonStatuses.ValidationError, "Неудача при сохранении");
 
             User.Identity.AddUpdateClaim(authManager, ClaimConstants.AvatarSrc, updatedUser.AvatarSrc);
             return Json(JsonStatuses.Success, "Аватарка обновлена");
@@ -61,16 +70,8 @@ namespace Mite.Controllers
         public async Task<ActionResult> UserProfile()
         {
             var user = await userManager.FindByIdAsync(CurrentUserId);
-            var model = new ProfileSettingsModel
-            {
-                NickName = user.UserName,
-                Gender = user.Gender,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Age = user.Age,
-                About = user.Description,
-                Cities = await cityService.GetSelectListAsync(CurrentUserId),
-            };
+            var model = Mapper.Map<ProfileSettingsModel>(user);
+            model.Cities = await cityService.GetSelectListAsync(CurrentUserId);
 
             return PartialView(model);
         }
@@ -121,7 +122,6 @@ namespace Mite.Controllers
             var updatedUser = await userManager.FindByIdAsync(User.Identity.GetUserId());
 
             User.Identity.AddUpdateClaim(authManager, ClaimTypes.Name, updatedUser.UserName);
-            User.Identity.AddUpdateClaim(authManager, ClaimConstants.AvatarSrc, updatedUser.AvatarSrc);
             return Json(JsonStatuses.Success, "Сохранено");
 
         }
@@ -191,7 +191,7 @@ namespace Mite.Controllers
             if (!isPasswordValid)
                 errors.Add("Неверный пароль");
 
-            //var isEmailConfimed = await _userManager.IsEmailConfirmedAsync(user.Id);
+            //var isEmailConfimed = await userManager.IsEmailConfirmedAsync(user.Id);
             //if (isEmailConfimed)
             //    errors.Add("Ваш e-mail уже подтвержден");
 
@@ -203,15 +203,35 @@ namespace Mite.Controllers
             await userManager.UpdateAsync(user);
             return Json(JsonStatuses.Success, "E-mail успешно обновлен");
         }
+        public async Task<ActionResult> UserTags()
+        {
+            var tags = await tagsService.GetForUserTagsAsync(CurrentUserId);
+            return PartialView(tags);
+        }
+        public async Task<ActionResult> ShowOnlyFollowings(bool show)
+        {
+            try
+            {
+                var user = await userManager.FindByIdAsync(CurrentUserId);
+                user.ShowOnlyFollowings = show;
+                await userManager.UpdateAsync(user);
+                return Ok();
+            }
+            catch(Exception e)
+            {
+                logger.Error("Ошибка в ShowOnlyFollowings: " + e.Message);
+                return InternalServerError();
+            }
+        }
         public async Task<ActionResult> SocialServices()
         {
-            var links = await userService.GetSocialLinksAsync(User.Identity.GetUserId());
+            var links = await userService.GetSocialLinksAsync(CurrentUserId);
             return PartialView(links);
         }
         [HttpPost]
         public async Task<HttpStatusCodeResult> UpdateSocialServices(SocialLinksModel model)
         {
-            await userService.UpdateSocialLinksAsync(model, User.Identity.GetUserId());
+            await userService.UpdateSocialLinksAsync(model, CurrentUserId);
             return Ok();
         }
     }

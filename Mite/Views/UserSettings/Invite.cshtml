@@ -1,11 +1,7 @@
 ﻿@model Mite.Models.InviteSettingsModel
 
-<div class="ui center aligned grid">
-    <div class="ten wide column">
-        <div class="ui labeled action input">
-            <div class="ui label">Код для приглашения</div>
-            @Html.TextBoxFor(x => x.InviteKey, new { placeholder = "Код для приглашения", @readonly = true, onclick = "select()", size = "36" })
-            <button class="ui primary button" onclick="UserSettingsApi.generateInvite(this)">Создать новый</button>
-        </div>
-    </div>
+<div class="ui labeled action input">
+    <div class="ui label">Код для приглашения</div>
+    @Html.TextBoxFor(x => x.InviteKey, new { placeholder = "Код для приглашения", @readonly = true, onclick = "select()", size = "36" })
+    <button class="ui primary button" onclick="UserSettingsApi.generateInvite(this)">Создать новый</button>
 </div>

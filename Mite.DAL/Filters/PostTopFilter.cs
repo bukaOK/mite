@@ -16,6 +16,7 @@ namespace Mite.DAL.Filters
         }
         public string PostName { get; set; }
         public string[] Tags { get; set; }
+        public Guid[] FollowingTags { get; set; }
         public DateTime MinDate { get; set; }
         public DateTime MaxDate { get; set; }
         public bool OnlyFollowings { get; set; }

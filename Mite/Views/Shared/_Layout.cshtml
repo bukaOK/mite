@@ -366,25 +366,6 @@
         }
         </text>
     }
-        @if(User.Identity.IsAuthenticated && layoutModel.User.RegisterDate < new DateTime(2018, 3, 13))
-    {
-        <text>
-        if (localStorage.getItem('userIconsWarn') !== 'true') {
-            iziToast.warning({
-                title: 'Внимание!',
-                message: 'Если у вас пропали некоторые иконки, очистите кэш браузера.',
-                buttons: [
-                    ['<button>Ясно</button>', function (inst, toast) {
-                        localStorage.setItem('userIconsWarn', 'true');
-                        inst.hide(toast);
-                    }]
-                ],
-                timeout: false,
-                close: false
-            });
-        }
-        </text>
-    }
         @if (!layoutModel.ReviewLeft && layoutModel.RegisterDayLeft)
     {
         <text>

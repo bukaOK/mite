@@ -1,0 +1,62 @@
+﻿@model Mite.Models.DailyFactModel
+
+<div class="ui tiny modal" id="factsModal">
+    <i class="close icon"></i>
+    <div class="header">Факты</div>
+    <div class="content">
+        <form class="ui form" id="factsForm">
+            @Html.HiddenFor(x => x.Id)
+            @Html.EditorFor(x => x.Header, new { WithLabel = true })
+            @Html.EditorFor(x => x.Content, new { WithLabel = true })
+        </form>
+    </div>
+    <div class="actions">
+        <button type="button" class="ui green ok button" id="factFormBtn">Отправить</button>
+    </div>
+</div>
+<script type="text/x-jsrender" id="factRowTmpl">
+    <tr data-id="{{:Id}}" id="factRow{{:Id}}">
+        <td>{{:Header}}</td>
+        <td>{{:Content}}</td>
+        <td>{{:Used}}</td>
+        <td>
+            <button class="ui margined compact button" onclick="showFactsEditModal('{{:Id}}')">Изменить</button>
+            <button class="ui margined compact red button" onclick="DailyFactsApi.remove(this, '{{:Id}}')">Удалить</button>
+        </td>
+    </tr>
+</script>
+<script>
+    var $factsModal, $factsForm;
+    window.facts = [];
+    function showFactsAddModal(btn) {
+        $factsModal[0].dataset.factId = '';
+        $factsForm.find('input,textarea').each(function (i, elem) {
+            elem.value = '';
+        });
+        $factsModal.modal('show');
+    }
+    function showFactsEditModal(id) {
+        $factsModal.find('.header').text('Изменение факта');
+        var factToEdit = window.facts.find(function (fItem) {
+            return fItem.Id === id;
+        });
+        for (var fKey in factToEdit) {
+            $factsForm.find('[name=' + fKey + ']').val(factToEdit[fKey]);
+        }
+        $factsModal[0].dataset.factId = id;
+        $factsModal.modal('show');
+    }
+    $(function () {
+        $factsModal = $('#factsModal').modal({
+            onApprove: function ($elem) {
+                var factId = $('#factsModal')[0].dataset.factId;
+                if (factId)
+                    DailyFactsApi.update(factId);
+                else
+                    DailyFactsApi.add('#factFormBtn', $('.tab[data-tab="facts"] tbody'));
+            }
+        });
+        $factsForm = $('#factsForm');
+        DailyFactsApi.init($('[data-tab=facts] tbody'));
+    });
+</script>

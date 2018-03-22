@@ -9,12 +9,10 @@ using Mite.CodeData.Enums;
 using Mite.Models;
 using System.Text.RegularExpressions;
 using AutoMapper;
-using NLog;
 using System.Linq;
-using Mite.BLL.Infrastructure;
 using Mite.BLL.Helpers;
-using System.Collections.Generic;
 using Mite.CodeData.Constants;
+using Mite.BLL.IdentityManagers;
 
 namespace Mite.Controllers
 {
@@ -29,15 +27,17 @@ namespace Mite.Controllers
         private readonly IHelpersService helpersService;
         private readonly ITagsService tagsService;
         private readonly IFollowersService followersService;
+        private readonly AppUserManager userManager;
 
         public PostsController(IPostsService postsService, IRatingService ratingService, IHelpersService helpersService, 
-            ITagsService tagsService, IFollowersService followersService)
+            ITagsService tagsService, IFollowersService followersService, AppUserManager userManager)
         {
             this.postsService = postsService;
             this.ratingService = ratingService;
             this.helpersService = helpersService;
             this.tagsService = tagsService;
             this.followersService = followersService;
+            this.userManager = userManager;
         }
         [HttpGet]
         [AllowAnonymous]
@@ -60,20 +60,34 @@ namespace Mite.Controllers
             return View(post);
         }
         [Route("posts/add/{postType}", Name = "AddPost")]
-        public ActionResult AddPost(PostContentTypes postType)
+        public async Task<ActionResult> AddPost(PostContentTypes postType)
         {
             ViewBag.Title = "Добавление работы";
+            var tags = (await tagsService.GetForUserAsync()).ToList();
             
             switch (postType)
             {
                 case PostContentTypes.Image:
-                    return View("EditImagePost", new ImagePostModel());
+                    return View("EditImagePost", new ImagePostModel
+                    {
+                        AvailableTags = tags,
+                        
+                    });
                 case PostContentTypes.Document:
-                    return View("EditWritePost", new WritingPostModel());
+                    return View("EditWritePost", new WritingPostModel
+                    {
+                        AvailableTags = tags
+                    });
                 case PostContentTypes.ImageCollection:
-                    return View("EditImageCollection", new ImagePostModel());
+                    return View("EditImageCollection", new ImagePostModel
+                    {
+                        AvailableTags = tags
+                    });
                 case PostContentTypes.Comics:
-                    return View("EditComicsItems", new ImagePostModel());
+                    return View("EditComicsItems", new ImagePostModel
+                    {
+                        AvailableTags = tags
+                    });
                 default:
                     return NotFound();
             }
@@ -91,7 +105,7 @@ namespace Mite.Controllers
                 return Forbidden();
             if (!post.CanEdit)
                 return BadRequest();
-
+            post.AvailableTags = (await tagsService.GetForUserAsync()).ToList();
             switch (post.ContentType)
             {
                 case PostContentTypes.Image:
@@ -195,13 +209,16 @@ namespace Mite.Controllers
         [AllowAnonymous]
         public async Task<ViewResult> Top()
         {
+            
             var model = new TopModel
             {
                 Tags = await tagsService.GetWithPopularityAsync(true, 30)
             };
             if (User.Identity.IsAuthenticated)
             {
+                var user = await userManager.FindByIdAsync(CurrentUserId);
                 model.FollowersCount = await followersService.GetFollowersCountAsync(User.Identity.GetUserId());
+                model.ShowOnlyFollowings = user.ShowOnlyFollowings;
             }
             return View(model);
         }

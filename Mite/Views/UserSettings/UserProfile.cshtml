@@ -4,48 +4,54 @@
 @*WithLabel используется только с TextBox!!*@
 
 <div class="ui center aligned grid">
-    <div class="sixteen wide mobile ten wide tablet eight wide computer left aligned column">
+    <div class="sixteen wide mobile twelve wide tablet ten wide computer left aligned column">
         @using (Html.BeginForm("UserProfile", "UserSettings", FormMethod.Post, new { @class = "ui form", id = "profileForm" }))
-        {
-            @Html.EditorFor(x => x.NickName, new { WithLabel = true })
-            <div class="grouped fields">
-                @Html.EditorFor(x => x.Gender)
+    {
+        @Html.EditorFor(x => x.NickName, new { WithLabel = true })
+        <div class="grouped fields">
+            @Html.EditorFor(x => x.Gender)
+        </div>
+        <div class="fields">
+            <div class="four wide field">
+                @Html.LabelFor(x => x.Age)
+                @Html.TextBoxFor(x => x.Age, new { placeholder = "18" })
             </div>
-            <div class="fields">
-                <div class="four wide field">
-                    @Html.LabelFor(x => x.Age)
-                    @Html.TextBoxFor(x => x.Age, new { placeholder = "18" })
-                </div>
-                <div class="twelve wide field">
-                    @Html.LabelFor(x => x.City)
-                    @Html.DropDownListFor(x => x.City, Model.Cities, new { @class = "ui fluid search selection dropdown" })
-                </div>
+            <div class="twelve wide field">
+                @Html.LabelFor(x => x.City)
+                @Html.DropDownListFor(x => x.City, Model.Cities, new { @class = "ui fluid search selection dropdown" })
             </div>
-            <div class="two fields">
-                <div class="field">
-                    @Html.LabelFor(x => x.FirstName)
-                    @Html.TextBoxFor(x => x.FirstName, new { placeholder = "Иван" })
-                </div>
-                <div class="field">
-                    @Html.LabelFor(x => x.LastName)
-                    @Html.TextBoxFor(x => x.LastName, new { placeholder = "Иванов" })
-                </div>
+        </div>
+        <div class="two fields">
+            <div class="field">
+                @Html.LabelFor(x => x.FirstName)
+                @Html.TextBoxFor(x => x.FirstName, new { placeholder = "Иван" })
             </div>
             <div class="field">
-                @Html.LabelFor(x => x.About)
-                @Html.TextAreaFor(x => x.About, new { placeholder = "Люблю фотографировать, бальные танцы, и прыгать по крышам с:" })
+                @Html.LabelFor(x => x.LastName)
+                @Html.TextBoxFor(x => x.LastName, new { placeholder = "Иванов" })
             </div>
-            <div class="ui icon yellow message" style="display: none" id="extServMsg">
-                <i class="warning icon"></i>
-                <div class="content">
-                    <span class="header">Обнаружена ссылка!</span>
-                    <p>Мы обнаружили ссылку на внешний ресурс, рекомендуем добавить её в раздел "Внешние ссылки".</p>
-                </div>
+        </div>
+        <div class="field">
+            @Html.LabelFor(x => x.About)
+            @Html.TextAreaFor(x => x.About, new { placeholder = "Люблю кушать...много кушать" })
+        </div>
+        <div class="field">
+            <div class="ui @Html.Raw(Model.ShowOnlyFollowings ? "checked" : "") toggle checkbox" title="В топе работ будут по умолчанию показываться только те теги и пользователи, на которых вы подписались" >
+                <input type="checkbox" value="true" name="@Html.NameFor(x => x.ShowOnlyFollowings)" @Html.Raw(Model.ShowOnlyFollowings == true ? "checked" : "") />
+                <label>@Html.DisplayNameFor(x => x.ShowOnlyFollowings)</label>
             </div>
-            <button type="button" class="ui primary button" onclick="UserSettingsApi.updateUserProfile(this)">Сохранить</button>
-            <div class="ui error message"></div>
-            <div class="ui green m-success message">Изменения успешно сохранены.</div>
-        }
+        </div>
+        <div class="ui icon yellow message" style="display: none" id="extServMsg">
+            <i class="warning icon"></i>
+            <div class="content">
+                <span class="header">Обнаружена ссылка!</span>
+                <p>Мы обнаружили ссылку на внешний ресурс, рекомендуем добавить её в раздел "Внешние ссылки".</p>
+            </div>
+        </div>
+        <button type="button" class="ui primary button" onclick="UserSettingsApi.updateUserProfile(this)">Сохранить</button>
+        <div class="ui error message"></div>
+        <div class="ui green m-success message">Изменения успешно сохранены.</div>
+}
     </div>
 </div>
 <script>
@@ -67,51 +73,4 @@
     });
     $('.ui.checkbox').checkbox();
     @Html.FormValidation("#profileForm")
-    //$('#profileForm').form({
-    //    on: 'submit',
-    //    fields: {
-    //        NickName: {
-    //            rules: [
-    //                {
-    //                    type: 'empty',
-    //                    prompt: $('#NickName').data('valRequired')
-    //                },
-    //                {
-    //                    type: 'regExp',
-    //                    value: $("#NickName").data("valRegexPattern"),
-    //                    prompt: $("#NickName").data("valRegex")
-    //                }
-    //            ]
-    //        },
-    //        FirstName: {
-    //            optional: true,
-    //            rules: [
-    //                {
-    //                    type: 'regExp',
-    //                    value: $("#FirstName").data("valRegexPattern"),
-    //                    prompt: $("#FirstName").data("valRegex")
-    //                }
-    //            ]
-    //        },
-    //        LastName: {
-    //            optional: true,
-    //            rules: [
-    //                {
-    //                    type: 'regExp',
-    //                    value: $("#LastName").data("valRegexPattern"),
-    //                    prompt: $("#FirstName").data("valRegex")
-    //                }
-    //            ]
-    //        },
-    //        Age: {
-    //            optional: true,
-    //            rules: [
-    //                {
-    //                    type: 'integer[1..100]',
-    //                    prompt: 'Возраст введен с ошибкой'
-    //                }
-    //            ]
-    //        }
-    //    }
-    //});
 </script>

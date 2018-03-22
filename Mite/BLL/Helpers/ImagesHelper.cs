@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Hosting;
 
@@ -105,6 +106,38 @@ namespace Mite.BLL.Helpers
                 else
                     img.Resize(size);
                 img.Write(fullPath);
+            }
+            return savePath;
+        }
+        public static string Create(string saveFolder, HttpPostedFileBase img, int width, int? height = null, bool adaptive = true)
+        {
+            if (img.ContentType.Split('/')[0] != "image")
+                return null;
+            var imgFormat = img.ContentType.Split('/')[1];
+            if (imgFormat == "jpeg")
+                imgFormat = "jpg";
+            var savePath = "";
+            do
+            {
+                savePath = Path.Combine(saveFolder, $"{Guid.NewGuid()}.{imgFormat}");
+            } while (File.Exists(savePath));
+
+            var fullPath = HostingEnvironment.MapPath(savePath);
+            using (var mStream = new MemoryStream())
+            {
+                img.InputStream.CopyTo(mStream);
+                mStream.Position = 0;
+                using(var magick = new MagickImage(mStream))
+                {
+                    if (height == null)
+                        height = width * magick.Height / magick.Width;
+                    var size = new MagickGeometry(width, (int)height);
+                    if (adaptive)
+                        magick.AdaptiveResize(size);
+                    else
+                        magick.Resize(size);
+                    magick.Write(fullPath);
+                }
             }
             return savePath;
         }

@@ -16,6 +16,10 @@
         .right.floated{
             float: right;
         }
+        .item#searchItem{
+            min-width: 0px;
+            flex-shrink: 1;
+        }
     </style>
 }
 <div class="active loader-wrapper"><div class="ui active loader"></div></div>
@@ -51,7 +55,7 @@
         @if (User.Identity.IsAuthenticated)
         {
             <div class="ui checkbox" id="postUserFilter">
-                <input type="checkbox" />
+                <input type="checkbox" @Html.Raw(Model.ShowOnlyFollowings ? "checked" : "") />
                 <label>Только подписки</label>
             </div>
         }
@@ -100,7 +104,7 @@
         }
         else
         {
-            <div class="ui posts three column basic segment grid"></div>
+            <div class="ui posts three column doubling basic segment grid"></div>
         }
     </div>
 </div>

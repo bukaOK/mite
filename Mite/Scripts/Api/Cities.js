@@ -16,7 +16,7 @@
                     message: 'Города не загружены.'
                 });
             },
-        })
+        });
     },
     add: function ($btn, $form, $container) {
         $btn.addClass('loading');

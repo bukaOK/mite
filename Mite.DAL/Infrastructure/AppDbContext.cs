@@ -32,6 +32,7 @@ namespace Mite.DAL.Infrastructure
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderRequest> OrderRequests { get; set; }
         public DbSet<UserReview> UserReviews { get; set; }
+        public DbSet<DailyFact> DailyFacts { get; set; }
 
         public AppDbContext() : base("DefaultConnection")
         {
@@ -48,6 +49,13 @@ namespace Mite.DAL.Infrastructure
             modelBuilder.Entity<IdentityUserLogin>().ToTable("UserLogins");
             modelBuilder.Entity<IdentityUserClaim>().ToTable("UserClaims");
 
+            modelBuilder.Entity<User>().HasMany(x => x.Tags).WithMany(x => x.Users)
+                .Map(x =>
+                {
+                    x.ToTable("UserTags");
+                    x.MapRightKey("TagId");
+                    x.MapLeftKey("UserId");
+                });
             //modelBuilder.Entity<Chat>().HasMany(x => x.Users).WithMany()
             //    .Map(x =>
             //    {

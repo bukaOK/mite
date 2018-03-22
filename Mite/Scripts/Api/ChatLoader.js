@@ -98,8 +98,8 @@ ChatLoader.prototype.loadNext = function () {
                     ev.preventDefault();
                 }).each(function (index, elem) {
                     $(elem).lightGallery({
-                        nextHtml: '<i class="angle big right icon"></i>',
-                        prevHtml: '<i class="angle big left icon"></i>'
+                        nextHtml: '<i class="chevron large right icon"></i>',
+                        prevHtml: '<i class="chevron large left icon"></i>'
                     });
                 });
             self._page++;

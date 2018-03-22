@@ -18,8 +18,8 @@ var MiteGallery = {
                 dynamicEl: items,
                 index: initialIndex,
                 download: false,
-                nextHtml: '<i class="angle big right icon"></i>',
-                prevHtml: '<i class="angle big left icon"></i>'
+                nextHtml: '<i class="chevron large right icon"></i>',
+                prevHtml: '<i class="chevron large left icon"></i>'
             });
         });
     },
@@ -31,8 +31,8 @@ var MiteGallery = {
         $(containerSel).lightGallery({
             selector: '.col-item',
             download: false,
-            nextHtml: '<i class="angle big right icon"></i>',
-            prevHtml: '<i class="angle big left icon"></i>'
+            nextHtml: '<i class="chevron large right icon"></i>',
+            prevHtml: '<i class="chevron large left icon"></i>'
         });
     },
     /**
@@ -43,8 +43,8 @@ var MiteGallery = {
         $(containerSel).lightGallery({
             selector: '.comics-item',
             download: false,
-            nextHtml: '<i class="angle big right icon"></i>',
-            prevHtml: '<i class="angle big left icon"></i>'
+            nextHtml: '<i class="chevron large right icon"></i>',
+            prevHtml: '<i class="chevron large left icon"></i>'
         });
         $(containerSel).masonry().imagesLoaded(function () {
             $(containerSel).masonry('layout');
@@ -68,8 +68,8 @@ var MiteGallery = {
                 dynamicEl: items,
                 index: 0,
                 download: false,
-                nextHtml: '<i class="angle big right icon"></i>',
-                prevHtml: '<i class="angle big left icon"></i>'
+                nextHtml: '<i class="chevron large right icon"></i>',
+                prevHtml: '<i class="chevron large left icon"></i>'
             });
         });
     }

@@ -153,9 +153,9 @@ namespace Mite.DAL.Repositories
         /// <returns></returns>
         public async Task<Post> GetWithTagsCommentsAsync(Guid id)
         {
-            var query = "select * from dbo.\"Posts\" left outer join dbo.\"TagPosts\" on dbo.\"TagPosts\".\"Post_Id\"=dbo.\"Posts\".\"Id\""
-                + " full outer join dbo.\"Tags\" on dbo.\"TagPosts\".\"Tag_Id\"=dbo.\"Tags\".\"Id\" full outer join dbo.\"Comments\""
-                + $" on dbo.\"Comments\".\"Post_Id\"=dbo.\"Posts\".\"Id\" where dbo.\"Posts\".\"Id\"=@id;";
+            var query = "select * from dbo.\"Posts\" left outer join dbo.\"TagPosts\" on dbo.\"TagPosts\".\"Post_Id\"=dbo.\"Posts\".\"Id\" "
+                + "full outer join dbo.\"Tags\" on dbo.\"TagPosts\".\"Tag_Id\"=dbo.\"Tags\".\"Id\" full outer join dbo.\"Comments\" "
+                + "on dbo.\"Comments\".\"Post_Id\"=dbo.\"Posts\".\"Id\" where dbo.\"Posts\".\"Id\"=@id;";
 
             return (await Db.QueryAsync<Post, Tag, Comment, Post>(query, (post, tag, comment) =>
             {
@@ -204,23 +204,20 @@ namespace Mite.DAL.Repositories
                         tagNamesStr.Append("or ");
                 }
                 //Запрос для получения кол-ва совпадений тегов для каждого поста
-                var tagsCountQuery = "select \"Post_Id\" from dbo.\"Tags\" as tags " +
+                query += $"and posts.\"Id\" in (select tag_posts.\"Post_Id\" from dbo.\"Tags\" as tags " +
                         "inner join dbo.\"TagPosts\" as tag_posts on tags.\"Id\"=tag_posts.\"Tag_Id\" " +
-                        $"where {tagNamesStr.ToString()} group by \"Post_Id\" having count(\"Tag_Id\") >= {filter.Tags.Length}";
-
-                //var tagsCountRes = await Db.QueryAsync(tagsCountQuery);
-                //Чтобы у поста было точное кол-во совпадений с тегами(т.е. написали в запросе 2 тега - должно совпасть 2 тега или больше)
-                //filter.TagPostsIds = tagsCountRes.Where(x => (int)x.TagsCount >= filter.Tags.Length)
-                //    .Select(x => (Guid)x.Post_Id).ToList();
-
-                //query += "and posts.\"Id\"=any(@TagPostsIds) ";
-                query += $"and posts.\"Id\"=any({tagsCountQuery}) ";
+                        //Чтобы у поста было точное кол-во совпадений с тегами(т.е. написали в запросе 2 тега - должно совпасть 2 тега или больше)
+                        $"where {tagNamesStr.ToString()} group by tag_posts.\"Post_Id\" having count(tag_posts.\"Tag_Id\")>={filter.Tags.Length}) ";
             }
             if (filter.OnlyFollowings)
             {
-                var folQuery = "select flw.\"FollowingUserId\" from dbo.\"Followers\" flw where flw.\"UserId\"=@CurrentUserId";
-                //filter.Followings = (await Db.QueryAsync<string>(folQuery, filter)).ToList();
-                query += $"and users.\"Id\" = any({folQuery}) ";
+                //Обработка пользователей, на которых подписался текущий
+                query += $"and (users.\"Id\" in (select flw.\"FollowingUserId\" from dbo.\"Followers\" flw where flw.\"UserId\"=@CurrentUserId) or ";
+
+                //Обработка тегов, на которые подписался пользователь
+                query += $"posts.\"Id\" in (select tag_posts1.\"Post_Id\" from dbo.\"TagPosts\" tag_posts1 " +
+                        "where tag_posts1.\"Tag_Id\" in (select user_tags.\"TagId\" from dbo.\"UserTags\" user_tags where " +
+                        "user_tags.\"UserId\"=@CurrentUserId)))";
             }
             var sortQuery = "order by posts.\"PublishDate\" desc";
             switch (filter.SortType)

@@ -99,10 +99,10 @@
      */
     deleteTag: function (btn) {
         return $.ajax({
-            url: '/api/tags/' + $(ev).parents('tr').data('id'),
+            url: '/api/tags/' + $(btn).parents('tr').data('id'),
             type: 'delete',
             success: function () {
-                $(ev).parents('tr').remove();
+                $(btn).parents('tr').remove();
             },
             error: function () {
                 alert('Ошибка во время удаления');
@@ -178,5 +178,49 @@
             else
                 $elem.hide();
         });
-    }
+    },
+    /**
+     * Подписаться на тег
+     * @param {HTMLElement} tagLabel
+     */
+    addUserTag: function (tagLabel) {
+        var $tagLabel = $(tagLabel),
+            tagId = $tagLabel.data('id'),
+            self = this;
+        return $.post('/api/usertags?tagId=' + tagId, function (resp) {
+            $tagLabel.addClass('violet').off('click').attr('title', 'Отписаться')[0].onclick = function () {
+                self.removeUserTag(this);
+            };
+        }).fail(function () {
+            iziToast.error({
+                title: 'Упс!',
+                message: 'Ошибка при подписке'
+            });
+        });
+    },
+    /**
+     * Отписаться от тега
+     * @param {HTMLElement} tagLabel
+     */
+    removeUserTag: function (tagLabel) {
+        var $tagLabel = $(tagLabel),
+            tagId = $tagLabel.data('id'),
+            self = this;
+        return $.ajax({
+            url: '/api/usertags?tagId=' + tagId,
+            type: 'delete',
+            success: function () {
+                $tagLabel.removeClass('violet').attr('title', 'Подписаться')[0].onclick = function () {
+                    self.addUserTag(this);
+                };
+            },
+            error: function () {
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Ошибка при подписке'
+                });
+            }
+        });
+    },
+
 }

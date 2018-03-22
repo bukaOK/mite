@@ -340,7 +340,6 @@ namespace Mite.BLL.Services
                 PostType = PostTypes.Published,
                 CurrentUserId = currentUserId
             };
-
             var currentDate = DateTime.UtcNow;
             switch (filter.PostTimeFilter)
             {
@@ -359,7 +358,9 @@ namespace Mite.BLL.Services
                 default:
                     throw new NullReferenceException("Не задан фильтр времени при поиске поста");
             }
-
+            //var user = await _userManager.FindByIdAsync(currentUserId);
+            //if (user.ShowOnlyFollowings)
+            //    repoFilter.FollowingTags = (await tagsRepo.GetForUserAsync(currentUserId)).Select(x => x.Id).ToArray();
             var posts = await repo.GetByFilterAsync(repoFilter);
             var currentUser = string.IsNullOrEmpty(currentUserId) ? null : await _userManager.FindByIdAsync(currentUserId);
             const int minChars = 400;

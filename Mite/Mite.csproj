@@ -368,9 +368,11 @@
     <Compile Include="Controllers\Api\AuthorServiceTypesController.cs" />
     <Compile Include="Controllers\Api\BlackListController.cs" />
     <Compile Include="Controllers\Api\DealsController.cs" />
+    <Compile Include="Controllers\Api\FactsController.cs" />
     <Compile Include="Controllers\Api\FavoritePostsController.cs" />
     <Compile Include="Controllers\Api\MessageController.cs" />
     <Compile Include="Controllers\Api\UserReviewsController.cs" />
+    <Compile Include="Controllers\Api\UserTagsController.cs" />
     <Compile Include="Controllers\ChatMembersController.cs" />
     <Compile Include="Controllers\FilesController.cs" />
     <Compile Include="Controllers\AuthorServicesController.cs" />
@@ -426,6 +428,7 @@
     <Compile Include="Infrastructure\Automapper\CityProfile.cs" />
     <Compile Include="Infrastructure\Automapper\CommentProfile.cs" />
     <Compile Include="Infrastructure\Automapper\DealsProfile.cs" />
+    <Compile Include="Infrastructure\Automapper\FactProfile.cs" />
     <Compile Include="Infrastructure\Automapper\OrderProfile.cs" />
     <Compile Include="Infrastructure\Automapper\PaymentProfile.cs" />
     <Compile Include="Infrastructure\Automapper\SocialLinksProfile.cs" />
@@ -448,6 +451,7 @@
     <Compile Include="Models\CommentRatingModel.cs" />
     <Compile Include="Models\DealModels.cs" />
     <Compile Include="Models\ChatModels.cs" />
+    <Compile Include="Models\FactModels.cs" />
     <Compile Include="Models\FiltersModels.cs" />
     <Compile Include="Models\GalleryModels.cs" />
     <Compile Include="Models\GooglePlaces\AddressComponent.cs" />
@@ -941,6 +945,7 @@
     <Content Include="Scripts\Api\Cities.js" />
     <Content Include="Scripts\Api\Comments.js" />
     <Content Include="Scripts\Api\Deals.js" />
+    <Content Include="Scripts\Api\Facts.js" />
     <Content Include="Scripts\Api\FavoritePosts.js" />
     <Content Include="Scripts\Api\Followers.js" />
     <Content Include="Scripts\Api\Notifications.js" />
@@ -1103,6 +1108,8 @@
     <Content Include="Views\UserSettings\Invite.cshtml" />
     <Content Include="Views\Home\Faq.cshtml" />
     <Content Include="Views\Admin\Reviews.cshtml" />
+    <Content Include="Views\Moder\Facts.cshtml" />
+    <Content Include="Views\UserSettings\UserTags.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

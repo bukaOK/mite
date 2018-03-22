@@ -73,13 +73,13 @@
             data: $form.serialize(),
             success: function (resp) {
                 if (resp.status == 2) {
-                    $form.form('add errors', [resp.message]);
+                    $form.removeClass('.m-success').form('add errors', [resp.message]);
                 } else {
-                    $form.addClass('m-success');
+                    $form.removeClass('error').addClass('m-success');
                 }
             },
             error: function (jqXhr) {
-                $form.form('add errors', ['Внутренняя ошибка']);
+                $form.removeClass('m-success').form('add errors', ['Внутренняя ошибка']);
             },
             complete: function () {
                 $btn.removeClass('loading disabled');
@@ -153,6 +153,49 @@
             });
         }).always(function () {
             $(btn).removeClass('loading disabled');
+        });
+    },
+    /**
+     * Показывать только подписки
+     * @param {boolean} show
+     */
+    showOnlyFollowings: function (show) {
+        return $.post('/user/settings/showonlyfollowings?show' + show).fail(function () {
+            iziToast.error({
+                title: 'Упс!',
+                message: 'Ошибка сервера'
+            });
+        });
+    },
+    /**
+     * Обновляем аватарку пользователя
+     * @param {Blob} res изображение в двоичном формате
+     * @param {HTMLElement} btn кнопка сохранения
+     */
+    changeAvatar: function (res, btn) {
+        var data = new FormData(),
+            $btn = $(btn).addClass('loading disabled'),
+            $form = $('#changeAvaForm');
+        data.append('img', res);
+        return $.ajax({
+            type: 'post',
+            url: '/user/settings/changeavatar',
+            processData: false,
+            contentType: false,
+            data: data,
+            success: function (resp) {
+                if (resp.status === Settings.apiStatuses.success) {
+                    $form.addClass('m-success').removeClass('error');
+                } else {
+                    $form.form('add errors', [resp.message]);
+                }
+            },
+            error: function () {
+                $form.form('add errors', ['Внутренняя ошибка сервера']);
+            },
+            complete: function () {
+                $btn.removeClass('loading disabled');
+            }
         });
     }
 }

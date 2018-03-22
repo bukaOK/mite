@@ -1,24 +1,27 @@
 ﻿@model string
 
-@*ToDo: Обработать случай, когда аватарка не выбрана и пользователь нажал сохранить*@
 <div class="ui stackable two column center aligned grid change-avatar">
     <div class="column">
-        <input type="file" id="ava-download" style="display: none">
-        <label class="ui dashed drop-zone segment" ondragover="dragOverHandler(event)" ondrop="dropHandler(event)">
-            <span class="ui small blue header"><i class="cloud download icon"></i>Перетащите или нажмите</span>
-            <input type="file" onchange="inputDownloadHandler(event)" />
-        </label>
-        <button type="button" class="ui fluid green button" id="save-btn">Сохранить</button>
-        <div class="ui divider"></div>
-        <button class="ui ava-rotate primary button" data-deg="-90" style="display: none">
-            <i class="reply icon"></i>
-            Повернуть влево
-        </button>
-        <button class="ui ava-rotate primary button" data-deg="90" style="display: none">
-            <i class="share icon"></i>
-            Повернуть вправо
-        </button>
-        <div class="ui hidden message" style="text-align: center" id="change-ava-msg"></div>
+        <form class="ui form" id="changeAvaForm">
+            <input type="file" id="ava-download" style="display: none">
+            <label class="ui dashed drop-zone segment" ondragover="dragOverHandler(event)" ondrop="dropHandler(event)">
+                <span class="ui small blue header"><i class="cloud download icon"></i>Перетащите или нажмите</span>
+                <input type="file" onchange="inputDownloadHandler(event)" />
+            </label>
+            <div class="ui teal progress" id="ava-progress"></div>
+            <button type="button" class="ui fluid green button" id="save-btn">Сохранить</button>
+            <div class="ui divider"></div>
+            <button class="ui ava-rotate primary left labeled icon button" data-deg="-90" style="display: none">
+                <i class="reply icon"></i>Влево
+            </button>
+            <button class="ui ava-rotate primary right labeled icon button" data-deg="90" style="display: none">
+                Вправо<i class="share icon"></i>
+            </button>
+            <div class="ui error message"></div>
+            <div class="ui m-success green message">
+                Аватарка успешно обновлена
+            </div>
+        </form>
     </div>
     <div class="column">
         <div class="avatar edit" style="display: none"></div>
@@ -27,12 +30,24 @@
 @Scripts.Render("~/bundles/croppie")
 <script>
     function readFile(file, evt) {
-        var reader = new FileReader();
-        reader.onprogress = function () {
-            $("#loading-span").css("display: inline");
+        var reader = new FileReader(),
+            $progress = $('#ava-progress'),
+            $form = $('#changeAvaForm');
+        if (file.type.split('/')[0] !== 'image') {
+            $form.form('add errors', ['Неверный формат изображения']);
+            return;
+        }
+        reader.onloadstart = function () {
+            $progress.progress();
+        }
+        reader.onprogress = function (ev) {
+            if (settings.progress && ev.lengthComputable) {
+                var percentLoaded = Math.round((ev.loaded / ev.total) * 100);
+                $progress.progress('set percent', percentLoaded);
+            }
         };
         reader.onloadend = function () {
-            $("#loading-span").css('display: none');
+            $progress.progress('set percent', 100);
         };
         reader.onload = function () {
             uploadCrop.show();
@@ -42,13 +57,13 @@
         };
         reader.readAsDataURL(file);
     }
-    //Когда перемещаем файл мышкой и курсор над областью
+    
     function dragOverHandler(evt) {
         evt.stopPropagation();
         evt.preventDefault();
         evt.dataTransfer.dropEffect = "copy";
     }
-    //Когда переместили файл
+    
     function dropHandler(evt) {
         evt.stopPropagation();
         evt.preventDefault();
@@ -59,7 +74,6 @@
         var file = evt.target.files[0];
         readFile(file, evt);
     }
-    $("avaSet").addClass("active");
     var uploadCrop = $('.avatar.edit');
     uploadCrop.croppie({
         viewport: {
@@ -78,42 +92,12 @@
     })
     $('#save-btn')
         .click(function (event) {
-            uploadCrop.croppie('result',
-                {
-                    circle: true
-                })
-                .then(function (res) {
-                    if (res.match(/data:,/) != null) {
-                        $('#change-ava-msg').addClass('red').removeClass('hidden').html('Изображение не выбрано');
-                    } else {
-                        $.ajax({
-                            url: '/UserSettings/ChangeAvatar',
-                            type: 'post',
-                            dataType: 'json',
-                            data: {
-                                base64Str: res
-                            },
-                            beforeSend: function () {
-                                $('#save-btn').addClass('loading disabled');
-                            },
-                            success: function (resp) {
-                                if (resp.message == undefined) {
-                                    resp = JSON.parse(resp);
-                                }
-                                $('#change-ava-msg').addClass('green').removeClass('red');
-                                $('#change-ava-msg').html(resp.message);
-                            },
-                            error: function () {
-                                $('#change-ava-msg').addClass('red').removeClass('green');
-                                $('#change-ava-msg').html('Ошибка сервера');
-                            },
-                            complete: function (jqXhr) {
-                                $('#save-btn').removeClass('loading disabled');
-                                $('#change-ava-msg').removeClass('hidden');
-                            }
-                        });
-                    }
+            var saveBtn = this;
+            uploadCrop.croppie('result', {
+                    circle: false,
+                    type: 'blob'
+                }).then(function (res) {
+                    UserSettingsApi.changeAvatar(res, saveBtn);
                 });
-
         });
 </script>

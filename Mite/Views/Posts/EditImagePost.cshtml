@@ -29,7 +29,12 @@
                     <i class="dropdown icon"></i>
                     <input type="hidden" name="Tags" id="Tags" value="@tagsRow" />
                     <div class="default text">Теги</div>
-                    <div class="menu"></div>
+                    <div class="menu">
+                        @foreach(var aTag in Model.AvailableTags)
+                        {
+                            <div class="item" data-value="@aTag">@aTag</div>
+                        }
+                    </div>
                 </div>
             </div>
             <div class="ui blue icon message">
@@ -107,7 +112,7 @@
                 }
             },
             error: function (jqXhr) {
-                $('#imgPostForm').form('add errors', ['Ошибка во время добавления поста']);
+                $('#imgPostForm').form('add errors', ['Ошибка во время добавления работы']);
             },
             complete: function (jqXhr) {
                 $saveBtn.removeClass('loading disabled');
@@ -120,7 +125,15 @@
         ViewHelper.activateSidebarItem('#editImageItem');
         ViewHelper.disableFormSubmitting('#imgPostForm');
         $('.ui.checkbox').checkbox();
-        TagsApi.loadDropdown('#select-tags', '@tagsRow'.split(','));
+        $('#select-tags').dropdown({
+            allowAdditions: true,
+            fullTextSearch: true,
+            keys: {
+                delimiter: 13
+            },
+            match: 'text',
+            forceSelection: false
+        });
         //Отправляем форму
         $('#save-btn').click(function(ev) {
             var $saveBtn = $(this);

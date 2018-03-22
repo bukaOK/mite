@@ -1,0 +1,14 @@
+﻿@model IEnumerable<Mite.Models.UserTagModel>
+
+<h3 class="ui header">Нажмите на тег, чтобы подписаться или отписаться</h3>
+@foreach (var tag in Model)
+{
+    if (tag.IsFollower)
+    {
+        <a class="ui large violet label" data-id="@tag.Id" onclick="TagsApi.removeUserTag(this)" title="Отписаться">@tag.Name</a>
+    }
+    else
+    {
+        <a class="ui large label" data-id="@tag.Id" onclick="TagsApi.addUserTag(this)" title="Подписаться">@tag.Name</a>
+    }
+}

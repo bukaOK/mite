@@ -34,6 +34,7 @@ function ChatUpdater(chatId) {
             }
         }
     });
+    self.updateForm.find('.ui.checkbox').checkbox();
     self.imageSetModal = $('.chat-set.modal[data-id="' + chatId + '"]').modal({
         allowMultiple: true,
         closable: false,

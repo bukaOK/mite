@@ -41,6 +41,10 @@ namespace Mite.Models
         [UIData(typeof(Genders))]
         [Required]
         public byte Gender { get; set; }
+        
+        [Required]
+        [DisplayName("Показывать по умолчанию только подписки")]
+        public bool ShowOnlyFollowings { get; set; }
 
         [DisplayName("Имя")]
         [UIHint("TextBox")]

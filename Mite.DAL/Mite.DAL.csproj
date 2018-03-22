@@ -97,6 +97,7 @@
     <Compile Include="Entities\ChatMember.cs" />
     <Compile Include="Entities\ChatMessageAttachment.cs" />
     <Compile Include="Entities\ComicsItem.cs" />
+    <Compile Include="Entities\DailyFact.cs" />
     <Compile Include="Entities\FavoritePost.cs" />
     <Compile Include="Entities\GroupChatMember.cs" />
     <Compile Include="Entities\ChatMessageUser.cs" />
@@ -228,6 +229,14 @@
     <Compile Include="Migrations\201803041036536_AddUserReviews.Designer.cs">
       <DependentUpon>201803041036536_AddUserReviews.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201803191508409_AddFacts.cs" />
+    <Compile Include="Migrations\201803191508409_AddFacts.Designer.cs">
+      <DependentUpon>201803191508409_AddFacts.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201803191734245_ShowOnlyFollowings.cs" />
+    <Compile Include="Migrations\201803191734245_ShowOnlyFollowings.Designer.cs">
+      <DependentUpon>201803191734245_ShowOnlyFollowings.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\AuthorServiceRepository.cs" />
@@ -237,6 +246,7 @@
     <Compile Include="Repositories\ChatMembersRepository.cs" />
     <Compile Include="Repositories\CitiesRepository.cs" />
     <Compile Include="Repositories\CommentsRepository.cs" />
+    <Compile Include="Repositories\DailyFactsRepository.cs" />
     <Compile Include="Repositories\DealRepository.cs" />
     <Compile Include="Repositories\ChatMessagesRepository.cs" />
     <Compile Include="Repositories\ChatRepository.cs" />
@@ -336,6 +346,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201803041036536_AddUserReviews.resx">
       <DependentUpon>201803041036536_AddUserReviews.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201803191508409_AddFacts.resx">
+      <DependentUpon>201803191508409_AddFacts.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201803191734245_ShowOnlyFollowings.resx">
+      <DependentUpon>201803191734245_ShowOnlyFollowings.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -27,6 +27,10 @@ namespace Mite.Models
         /// Прошел ли день со дня регистрации
         /// </summary>
         public bool RegisterDayLeft { get; set; }
+        /// <summary>
+        /// Подписан ли на какие нибудь теги
+        /// </summary>
+        public bool HasTags { get; set; }
         public UserShortModel User { get; set; }
     }
 }

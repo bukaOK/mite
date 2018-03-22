@@ -5,6 +5,7 @@ using Mite.CodeData.Enums;
 using Mite.DAL.Core;
 using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Threading.Tasks;
@@ -72,6 +73,33 @@ namespace Mite.DAL.Repositories
             var query = $"select * from dbo.\"Users\" where \"AvatarSrc\" is not null and \"AvatarSrc\"!='{PathConstants.AvatarSrc}' " +
                 $"order by random() limit {count};";
             return Db.Query<User>(query);
+        }
+        /// <summary>
+        /// Подписаться на тег
+        /// </summary>
+        /// <param name="tagId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public Task AddTagAsync(Guid tagId, string userId)
+        {
+            var query = "insert into dbo.\"UserTags\" (\"TagId\", \"UserId\") values(@tagId, @userId);";
+            return Db.ExecuteAsync(query, new { tagId, userId });
+        }
+        public Task RemoveTagAsync(Guid tagId, string userId)
+        {
+            var query = "delete from dbo.\"UserTags\" where \"TagId\"=@tagId and \"UserId\"=@userId;";
+            return Db.ExecuteAsync(query, new { tagId, userId });
+        }
+        /// <summary>
+        /// Подписан ли на какие нибудь теги
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public bool HasAnyTags(string userId)
+        {
+            var query = "select count(*) from dbo.\"UserTags\" where \"UserId\"=@userId;";
+            var count = Db.QueryFirst<int>(query, new { userId });
+            return count > 0;
         }
     }
 }
