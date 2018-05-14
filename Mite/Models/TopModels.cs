@@ -68,6 +68,7 @@ namespace Mite.Models
         /// Показывать ли взрослый контент.
         /// </summary>
         public bool ShowAdultContent { get; set; }
+        public virtual bool IsProduct { get; set; }
         public IEnumerable<string> Tags { get; set; }
         public UserShortModel User { get; set; }
     }

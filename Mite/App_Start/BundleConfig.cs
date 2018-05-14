@@ -11,14 +11,14 @@ namespace Mite
             bundles.Add(new ScriptBundle("~/bundles/jquery", "https://code.jquery.com/jquery-3.2.1.min.js").Include(
                 "~/Scripts/jquery-3.1.1.js"
             ));
-            bundles.Add(new ScriptBundle("~/bundles/semantic", "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.0/semantic.min.js")
+            bundles.Add(new ScriptBundle("~/bundles/semantic", "https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.1/semantic.min.js")
                 .Include("~/bower_components/semantic/dist/semantic.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/site")
                 .Include("~/Scripts/jquery.address.js",
                 "~/Scripts/perfect-scrollbar.js",
                 "~/bower_components/izitoast/dist/js/iziToast.min.js",
-                "~/Scripts/jquery.signalR-2.2.2.min.js")
+                "~/Scripts/jquery.signalR-2.2.3.min.js")
                 .IncludeDirectory("~/Scripts/Custom/", "*.js"));
             bundles.Add(new ScriptBundle("~/bundles/inputmask").Include("~/Scripts/jquery.maskedinput.min.js"));
 

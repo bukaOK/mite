@@ -17,6 +17,7 @@ using System;
 using NLog;
 using AutoMapper;
 using System.Web;
+using System.Text.RegularExpressions;
 
 namespace Mite.Controllers
 {
@@ -28,16 +29,18 @@ namespace Mite.Controllers
         private readonly AppUserManager userManager;
         private readonly IAuthenticationManager authManager;
         private readonly ITagsService tagsService;
+        private readonly IExternalLinksService linksService;
         private readonly ILogger logger;
         private readonly ICityService cityService;
 
         public UserSettingsController(IUserService userService, AppUserManager userManager, ICityService cityService,
-            IAuthenticationManager authManager, ITagsService tagsService, ILogger logger)
+            IAuthenticationManager authManager, ITagsService tagsService, IExternalLinksService linksService, ILogger logger)
         {
             this.userService = userService;
             this.userManager = userManager;
             this.authManager = authManager;
             this.tagsService = tagsService;
+            this.linksService = linksService;
             this.logger = logger;
             this.cityService = cityService;
         }
@@ -223,16 +226,28 @@ namespace Mite.Controllers
                 return InternalServerError();
             }
         }
-        public async Task<ActionResult> SocialServices()
+        public async Task<ActionResult> ExternalLinks()
         {
-            var links = await userService.GetSocialLinksAsync(CurrentUserId);
+            var links = await linksService.GetByUserAsync(CurrentUserId);
             return PartialView(links);
         }
         [HttpPost]
-        public async Task<HttpStatusCodeResult> UpdateSocialServices(SocialLinksModel model)
+        public async Task<ActionResult> UpdateLinks(IEnumerable<ExternalLinkModel> models)
         {
-            await userService.UpdateSocialLinksAsync(model, CurrentUserId);
-            return Ok();
+            foreach(var item in models)
+            {
+                if (string.IsNullOrEmpty(item.Url))
+                    ModelState.AddModelError("ExternalLink[]", "Пустая ссылка");
+                if(!Regex.IsMatch(item.Url, @"^https?:\/\/[a-zA-Z\.\/]+"))
+                    ModelState.AddModelError("ExternalLink[]", "Неверный формат ссылки");
+            }
+            if (!ModelState.IsValid)
+                return Json(JsonStatuses.ValidationError, GetModelErrors());
+            var result = await linksService.AddAsync(models, CurrentUserId);
+            if (result.Succeeded)
+                return Json(JsonStatuses.Success);
+            else
+                return Json(JsonStatuses.ValidationError, result.Errors);
         }
     }
 }

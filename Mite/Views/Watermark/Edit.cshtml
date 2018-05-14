@@ -1,0 +1,66 @@
+﻿@model Mite.Models.WatermarkEditModel
+
+<div id="wmEdit">
+    @Html.HiddenFor(x => x.UseCustomImage)
+    @Html.HiddenFor(x => x.WmPath)
+    <div class="field">
+        <label>@Html.DisplayNameFor(x => x.Gravity)</label>
+        @Html.EnumDropDownListFor(x => x.Gravity, new { @class = "ui selection dropdown" })
+    </div>
+    <label class="ui dashed drop-zone segment" id="watImgLabel">
+        <span class="ui small blue header"><i class="cloud download icon"></i>Перетащите или нажмите</span>
+        <input type="file" id="watFile" />
+    </label>
+    <div id="watImgWrap"></div>
+    <button type="button" class="ui blue button" onclick="drawWatermark(true)">Отрисовать</button>
+    <div class="ui horizontal divider">Водяной знак от MiteGroup</div>
+    
+    @Html.EditorFor(x => x.FontSize, new { WithLabel = true })
+    @Html.EditorFor(x => x.WmText, new { WithLabel = true })
+    @Html.HiddenFor(x => x.Inverted)
+    <div class="fields">
+        <div class="field">
+            <button type="button" class="ui primary button" onclick="drawWatermark(false)">Отрисовать</button>
+        </div>
+        <div class="field">
+            <div class="ui checkbox" id="invertCheck">
+                <input type="checkbox" @Html.Raw(Model.Inverted ? "checked" : "") />
+                <label>@Html.DisplayNameFor(x => x.Inverted)</label>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var watDict = {
+        1: 'nw', 3: 'ne', 2: 'n',
+        7: 'sw', 9: 'se', 8: 's',
+        5: 'c', 6: 'e', 4: 'w'
+    }, watSettings = {
+        progress: $('#watProgress'),
+        field: $('#WmPath'),
+        imgWrapper: $('#watImgWrap')
+    };
+    function drawWatermark(custom) {
+        var gravity = watDict[+$('#Gravity').parents('.dropdown').dropdown('get value')],
+            path = custom ? $('#WmPath').val() : '/watermark/draw?' + $('#wmEdit input:not([type=checkbox],#WmPath)').serialize();
+        WatermarkHelper.draw('#img-wrapper img', path, gravity, $('#Content').val());
+        $('#UseCustomImage').val(custom);
+    }
+    $('#Gravity').dropdown();
+    $('#invertCheck').checkbox({
+        onChecked: function () {
+            $('#Inverted').val('true');
+        },
+        onUnchecked: function () {
+            $('#Inverted').val('false');
+        }
+    })
+    $('#watImgLabel').on('dragover', function (ev) {
+        FileReaderHelper.dragOverHandler(ev);
+    }).on('drop', function (ev) {
+        FileReaderHelper.dropHandler(ev, watSettings);
+    });
+    $('#watFile').change(function (ev) {
+        FileReaderHelper.inputDownloadHandler(ev, watSettings);
+    });
+</script>

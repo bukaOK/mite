@@ -7,9 +7,14 @@ namespace Mite
     {
         public static void RegisterRoutes(RouteCollection routes)
         {
+            routes.LowercaseUrls = true;
+
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
             routes.IgnoreRoute("Public/{all}");
-            routes.LowercaseUrls = true;
+
+            routes.Ignore("images/post/{all}");
+            routes.Ignore("images/services/{all}");
+            routes.Ignore("images/orders/{all}");
 
             routes.MapMvcAttributeRoutes();
 

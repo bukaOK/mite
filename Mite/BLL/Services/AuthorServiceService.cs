@@ -178,18 +178,18 @@ namespace Mite.BLL.Services
         {
             var model = new ServiceTopFilterModel();
             var cities = await Database.GetRepo<CitiesRepository, City>().GetAllAsync();
-            User user = null;
-            if (!string.IsNullOrEmpty(userId))
-                user = await userManager.FindByIdAsync(userId);
+            //User user = null;
+            //if (!string.IsNullOrEmpty(userId))
+            //    user = await userManager.FindByIdAsync(userId);
             model.Cities = cities.Select(city => new SelectListItem
             {
                 Text = city.Name,
                 Value = city.Id.ToString()
             });
             model.ServiceTypes = await serviceTypeService.GetSelectListAsync(Guid.Empty);
-            var tuple = await repo.GetMinMaxPricesAsync();
-            model.Min = (int)tuple.min;
-            model.Max = (int)tuple.max;
+            var (min, max) = await repo.GetMinMaxPricesAsync();
+            model.Min = (int)min;
+            model.Max = (int)max;
 
             return model;
         }

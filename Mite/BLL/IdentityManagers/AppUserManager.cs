@@ -52,14 +52,6 @@ namespace Mite.BLL.IdentityManagers
                     new DataProtectorTokenProvider<User>(dataProtectionProvider.Create("{861FD88D-77F1-4BE8-8660-5A6E283511D0}"));
             }
         }
-        public string GetDefaultAvatarSrc()
-        {
-            var path = HostingEnvironment.ApplicationVirtualPath;
-            if (path[path.Length - 1] != '\\')
-                path += "\\";
-            path += "default-ava.png";
-            return path;
-        }
         public async override Task<ClaimsIdentity> CreateIdentityAsync(User user, string authenticationType)
         {
             if (user.AvatarSrc == null)

@@ -4,7 +4,6 @@ using Mite.BLL.Services;
 using Mite.Core;
 using Microsoft.AspNet.Identity;
 using Mite.CodeData.Enums;
-using System.Linq;
 using System;
 using System.Collections.Generic;
 using Mite.Models;
@@ -15,18 +14,20 @@ namespace Mite.Controllers
 {
     public class UserProfileController : BaseController
     {
-        private readonly IUserService _userService;
-        private readonly IPostsService _postsService;
-        private readonly IFollowersService _followersService;
-        private readonly IAuthorServiceService _authorService;
+        private readonly IUserService userService;
+        private readonly IPostsService postsService;
+        private readonly IFollowersService followersService;
+        private readonly IAuthorServiceService authorService;
+        private readonly IProductsService productsService;
 
         public UserProfileController(IUserService userService, IPostsService postsService, IFollowersService followersService,
-            IAuthorServiceService authorService, AppUserManager userManager)
+            IAuthorServiceService authorService, IProductsService productsService, AppUserManager userManager)
         {
-            _userService = userService;
-            _postsService = postsService;
-            _followersService = followersService;
-            _authorService = authorService;
+            this.userService = userService;
+            this.postsService = postsService;
+            this.followersService = followersService;
+            this.authorService = authorService;
+            this.productsService = productsService;
         }
         /// <summary>
         /// Страница пользователя
@@ -36,7 +37,7 @@ namespace Mite.Controllers
         [HttpGet]
         public async Task<ActionResult> Index(string name)
         {
-            var profile = await _userService.GetUserProfileAsync(name, User.Identity.GetUserId());
+            var profile = await userService.GetUserProfileAsync(name, User.Identity.GetUserId());
             if (profile == null)
                 return NotFound();
 
@@ -50,10 +51,9 @@ namespace Mite.Controllers
         public async Task<ActionResult> GetUserProfile(string name)
         {
             name = name.Replace(" ", string.Empty);
-            var profile = await _userService.GetUserProfileAsync(name, User.Identity.GetUserId());
+            var profile = await userService.GetUserProfileAsync(name, User.Identity.GetUserId());
             if (profile == null)
                 return NotFound();
-            profile.SocialLinks = await _userService.GetSocialLinksAsync(profile.UserId.ToString());
             //Обрезаем описание(всё для красоты)
             if(!string.IsNullOrEmpty(profile.About) && profile.About.Length > 50)
             {
@@ -83,7 +83,7 @@ namespace Mite.Controllers
         [HttpPost]
         public async Task<ActionResult> Followers(string name, SortFilter sort)
         {
-            var followers = await _followersService.GetFollowersByUserAsync(name, sort);
+            var followers = await followersService.GetFollowersByUserAsync(name, sort);
             return Json(JsonStatuses.Success, followers);
         }
         public Task<ActionResult> Posts(string name)
@@ -103,7 +103,7 @@ namespace Mite.Controllers
                 return Forbidden();
             if (type == null)
                 type = PostTypes.Published;
-            posts = await _postsService.GetByUserAsync(name, User.Identity.GetUserId(), sort, (PostTypes)type);
+            posts = await postsService.GetByUserAsync(name, User.Identity.GetUserId(), sort, (PostTypes)type);
             return Json(JsonStatuses.Success, posts);
         }
         public Task<ActionResult> Followings(string name)
@@ -117,7 +117,7 @@ namespace Mite.Controllers
         [HttpPost]
         public async Task<ActionResult> Followings(string name, SortFilter sort)
         {
-            var followings = await _followersService.GetFollowingsByUserAsync(name, sort);
+            var followings = await followersService.GetFollowingsByUserAsync(name, sort);
             return Json(JsonStatuses.Success, followings);
         }
         [HttpPost]
@@ -125,7 +125,7 @@ namespace Mite.Controllers
         {
             try
             {
-                var services = await _authorService.GetByUserAsync(name, sort);
+                var services = await authorService.GetByUserAsync(name, sort);
                 return Json(JsonStatuses.Success, services);
             }
             catch (DataServiceException e)
@@ -138,10 +138,28 @@ namespace Mite.Controllers
         {
             try
             {
-                var posts = await _postsService.GetByUserAsync(name, User.Identity.GetUserId(), sort, PostTypes.Favorite);
+                var posts = await postsService.GetByUserAsync(name, CurrentUserId, sort, PostTypes.Favorite);
                 return Json(JsonStatuses.Success, posts);
             }
             catch (DataServiceException e)
+            {
+                return Json(JsonStatuses.ValidationError, e.Message);
+            }
+        }
+        [HttpGet]
+        public Task<ActionResult> Products(string name)
+        {
+            return Index(name);
+        }
+        [HttpPost]
+        public async Task<ActionResult> Products(string name, SortFilter sort)
+        {
+            try
+            {
+                var products = await productsService.GetForUserAsync(name, sort);
+                return Json(JsonStatuses.Success, products);
+            }
+            catch(Exception e)
             {
                 return Json(JsonStatuses.ValidationError, e.Message);
             }

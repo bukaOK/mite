@@ -158,7 +158,7 @@ namespace Mite.BLL.Services
                 return DataServiceResult.Failed("Шаблон заказа не найден");
             try
             {
-                FilesHelper.DeleteFiles(order.ImageSrc, order.ImageSrc_600);
+                FilesHelper.DeleteFile(order.ImageSrc);
                 await repository.RemoveAsync(id);
                 return Success;
             }

@@ -49,7 +49,7 @@
         </div>
         <div class="right aligned column">
             <div id="vk_share" style="display: inline-block;"></div>
-            <div class="ui tiny labeled button">
+            <div class="ui tiny labeled button" @Html.Raw(User.Identity.IsAuthenticated ? "" : "disabled title='Войдите, чтобы добавлять работы в избранное'")>
                 @if (Model.IsFavorite)
                 {
                     <button class="ui compact small primary button" onclick="FavoritePostsApi.remove(this, '@Model.Id', '@userId')">
@@ -70,7 +70,7 @@
                 }
                 <span class="ui violet basic left pointing label">@Model.FavoriteCount</span>
             </div>
-            @if (currentUserName == pageUserName && Model.CanEdit)
+            @if (currentUserName == pageUserName)
             {
                 @Html.ActionLink("Редактировать", "EditPost", "Posts", new { id = Model.Id }, new { @class = "ui primary small compact button" })
             }
@@ -79,7 +79,7 @@
     @if (Model.Type == PostTypes.Blocked)
     {
         <div class="row">
-            <div class="centered ten wide column">
+            <div class="centered twelve wide column">
                 <div class="ui yellow message">
                     <div class="header">Работа заблокирована!</div>
                     <div class="content">
@@ -157,7 +157,7 @@
     </div>
     <div class="ui divider"></div>
     <div class="stackable row">
-        <div class="twelve wide centered column">
+        <div class="ten wide centered column">
             <div class="ui items">
                 <div class="item">
                     <div class="ui tiny circular image" style="width: 80px !important">
@@ -176,18 +176,54 @@
                             </div>
                         }
                         <div class="description">
-                            <h4>@Model.Description</h4>
+                            <h4 class="ui header">@Model.Description</h4>
                         </div>
-                        <div class="extra">
-                            @foreach (var tag in Model.Tags)
-                            {
-                                @Html.ActionLink(tag, "Top", "Posts", new { tags = tag }, new { @class = "ui label" })
-                            }
-                        </div>
+                        @if(Model.Tags != null && Model.Tags.Count > 0)
+                        {
+                            <div class="extra">
+                                @foreach (var tag in Model.Tags)
+                                {
+                                    @Html.ActionLink(tag, "Top", "Posts", new { tags = tag }, new { @class = "ui label" })
+                                }
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
         </div>
+        @if(Model.Product != null)
+        {
+            <div class="five wide column">
+                <div class="ui segment">
+                    <h4 class="ui header">
+                        <span class="content">
+                            Цена: @Model.Product.Price
+                            @if (User.Identity.GetUserId() != Model.User.Id)
+                            {
+                                <a class="ui violet label" id="buyButton">Купить</a>
+                            }
+                        </span>
+                        <span class="sub header">
+                            С покупкой вы получите:
+                            <div class="ui bulleted list">
+                                <div class="item">
+                                    доступ к оригиналу изображения
+                                </div>
+                                <div class="item">
+                                    право на коммерческое использование без указания ссылки на автора
+                                </div>
+                                @if (!string.IsNullOrEmpty(Model.Product.BonusDescription))
+                                {
+                                    <div class="item">
+                                        а также бонус: @Model.Product.BonusDescription
+                                    </div>
+                                }
+                            </div>
+                        </span>
+                    </h4>
+                </div>
+            </div>
+        }
         @if (User.IsInRole(RoleNames.Moderator))
         {
             <div class="four wide column">
@@ -242,7 +278,7 @@
                 {
                     <form class="ui form" id="comments-form">
                         <div class="field">
-                            <textarea name="CommentContent" id="CommentContent" rows="3" data-reply-user-id data-reply-comment></textarea>
+                            <textarea name="CommentContent" id="CommentContent" rows="1" data-reply-user-id data-reply-comment></textarea>
                         </div>
                         <button type="button" class="ui primary small right labeled icon button" onclick="CommentsApi.add('@Model.Id', '@Model.User.Id')">
                             Комментировать<i class="icon write"></i>
@@ -265,6 +301,16 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+<div class="ui tiny modal" role="dialog" id="buyConfirmModal">
+    <div class="header">Вы уверены?</div>
+    <div class="content">
+        <p>Покупку невозможно будет отменить</p>
+    </div>
+    <div class="actions">
+        <button class="ui green ok button">Да</button>
+        <button class="ui red cancel button">Нет</button>
     </div>
 </div>
 <script id="commentTmpl" type="text/x-jsrender">
@@ -344,8 +390,8 @@
             onRate: function (rateValue) {
                 RatingMvc.ratePost({
                     rateValue: rateValue,
-                    lastRateValue: this.dataset.lastRate,
-                    postRating: $('#post-rating').data('rating'),
+                    lastRateValue: +this.dataset.lastRate,
+                    postRating: +$('#post-rating')[0].dataset.rating,
                     rateObj: $('.ui.rating')[0],
                     isTop: false,
                     postId: '@Model.Id',
@@ -395,6 +441,16 @@
         } else if (isComics) {
             loadUserGallery();
             MiteGallery.initComics('.comics-content');
+        }
+        @if(Model.Product != null)
+        {
+            <text>
+            $('#buyConfirmModal').modal({
+                onApprove: function() {
+                    Products.Mvc.buy('@(Model.Product?.Id)', '#buyButton');
+                }
+            }).modal('attach events', '#buyButton', 'show');
+            </text>
         }
         initVkWidget();
     });

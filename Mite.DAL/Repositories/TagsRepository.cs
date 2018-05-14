@@ -125,7 +125,7 @@ namespace Mite.DAL.Repositories
             var multi = await Db.QueryMultipleAsync(query, new { Tags = tags.Select(x => x.Name).ToList(), PostId = postId });
 
             var existingTags = await multi.ReadAsync<Tag>();
-            var existingTagPosts = await multi.ReadAsync();
+            var existingTagPosts = await multi.ReadAsync<TagPost>();
             multi.Dispose();
 
             //Теги для добавления в таблицу тегов
@@ -156,6 +156,47 @@ namespace Mite.DAL.Repositories
             }
             query = "insert into dbo.\"TagPosts\"(\"Tag_Id\", \"Post_Id\") values(@TagId, @PostId);";
             await Db.ExecuteAsync(query, tagPostsToAdd);
+        }
+        public async Task AddWithProductAsync(List<Tag> tags, Guid productId)
+        {
+            tags = tags.Where(x => !string.IsNullOrEmpty(x.Name)).ToList();
+
+            var query = "select * from dbo.\"Tags\" where \"Name\"=any(@tags); "
+                + "select * from dbo.\"ProductTags\" where \"ProductId\"=@productId;";
+            var multi = await Db.QueryMultipleAsync(query, new { tags = tags.Select(x => x.Name).ToList(), productId });
+
+            var existingTags = await multi.ReadAsync<Tag>();
+            var existingTagPosts = await multi.ReadAsync();
+            multi.Dispose();
+
+            //Теги для добавления в таблицу тегов
+            var tagsToAdd = tags.Where(x => !existingTags.Any(y => y.Name == x.Name));
+            foreach (var tag in tagsToAdd)
+            {
+                tag.Id = Guid.NewGuid();
+                tag.Checked = false;
+                tag.IsConfirmed = false;
+            }
+            query = "insert into dbo.\"Tags\" (\"Id\", \"Name\", \"IsConfirmed\", \"Checked\") values (@Id, @Name, @IsConfirmed, @Checked); ";
+            await Db.ExecuteAsync(query, tagsToAdd);
+
+            tags = new List<Tag>();
+            tags.AddRange(existingTags);
+            tags.AddRange(tagsToAdd);
+
+            //Выбираем теги для удаления из товаров
+            var productTagsToDel = existingTagPosts.Where(x => !existingTags.Any(y => y.Id == x.Tag_Id))
+                .Select(x => (Guid)x.TagId).ToList();
+            //Теги для добавления к товарам
+            var productTagsToAdd = tags.Where(x => !existingTagPosts.Any(y => y.TagId == x.Id))
+                .Select((x => new { TagId = x.Id, ProductId = productId })).ToList();
+            if (productTagsToDel.Count > 0)
+            {
+                query = "delete from dbo.\"ProductTags\" where \"TagId\"=any(@tags) and \"ProductId\"=@productId;";
+                await Db.ExecuteAsync(query, new { Tags = productTagsToDel, productId });
+            }
+            query = "insert into dbo.\"ProductTags\"(\"TagId\", \"ProductId\") values(@TagId, @ProductId);";
+            await Db.ExecuteAsync(query, productTagsToAdd);
         }
         /// <summary>
         /// Получить теги, на которые подписан пользователь

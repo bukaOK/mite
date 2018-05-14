@@ -177,7 +177,9 @@ var TabFilter = {
             var filters = this.items;
 
             this.items.forEach(function (elem, index) {
-                str += elem.name + '=' + elem.getVal() + '&';
+                var val = elem.getVal();
+                if(val)
+                    str += elem.name + '=' + val + '&';
             });
             return str.substr(0, str.length - 1);
         },

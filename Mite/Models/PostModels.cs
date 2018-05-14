@@ -56,7 +56,6 @@ namespace Mite.Models
         public PostRatingModel CurrentRating { get; set; }
         public DateTime LastEdit { get; set; }
         public DateTime? PublishDate { get; set; }
-        public bool CanEdit => (PublishDate == null) || (PublishDate != null && (DateTime.UtcNow - PublishDate).Value.TotalDays <= 3);
         public List<string> AvailableTags { get; set; }
         /// <summary>
         /// Список имен тегов
@@ -81,6 +80,10 @@ namespace Mite.Models
         public UserShortModel User { get; set; }
         public IList<PostCollectionItemModel> Collection { get; set; }
         public IList<PostComicsItemModel> ComicsItems { get; set; }
+        public Guid? WatermarkId { get; set; }
+        public Guid? ProductId { get; set; }
+        public WatermarkEditModel Watermark { get; set; }
+        public ProductEditModel Product { get; set; }
     }
     public class WritingPostModel
     {
@@ -121,6 +124,8 @@ namespace Mite.Models
         [MaxLength(350, ErrorMessage = "Слишком длинное описание")]
         public string Description { get; set; }
         public bool Blocked { get; set; }
+        public Guid? WatermarkId { get; set; }
+        public Guid? ProductId { get; set; }
         public PostContentTypes ContentType { get; set; }
         public IList<string> Tags { get; set; }
         public IList<string> AvailableTags { get; set; }

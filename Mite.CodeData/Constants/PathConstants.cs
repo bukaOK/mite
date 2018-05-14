@@ -8,6 +8,7 @@ namespace Mite.CodeData.Constants
 {
     public static class PathConstants
     {
+        public const string VirtualImageCacheFolder = "/App_Data/images_cache";
         public const string VirtualImageFolder = "/Public/Images";
         public const string VirtualDocumentFolder = "/Public/Documents";
         public const string AvatarSrc = "/Content/images/doubt-ava.png";

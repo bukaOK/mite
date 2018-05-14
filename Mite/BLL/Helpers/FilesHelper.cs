@@ -44,10 +44,13 @@ namespace Mite.BLL.Helpers
         public static string CreateImage(string virtualPath, string base64Str)
         {
             var path = HostingEnvironment.MapPath(virtualPath);
-            var imgFormat = Regex.Match(base64Str, @"data:image/(.+);base64,").Groups[1].Value;
+            var match = Regex.Match(base64Str, @"^data:(?<contentType>\w+)/(?<format>\w+);base64,(?<base64>.+)");
+            if (!match.Groups["contentType"].Success || match.Groups["contentType"].Value != "image")
+                throw new ArgumentException("Неизвестный тип файла");
+            var imgFormat = match.Groups["format"].Value;
             if (imgFormat == "jpeg")
                 imgFormat = "jpg";
-            base64Str = Regex.Replace(base64Str, @"data:image/(.+);base64,", "");
+            base64Str = match.Groups["base64"].Value;
             //Кодируем строку base64 в изображение
             var bytes = Convert.FromBase64String(base64Str);
             using(var mStream = new MemoryStream(bytes))
@@ -112,16 +115,18 @@ namespace Mite.BLL.Helpers
         {
             if (string.IsNullOrEmpty(virtualPath))
                 throw new ArgumentNullException("Virtual path is null");
-            base64 = Regex.Replace(base64, @"^data:.+;base64,", string.Empty);
+            base64 = Regex.Replace(base64, @"^data:.*;base64,", string.Empty);
             string fullFolder = HostingEnvironment.MapPath(virtualPath),
                 filePath;
+            if (!Directory.Exists(fullFolder))
+                Directory.CreateDirectory(fullFolder);
             do
             {
                 filePath = Path.Combine(fullFolder, $"{Guid.NewGuid()}.{ext}");
             } while (File.Exists(filePath));
 
             File.WriteAllBytes(filePath, Convert.FromBase64String(base64));
-            return filePath.Replace(HostingEnvironment.ApplicationPhysicalPath, "/");
+            return filePath.Replace(HostingEnvironment.ApplicationPhysicalPath, "/").Replace('\\', '/');
         }
         public static string CreateFile(string virtualFolder, HttpPostedFileBase file)
         {
@@ -179,11 +184,6 @@ namespace Mite.BLL.Helpers
         /// Удалить несколько файлов
         /// </summary>
         /// <param name="virtualPaths"></param>
-        public static void DeleteFiles(params string[] virtualPaths)
-        {
-            foreach (var vPath in virtualPaths)
-                DeleteFile(vPath);
-        }
         public static void DeleteFiles(IEnumerable<string> virtualPaths)
         {
             foreach (var vPath in virtualPaths)
@@ -225,7 +225,6 @@ namespace Mite.BLL.Helpers
             reader.Close();
             return result;
         }
-        /// <summary>
         /// Кол-во символов в документе
         /// </summary>
         /// <param name="path"></param>
@@ -242,34 +241,34 @@ namespace Mite.BLL.Helpers
         /// <returns></returns>
         public static async Task<string> ReadDocumentAsync(string path, int charsCount)
         {
-            if (!File.Exists(HostingEnvironment.MapPath(path)))
+            var fullPath = HostingEnvironment.MapPath(path);
+            if (!File.Exists(fullPath))
                 return "";
-
-            var reader = new StreamReader(HostingEnvironment.MapPath(path));
-            var buffer = new char[charsCount];
-            var cropped = await reader.ReadBlockAsync(buffer, 0, charsCount) < charsCount;
-            reader.Close();
-            return HandleReading(new string(buffer), path, cropped);
+            using (var reader = new StreamReader(fullPath))
+            {
+                return HandleReading(await reader.ReadToEndAsync(), charsCount);
+            }
         }
-        public static string ReadDocument(string path, int charsCount)
+        public static string ReadDocument(string vPath, int charsCount)
         {
-            if (!File.Exists(HostingEnvironment.MapPath(path)))
+            var fullPath = HostingEnvironment.MapPath(vPath);
+            if (!File.Exists(fullPath))
                 return "";
-
-            var reader = new StreamReader(HostingEnvironment.MapPath(path));
-            var buffer = new char[charsCount];
-            var cropped = reader.ReadBlock(buffer, 0, charsCount) < charsCount;
-            reader.Close();
-            return HandleReading(new string(buffer), path, cropped);
+            using (var reader = new StreamReader(fullPath))
+            {
+                return HandleReading(reader.ReadToEnd(), charsCount);
+            }
         }
-        private static string HandleReading(string substr, string path, bool cropped)
+        private static string HandleReading(string text, int charsCount)
         {
             //После удаляем картинки и таблицы, т.к. они будут некорректно отображаться
-            substr = Regex.Replace(substr, @"(<img[^>]*>?)|(<table((?!<\/table>).)*(<\/table>)?)", "");
-             
+            var substr = Regex.Replace(text, @"<img[^>]+>|<table>.+<\/table>", "");
+            var cropped = substr.Length > charsCount;
+
+            substr = substr.Substring(0, substr.Length < charsCount ? substr.Length : charsCount);
             //Удаляем все недооткрытые(вроде <p) в конце теги
-            substr = Regex.Replace(substr, @"(<|<\/|<(h3|h2|p|i|b|table|img)[^>]*>*)$", "");
-            substr = Regex.Replace(substr, @"(<h3[^>]*|h2[^>]*)", "<p");
+            substr = Regex.Replace(substr, @"(<|<\/|<(h3|h2|p|i|b)[^>]*>*)$", "");
+            substr = Regex.Replace(substr, @"(<h3[^>]*|<h2[^>]*)", "<p");
 
             var tags = new[] { "p", "i", "b" };
             var closeTagsStack = new Stack<string>();
@@ -290,9 +289,7 @@ namespace Mite.BLL.Helpers
                 {
                     var lastTagClose = lastTagCloseMatches[lastTagCloseMatches.Count - 1];
                     if (lastTag.Index > lastTagClose.Index)
-                    {
                         closeTagsStack.Push(tag);
-                    }
                 }
                 else
                 {

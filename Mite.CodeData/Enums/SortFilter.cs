@@ -13,18 +13,20 @@ namespace Mite.CodeData.Enums
         /// <summary>
         /// Популярные
         /// </summary>
-        Popular,
+        Popular = 0,
         /// <summary>
         /// Новые
         /// </summary>
-        New,
+        New = 1,
         /// <summary>
         /// Старые
         /// </summary>
-        Old,
+        Old = 2,
         /// <summary>
         /// Надежные
         /// </summary>
-        Reliable
+        Reliable = 3,
+        Expensive = 4,
+        Cheap = 5
     }
 }

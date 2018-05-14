@@ -33,6 +33,9 @@ namespace Mite.DAL.Infrastructure
         public DbSet<OrderRequest> OrderRequests { get; set; }
         public DbSet<UserReview> UserReviews { get; set; }
         public DbSet<DailyFact> DailyFacts { get; set; }
+        public DbSet<ExternalLink> ExternalLinks { get; set; }
+        public DbSet<Product> Products { get; set; }
+        public DbSet<Purchase> Purchases { get; set; }
 
         public AppDbContext() : base("DefaultConnection")
         {
@@ -56,14 +59,6 @@ namespace Mite.DAL.Infrastructure
                     x.MapRightKey("TagId");
                     x.MapLeftKey("UserId");
                 });
-            //modelBuilder.Entity<Chat>().HasMany(x => x.Users).WithMany()
-            //    .Map(x =>
-            //    {
-            //        x.ToTable("ChatUsers");
-            //        x.MapLeftKey("ChatId");
-            //        x.MapRightKey("UserId");
-            //    });
-
         }
     }
 }

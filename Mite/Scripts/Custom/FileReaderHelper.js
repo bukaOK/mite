@@ -18,6 +18,9 @@ var FileReaderHelper = {
                 imgWrapper: $form.find('.img-wrapper'),
                 field: $form.find('[name="Content"]')
             };
+            if (!settings.field.length) {
+                settings.field = $form.find('[name=ImageSrc]')
+            }
             if ($progress.length) {
                 settings.progress = $progress;
             }
@@ -60,6 +63,7 @@ var FileReaderHelper = {
     /**
      * Когда переместили файл
      * @param {DragEvent} evt
+     * @param {ReaderSettings} settings
     */
     dropHandler: function (evt, settings) {
         var self = FileReaderHelper;

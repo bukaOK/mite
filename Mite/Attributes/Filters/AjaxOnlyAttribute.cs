@@ -23,7 +23,7 @@ namespace Mite.Attributes.Filters
         }
         public void OnAuthorization(AuthorizationContext filterContext)
         {
-            if (!filterContext.HttpContext.Request.IsAjaxRequest() && filterContext.RequestContext.RouteData.Values["action"].ToString() != IndexPage
+            if (filterContext.HttpContext.Request.IsAuthenticated && !filterContext.HttpContext.Request.IsAjaxRequest() && filterContext.RequestContext.RouteData.Values["action"].ToString() != IndexPage
                 && !filterContext.IsChildAction)
             {
                 var view = new ViewResult

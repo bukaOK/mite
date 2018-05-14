@@ -17,6 +17,7 @@ namespace Mite.Infrastructure.Automapper
 {
     public class AuthorServiceProfile : Profile
     {
+        const string ImagesPath = "/images/services/";
         public AuthorServiceProfile()
         {
             CreateMap<AuthorService, AuthorServiceModel>()
@@ -65,7 +66,7 @@ namespace Mite.Infrastructure.Automapper
                     if (!string.IsNullOrEmpty(src.ImageBase64))
                     {
                         var imageSrc = FilesHelper.CreateImage(PathConstants.VirtualImageFolder, src.ImageBase64);
-                        dest.ImageSrc_50 = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(imageSrc), 500));
+                        //dest.ImageSrc_50 = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(imageSrc), 500));
                         return imageSrc;
                     }
                     else
@@ -93,11 +94,12 @@ namespace Mite.Infrastructure.Automapper
             CreateMap<AuthorService, ProfileServiceModel>()
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description.Length > 300 ? 
                     src.Description.Substring(0, 300) + "..." : src.Description))
-                .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => src.ImageSrc_50))
+                .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => GetImageSrc(src.Id, src.ImageSrc, src.ImageSrc_50, true)))
                 .ForMember(dest => dest.Deadline, opt => opt.MapFrom(src => GetDeadline(src.DeadlineNum, src.DeadlineType)))
                 .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.Author));
 
             CreateMap<AuthorService, AuthorServiceShowModel>()
+                .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => GetImageSrc(src.Id, src.ImageSrc, src.ImageSrc_50, false)))
                 .ForMember(dest => dest.Deadline, opt => opt.MapFrom(src => GetDeadline(src.DeadlineNum, src.DeadlineType)))
                 .ForMember(dest => dest.VkRepostCode, opt => opt.ResolveUsing(src =>
                 {
@@ -115,6 +117,13 @@ namespace Mite.Infrastructure.Automapper
                 .ForMember(dest => dest.MaxDate, opt => opt.MapFrom(src => src.InitialDate))
                 .ForMember(dest => dest.CityId, opt => opt.MapFrom(src => src.City))
                 .ForMember(dest => dest.ServiceTypeId, opt => opt.MapFrom(src => src.ServiceType));
+        }
+        private string GetImageSrc(Guid id, string origin, string thumb, bool returnThumb)
+        {
+            if (Regex.IsMatch(origin, "https?://"))
+                return returnThumb ? thumb : origin;
+            else
+                return $"{ImagesPath}{id}?resize={returnThumb}";
         }
         private string GetDeadline(int num, DurationTypes type)
         {

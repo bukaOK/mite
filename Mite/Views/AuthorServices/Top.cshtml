@@ -141,11 +141,6 @@
         }).focusout(function (ev) {
             $(this).siblings('.label').removeClass('violet');
             });
-        $('#minPrice,#maxPrice').focusin(function (ev) {
-            $(this).siblings('.label').addClass('violet');
-        }).focusout(function (ev) {
-            $(this).siblings('.label').removeClass('violet');
-            });
         $('#minPrice,#maxPrice,#serviceSearch').keypress(function (ev) {
             if (ev.keyCode === 13 || ev.which === 13) {
                 SearchFilters.changeFilter();

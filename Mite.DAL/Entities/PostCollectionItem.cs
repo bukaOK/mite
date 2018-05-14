@@ -20,6 +20,7 @@ namespace Mite.DAL.Entities
         [MaxLength(300)]
         public string Description { get; set; }
         public string ContentSrc { get; set; }
+        [Obsolete("Есть кеш")]
         public string ContentSrc_50 { get; set; }
     }
 }

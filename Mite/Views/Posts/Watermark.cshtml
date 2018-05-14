@@ -1,0 +1,35 @@
+﻿@model Mite.Models.PostWatermarkModel
+
+<div class="ui modal" id="watermarkModal">
+    <i class="close button"></i>
+    <div class="header">Добавление водяного знака</div>
+    <div class="content">
+        <div class="ui stackable two column grid">
+            <div class="column">
+
+            </div>
+            <div class="column">
+                <form class="ui form">
+                    @Html.HiddenFor(x => x.WmPostId)
+                    @Html.HiddenFor(x => x.WmBase64)
+                    <div class="field">
+                        @Html.EnumDropDownListFor(x => x.Gravity, new { @class = "ui selection fluid dropdown" })
+                    </div>
+                    @Html.EditorFor(x => x.WmText)
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="actions">
+        <button class="ui primary button">Просмотр</button>
+        <button class="ui green button">Сохранить</button>
+    </div>
+</div>
+<div class="ui tiny modal" id="wmConfirmModal">
+    <div class="header">Вы уверены?</div>
+    <div class="content">
+        <p>
+            К опубликованной работе можно лишь единожды добавить водяной знак
+        </p>
+    </div>
+</div>

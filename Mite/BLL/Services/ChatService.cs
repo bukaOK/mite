@@ -158,7 +158,7 @@ namespace Mite.BLL.Services
                 var (imgSrc, compressedSrc) = await repo.RemoveAsync(id, userId);
                 if (!string.IsNullOrEmpty(imgSrc))
                 {
-                    FilesHelper.DeleteFiles(imgSrc, compressedSrc);
+                    FilesHelper.DeleteFile(imgSrc);
                 }
                 return Success;
             }

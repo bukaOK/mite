@@ -1,5 +1,6 @@
 ﻿using Mite.Attributes.DataAnnotations;
 using Mite.CodeData.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -109,30 +110,9 @@ namespace Mite.Models
 
         public bool EmailConfirmationSended { get; set; }
     }
-    public class SocialLinksModel
+    public class ExternalLinkEditModel
     {
-        [DisplayName("Вконтакте")]
-        [UIHint("LabeledTextBox")]
-        public string Vk { get; set; }
-
-        [DisplayName("Твиттер")]
-        [UIHint("LabeledTextBox")]
-        public string Twitter { get; set; }
-
-        [DisplayName("Facebook")]
-        [UIHint("LabeledTextBox")]
-        public string Facebook { get; set; }
-
-        [DisplayName("Dribbble")]
-        [UIHint("LabeledTextBox")]
-        public string Dribbble { get; set; }
-
-        [DisplayName("ArtStation")]
-        [UIHint("LabeledTextBox")]
-        public string ArtStation { get; set; }
-
-        [DisplayName("Instagram")]
-        [UIHint("LabeledTextBox")]
-        public string Instagram { get; set; }
+        public Guid? Id { get; set; }
+        public string Url { get; set; }
     }
 }

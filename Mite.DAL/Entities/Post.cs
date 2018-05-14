@@ -22,6 +22,7 @@ namespace Mite.DAL.Entities
         /// <summary>
         /// Сжатый контент
         /// </summary>
+        [Obsolete("Есть кеш")]
         public string Content_50 { get; set; }
         /// <summary>
         /// Время последнего редактирования
@@ -40,6 +41,7 @@ namespace Mite.DAL.Entities
         /// <summary>
         /// Сжатая обложка
         /// </summary>
+        [Obsolete("Есть кеш")]
         public string Cover_50 { get; set; }
         public string Description { get; set; }
         /// <summary>
@@ -57,6 +59,12 @@ namespace Mite.DAL.Entities
         /// Элементы коллекции(если работа - коллекция)
         /// </summary>
         public List<PostCollectionItem> Collection { get; set; }
+        [ForeignKey("Watermark")]
+        public Guid? WatermarkId { get; set; }
+        public Watermark Watermark { get; set; }
+        [ForeignKey("Product")]
+        public Guid? ProductId { get; set; }
+        public Product Product { get; set; }
         /// <summary>
         /// Страницы комикса(если работа - комикс/манга)
         /// </summary>

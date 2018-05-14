@@ -20,7 +20,7 @@ namespace Mite.Controllers
         /// <summary>
         /// Общая комиссия за все платежи(вывод денег) 2%.
         /// </summary>
-        private const double Comission = 0.02;
+        private const double Comission = 0.04;
 
         public CashController(AppUserManager userManager, ICashService cashService)
         {

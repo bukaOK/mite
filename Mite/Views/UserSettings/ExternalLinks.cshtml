@@ -1,0 +1,56 @@
+﻿@using Mite.Extensions
+@model IEnumerable<Mite.Models.ExternalLinkEditModel>
+
+<form class="ui form" id="linksForm">
+    @if (Model != null && Model.Count() > 0)
+    {
+        foreach (var link in Model)
+        {
+            <div class="field">
+                <div class="ui icon input">
+                    <input type="text" name="ExternalLink[]" data-id="@link.Id" placeholder="Ссылка" value="@link.Url" />
+                    <i class="times link icon" onclick="$(this).parents('.field').remove()" title="Удалить"></i>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="field">
+            <div class="ui icon input">
+                <input type="text" name="ExternalLink[]" placeholder="Ссылка" />
+                <i class="times link icon" onclick="$(this).parents('.field').remove()" title="Удалить"></i>
+            </div>
+        </div>
+    }
+    <button type="button" class="ui primary button" onclick="$(this).before($('#extLinkTmpl').html())">Добавить ссылку</button>
+    <button type="button" class="ui green button" onclick="UserSettingsApi.updateExternalLinks(this)">Сохранить</button>
+    <div class="ui error message"></div>
+    <div class="ui m-success green message">Ссылки успешно обновлены</div>
+</form>
+<script type="text/html" id="extLinkTmpl">
+    <div class="field">
+        <div class="ui icon input">
+            <input type="text" name="ExternalLink[]" placeholder="Ссылка" />
+            <i class="times link icon" onclick="$(this).parents('.field').remove()" title="Удалить"></i>
+        </div>
+    </div>
+</script>
+<script>
+    $('#linksForm').form({
+        fields: {
+            'ExternalLink[]': {
+                rules: [
+                    {
+                        type: 'empty',
+                        prompt: 'Заполните ссылку'
+                    },
+                    {
+                        type: 'regExp[^https?:\/\/[a-zA-Z\.\/]+]',
+                        prompt: 'Неверный формат ссылки'
+                    }
+                ]
+            }
+        }
+    });
+</script>

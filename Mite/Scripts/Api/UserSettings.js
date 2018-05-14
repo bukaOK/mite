@@ -197,5 +197,37 @@
                 $btn.removeClass('loading disabled');
             }
         });
+    },
+    updateExternalLinks: function (btn) {
+        var inputs = [],
+            $btn = $(btn),
+            $form = $btn.parents('.form');
+        if (!$form.form('validate form')) {
+            return false;
+        }
+        $btn.addClass('loading disabled');
+        $('[name="ExternalLink[]"]').each(function () {
+            var input = this;
+            if (input.value) {
+                inputs.push({
+                    Url: input.value,
+                    Id: input.dataset.id
+                });
+            }
+        });
+        var data = {
+            models: inputs
+        };
+        return $.post('/user/settings/updatelinks', data, function (resp) {
+            if (resp.status === Settings.apiStatuses.validationError) {
+                $form.form('add errors', resp.data);
+            } else {
+                $form.addClass('m-success').removeClass('error');
+            }
+        }).fail(function (jqXhr) {
+            $form.form('add errors', ['Внутренняя ошибка']);
+        }).always(function () {
+            $btn.removeClass('loading disabled');
+        });
     }
 }

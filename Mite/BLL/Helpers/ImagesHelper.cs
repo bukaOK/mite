@@ -4,9 +4,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Web;
 using System.Web.Hosting;
 
@@ -14,9 +12,41 @@ namespace Mite.BLL.Helpers
 {
     public static class ImagesHelper
     {
+        public static string WatermarkFontPath => HostingEnvironment.MapPath("/Files/roboto.ttf");
+
         private const string CompressedPostfix = "compressed";
         private static readonly string ImagesFolder = HostingEnvironment.ApplicationVirtualPath + "Public/images/";
 
+        public static byte[] DrawWatermark(int fontSize, string text, bool invert, string fontFamily = null)
+        {
+            if (fontFamily == null)
+                fontFamily = WatermarkFontPath;
+            text = text.ToUpper();
+            var color = invert ? Color.FromArgb(128, Color.White) : Color.FromArgb(128, Color.Black);
+            const int kerning = 6;
+            using (var measure = new MagickImage(Color.Transparent, 1, 1))
+            {
+                measure.Settings.FontFamily = fontFamily;
+                measure.Settings.FontWeight = FontWeight.Light;
+                measure.Settings.FontPointsize = fontSize;
+                measure.Settings.TextKerning = kerning;
+                var metric = measure.FontTypeMetrics(text);
+                using (var img = new MagickImage(Color.Transparent, (int)metric.TextWidth, (int)metric.TextHeight + 5))
+                {
+                    new Drawables()
+                        .Font(fontFamily)
+                        .StrokeColor(color)
+                        .TextKerning(kerning)
+                        .FillColor(color)
+                        .TextAlignment(TextAlignment.Center)
+                        .FontPointSize(fontSize)
+                        .Text(metric.TextWidth / 2, fontSize, text)
+                        .Draw(img);
+
+                    return img.ToByteArray(MagickFormat.Png);
+                }
+            }
+        }
         public static bool IsAnimatedImage(string path)
         {
             if(Path.GetExtension(path) == ".gif")

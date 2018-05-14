@@ -21,6 +21,7 @@ namespace Mite.DAL.Entities
         /// </summary>
         public int Page { get; set; }
         public string ContentSrc { get; set; }
+        [Obsolete("Есть кеш")]
         public string ContentSrc_50 { get; set; }
     }
 }

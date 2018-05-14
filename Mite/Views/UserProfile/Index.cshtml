@@ -1,6 +1,5 @@
 ﻿@using Mite.CodeData.Enums
 @using Mite.Helpers
-@using Microsoft.AspNet.Identity
 @model Mite.Models.ProfileModel
 
 @{
@@ -11,7 +10,7 @@
     {
         { "og:title", ViewBag.Title },
         { "og:type", "profile" },
-        { "og:image", $"http://{Request.Url.Host}/{Model.AvatarSrc}" },
+        { "og:image", $"{Request.Url.Scheme}://{Request.Url.Host}/{Model.AvatarSrc}" },
         { "og:url", Url.Action("Index", "UserProfile", new{name = Model.UserName}, "http") }
     };
 
@@ -30,6 +29,20 @@
         [followers].grid.tab>.column, [followings].grid.tab>.column{
             padding: 0.5rem;
         }
+        .link{
+            color: rgba(0,0,0,0.8);
+            transition: color linear 0.3s;
+        }
+        .link:hover{
+            color: #b540c6;
+        }
+        .ui.dropdown#sortDropdown .item[data-value="3"]{
+            display: none;
+        }
+        #avatar-img{
+            width: 150px;
+            height: 150px;
+        }
     </style>
 }
 <div class="ui profile center aligned three column stackable grid segment">
@@ -45,11 +58,14 @@
         </div>
         <div class="column">
             <div class="ui centered circular image" id="avatar-img">
-                <div class="ui center aligned dimmer">
-                    <div class="content">
-                        <a class="ui huge black circular avatar icon button" href="@Url.Action("ChangeAvatar", "UserSettings")"><i class="photo icon"></i></a>
+                @if(currentUserName == pageUserName)
+                {
+                    <div class="ui center aligned dimmer">
+                        <div class="content">
+                            <a class="ui huge black circular avatar icon button" href="@Url.Action("ChangeAvatar", "UserSettings")"><i class="photo icon"></i></a>
+                        </div>
                     </div>
-                </div>
+                }
                 <img src="@Model.AvatarSrc" width="150" height="150" />
             </div>
             <h2 class="ui header">
@@ -58,7 +74,13 @@
                     @Model.About
                 </span>
             </h2>
-            @SocialServicesHelper.RenderSocialLinksForProfile(Model.SocialLinks)
+            @foreach(var link in Model.ExternalLinks)
+            {
+                <a href="@link.Url" class="link" target="_blank">
+                    <i class="@link.IconClass icon"></i>
+                    @link.ShowUrl
+                </a><br />
+            }
         </div>
         <div class="left aligned column">
             @if (User.Identity.IsAuthenticated)
@@ -104,7 +126,7 @@
     </div>
     <div class="stackable mobile only row">
         <div class="column">
-            <img class="ui centered circular image" src="@Model.AvatarSrc" width="150" />
+            <img class="ui centered circular image" src="@Model.AvatarSrc" width="150" height="150" />
             <h2 class="ui header">
                 @Model.UserName
                 <span class="sub header">
@@ -196,15 +218,17 @@
     <a class="item" id="followers-tab" data-tab="followers">Подписчики</a>
     <a class="item" data-tab="favorites">Избранное</a>
     <a class="item" data-tab="services">Услуги</a>
-    <div class="right item">
+    <a class="item" data-tab="products">Товары</a>
+    <div class="right item" id="postFilter">
         <i class="filter icon"></i>
         Сначала&nbsp;
-        <div class="ui inline dropdown" id="sortDropDown">
+        <div class="ui inline dropdown" id="sortDropdown">
             <div class="text">новые</div>
             <i class="dropdown icon"></i>
             <div class="menu">
                 <div class="active item" data-text="новые" data-value="@((byte)SortFilter.New)">Новые</div>
                 <div class="item" data-text="высший рейтинг" data-value="@((byte)SortFilter.Popular)">Высший рейтинг</div>
+                <div class="item" data-text="надежные" data-value="@((byte)SortFilter.Reliable)">Надежные</div>
                 <div class="item" data-text="старые" data-value="@((byte)SortFilter.Old)">Старые</div>
             </div>
         </div>
@@ -245,6 +269,7 @@
         <div class="ui tab stackable three column basic segment grid" data-tab="followers"></div>
         <div class="ui tab stackable three column basic segment grid" data-tab="followings"></div>
         <div class="ui tab stackable two column basic segment grid" data-tab="services"></div>
+        <div class="ui tab stackable two column basic segment grid" data-tab="products"></div>
         <div class="ui tab stackable two column basic segment grid" data-tab="favorites"></div>
     }
     else
@@ -252,6 +277,7 @@
         <div class="ui tab four column doubling basic segment grid" data-tab="followers"></div>
         <div class="ui tab four column doubling basic segment grid" data-tab="followings"></div>
         <div class="ui tab three column doubling basic segment grid" data-tab="services"></div>
+        <div class="ui tab four column basic segment grid" data-tab="products"></div>
         <div class="ui tab stackable four column basic segment grid" data-tab="favorites"></div>
     }
     <div class="dot-loader-wrapper">
@@ -283,9 +309,10 @@ else
             <div class="thirteen wide column">
                 @if (isMobileDevice)
                 {
-                    <div class="ui tab two column stackable basic segment grid" data-tab="posts/published"></div>
+                    <div class="ui tab stackable two column basic segment grid" data-tab="posts/published"></div>
                     <div class="ui doubling tab three column basic segment grid" data-tab="followers"></div>
                     <div class="ui tab stackable two column basic segment grid" data-tab="services"></div>
+                    <div class="ui tab stackable two column basic segment grid" data-tab="products"></div>
                     <div class="ui tab stackable two column basic segment grid" data-tab="favorites"></div>
                 }
                 else
@@ -293,6 +320,7 @@ else
                     <div class="ui tab three column basic segment grid" data-tab="posts/published"></div>
                     <div class="ui tab four column basic segment grid" data-tab="followers"></div>
                     <div class="ui tab three column basic segment grid" data-tab="services"></div>
+                    <div class="ui tab three column basic segment grid" data-tab="products"></div>
                     <div class="ui tab stackable four column basic segment grid" data-tab="favorites"></div>
                 }
                 <div class="dot-loader-wrapper">
@@ -334,12 +362,8 @@ else
 <script>
     var delPostId;
     var isOwner = @((currentUserName == pageUserName).ToString().ToLower());
-    function getCurrentTab(){
-        var tab = window.location.hash.replace('#/', '').replace('#', '');
-        if(tab == ''){
-            return $('.ui.tabs .item.active').data('tab');
-        }
-        return tab;
+    function changeTab() {
+
     }
     function publishPost(postId){
         $.ajax({
@@ -502,14 +526,19 @@ else
             tmplSelector: '#servicesTmpl',
             emptyTmplSelector: '#emptyServicesTmpl'
         });
-        TabFilter.Tabs.items.push(followersTab, servicesTab, favoritesTab);
+        var productsTab = new Tab({
+            parentTab: null,
+            name: 'products',
+            isActive: false,
+            tmplSelector: '#productsTmpl',
+            emptyTmplSelector: '#emptyProductsTmpl'
+        });
+        TabFilter.Tabs.items.push(followersTab, servicesTab, favoritesTab, productsTab);
         TabFilter.Filters.add({
             name: 'sort',
-            elem: $('#sortDropDown'),
+            elem: $('#sortDropdown'),
             getVal: function(){
-                return this.elem.dropdown('get value') == ''
-                    ? '@((byte)SortFilter.New)' 
-                    : this.elem.dropdown('get value');
+                return this.elem.dropdown('get value') === '' ? '@((byte)SortFilter.New)' : this.elem.dropdown('get value');
             },
             updateState: function(newVal){
                 this.elem.dropdown('set selected', newVal);
@@ -535,9 +564,6 @@ else
                             } else{
                                 elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.LastEdit).getTime());
                             }
-                            if (elem.FullWidth) {
-                                
-                            }
                         });
                     }
                     var tmpl = $.templates(tab.tmplSelector);
@@ -561,7 +587,7 @@ else
                             grids[i].elem.masonry('layout');
                             $('.dot-loader-wrapper').removeClass('active');
                             resp.forEach(function(elem){
-                                $('.column[data-post-id="' + elem.Id + '"] .dropdown, .column[data-service-id="' + elem.Id + '"] .dropdown')
+                                $('#post' + elem.Id + ' .dropdown.button,#service' + elem.Id + ' .dropdown.button,#prod' + elem.Id + ' .dropdown.button')
                                     .dropdown({
                                         action: 'hide',
                                         on: 'hover'
@@ -591,7 +617,7 @@ else
                 TabFilter.loadNext();
             }
         });
-        $('#sortDropDown').dropdown({
+        $('#sortDropdown,#productSortDropdown,#serviceSortDropdown').dropdown({
             onChange: function(){
                 TabFilter.refresh();
             }

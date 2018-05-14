@@ -7,8 +7,9 @@ namespace Mite.Tests.BLL.Services
     public class PostsServiceTest
     {
         [TestMethod]
-        public void TestMethod1()
+        public void AddPostTest()
         {
+
         }
     }
 }

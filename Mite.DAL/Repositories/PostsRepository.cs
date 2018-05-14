@@ -17,13 +17,26 @@ namespace Mite.DAL.Repositories
 {
     public sealed class PostsRepository : Repository<Post>
     {
-
         public PostsRepository(AppDbContext db) : base(db)
         {
         }
         public Task<Post> GetWithCollectionsAsync(Guid id)
         {
             return Table.AsNoTracking().Include(x => x.Collection).Include(x => x.ComicsItems).FirstOrDefaultAsync(x => x.Id == id);
+        }
+        public async Task<Post> GetWithWatermarkAsync(Guid id)
+        {
+            var query = "select * from dbo.\"Posts\" posts left outer join dbo.\"Watermarks\" wat on wat.\"Id\"=posts.\"WatermarkId\" " +
+                "where posts.\"Id\"=@id";
+            return (await Db.QueryAsync<Post, Watermark, Post>(query, (post, watermark) =>
+            {
+                post.Watermark = watermark;
+                return post;
+            }, new { id })).FirstOrDefault();
+        }
+        public async Task<Post> GetByProductAsync(Guid productId)
+        {
+            return await Table.FirstOrDefaultAsync(x => x.ProductId == productId);
         }
         public override async Task UpdateAsync(Post entity)
         {
@@ -98,9 +111,10 @@ namespace Mite.DAL.Repositories
         public async Task<IEnumerable<PostDTO>> GetByUserAsync(string userId, PostTypes postType, SortFilter sort)
         {
             var query = "select posts.*, (select count(*) from dbo.\"Comments\" as comments where comments.\"PostId\"=posts.\"Id\") " +
-                "as \"CommentsCount\", tags.* from dbo.\"Posts\" as posts " +
+                "as \"CommentsCount\", products.\"Price\", tags.* from dbo.\"Posts\" as posts " +
                 "left outer join dbo.\"TagPosts\" as tag_posts on tag_posts.\"Post_Id\"=posts.\"Id\" " +
-                "left outer join dbo.\"Tags\" as tags on tags.\"Id\"=tag_posts.\"Tag_Id\" ";
+                "left outer join dbo.\"Tags\" as tags on tags.\"Id\"=tag_posts.\"Tag_Id\" " +
+                "left outer join dbo.\"Products\" products on products.\"Id\"=posts.\"ProductId\" ";
             if (postType == PostTypes.Favorite)
                 query += "right outer join dbo.\"FavoritePosts\" as favorites on favorites.\"PostId\"=posts.\"Id\" where favorites.\"UserId\"=@userId ";
             else
@@ -117,7 +131,8 @@ namespace Mite.DAL.Repositories
                     query += "order by posts.\"PublishDate\" asc";
                     break;
                 default:
-                    throw new ArgumentException("Неизвестный тип сортировки");
+                    query += "order by posts.\"PublishDate\" desc";
+                    break;
             }
             query += ";";
             var posts = new List<PostDTO>();
@@ -145,6 +160,11 @@ namespace Mite.DAL.Repositories
         public Task<Post> GetWithTagsAsync(Guid id)
         {
             return DbContext.Posts.Include(x => x.Tags).Include(x => x.Collection).Include(x => x.ComicsItems).FirstOrDefaultAsync(x => x.Id == id);
+        }
+        public Task<Post> GetFullAsync(Guid id)
+        {
+            return Table.AsNoTracking().Include(x => x.User).Include(x => x.Product)
+                .Include(x => x.Tags).Include(x => x.Collection).Include(x => x.ComicsItems).FirstOrDefaultAsync(x => x.Id == id);
         }
         /// <summary>
         /// Возвращает пост с тегами и комментариями

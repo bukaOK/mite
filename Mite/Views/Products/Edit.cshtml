@@ -1,0 +1,35 @@
+﻿@model Mite.Models.ProductEditModel
+
+<div id="productEdit" class="@Html.Raw(Model.Id != null ? "active" : "")">
+    <div class="field">
+        @Html.HiddenFor(x => x.BonusFormat)
+        @Html.HiddenFor(x => x.BonusBase64)
+        @Html.EditorFor(x => x.Price, new { WithLabel = true })
+        @if (!string.IsNullOrEmpty(Model.BonusBase64))
+        {
+            <button type="button" class="ui red button" id="removeBonusBtn">Удалить файл бонуса</button>
+        }
+        <button type="button" class="ui primary button" id="loadBonusBtn">
+            Загрузить бонус
+        </button>
+        <input type="file" onchange="Products.BonusFile.inputHandler(event)" id="bonusFile" />
+        <div class="ui tiny violet progress" id="BonusProgress">
+            <div class="bar"></div>
+        </div>
+        @Html.EditorFor(x => x.BonusDescription, new { WithLabel = true })
+        @Html.EditorFor(x => x.ForAuthors)
+    </div>
+    <div class="field"></div>
+</div>
+<script>
+    $(function () {
+        $('#removeBonusBtn').click(function () {
+            $(this).hide();
+            $('#BonusBase64').val('');
+        });
+        $('#loadBonusBtn').click(function () {
+            $('#bonusFile').click();
+        });
+        $('#ForAuthors').parent().checkbox();
+    });
+</script>

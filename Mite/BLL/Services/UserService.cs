@@ -45,9 +45,6 @@ namespace Mite.BLL.Services
         Task<IdentityResult> UpdateUserAvatarAsync(string imagesFolder, HttpPostedFileBase img, string userId);
         Task<ProfileModel> GetUserProfileAsync(string name, string currentUserId);
         LandingModel GetLandingModel();
-        SocialLinksModel GetSocialLinks(string userId);
-        Task<SocialLinksModel> GetSocialLinksAsync(string userId);
-        Task UpdateSocialLinksAsync(SocialLinksModel model, string userId);
         /// <summary>
         /// Пересчитать надежность пользователя
         /// </summary>
@@ -58,13 +55,14 @@ namespace Mite.BLL.Services
     {
         private readonly AppUserManager userManager;
         private readonly AppSignInManager signInManager;
-        private const string InviteSecKey = "{257A1E31-DE0F-48A0-81FF-DAC65BE56442}";
+        private readonly IExternalLinksService linksService;
 
         public UserService(AppUserManager userManager, AppSignInManager signInManager, IUnitOfWork unitOfWork,
-            ILogger logger): base(unitOfWork, logger)
+            ILogger logger, IExternalLinksService linksService): base(unitOfWork, logger)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.linksService = linksService;
         }
 
         public async Task<SignInStatus> LoginAsync(LoginModel model)
@@ -200,7 +198,7 @@ namespace Mite.BLL.Services
             if (user == null)
                 return null;
             var userModel = Mapper.Map<ProfileModel>(user);
-            userModel.SocialLinks = await GetSocialLinksAsync(user.Id);
+            userModel.ExternalLinks = await linksService.GetByUserForShowAsync(user.Id);
             userModel.IsAuthor = await userManager.IsInRoleAsync(user.Id, RoleNames.Author);
 
             if (userModel.IsAuthor)
@@ -220,52 +218,6 @@ namespace Mite.BLL.Services
                 userModel.BlackListed = await blackListRepo.IsInBlackListAsync(user.Id, currentUserId);
             }
             return userModel;
-        }
-
-        public SocialLinksModel GetSocialLinks(string userId)
-        {
-            var repo = Database.GetRepo<SocialLinksRepository, SocialLinks>();
-            var socialLinks = repo.Get(userId);
-            if (socialLinks == null)
-            {
-                socialLinks = new SocialLinks
-                {
-                    UserId = userId
-                };
-            }
-            return Mapper.Map<SocialLinksModel>(socialLinks);
-        }
-
-        public async Task<SocialLinksModel> GetSocialLinksAsync(string userId)
-        {
-            var repo = Database.GetRepo<SocialLinksRepository, SocialLinks>();
-            var socialLinks = await repo.GetAsync(userId);
-            if (socialLinks == null)
-            {
-                socialLinks = new SocialLinks
-                {
-                    UserId = userId
-                };
-            }
-            return Mapper.Map<SocialLinksModel>(socialLinks);
-        }
-
-        public async Task UpdateSocialLinksAsync(SocialLinksModel model, string userId)
-        {
-            var repo = Database.GetRepo<SocialLinksRepository, SocialLinks>();
-
-            var socialLinks = await repo.GetAsync(userId);
-            if(socialLinks == null)
-            {
-                socialLinks = Mapper.Map<SocialLinks>(model);
-                socialLinks.UserId = userId;
-                await repo.AddAsync(socialLinks);
-            }
-            else
-            {
-                Mapper.Map(model, socialLinks);
-                await repo.UpdateAsync(socialLinks);
-            }
         }
 
         public async Task<DataServiceResult> RecountReliabilityAsync(string userId)

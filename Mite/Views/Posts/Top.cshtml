@@ -275,16 +275,6 @@
                     }
                 },
                 {
-                    name: 'postName',
-                    selector: '#postsSearch',
-                    getVal: function () {
-                        return $(this.selector).val().split('#')[0];
-                    },
-                    updateState: function (newVal) {
-                        $(this.selector).val(newVal);
-                    }
-                },
-                {
                     name: 'sortFilter',
                     selector: '#sortType',
                     getVal: function () {

@@ -29,7 +29,8 @@ namespace Mite.DAL.Migrations
             var initializers = new List<IInitializer>
             {
                 new StartInitializer(userManager, roleManager, context),
-                new ClientRoleInitializer(roleManager, context)
+                new ClientRoleInitializer(roleManager, context),
+                new ExternalLinksInitializer(context)
             };
             foreach(var init in initializers)
             {

@@ -1,0 +1,286 @@
+﻿@using Mite.Helpers
+@model Mite.Models.ProductTopFilterModel
+@{
+    ViewBag.Title = "Картины, фотографии, и другие товары из сфер искусства";
+    var isMobile = ViewHelper.IsMobileDevice(Request);
+}
+<div class="active loader-wrapper"><div class="ui active loader"></div></div>
+<div class="ui stackable menu">
+    <div class="item">
+        <i class="filter icon"></i>
+        Сначала&nbsp;
+        <div class="ui inline dropdown" id="sortType">
+            <div class="text">дешевые</div>
+            <i class="dropdown icon"></i>
+            <div class="menu">
+                <div class="active item" data-text="дешевые" data-value="@((byte)ProductFilter.Cheap)">Дешевые</div>
+                <div class="item" data-text="дорогие" data-value="@((byte)ProductFilter.Expensive)">Дорогие</div>
+                <div class="item" data-text="высший рейтинг" data-value="@((byte)ProductFilter.Popular)">Высший рейтинг</div>
+            </div>
+        </div>
+    </div>
+    <div class="item">
+        <div class="ui checkbox" id="forAuthorsFilter">
+            <input type="checkbox" />
+            <label>Для авторов</label>
+        </div>
+    </div>
+    <div class="item">
+        <div class="ui inline dropdown" id="cityFilter">
+            @Html.HiddenFor(x => x.City)
+            <i class="building icon"></i>
+            <span class="text">Выберите город</span>
+            <i class="dropdown icon"></i>
+            <div class="menu">
+                <div class="ui icon search input">
+                    <i class="search icon"></i>
+                    <input type="text" placeholder="Введите название..." />
+                </div>
+                <div class="scrolling menu">
+                    <div class="item" data-value="">Выберите город</div>
+                    @foreach (var city in Model.Cities)
+                    {
+                        if (city.Selected) {<div class="active item" data-value="@city.Value">@city.Text</div>}
+                        else { <div class="item" data-value="@city.Value">@city.Text</div> }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="right item" id="searchItem">
+        <div class="ui transparent icon input">
+            <input type="text" placeholder="Название или описание работы" id="productsSearch" role="search" onfocus="$('#searchItem').addClass('maximised')"
+                   onblur="$('#searchItem').removeClass('maximised')" />
+            <i class="search link icon" onclick="SearchFilters.changeFilter()"></i>
+        </div>
+    </div>
+</div>
+<div class="ui stackable grid">
+    <div class="three wide computer four wide tablet column">
+        <div class="ui segment" id="priceSegment">
+            <h3 class="ui dividing header">Цена</h3>
+            <div class="ui fluid small labeled input" style="margin-bottom: 8px;" title="Нажмите Enter для поиска">
+                <label for="minPrice" class="ui label">От</label>
+                <input type="number" placeholder="@Model.MinPrice" id="minPrice" />
+            </div>
+            <div class="ui fluid small right labeled input" title="Нажмите Enter для поиска">
+                <input type="number" placeholder="@Model.MaxPrice" id="maxPrice" />
+                <label for="maxPrice" class="ui label">До</label>
+            </div>
+        </div>
+        <div class="ui top-tags segment">
+            <div class="ui dividing medium header">
+                Теги
+                <a class="ui blue label" onclick="showTagsModal()" title="Показать все теги">все</a>
+            </div>
+            @foreach (var tag in Model.Tags)
+            {<a class="ui label" onclick="loadTag('#@tag')">@tag</a>}
+        </div>
+        <div id="vk_groups" style="width: 100%"></div>
+        <div class="ui segment">
+            <h4 class="ui dividing header">Реклама</h4>
+            <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+            <!-- TopAd -->
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-7675079294669395"
+                 data-ad-slot="2018290469"
+                 data-ad-format="auto"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+    </div>
+    <div class="thirteen wide column">
+        @if (isMobile)
+        {
+            <div class="ui stackable products two column grid"></div>
+        }
+        else
+        {
+            <div class="ui products three column grid"></div>
+        }
+    </div>
+</div>
+@{ Html.RenderPartial("_Templates"); }
+@Scripts.Render("~/bundles/grid", "~/bundles/insertion")
+<script>
+    $(function () {
+        var userCardTmpl = $.templates('#miniUserCardTmpl'),
+            grid = $('.products.grid').masonry();
+        $('#sortType').dropdown({
+            onChange: function () {
+                if (SearchFilters.initialized) {
+                    SearchFilters.changeFilter();
+                }
+            }
+        });
+        $('#cityFilter').dropdown({
+            forceSelection: false,
+            match: 'text',
+            onChange: function () {
+                if (SearchFilters.initialized) {
+                    SearchFilters.changeFilter();
+                }
+            }
+        });
+        $('input[type="number"]').focusin(function (ev) {
+            $(this).siblings('.label').addClass('violet');
+        }).focusout(function (ev) {
+            $(this).siblings('.label').removeClass('violet');
+        });
+        $('#minPrice,#maxPrice,#serviceSearch').keypress(function (ev) {
+            if (ev.keyCode === 13 || ev.which === 13) {
+                SearchFilters.changeFilter();
+            }
+        });
+        $('#forAuthorsFilter').checkbox({
+            onChange: function () {
+                SearchFilters.changeFilter();
+            }
+        });
+        insertionQ('.post-item').every(function (elem) {
+            var $elem = $(elem);
+            if ($elem.hasClass('hide-adult-content')) {
+                $elem.dimmer({
+                    closable: false
+                }).dimmer('show');
+            }
+            $elem.find('a.username').popup({
+                position: 'bottom left',
+                popup: $(this).siblings('.user-card.popup')[0],
+                variation: 'basic',
+                hoverable: true,
+                inline: true,
+                transition: 'slide top',
+                preserve: true,
+                onShow: function (item) {
+                    $.getJSON('/userprofile/getuserprofile', 'name=' + item.dataset.username, function (resp) {
+                        var respData = resp.data;
+                        respData.PostsCountWord = ViewHelper.getWordCase(respData.PostsCount, 'Работа', 'Работы', 'Работ');
+                        respData.FollowersWord = ViewHelper.getWordCase(respData.FollowersCount, 'Подписка', 'Подписки', 'Подписок');
+                        $(item).popup('change content', userCardTmpl.render(resp.data))
+                            .popup('reposition').addClass('initialized');
+                    });
+                }
+            });
+        });
+        SearchFilters.init({
+            beforeLoad: function () {
+                $('.loader-wrapper').addClass('active');
+            },
+            onSuccess: function (resp) {
+                resp.forEach(function (elem) {
+                    elem.PublishDate += elem.PublishDate[elem.PublishDate - 1] === 'Z' ? '' : 'Z';
+                    elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.PublishDate).getTime());
+                    if (elem.User.UserName.length > 15) {
+                        elem.User.ShowName = elem.User.UserName.substr(0, 12) + '...';
+                    } else {
+                        elem.User.ShowName = elem.User.UserName;
+                    }
+                });
+                $('.products.grid .loader').remove();
+                if (resp.length > 0) {
+                    var tmpl = $.templates('#productTmpl');
+                    var html = tmpl.render(resp);
+
+                    if (SearchFilters._loadNextPage) {
+                        grid.append(html);
+                    } else {
+                        grid.html(html);
+                    }
+                }
+                else if (SearchFilters._page <= 1) {
+                    grid.html($('#emptyProductTmpl').html());
+                }
+
+                grid.masonry('reloadItems').imagesLoaded(function () {
+                    $('.loader-wrapper').removeClass('active');
+                    grid.masonry('layout');
+                }).progress(function () {
+                    grid.masonry('layout');
+                });
+            },
+            onError: function () {
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Ошибка сервера.'
+                });
+                $('.loader-wrapper').removeClass('active');
+            },
+            ajax: {
+                url: '@Url.Action("Top", "Products")'
+            },
+            filters: [
+                {
+                    name: 'tags',
+                    selector: '#productsSearch',
+                    getVal: function () {
+                        var arr = $(this.selector).val().split('#')
+                        arr.shift();
+                        return arr.join();
+                    },
+                    updateState: function (newVal) {
+                        var arr = newVal.split(',');
+                        var str = arr.length > 0 ? '#' + arr.join('#') : '';
+                        $(this.selector).val(str);
+                    }
+                },
+                {
+                    name: 'minPrice',
+                    selector: '#minPrice',
+                    getVal: function () {
+                        return $(this.selector).val();
+                    },
+                    updateState: function (newVal) {
+                        $(this.selector).val(newVal);
+                    }
+                },
+                {
+                    name: 'maxPrice',
+                    selector: '#maxPrice',
+                    getVal: function () {
+                        return $(this.selector).val();
+                    },
+                    updateState: function (newVal) {
+                        $(this.selector).val(newVal);
+                    }
+                },
+                {
+                    name: 'sortFilter',
+                    selector: '#sortType',
+                    getVal: function () {
+                        return $(this.selector).dropdown('get value') == ''
+                            ? '@((byte)ProductFilter.Cheap)' : $(this.selector).dropdown('get value');
+                    },
+                    updateState: function (newVal) {
+                        $(this.selector).dropdown('set selected', newVal);
+                    }
+                },
+                {
+                    name: 'city',
+                    selector: '#City',
+                    getVal: function () {
+                        return $(this.selector).val();
+                    },
+                    updateState: function (newVal) {
+                        $('#cityFilter').dropdown('set selected', newVal);
+                    }
+                },
+                {
+                    name: 'forAuthors',
+                    selector: '#forAuthorsFilter',
+                    getVal: function () {
+                        return $(this.selector).checkbox('is checked');
+                    },
+                    updateState: function (newVal) {
+                        $(this.selector).checkbox('set checked', newVal === 'true');
+                    }
+                }
+            ]
+        });
+        Scrolling.init('footer', function () {
+            if (!$('.loader-wrapper').hasClass('active')) {
+                return SearchFilters.loadNext();
+            }
+        });
+    });
+</script>

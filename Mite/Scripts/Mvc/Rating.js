@@ -95,7 +95,7 @@ var RatingMvc = {
                     settings.rateObj.dataset.fullRating = newPostRating;
                     
                 } else {
-                    $("#post-rating").text("(" + newPostRating + ")").data('rating', newPostRating);
+                    $("#post-rating").text("(" + newPostRating + ")")[0].dataset = newPostRating;
                 }
                 settings.rateObj.dataset.rating = settings.rateValue;
             }

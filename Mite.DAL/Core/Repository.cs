@@ -121,6 +121,7 @@ namespace Mite.DAL.Core
 
         public DbContextTransaction BeginTransaction()
         {
+            //return Db.BeginTransaction();
             return DbContext.Database.BeginTransaction();
         }
     }

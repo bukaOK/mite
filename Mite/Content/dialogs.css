@@ -174,7 +174,22 @@
 /*dialog-area*/
 .dialog-area {
     min-height: 40px;
+    margin: 0;
+    -webkit-appearance: none;
+    padding: .78571429em 1em;
+    background: #fff;
+    border: 2px solid #e8e8e8;
+    outline: none;
+    color: rgba(0,0,0,.6);
+    border-radius: .28571429rem;
+    transition: color .3s ease,border-color .3s ease,background-color .3s ease,box-shadow .3s ease;
+    font-size: 1em;
+    line-height: 1.2857;
 }
+.dialog-area:focus {
+    border-color: #ab30bd;
+}
+
 /*attachments*/
 #attModal .basic.segment{
     padding-top: 0;

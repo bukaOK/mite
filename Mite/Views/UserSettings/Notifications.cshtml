@@ -16,9 +16,12 @@
     using(Html.BeginForm("InitExternalAuth", "Account", new { returnUrl = Request.CurrentExecutionFilePath }, FormMethod.Post, new { @class = "ui form" }))
     {
         @Html.AntiForgeryToken()
-        <button type="submit" class="ui vk button" name="provider" value="@VkSettings.DefaultAuthType" title="Чтобы получать уведомления ВКонтакте, необходимо войти">
-            <i class="vk icon"></i>Войти ВКонтакте
-        </button>
+        <div class="field">
+            <label>Уведомления о заказах ВКонтакте</label>
+            <button type="submit" class="ui vk button" name="provider" value="@VkSettings.DefaultAuthType" title="Чтобы получать уведомления ВКонтакте, необходимо войти">
+                <i class="vk icon"></i>Войти ВКонтакте
+            </button>
+        </div>
     }
 }
 <script>

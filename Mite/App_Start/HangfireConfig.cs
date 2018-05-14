@@ -16,8 +16,10 @@ using Mite.ExternalServices.Google;
 using NLog;
 using Owin;
 using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Web.Hosting;
 
 namespace Mite
 {
@@ -37,6 +39,7 @@ namespace Mite
             });
             app.UseHangfireServer();
             RecurringJob.AddOrUpdate(() => LoadAdSenseIncome(), Cron.Daily);
+            RecurringJob.AddOrUpdate(() => ClearImagesCache(), Cron.Minutely);
         }
         /// <summary>
         /// Раздаем заработок за день пользователям
@@ -77,6 +80,18 @@ namespace Mite
                 if (incomePart <= 0 || incomePart == double.NaN)
                     continue;
                 cashService.AdSensePay(author.Id, incomePart * authorsIncome, incomeDay);
+            }
+        }
+        public static void ClearImagesCache()
+        {
+            var cacheDir = HostingEnvironment.MapPath(PathConstants.VirtualImageCacheFolder);
+            var cacheLifetime = new TimeSpan(1, 0, 0);
+
+            foreach(var dir in Directory.EnumerateDirectories(cacheDir))
+            {
+                var info = new DirectoryInfo(dir);
+                if (DateTime.UtcNow - info.CreationTimeUtc < cacheLifetime)
+                    info.Delete(true);
             }
         }
     }

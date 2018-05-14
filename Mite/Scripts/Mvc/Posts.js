@@ -34,6 +34,7 @@
     /**
      * Добавляет страницу комикса
      * @param {HTMLElement} addBtn кнопка добавления
+     * @returns {JQuery<HTMLElement>}
     */
     addComicsItem: function (addBtn) {
         var self = this;
@@ -94,37 +95,101 @@
     },
     Api: {
         /**
+         * 
+         */
+        saveImage: function (isPublished, url, postId) {
+            var $saveBtn = $('#save-btn'),
+                $form = $saveBtn.parents('.form'),
+                $resultMsg = $('#result-msg'),
+                postType = isPublished ? 'Published' : 'Drafts',
+                model = {
+                    WatermarkId: $('#WatermarkId').val(),
+                    ProductId: $('#ProductId').val(),
+                    Header: $('#Header').val(),
+                    Content: $('#Content').val(),
+                    Description: $('#Description').val(),
+                    ContentType: 'Image',
+                    Type: postType,
+                    Id: postId,
+                    Tags: $('#Tags').val().split(',')
+                }, reqSize = model.Content.length;
+            if (isPublished) {
+                model.PublishDate = new Date().toISOString();
+            }
+            if ($('#WmNeedCheck').checkbox('is checked')) {
+                model.Watermark = {
+                    WmPath: $('#WmPath').val(),
+                    Gravity: $('#Gravity').val(),
+                    FontSize: $('#FontSize').val(),
+                    WmText: $('#WmText').val(),
+                    Inverted: $('#invertCheck').checkbox('is checked'),
+                    UseCustomImage: $('#UseCustomImage').val()
+                };
+                if (model.Watermark.WmPath)
+                    reqSize += model.Watermark.WmPath.length;
+            }
+            if ($('#ProdNeedCheck').checkbox('is checked')) {
+                model.Product = {
+                    Id: $('#ProductId').val(),
+                    Price: $('#Price').val(),
+                    BonusBase64: $('#BonusBase64').val(),
+                    BonusDescription: $('#BonusDescription').val(),
+                    BonusFormat: $('#BonusFormat').val(),
+                    ForAuthors: $('#ForAuthors').parent().checkbox('is checked')
+                };
+            }
+            if (reqSize / 1024 / 1024 > 50) {
+                $form.form('add errors', ['Слишком большой размер запроса, добавьте файлы с меньшим размером.']);
+                return;
+            }
+            $saveBtn.addClass('loading disabled');
+            return $.post(url, model, function (resp) {
+                if (resp.status === Settings.apiStatuses.validationError) {
+                    if (resp.message) {
+                        var errorStr = 'Ошибка при сохранении: ' + resp.message;
+                        $('#imgPostForm').form('add errors', [errorStr]);
+                    } else {
+                        $('#imgPostForm').form('add errors', resp.data);
+                    }
+                } else {
+                    iziToast.success({
+                        title: 'Успешно!',
+                        message: 'Работа сохранена.'
+                    });
+                    location.reload();
+                }
+            }).fail(function () {
+                $('#imgPostForm').form('add errors', ['Ошибка во время добавления работы']);
+            }).always(function () {
+                $saveBtn.removeClass('loading disabled');
+                $resultMsg.removeClass('hidden');
+            });
+        },
+        /**
+         * Отправить запрос для коллекции
          * @param {object} model модель
          * @param {string} url url запроса
          * @param {HTMLElement} btn кнопка сохранения
         */
-        _send: function (model, url, btn) {
-            $(btn).addClass('loading disabled');
-            return $.ajax({
-                type: 'post',
-                data: model,
-                dataType: 'json',
-                url: url,
-                success: function (resp) {
-                    if (resp.status === undefined) {
-                        resp = JSON.parse(resp);
-                    }
-                    switch (resp.status) {
-                        case Settings.apiStatuses.error:
-                        case Settings.apiStatuses.validationError:
-                            $('.p-form').form('add errors', [resp.data]);
-                            break;
-                        case Settings.apiStatuses.success:
-                            location.reload();
-                            break;
-                    }
-                },
-                error: function (jqXhr) {
-                    $('.p-form').form('add errors', [jqXhr.responseJSON]);
-                },
-                complete: function () {
-                    $(btn).removeClass('loading disabled');
+        _sendCol: function (model, url, btn) {
+            var $btn = $(btn).addClass('loading disabled');
+            return $.post(url, model, function (resp) {
+                if (resp.status === undefined) {
+                    resp = JSON.parse(resp);
                 }
+                switch (resp.status) {
+                    case Settings.apiStatuses.error:
+                    case Settings.apiStatuses.validationError:
+                        $('.p-form').form('add errors', [resp.data]);
+                        break;
+                    case Settings.apiStatuses.success:
+                        location.reload();
+                        break;
+                }
+            }).fail(function () {
+                $('.p-form').form('add errors', [jqXhr.responseJSON]);
+            }).always(function () {
+                $btn.removeClass('loading disabled');
             });
         },
         /**
@@ -175,7 +240,7 @@
             reqSize += model.Content.length + model.Header.length + model.Description.length;
             switch (collectionType) {
                 case 'imagecol':
-                    $('.p-item-form:visible').each(function (index, formEl) {
+                    $items.each(function (index, formEl) {
                         var item = {
                             Content: $(formEl).find('[name="Content"]').val(),
                             Description: $(formEl).find('[name="Description"]').val(),
@@ -188,7 +253,7 @@
                     });
                     break;
                 case 'comics':
-                    $('.p-item-form:visible').each(function (index, formEl) {
+                    $items.each(function (index, formEl) {
                         var item = {
                             Content: $(formEl).find('[name="Content"]').val(),
                             Page: $(formEl).find('[name="Page"]').val(),
@@ -216,14 +281,14 @@
                     onApprove: function () {
                         model.PublishDate = new Date().toISOString();
                         model.Type = 'Published';
-                        self._send(model, saveUrl, btn);
+                        self._sendCol(model, saveUrl, btn);
                     },
                     onDeny: function () {
-                        self._send(model, saveUrl, btn);
+                        self._sendCol(model, saveUrl, btn);
                     }
                 }).modal('show');
             } else {
-                self._send(model, saveUrl, btn);
+                self._sendCol(model, saveUrl, btn);
             }
         }
     }

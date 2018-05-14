@@ -17,6 +17,7 @@ namespace Mite.DAL.DTO
         /// Сжатый контент
         /// </summary>
         public string Content_50 { get; set; }
+        public Guid? WatermarkId { get; set; }
         /// <summary>
         /// Время последнего редактирования
         /// </summary>
@@ -55,6 +56,7 @@ namespace Mite.DAL.DTO
         /// Элементы коллекции(если работа - коллекция)
         /// </summary>
         public List<PostCollectionItem> Collection { get; set; }
+        public double? Price { get; set; }
         public string UserId { get; set; }
         public User User { get; set; }
         public int CommentsCount { get; set; }

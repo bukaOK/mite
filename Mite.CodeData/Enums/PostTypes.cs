@@ -7,7 +7,6 @@ namespace Mite.CodeData.Enums
     /// </summary>
     public enum PostTypes : byte
     {
-        //По скрытности
         /// <summary>
         /// Опубликованные
         /// </summary>

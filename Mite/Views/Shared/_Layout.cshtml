@@ -31,6 +31,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="~/Content/icons/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="96x96" href="~/Content/icons/favicon-96x96.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="~/Content/icons/favicon-16x16.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100&amp;subset=cyrillic" rel="stylesheet">
     <meta name="msapplication-TileColor" content="#b540c6" />
     <meta name="msapplication-TileImage" content="~/Content/icons/ms-icon-144x144.png" />
     <meta name="theme-color" content="#b540c6" />
@@ -120,13 +121,22 @@
                 <i class="dropdown icon"></i>
                 <div class="title">Добавить</div>
                 <div class="content">
-                    <div class="vertical menu">
-                        @Html.RouteLink("Изображение", "AddPost", new { postType = PostContentTypes.Image.ToString().ToLower() }, new { @class = "item", title="Арт, фото" })
-                        @Html.RouteLink("Документ", "AddPost", new { postType = PostContentTypes.Document.ToString().ToLower() }, new { @class = "item", title="Статьи, рассказы, стихи" })
-                        @Html.RouteLink("Коллекцию", "AddPost", new { postType = PostContentTypes.ImageCollection.ToString().ToLower() }, new { @class = "item", title = "Коллекция изображений" })
-                        @Html.RouteLink("Комикс", "AddPost", new { postType = PostContentTypes.Comics.ToString().ToLower() }, new { @class = "item", title="Комиксы, манга" })
-                        @Html.ActionLink("Услугу", "Add", "AuthorServices", null, new { @class = "item", title="Услуги"})
-                    </div>
+                    @if (User.IsInRole(RoleNames.Author))
+                    {
+                        <div class="vertical menu">
+                            @Html.RouteLink("Изображение", "AddPost", new { postType = PostContentTypes.Image.ToString().ToLower() }, new { @class = "item", title = "Арт, фото" })
+                            @Html.RouteLink("Документ", "AddPost", new { postType = PostContentTypes.Document.ToString().ToLower() }, new { @class = "item", title = "Статьи, рассказы, стихи" })
+                            @Html.RouteLink("Коллекцию", "AddPost", new { postType = PostContentTypes.ImageCollection.ToString().ToLower() }, new { @class = "item", title = "Коллекция изображений" })
+                            @Html.RouteLink("Комикс", "AddPost", new { postType = PostContentTypes.Comics.ToString().ToLower() }, new { @class = "item", title = "Комиксы" })
+                            @Html.ActionLink("Услугу", "Add", "AuthorServices", null, new { @class = "item", title = "Услуги" })
+                            @Html.ActionLink("Заказ", "Add", "Orders", null, new { @class = "item", title = "Заказы" })
+                            @Html.ActionLink("Товар", "Add", "Products", null, new { @class = "item", title = "Товары" })
+                        </div>
+                    }
+                    else
+                    {
+                        @Html.ActionLink("Заказ", "Add", "Orders", null, new { @class = "item", title = "Заказы" })
+                    }
                 </div>
             </div>
             <a class="violet user-chats item" href="@Url.Action("UserChats", "Chats")">
@@ -200,6 +210,7 @@
                                             @Html.RouteLink("Комикс", "AddPost", new { postType = PostContentTypes.Comics.ToString().ToLower() }, new { @class = "item", title = "Комиксы, манга" })
                                             @Html.ActionLink("Услугу", "Add", "AuthorServices", null, new { @class = "item", title = "Услуги" })
                                             @Html.ActionLink("Заказ", "Add", "Orders", null, new { @class = "item", title = "Заказы" })
+                                            @Html.ActionLink("Товар", "Add", "Products", null, new { @class = "item", title = "Товары"})
                                         }
                                         else
                                         {
@@ -366,6 +377,7 @@
         }
         </text>
     }
+/**/
         @if (!layoutModel.ReviewLeft && layoutModel.RegisterDayLeft)
     {
         <text>

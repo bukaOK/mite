@@ -35,14 +35,18 @@
       <HintPath>..\packages\AutoMapper.6.2.2\lib\net45\AutoMapper.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.4.13\lib\net45\NLog.dll</HintPath>
+      <HintPath>..\packages\NLog.4.5.3\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -75,6 +79,8 @@
     <Compile Include="VkApi\Core\VkApiException.cs" />
     <Compile Include="VkApi\Core\VkParamAttribute.cs" />
     <Compile Include="VkApi\Core\VkRequest.cs" />
+    <Compile Include="VkApi\Friends\FriendsGetRequest.cs" />
+    <Compile Include="VkApi\Friends\FriendsGetResponse.cs" />
     <Compile Include="VkApi\Friends\FriendsSearchRequest.cs" />
     <Compile Include="VkApi\Friends\FriendsSearchResponse.cs" />
     <Compile Include="VkApi\Groups\GroupsGetByIdRequest.cs" />
@@ -90,8 +96,13 @@
     <Compile Include="VkApi\Objects\BoardComment.cs" />
     <Compile Include="VkApi\Objects\Error.cs" />
     <Compile Include="VkApi\Objects\Group.cs" />
+    <Compile Include="VkApi\Objects\Photo.cs" />
     <Compile Include="VkApi\Objects\Post.cs" />
     <Compile Include="VkApi\Objects\User.cs" />
+    <Compile Include="VkApi\Photos\PhotoGetAllRequest.cs" />
+    <Compile Include="VkApi\Photos\PhotoGetAllResponse.cs" />
+    <Compile Include="VkApi\Photos\PhotoGetRequest.cs" />
+    <Compile Include="VkApi\Photos\PhotoGetResponse.cs" />
     <Compile Include="VkApi\Users\UsersGetRequest.cs" />
     <Compile Include="VkApi\Users\UsersGetResponse.cs" />
     <Compile Include="VkApi\Users\UsersSearchRequest.cs" />

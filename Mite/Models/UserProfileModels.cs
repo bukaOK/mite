@@ -51,7 +51,7 @@ namespace Mite.Models
         public int PostsCount { get; set; }
         public string YandexWalId { get; set; }
         public bool ShowAd { get; set; }
-        public SocialLinksModel SocialLinks { get; set; }
+        public IEnumerable<ExternalLinkModel> ExternalLinks { get; set; }
     }
     /// <summary>
     /// Пост который отображается в списке постов в профиле
@@ -77,10 +77,6 @@ namespace Mite.Models
         public PostTypes Type { get; set; }
         public PostContentTypes ContentType { get; set; }
         public bool IsPublished { get; set; }
-        /// <summary>
-        /// Может ли пользователь редактировать работу
-        /// </summary>
-        public bool CanEdit { get; set; }
 
         private string cover;
         public string Cover
@@ -103,30 +99,19 @@ namespace Mite.Models
         public bool ShowAdultContent { get; set; }
         public string PostTypeName { get; set; }
         public int Rating { get; set; }
+        public int? Price { get; set; }
         public IEnumerable<string> Tags { get; set; }
     }
-    public class ClientProfileModel
+    public class ProfileProductModel : ProfilePostModel
     {
-        public string UserId { get; set; }
-        public string UserName { get; set; }
-        private string avatarSrc;
-        public string AvatarSrc
-        {
-            get
-            {
-                return avatarSrc.Replace("\\", "/");
-            }
-            set
-            {
-                avatarSrc = value;
-            }
-        }
-        public string About { get; set; }
-        public int Reliability { get; set; }
-        /// <summary>
-        /// Кол-во подписок
-        /// </summary>
-        public int FollowingsCount { get; set; }
-        public SocialLinksModel SocialLinks { get; set; }
+        public Guid PostId { get; set; }
+        public int Price { get; set; }
+    }
+    public class ExternalLinkModel
+    {
+        public Guid? Id { get; set; }
+        public string Url { get; set; }
+        public string ShowUrl { get; set; }
+        public string IconClass { get; set; }
     }
 }

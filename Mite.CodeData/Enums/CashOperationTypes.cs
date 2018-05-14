@@ -25,6 +25,10 @@ namespace Mite.CodeData.Enums
         /// <summary>
         /// Оплата сделки
         /// </summary>
-        Deal = 3
+        Deal = 3,
+        /// <summary>
+        /// Покупка товара
+        /// </summary>
+        Purchase = 4
     }
 }

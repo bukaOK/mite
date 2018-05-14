@@ -1,9 +1,10 @@
-﻿using Mite.DAL.Core;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Mite.DAL.Entities
 {
+    [Obsolete("Заменено ExternalLinks")]
     public class SocialLinks
     {
         public string Vk { get; set; }

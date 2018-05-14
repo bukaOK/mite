@@ -2,56 +2,101 @@
 @using Mite.CodeData.Enums
 @model Mite.Models.ImagePostModel
 
-@{ 
+@{
     var tagsRow = Model.Tags == null ? string.Empty : string.Join(",", Model.Tags);
+    var url = string.IsNullOrEmpty(Model.Header) ? "/posts/addpost" : "/posts/updatepost";
+}
+@section styles{
+    <style>
+        #wmEdit:not(.active), #productEdit:not(.active){
+            display: none;
+        }
+        .dashed.drop-zone.segment{
+            text-align: center;
+        }
+        input[type="file"]{
+            display: none;
+        }
+    </style>
 }
 <div class="ui segment">
     <h2 class="ui dividing header">@ViewBag.Title</h2>
     <form class="ui stackable two column center aligned grid form" id="imgPostForm">
+        @Html.HiddenFor(x => x.Id)
         <div class="column">
-            <label class="ui dashed drop-zone segment" ondragover="FileReaderHelper.dragOverHandler(event)" ondrop="FileReaderHelper.dropHandler(event)">
-                <span class="ui small blue header"><i class="cloud download icon"></i>Перетащите или нажмите</span>
-                <input type="file" onchange="FileReaderHelper.inputDownloadHandler(event)" style="display: none" />
-            </label>
+            @if(Model.Id == Guid.Empty)
+            {
+                <label class="ui dashed drop-zone segment" id="imgDropZone">
+                    <span class="ui small blue header"><i class="cloud download icon"></i>Перетащите или нажмите</span>
+                    <input type="file" id="imgFile" />
+                </label>
+            }
             <div class="img-wrapper" id="img-wrapper">
                 @if (!string.IsNullOrEmpty(Model.Content))
                 {
                     <img src="@Model.Content" alt="@Model.Header" style="max-width: 100%" />
                 }
             </div>
+            <div class="ui teal indicating progress" id="imgProgress">
+                <div class="bar">
+                    <div class="progress"></div>
+                </div>
+            </div>
+            <div class="ui info blue message">
+                <div class="content">
+                    <div class="header">Информация</div>
+                    <ul class="list">
+                        <li>Максимальный суммарный размер всех файлов, включая изображения и бонус для товара - <b>50 мбайт</b></li>
+                        <li>Бонусы необходимо загружать в архиве <b>rar</b> или <b>zip</b></li>
+                        <li>Для удаления товара переместите ползунок в неактивное состояние</li>
+                        <li>Поскольку при изменении работы используется оригинал изображения, <b>водяной знак может быть не виден</b></li>
+                        <li>Для изменения водяного знака необходимо сначала удалить старый</li>
+                    </ul>
+                </div>
+            </div>
         </div>
         <div class="left aligned column">
+            @Html.HiddenFor(x => x.ProductId)
+            @Html.HiddenFor(x => x.WatermarkId)
             @Html.EditorFor(x => x.Header)
             @Html.HiddenFor(x => x.Content)
             @Html.EditorFor(x => x.Description)
             <div class="field">
                 <div class="ui fluid search multiple selection dropdown" id="select-tags">
                     <i class="dropdown icon"></i>
-                    <input type="hidden" name="Tags" id="Tags" value="@tagsRow" />
+                    @Html.HiddenFor(x => x.Tags, new { Value = tagsRow })
                     <div class="default text">Теги</div>
                     <div class="menu">
-                        @foreach(var aTag in Model.AvailableTags)
+                        @foreach (var aTag in Model.AvailableTags)
                         {
                             <div class="item" data-value="@aTag">@aTag</div>
                         }
                     </div>
                 </div>
             </div>
-            <div class="ui blue icon message">
-                <i class="info icon"></i>
-                <div class="content">
-                    <div class="header">
-                        Внимание!
-                    </div>
-                    <p>
-                        Вы также можете добавлять другие тематические теги,
-                        <b>не включенные в список сервиса</b> (теги, содержащие названия, бренды и пр., будут удаляться).
-                    </p>
+            @if(Model.WatermarkId != null)
+            {
+                <button type="button" class="ui margined red button" id="removeWatBtn">Удалить водяной знак</button>
+                <div class="ui toggle checkbox" id="WmNeedCheck" style="display: none">
+                    <input type="checkbox" name="WmNeed" autocomplete="off" checked />
+                    <label>Водяной знак</label>
                 </div>
+            }
+            else
+            {
+                <div class="ui toggle checkbox" id="WmNeedCheck">
+                    <input type="checkbox" name="WmNeed" autocomplete="off" />
+                    <label>Водяной знак</label>
+                </div>
+            }
+            @{ Html.RenderAction("Edit", "Watermark", new { id = Model.WatermarkId }); }
+            <br />
+            <div class="ui toggle checkbox" id="ProdNeedCheck">
+                <input type="checkbox" name="ProdNeed" autocomplete="off" @Html.Raw(Model.ProductId == null ? "" : "checked") />
+                <label>Товар</label>
             </div>
-        </div>
-        <div class="ten wide column">
-            <button type="button" class="ui green button" id="save-btn">Сохранить</button>
+            @{ Html.RenderAction("Edit", "Products", new { id = Model.ProductId }); }
+            <button type="button" class="ui fluid green button" id="save-btn">Сохранить работу</button>
             <div class="ui error message" id="result-msg"></div>
         </div>
     </form>
@@ -70,91 +115,77 @@
         <button class="ui green ok button">Да</button>
     </div>
 </div>
-@Scripts.Render("~/bundles/api")
-<script>
-    function savePost(isPublished){
-        var $saveBtn = $('#save-btn');
-        $saveBtn.addClass('loading disabled');
-        var $resultMsg = $('#result-msg');
-        @{
-            var url = string.IsNullOrEmpty(Model.Header)
-                ? "/posts/addpost"
-                : "/posts/updatepost";
-        }
-        var postType = isPublished ? '@PostTypes.Published' : '@PostTypes.Drafts';
-        var model = {
-            Header: $('#Header').val(),
-            Content: $('#Content').val(),
-            Description: $('#Description').val(),
-            ContentType: '@PostContentTypes.Image',
-            Type: postType,
-            Id: '@Model.Id',
-            Tags: $('#Tags').val().split(',')
-        };
-        if(isPublished){
-            model.PublishDate = new Date().toISOString();
-        }
-        $.ajax({
-            url: '@url',
-            data: model,
-            type: 'post',
-            dataType: 'json',
-            success: function (resp) {
-                if (resp.status === Settings.apiStatuses.validationError) {
-                    var errorStr = 'Ошибка при сохранении: ' + resp.message;
-                    $('#imgPostForm').form('add errors', [errorStr]);
-                } else {
-                    iziToast.success({
-                        title: 'Успешно!',
-                        message: 'Работа сохранена.'
-                    });
-                    location.reload();
+
+@section scripts{
+    @Scripts.Render("~/bundles/api")
+    <script>
+        $(function () {
+            var readSettings = {
+                progress: $('#imgProgress'),
+                field: $('#Content'),
+                imgWrapper: $('#img-wrapper')
+            };
+            $('#imgFile').change(function (ev) {
+                FileReaderHelper.inputDownloadHandler(ev, readSettings);
+            });
+            $('#imgDropZone').on('dragover', function (ev) {
+                FileReaderHelper.dragOverHandler(ev);
+            }).on('drop', function (ev) {
+                FileReaderHelper.dropHandler(ev, readSettings);
+            });
+            var isImageLarge = false;
+            ViewHelper.activateSidebarItem('#editImageItem');
+            ViewHelper.disableFormSubmitting('#imgPostForm');
+            $('#WmNeedCheck').checkbox({
+                onChange: function () {
+                    $('#wmEdit').toggleClass('active');
                 }
-            },
-            error: function (jqXhr) {
-                $('#imgPostForm').form('add errors', ['Ошибка во время добавления работы']);
-            },
-            complete: function (jqXhr) {
-                $saveBtn.removeClass('loading disabled');
-                $resultMsg.removeClass('hidden');
-            }
+            });
+            $('#ProdNeedCheck').checkbox({
+                onChange: function () {
+                    $('#productEdit').toggleClass('active');
+                }
+            });
+            $('#select-tags').dropdown({
+                allowAdditions: true,
+                fullTextSearch: true,
+                keys: {
+                    delimiter: 13
+                },
+                match: 'text',
+                forceSelection: false
+            });
+            $('#WmPosition').dropdown();
+            //Отправляем форму
+            $('#save-btn').click(function(ev) {
+                var $saveBtn = $(this)
+                    isPublished = @Model.IsPublished.ToString().ToLower();
+                if (isPublished) {
+                    Posts.Api.saveImage(true, '@url', '@Model.Id');
+                }
+                else if ($('#imgPostForm').form('validate form')) {
+                    $('#saveModal').modal('show');
+                }
+            });
+            @Html.Raw(Html.FormValidation<Mite.Models.ImagePostModel>("#imgPostForm"))
+            $("#saveModal").modal({
+                onDeny: function () {
+                    Posts.Api.saveImage(false, '@url', '@Model.Id');
+                },
+                onApprove: function () {
+                    Posts.Api.saveImage(true, '@url', '@Model.Id');
+                }
+            });
+            $('#removeWatBtn').click(function () {
+                $('#WatermarkId').val('');
+                $(this).hide();
+                $('#WmNeedCheck').checkbox('set unchecked').show();
+            });
+            $('#removeProdBtn').click(function () {
+                $('#ProductId').val('');
+                $(this).hide();
+                $('#ProdNeedCheck').show();
+            });
         });
-    }
-    $(function() {
-        var isImageLarge = false;
-        ViewHelper.activateSidebarItem('#editImageItem');
-        ViewHelper.disableFormSubmitting('#imgPostForm');
-        $('.ui.checkbox').checkbox();
-        $('#select-tags').dropdown({
-            allowAdditions: true,
-            fullTextSearch: true,
-            keys: {
-                delimiter: 13
-            },
-            match: 'text',
-            forceSelection: false
-        });
-        //Отправляем форму
-        $('#save-btn').click(function(ev) {
-            var $saveBtn = $(this);
-            var isPublished = @Model.IsPublished.ToString().ToLower();
-            if(isPublished){
-                savePost(true);
-            }
-            if ($('#imgPostForm').form('validate form') && !isPublished && !isImageLarge) {
-                $('#saveModal').modal('show');
-            } else if (isImageLarge) {
-                $('#imgPostForm').form('add errors', ['Размер файла не может быть больше 30 мбайт']);
-            }
-        });
-        @Html.Raw(Html.FormValidation<Mite.Models.ImagePostModel>("#imgPostForm"))
-        $("#saveModal").modal({
-            onDeny: function(){
-                savePost(false);
-            },
-            onApprove: function(){
-                savePost(true);
-            }
-        });
-    });
-</script>
+    </script>
+}

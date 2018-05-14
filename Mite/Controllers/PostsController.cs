@@ -13,6 +13,7 @@ using System.Linq;
 using Mite.BLL.Helpers;
 using Mite.CodeData.Constants;
 using Mite.BLL.IdentityManagers;
+using Mite.BLL.Core;
 
 namespace Mite.Controllers
 {
@@ -103,8 +104,6 @@ namespace Mite.Controllers
 
             if (User.Identity.GetUserId() != post.User.Id)
                 return Forbidden();
-            if (!post.CanEdit)
-                return BadRequest();
             post.AvailableTags = (await tagsService.GetForUserAsync()).ToList();
             switch (post.ContentType)
             {
@@ -136,7 +135,13 @@ namespace Mite.Controllers
                 return Json(JsonStatuses.ValidationError, GetModelErrors());
             if (!string.IsNullOrEmpty(model.Description) && Regex.IsMatch(model.Description, @"<\s*(a|script)\s+"))
                 return Json(JsonStatuses.ValidationError, "Обнаружены опасные символы в описании");
-
+            if(model.Product != null)
+            {
+                var valResult = ValidateProduct(model.Product);
+                if (!valResult.Succeeded)
+                    return Json(JsonStatuses.ValidationError, valResult.Errors);
+            }
+            
             if (model.PublishDate != null)
                 model.Type = PostTypes.Published;
             else
@@ -146,9 +151,7 @@ namespace Mite.Controllers
                 return Json(JsonStatuses.ValidationError, "Обнаружены опасные данные внутри запроса");
             var result = await postsService.AddPostAsync(model, User.Identity.GetUserId());
             if (!result.Succeeded)
-            {
-                return Json(JsonStatuses.ValidationError, result.Errors.ToList()[0]);
-            }
+                return Json(JsonStatuses.ValidationError, result.Errors);
 
             return Json(JsonStatuses.Success, "Пост успешно добавлен");
         }
@@ -160,12 +163,17 @@ namespace Mite.Controllers
                 return Json(JsonStatuses.ValidationError, "Заголовок не может быть пустым");
             if (!string.IsNullOrEmpty(model.Content) && Regex.IsMatch(model.Content, @"<\s*(script|a)"))
                 return Json(JsonStatuses.ValidationError, "Обнаружены опасные данные внутри запроса");
-
+            if (!ModelState.IsValid)
+                return Json(JsonStatuses.ValidationError, GetModelErrors());
+            if(model.Product != null)
+            {
+                var valResult = ValidateProduct(model.Product);
+                if (!valResult.Succeeded)
+                    return Json(JsonStatuses.ValidationError, valResult.Errors);
+            }
             var result = await postsService.UpdatePostAsync(model);
             if (!result.Succeeded)
-            {
-                return Json(JsonStatuses.ValidationError, result.Errors.ToArray()[0]);
-            }
+                return Json(JsonStatuses.ValidationError, result.Errors);
             return Json(JsonStatuses.Success, "Успешно отредактировано");
         }
         [HttpPost]
@@ -231,6 +239,18 @@ namespace Mite.Controllers
                 filter.Tags = filter.Tags.Replace("18 ", "18+");
             var posts = await postsService.GetTopAsync(filter, User.Identity.GetUserId());
             return Json(JsonStatuses.Success, posts);
+        }
+        private DataServiceResult ValidateProduct(ProductEditModel editModel)
+        {
+            if (editModel.Price == null)
+                return DataServiceResult.Failed("Заполните цену товара");
+            if (string.IsNullOrEmpty(editModel.BonusBase64) && !string.IsNullOrEmpty(editModel.BonusDescription))
+                return DataServiceResult.Failed("Выберите архив для бонуса или удалите описание");
+            if (!string.IsNullOrEmpty(editModel.BonusBase64) && string.IsNullOrEmpty(editModel.BonusDescription))
+                return DataServiceResult.Failed("Заполните описание бонуса");
+            if (!string.IsNullOrEmpty(editModel.BonusFormat) && editModel.BonusFormat != "rar" && editModel.BonusFormat != "zip")
+                return DataServiceResult.Failed("Загрузите архив в формате rar или zip");
+            return DataServiceResult.Success();
         }
     }
 }

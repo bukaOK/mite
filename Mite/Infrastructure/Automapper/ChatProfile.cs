@@ -1,21 +1,19 @@
 ﻿using AutoMapper;
 using Mite.BLL.Helpers;
 using Mite.CodeData.Constants;
-using Mite.CodeData.Constants.Automapper;
 using Mite.DAL.DTO;
 using Mite.DAL.Entities;
 using Mite.Helpers;
 using Mite.Models;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Hosting;
 
 namespace Mite.Infrastructure.Automapper
 {
     public class ChatProfile : Profile
     {
+        const string FilesPath = "/files/attachments/";
         public ChatProfile()
         {
             const string secKey = "AOgdKZhNixsujiLUWhqmeCYTqu7FWB5Q";
@@ -92,7 +90,8 @@ namespace Mite.Infrastructure.Automapper
                 .ForMember(dest => dest.Readed, opt => opt.MapFrom(src => src.Recipients != null &&
                      src.Recipients.Any(x => x.Read == true && x.UserId != src.SenderId)))
                 .ForMember(dest => dest.Recipients, opt => opt.Ignore());
-            CreateMap<ChatMessageAttachment, MessageAttachmentModel>();
+            CreateMap<ChatMessageAttachment, MessageAttachmentModel>()
+                .ForMember(dest => dest.Src, opt => opt.MapFrom(src => $"{FilesPath}{src.Id}?resize=true"));
         }
     }
 }

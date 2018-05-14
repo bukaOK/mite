@@ -45,9 +45,14 @@
             @Html.EditorFor(x => x.Description)
             <div class="field">
                 <div class="ui fluid search multiple selection dropdown" id="select-tags">
-                    <input type="hidden" name="Tags" id="Tags" />
+                    @Html.HiddenFor(x => x.Tags, new { Value = tagsRow })
                     <div class="default text">Теги</div>
-                    <div class="menu"></div>
+                    <div class="menu">
+                        @foreach(var tagName in Model.AvailableTags)
+                        {
+                            <div class="item" data-value="@tagName">@tagName</div>
+                        }
+                    </div>
                 </div>
             </div>
             <div class="ui error message"></div>
@@ -183,7 +188,15 @@
                     }
                 }
             });
-            TagsApi.loadDropdown('#select-tags', '@tagsRow'.split(','));
+            $('#select-tags').dropdown({
+                allowAdditions: true,
+                fullTextSearch: true,
+                keys: {
+                    delimiter: 13
+                },
+                match: 'text',
+                forceSelection: false
+            });
         });
 </script>
 }

@@ -59,4 +59,18 @@ namespace Mite.Models
         public int? MaxPrice { get; set; }
         public string Input { get; set; }
     }
+    public class ProductTopFilterModel : BaseFilterModel
+    {
+        public string Input { get; set; }
+        /// <summary>
+        /// Искать товары только для авторов
+        /// </summary>
+        public bool ForAuthors { get; set; }
+        public Guid? City { get; set; }
+        public IEnumerable<SelectListItem> Cities { get; set; }
+        public IEnumerable<string> Tags { get; set; }
+        public int? MinPrice { get; set; }
+        public int? MaxPrice { get; set; }
+        public string CurrentUserId { get; set; }
+    }
 }

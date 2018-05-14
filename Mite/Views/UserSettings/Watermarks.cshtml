@@ -1,0 +1,27 @@
+﻿@model Mite.Models.WatermarkSettingsModel
+
+@if (Model.UserWatermarks.Count > 0)
+{
+    <div class="ui items">
+        @foreach(var item in Model.UserWatermarks)
+        {
+            <div class="item">
+                <div class="image">
+                    <img src="@item.WmPath" />
+                </div>
+                <div class="middle aligned content">
+                    <div class="header">@item.WmName</div>
+                    <div class="meta">Положение: @item.GravityStr</div>
+                    <div class="extra">
+                        <button class="ui primary button">Изменить</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <h3 class="ui header">У вас пока нет водяных знаков</h3>
+}
+@{ Html.RenderPartial("_WatermarkEdit", Model.EditModel); }
