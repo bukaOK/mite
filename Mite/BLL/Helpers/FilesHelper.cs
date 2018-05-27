@@ -35,6 +35,23 @@ namespace Mite.BLL.Helpers
                     return AttachmentTypes.Text;
             }
         }
+        public static string GetContentTypeByExtension(string ext)
+        {
+            if (ext[0] == '.')
+                ext = ext.Substring(1, ext.Length - 1);
+            switch (ext)
+            {
+                case "jpg":
+                case "jpeg":
+                    return "image/jpeg";
+                case "png":
+                    return "image/png";
+                case "gif":
+                    return "image/gif";
+                default:
+                    return "text/plain";
+            }
+        }
         /// <summary>
         /// Сохраняет изображение в файловой системе
         /// </summary>

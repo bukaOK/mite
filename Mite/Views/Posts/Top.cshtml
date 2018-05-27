@@ -118,6 +118,7 @@
         <div class="ui active loading basic segment"></div>
     </div>
 </div>
+<div id="go-top"></div>
 @{ Html.RenderPartial("_TopTemplates"); }
 @Scripts.Render("~/bundles/grid", "~/bundles/scroll", "~/bundles/api", "~/bundles/insertion")
 <script>
@@ -153,6 +154,12 @@
         var grid = $('.posts.grid').masonry({
             itemSelector: '.column',
             horizontalOrder: true
+        });
+        $('#go-top').goTop({
+            scrollTop: 100,
+            scrollSpeed: 1000,
+            fadeInSpeed: 1000,
+            fadeOutSpeed: 500
         });
         $('.ui.dropdown').dropdown({
             onChange: function (ev) {

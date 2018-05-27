@@ -1,9 +1,6 @@
 ﻿using Mite.DAL.Core;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Mite.DAL.Entities
 {
@@ -15,7 +12,9 @@ namespace Mite.DAL.Entities
         /// <summary>
         /// Id поста, изображение поста будет главным изображением/обложкой
         /// </summary>
+        [ForeignKey("Post")]
         public Guid PostId { get; set; }
+        public Post Post { get; set; }
         /// <summary>
         /// Страница комикса
         /// </summary>

@@ -61,13 +61,18 @@ namespace Mite.Models
         [Range(9, 80, ErrorMessage = "Слишком маленький/большой возраст")]
         [UIHint("TextBox")]
         public byte? Age { get; set; }
-
         /// <summary>
         /// Id города
         /// </summary>
         [DisplayName("Город")]
         public string City { get; set; }
         public IEnumerable<System.Web.Mvc.SelectListItem> Cities { get; set; }
+        /// <summary>
+        /// Id страны
+        /// </summary>
+        [DisplayName("Страна")]
+        public string Country { get; set; }
+        public IEnumerable<System.Web.Mvc.SelectListItem> Countries { get; set; }
 
         [DisplayName("Напишите о себе")]
         [UIHint("TextArea")]

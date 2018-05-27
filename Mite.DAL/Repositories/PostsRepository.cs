@@ -36,7 +36,8 @@ namespace Mite.DAL.Repositories
         }
         public async Task<Post> GetByProductAsync(Guid productId)
         {
-            return await Table.FirstOrDefaultAsync(x => x.ProductId == productId);
+            return await Table.AsNoTracking().Include(x => x.Collection)
+                .Include(x => x.ComicsItems).FirstOrDefaultAsync(x => x.ProductId == productId);
         }
         public override async Task UpdateAsync(Post entity)
         {

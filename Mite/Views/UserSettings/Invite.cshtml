@@ -1,7 +1,28 @@
 ﻿@model Mite.Models.InviteSettingsModel
 
 <div class="ui labeled action input">
-    <div class="ui label">Код для приглашения</div>
-    @Html.TextBoxFor(x => x.InviteKey, new { placeholder = "Код для приглашения", @readonly = true, onclick = "select()", size = "36" })
-    <button class="ui primary button" onclick="UserSettingsApi.generateInvite(this)">Создать новый</button>
+    @if (User.IsInRole(RoleNames.Author))
+    {
+        <div class="ui label">Код для приглашения</div>
+        @Html.TextBoxFor(x => x.InviteKey, new { placeholder = "Код для приглашения", @readonly = true, onclick = "select()", size = "36" })
+        <button class="ui primary button" onclick="UserSettingsApi.generateInvite(this)">Создать новый</button>
+    }
+    else
+    {
+        <div class="ui label">Код для приглашения</div>
+        @Html.TextBoxFor(x => x.InviteKey, new { placeholder = "Код для приглашения", size = "36" })
+        <button class="ui primary button" onclick="UserSettingsApi.changeClientRole($('#InviteKey').val(), this)">Стать автором</button>
+    }
 </div>
+@if (!User.IsInRole(RoleNames.Author))
+{
+    <div class="ui blue message">
+        Вы можете стать автором, вставив пригласительный ключ другого автора
+    </div>
+    <div class="ui green message" style="display: none" id="inviteSuccessMsg">
+        Вы успешно стали автором, обновите страницу, чтобы изменения вступили в силу.
+    </div>
+    <div class="ui red message" style="display: none" id="inviteErrorMsg">
+        Ошибка при смене роли.
+    </div>
+}

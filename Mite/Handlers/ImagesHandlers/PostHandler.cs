@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNet.Identity;
+using Mite.BLL.Helpers;
 using Mite.CodeData.Enums;
 using Mite.DAL.Repositories;
 using System;
@@ -42,7 +43,7 @@ namespace Mite.Handlers.ImagesHandlers
                 var postImageName = Path.GetFileNameWithoutExtension(post.Content);
 
                 var watVal = req.QueryString["watermark"].ToLower();
-                var resizeVal = req.QueryString["resize"].ToLower();
+                var resizeVal = req.QueryString["resize"]?.ToLower();
 
                 if (post.ContentType == PostContentTypes.Document || !File.Exists(context.Server.MapPath(post.Content)))
                 {
@@ -50,7 +51,7 @@ namespace Mite.Handlers.ImagesHandlers
                 }
 
                 if (watVal == "true" || resizeVal == "true")
-                {
+                //{
                     var cachedImagePath = "";
                     resp.ContentType = "image/jpeg";
 
@@ -93,6 +94,7 @@ namespace Mite.Handlers.ImagesHandlers
                     {
                         throw new HttpException(404, "Страница не найдена");
                     }
+                    resp.ContentType = FilesHelper.GetContentTypeByExtension(Path.GetExtension(post.Content));
                     resp.WriteFile(context.Server.MapPath(post.Content));
                 }
             }

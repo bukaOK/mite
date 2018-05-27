@@ -56,6 +56,10 @@ namespace Mite.DAL.Entities
         public PostContentTypes ContentType { get; set; }
         public List<Rating> Ratings { get; set; }
         /// <summary>
+        /// Использовать ли водяной знак для элементов коллекции(комикса)
+        /// </summary>
+        public bool UseWatermarkForCols { get; set; }
+        /// <summary>
         /// Элементы коллекции(если работа - коллекция)
         /// </summary>
         public List<PostCollectionItem> Collection { get; set; }

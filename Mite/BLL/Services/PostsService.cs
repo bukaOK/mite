@@ -31,7 +31,7 @@ namespace Mite.BLL.Services
         /// <returns></returns>
         Task<PostModel> GetWithTagsAsync(Guid postId);
         /// <summary>
-        /// Возвращает вместе с тегами и владельцем поста
+        /// Возвращает вместе с тегами и владельцем поста(для показа)
         /// </summary>
         /// <param name="postId"></param>
         /// <returns></returns>
@@ -314,6 +314,7 @@ namespace Mite.BLL.Services
                     }
                     currentPost.Description = postModel.Description;
                     currentPost.Title = postModel.Header;
+                    currentPost.UseWatermarkForCols = postModel.UseWatermarkForCols;
                     currentPost.LastEdit = DateTime.UtcNow;
 
                     if (currentPost.PublishDate == null && postModel.Type == PostTypes.Published)
@@ -340,11 +341,7 @@ namespace Mite.BLL.Services
                 }
             }
         }
-        /// <summary>
-        /// Получить пост с тегами(для редактирования поста)
-        /// </summary>
-        /// <param name="postId"></param>
-        /// <returns></returns>
+        
         public async Task<PostModel> GetWithTagsAsync(Guid postId)
         {
             var repo = Database.GetRepo<PostsRepository, Post>();
@@ -361,11 +358,7 @@ namespace Mite.BLL.Services
 
             return postModel;
         }
-        /// <summary>
-        /// Получить с тегами и пользователем(для показа поста)
-        /// </summary>
-        /// <param name="postId"></param>
-        /// <returns></returns>
+        
         public async Task<PostModel> GetWithTagsUserAsync(Guid postId, string currentUserId)
         {
             var repo = Database.GetRepo<PostsRepository, Post>();
@@ -387,6 +380,11 @@ namespace Mite.BLL.Services
             postModel.FavoriteCount = await favoritesRepo.FavoriteCountAsync(postId);
             postModel.CommentsCount = await Database.GetRepo<CommentsRepository, Comment>().GetPostCommentsCountAsync(postId);
 
+            if(postModel.Product != null && post.ProductId != null)
+            {
+                postModel.Product.IsBought = await Database.GetRepo<PurchaseRepository, Purchase>().IsBuyerAsync(currentUserId, (Guid)post.ProductId);
+            }
+            postModel.Content = $"/images/post/{post.Id}?watermark={post.WatermarkId != null}&resize=false";
             return postModel;
         }
         public async Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userName, string currentUserId, SortFilter sort, PostTypes type)

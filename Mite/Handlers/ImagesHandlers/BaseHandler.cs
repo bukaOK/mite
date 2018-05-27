@@ -130,6 +130,7 @@ namespace Mite.Handlers.ImagesHandlers
             {
                 using (var img = new MagickImage(HostingEnvironment.MapPath(originPath)))
                 {
+                    img.Format = MagickFormat.Jpeg;
                     //Рисуем водяной знак
                     using (var watImg = string.IsNullOrEmpty(wat.VirtualPath)
                         ? new MagickImage(ImagesHelper.DrawWatermark(wat.FontSize ?? 0, wat.Text, wat.Invert ?? false))

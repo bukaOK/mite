@@ -18,6 +18,7 @@ namespace Mite
                 .Include("~/Scripts/jquery.address.js",
                 "~/Scripts/perfect-scrollbar.js",
                 "~/bower_components/izitoast/dist/js/iziToast.min.js",
+                "~/Scripts/jquery.goTop.js",
                 "~/Scripts/jquery.signalR-2.2.3.min.js")
                 .IncludeDirectory("~/Scripts/Custom/", "*.js"));
             bundles.Add(new ScriptBundle("~/bundles/inputmask").Include("~/Scripts/jquery.maskedinput.min.js"));
@@ -64,7 +65,8 @@ namespace Mite
                 "~/Content/ident.css",
                 "~/Content/content-tools.min.css",
                 "~/node_modules/perfect-scrollbar/css/perfect-scrollbar.css",
-                "~/Content/UserMenu.css"
+                "~/Content/UserMenu.css",
+                "~/Content/go-top.css"
             ));
             bundles.Add(new StyleBundle("~/Content/datepicker").Include(
                 "~/bower_components/air-datepicker/dist/css/datepicker.css"));

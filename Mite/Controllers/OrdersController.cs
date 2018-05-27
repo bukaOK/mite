@@ -15,12 +15,15 @@ namespace Mite.Controllers
         private readonly IOrderService orderService;
         private readonly IAuthorServiceTypeService typeService;
         private readonly ICityService cityService;
+        private readonly ICountryService countryService;
 
-        public OrdersController(IOrderService orderService, IAuthorServiceTypeService typeService, ICityService cityService)
+        public OrdersController(IOrderService orderService, IAuthorServiceTypeService typeService, ICityService cityService,
+            ICountryService countryService)
         {
             this.orderService = orderService;
             this.typeService = typeService;
             this.cityService = cityService;
+            this.countryService = countryService;
         }
         public async Task<ActionResult> Add()
         {
@@ -36,6 +39,7 @@ namespace Mite.Controllers
             var model = new OrderTopFilterModel
             {
                 OrderTypes = await typeService.GetSelectListAsync(Guid.Empty),
+                Countries = await countryService.GetSelectListAsync(CurrentUserId),
                 Cities = await cityService.GetSelectListAsync(CurrentUserId)
             };
             return View(model);

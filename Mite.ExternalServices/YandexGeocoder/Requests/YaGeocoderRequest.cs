@@ -15,22 +15,18 @@ namespace Mite.ExternalServices.YandexGeocoder.Requests
         {
             this.httpClient = httpClient;
         }
-        public async Task<string> GetCityNameAsync(double lat, double lng)
+        public async Task<(string countryCode, string cityName)> GetCityNameAsync(double lat, double lng)
         {
             var reqUrl = url + $"?format=json&geocode={lng.ToString("0.00", new CultureInfo("en-us"))},{lat.ToString("0.00", new CultureInfo("en-us"))}";
             var resp = await httpClient.GetAsync(reqUrl);
             var content = await resp.Content.ReadAsStringAsync();
-
             var jContent = JObject.Parse(content);
 
             if ((int)jContent["response"]["GeoObjectCollection"]["metaDataProperty"]["GeocoderResponseMetaData"]["results"] == 0)
-                return null;
+                return ((string)null, (string)null);
             var addressComponent = jContent["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]["metaDataProperty"]["GeocoderMetaData"]["Address"];
 
-            if ((string)addressComponent["country_code"] != "RU")
-                return null;
-
-            return (string)addressComponent["Components"].Children().FirstOrDefault(x => (string)x["kind"] == "locality").SelectToken("name");
+            return ((string)addressComponent["country_code"], (string)addressComponent["Components"].Children().FirstOrDefault(x => (string)x["kind"] == "locality").SelectToken("name"));
         }
     }
 }

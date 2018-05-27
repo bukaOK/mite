@@ -24,10 +24,11 @@ namespace Mite.Controllers.Api
             this.logger = logger;
         }
         [HttpGet]
-        public async Task<IEnumerable<CityModel>> GetAll()
+        [AllowAnonymous]
+        public async Task<IEnumerable<CityModel>> GetByCountry(Guid id)
         {
-            var entities = await repo.GetAllAsync();
-            return Mapper.Map<IEnumerable<CityModel>>(entities);
+            var cities = await repo.GetByCountryAsync(id);
+            return Mapper.Map<IEnumerable<CityModel>>(cities);
         }
         [HttpPost]
         public async Task<IHttpActionResult> Add([FromBody]CityModel model)

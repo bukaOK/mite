@@ -234,6 +234,7 @@
                 Content: $('#Content').val(),
                 ContentType: collectionType === 'imagecol' ? 'ImageCollection' : 'Comics',
                 Tags: $('[name="Tags"]').val().split(','),
+                UseWatermarkForCols: $('#UseWatermarkForCols').parent().checkbox('is checked'),
                 Collection: [],
                 ComicsItems: []
             };
@@ -267,6 +268,28 @@
                     break;
                 default:
                     throw 'Unknown content type';
+            }
+            if ($('#WmNeedCheck').checkbox('is checked')) {
+                model.Watermark = {
+                    WmPath: $('#WmPath').val(),
+                    Gravity: $('#Gravity').val(),
+                    FontSize: $('#FontSize').val(),
+                    WmText: $('#WmText').val(),
+                    Inverted: $('#invertCheck').checkbox('is checked'),
+                    UseCustomImage: $('#UseCustomImage').val(),
+                };
+                if (model.Watermark.WmPath)
+                    reqSize += model.Watermark.WmPath.length;
+            }
+            if ($('#ProdNeedCheck').checkbox('is checked')) {
+                model.Product = {
+                    Id: $('#ProductId').val(),
+                    Price: $('#Price').val(),
+                    BonusBase64: $('#BonusBase64').val(),
+                    BonusDescription: $('#BonusDescription').val(),
+                    BonusFormat: $('#BonusFormat').val(),
+                    ForAuthors: $('#ForAuthors').parent().checkbox('is checked')
+                };
             }
             if (reqSize / 1024 / 1024 > 30) {
                 $form.form('add errors', ['Суммарный размер контента превышает 30 мбайт, пожалуйста, загрузите изображения с меньшим размером']);

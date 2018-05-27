@@ -205,7 +205,7 @@ namespace Mite.Controllers
             {
                 //Отправляем e-mail для подтверждения адреса эл. почты
                 var user = await userManager.FindByNameAsync(model.UserName);
-                string code = await userManager.GenerateEmailConfirmationTokenAsync(user.Id);
+                var code = await userManager.GenerateEmailConfirmationTokenAsync(user.Id);
                 var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, Request.Url.Scheme);
 #if !DEBUG
                 await userManager.SendEmailAsync(user.Id, "MiteGroup.Подтверждение почты.", $"Для подтверждения вашего аккаунта перейдите по <a href=\"{callbackUrl}\">ссылке.</a> MiteGroup.");

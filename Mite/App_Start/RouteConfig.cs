@@ -15,6 +15,9 @@ namespace Mite
             routes.Ignore("images/post/{all}");
             routes.Ignore("images/services/{all}");
             routes.Ignore("images/orders/{all}");
+            routes.Ignore("images/colitem/{all}");
+            routes.Ignore("images/comicitem/{all}");
+            routes.Ignore("files/attachments/{all}");
 
             routes.MapMvcAttributeRoutes();
 

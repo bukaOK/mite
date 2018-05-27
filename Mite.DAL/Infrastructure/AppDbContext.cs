@@ -19,6 +19,7 @@ namespace Mite.DAL.Infrastructure
         public DbSet<CashOperation> CashOperations { get; set; }
         public DbSet<ExternalService> ExternalServices { get; set; }
         public DbSet<SocialLinks> SocialLinks { get; set; }
+        public DbSet<Country> Countries { get; set; }
         public DbSet<City> Cities { get; set; }
         public DbSet<AuthorService> AuthorServices { get; set; }
         public DbSet<AuthorServiceType> AuthorServiceTypes { get; set; }

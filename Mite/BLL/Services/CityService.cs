@@ -20,6 +20,7 @@ namespace Mite.BLL.Services
         Task<CityModel> GetByNameAsync(string cityName);
         IEnumerable<SelectListItem> GetCitiesSelectList(User user);
         Task<IEnumerable<SelectListItem>> GetSelectListAsync(string userId);
+        Task<CityModel> GetNearliestAsync(double latitude, double longitude);
     }
     public class CityService : CrudService<CityModel, CitiesRepository, City>, ICityService
     {
@@ -67,22 +68,27 @@ namespace Mite.BLL.Services
             }
         }
 
+        public async Task<CityModel> GetNearliestAsync(double latitude, double longitude)
+        {
+            var city = await Repo.GetNearliestAsync(latitude, longitude);
+            return Mapper.Map<CityModel>(city);
+        }
+
         public async Task<IEnumerable<SelectListItem>> GetSelectListAsync(string userId)
         {
-            var cities = await Repo.GetAllAsync();
             var user = string.IsNullOrEmpty(userId) ? null : await userManager.FindByIdAsync(userId);
-            return cities.Select(city =>
+            var userCity = user == null ? null : await Repo.GetAsync(user.CityId);
+            var userCountry = userCity?.CountryId;
+
+            var cities = user == null || userCity == null || userCountry == null 
+                ? await Repo.GetByCountryAsync("RU") 
+                : await Repo.GetByCountryAsync((Guid)userCountry);
+
+            return cities.Select(city => new SelectListItem
             {
-                var item = new SelectListItem
-                {
-                    Text = $"{city.Name}",
-                    Value = city.Id.ToString(),
-                };
-                if (user != null && city.Id == user.CityId)
-                {
-                    item.Selected = true;
-                }
-                return item;
+                Text = $"{city.Name}",
+                Value = city.Id.ToString(),
+                Selected = user != null && city.Id == user.CityId
             });
         }
     }

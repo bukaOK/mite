@@ -1,32 +1,31 @@
 ﻿@model Mite.Models.WatermarkEditModel
 
-<div id="wmEdit">
-    @Html.HiddenFor(x => x.UseCustomImage)
-    @Html.HiddenFor(x => x.WmPath)
+<!--Лежат в wmEdit-->
+@Html.HiddenFor(x => x.UseCustomImage)
+@Html.HiddenFor(x => x.WmPath)
+<div class="field">
+    <label>@Html.DisplayNameFor(x => x.Gravity)</label>
+    @Html.EnumDropDownListFor(x => x.Gravity, new { @class = "ui selection dropdown" })
+</div>
+<label class="ui dashed drop-zone segment" id="watImgLabel">
+    <span class="ui small blue header"><i class="cloud download icon"></i>Перетащите или нажмите</span>
+    <input type="file" id="watFile" />
+</label>
+<div id="watImgWrap"></div>
+<button type="button" class="ui blue button" onclick="drawWatermark(true)">Отрисовать</button>
+<div class="ui horizontal divider">Водяной знак от MiteGroup</div>
+
+@Html.EditorFor(x => x.FontSize, new { WithLabel = true })
+@Html.EditorFor(x => x.WmText, new { WithLabel = true })
+@Html.HiddenFor(x => x.Inverted)
+<div class="fields">
     <div class="field">
-        <label>@Html.DisplayNameFor(x => x.Gravity)</label>
-        @Html.EnumDropDownListFor(x => x.Gravity, new { @class = "ui selection dropdown" })
+        <button type="button" class="ui primary button" onclick="drawWatermark(false)">Отрисовать</button>
     </div>
-    <label class="ui dashed drop-zone segment" id="watImgLabel">
-        <span class="ui small blue header"><i class="cloud download icon"></i>Перетащите или нажмите</span>
-        <input type="file" id="watFile" />
-    </label>
-    <div id="watImgWrap"></div>
-    <button type="button" class="ui blue button" onclick="drawWatermark(true)">Отрисовать</button>
-    <div class="ui horizontal divider">Водяной знак от MiteGroup</div>
-    
-    @Html.EditorFor(x => x.FontSize, new { WithLabel = true })
-    @Html.EditorFor(x => x.WmText, new { WithLabel = true })
-    @Html.HiddenFor(x => x.Inverted)
-    <div class="fields">
-        <div class="field">
-            <button type="button" class="ui primary button" onclick="drawWatermark(false)">Отрисовать</button>
-        </div>
-        <div class="field">
-            <div class="ui checkbox" id="invertCheck">
-                <input type="checkbox" @Html.Raw(Model.Inverted ? "checked" : "") />
-                <label>@Html.DisplayNameFor(x => x.Inverted)</label>
-            </div>
+    <div class="field">
+        <div class="ui checkbox" id="invertCheck">
+            <input type="checkbox" @Html.Raw(Model.Inverted ? "checked" : "") />
+            <label>@Html.DisplayNameFor(x => x.Inverted)</label>
         </div>
     </div>
 </div>

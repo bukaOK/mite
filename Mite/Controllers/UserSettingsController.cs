@@ -18,6 +18,7 @@ using NLog;
 using AutoMapper;
 using System.Web;
 using System.Text.RegularExpressions;
+using Mite.Helpers;
 
 namespace Mite.Controllers
 {
@@ -30,17 +31,20 @@ namespace Mite.Controllers
         private readonly IAuthenticationManager authManager;
         private readonly ITagsService tagsService;
         private readonly IExternalLinksService linksService;
+        private readonly ICountryService countryService;
         private readonly ILogger logger;
         private readonly ICityService cityService;
 
         public UserSettingsController(IUserService userService, AppUserManager userManager, ICityService cityService,
-            IAuthenticationManager authManager, ITagsService tagsService, IExternalLinksService linksService, ILogger logger)
+            IAuthenticationManager authManager, ITagsService tagsService, IExternalLinksService linksService, 
+            ICountryService countryService, ILogger logger)
         {
             this.userService = userService;
             this.userManager = userManager;
             this.authManager = authManager;
             this.tagsService = tagsService;
             this.linksService = linksService;
+            this.countryService = countryService;
             this.logger = logger;
             this.cityService = cityService;
         }
@@ -74,7 +78,11 @@ namespace Mite.Controllers
         {
             var user = await userManager.FindByIdAsync(CurrentUserId);
             var model = Mapper.Map<ProfileSettingsModel>(user);
+            model.Countries = await countryService.GetSelectListAsync(CurrentUserId);
             model.Cities = await cityService.GetSelectListAsync(CurrentUserId);
+
+            model.Country = model.Countries.FirstOrDefault(x => x.Selected)?.Value;
+            model.City = model.Cities.FirstOrDefault(x => x.Selected)?.Value;
 
             return PartialView(model);
         }
@@ -83,8 +91,24 @@ namespace Mite.Controllers
             var user = await userManager.FindByIdAsync(CurrentUserId);
             return PartialView(new InviteSettingsModel
             {
-                InviteKey = user.InviteId.ToString()
+                InviteKey = User.IsInRole(RoleNames.Author) ? user.InviteId.ToString() : null
             });
+        }
+        [HttpPost]
+        public async Task<ActionResult> ChangeClientRole(Guid inviteKey)
+        {
+            var user = await userManager.GetByInviteIdAsync(inviteKey);
+            if(user != null)
+            {
+                var result = await userManager.AddToRoleAsync(CurrentUserId, RoleNames.Author);
+                if (result.Succeeded)
+                {
+                    await userManager.RemoveFromRoleAsync(CurrentUserId, RoleNames.Client);
+                    User.Identity.AddUpdateClaim(authManager, ClaimTypes.Role, RoleNames.Author);
+                }
+                return Ok();
+            }
+            return BadRequest();
         }
         [HttpPost]
         public async Task<ActionResult> GenerateInvite()

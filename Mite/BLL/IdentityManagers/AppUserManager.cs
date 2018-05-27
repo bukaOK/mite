@@ -60,6 +60,15 @@ namespace Mite.BLL.IdentityManagers
             userIdentity.AddClaim(new Claim(ClaimConstants.AvatarSrc, user.AvatarSrc));
             return userIdentity;
         }
+        public async Task SendAnonEmailAsync(string email, string message, string subject)
+        {
+            var msg = new IdentityMessage
+            {
+                Body = message,
+                Subject = subject,
+                Destination = email
+            };
+        }
         public async Task<User> GetByInviteIdAsync(Guid inviteId)
         {
             var user = await Users.FirstOrDefaultAsync(x => x.InviteId == inviteId);

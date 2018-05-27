@@ -8,8 +8,7 @@ namespace Mite.Extensions
     {
         public static void AddUpdateClaim(this IIdentity currentIdentity, IAuthenticationManager authManager, string key, string value)
         {
-            var identity = currentIdentity as ClaimsIdentity;
-            if(identity == null)
+            if (!(currentIdentity is ClaimsIdentity identity))
                 return;
 
             var existingClaim = identity.FindFirst(key);

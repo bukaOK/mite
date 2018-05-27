@@ -99,5 +99,14 @@
                 });
             }
         });
+    },
+    /**
+     * Загружаем города по стране в dropdown
+     * @param {string} targetSel
+     * @param {string} countryId
+     * @returns {JQueryXHR}
+     */
+    loadCities: function (countryId) {
+        return $.getJSON('/api/cities/' + countryId);
     }
 }

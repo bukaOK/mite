@@ -346,6 +346,7 @@
     <Compile Include="BLL\Services\ChatService.cs" />
     <Compile Include="BLL\Services\CityService.cs" />
     <Compile Include="BLL\Services\CommentsService.cs" />
+    <Compile Include="BLL\Services\CountryService.cs" />
     <Compile Include="BLL\Services\DealService.cs" />
     <Compile Include="BLL\Services\ChatMessagesService.cs" />
     <Compile Include="BLL\Services\ExternalLinksService.cs" />
@@ -413,10 +414,11 @@
     <Compile Include="Handlers\AttachmentAccessHandler.cs" />
     <Compile Include="Handlers\ImagesHandlers\AuthorServiceHandler.cs" />
     <Compile Include="Handlers\ImagesHandlers\BaseHandler.cs" />
+    <Compile Include="Handlers\ImagesHandlers\CollectionItemHandler.cs" />
+    <Compile Include="Handlers\ImagesHandlers\ComicsItemHandler.cs" />
     <Compile Include="Handlers\ImagesHandlers\OrderHandler.cs" />
     <Compile Include="Handlers\ImagesHandlers\PostHandler.cs" />
     <Compile Include="Hubs\Clients\ChatHubClient.cs" />
-    <Compile Include="Helpers\ClaimsHelper.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\UserSettingsController.cs" />
@@ -485,6 +487,7 @@
     <Compile Include="Models\UserShortModel.cs" />
     <Compile Include="Models\WalletsSettingsModel.cs" />
     <Compile Include="Models\WatermarkModels.cs" />
+    <Compile Include="Models\YandexMoneyModels.cs" />
     <Compile Include="Modules\ErrorModule.cs" />
     <Compile Include="Modules\GeoMiddleware.cs" />
     <Compile Include="Modules\ReferalModule.cs" />
@@ -496,6 +499,7 @@
     <Compile Include="Modules\Vk\VkAuthenticationHandler.cs" />
     <Compile Include="Modules\Vk\VkAuthenticationMiddleware.cs" />
     <Compile Include="Modules\Vk\VkAuthenticationOptions.cs" />
+    <Compile Include="PdfConvert.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
@@ -824,6 +828,7 @@
     <Content Include="Content\gallery\js\lightgallery-all.min.js" />
     <Content Include="Content\gallery\js\lightgallery.js" />
     <Content Include="Content\gallery\js\lightgallery.min.js" />
+    <Content Include="Content\go-top.css" />
     <Content Include="Content\icons\android-icon-144x144.png" />
     <Content Include="Content\icons\android-icon-192x192.png" />
     <Content Include="Content\icons\android-icon-36x36.png" />
@@ -991,6 +996,7 @@
     <Content Include="Scripts\jquery-3.1.1.slim.js" />
     <Content Include="Scripts\jquery-3.1.1.slim.min.js" />
     <Content Include="Scripts\jquery.address.js" />
+    <Content Include="Scripts\jquery.goTop.js" />
     <Content Include="Scripts\jquery.maskedinput.js" />
     <Content Include="Scripts\jquery.maskedinput.min.js" />
     <Content Include="Scripts\jquery.serialize-object.min.js" />
@@ -1139,7 +1145,6 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="bower_components\" />
-    <Folder Include="Scripts\Page\" />
     <Folder Include="ViewModels\" />
   </ItemGroup>
   <ItemGroup>

@@ -51,14 +51,16 @@ namespace Mite.BLL.Services
         private readonly IAuthorServiceTypeService serviceTypeService;
         private readonly ICityService cityService;
         private readonly AppUserManager userManager;
+        private readonly ICountryService countryService;
 
         public AuthorServiceService(IUnitOfWork database, ILogger logger, IAuthorServiceTypeService serviceTypeService, 
-            ICityService cityService, AppUserManager userManager) : base(database, logger)
+            ICityService cityService, AppUserManager userManager, ICountryService countryService) : base(database, logger)
         {
             repo = database.GetRepo<AuthorServiceRepository, AuthorService>();
             this.serviceTypeService = serviceTypeService;
             this.cityService = cityService;
             this.userManager = userManager;
+            this.countryService = countryService;
         }
 
         public async Task<DataServiceResult> AddAsync(AuthorServiceModel model)
@@ -176,17 +178,12 @@ namespace Mite.BLL.Services
 
         public async Task<ServiceTopFilterModel> GetTopModelAsync(string userId)
         {
-            var model = new ServiceTopFilterModel();
-            var cities = await Database.GetRepo<CitiesRepository, City>().GetAllAsync();
-            //User user = null;
-            //if (!string.IsNullOrEmpty(userId))
-            //    user = await userManager.FindByIdAsync(userId);
-            model.Cities = cities.Select(city => new SelectListItem
+            var model = new ServiceTopFilterModel
             {
-                Text = city.Name,
-                Value = city.Id.ToString()
-            });
-            model.ServiceTypes = await serviceTypeService.GetSelectListAsync(Guid.Empty);
+                Cities = await cityService.GetSelectListAsync(userId),
+                Countries = await countryService.GetSelectListAsync(userId),
+                ServiceTypes = await serviceTypeService.GetSelectListAsync(Guid.Empty)
+            };
             var (min, max) = await repo.GetMinMaxPricesAsync();
             model.Min = (int)min;
             model.Max = (int)max;

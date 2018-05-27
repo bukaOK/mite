@@ -89,7 +89,9 @@
                     <label>Водяной знак</label>
                 </div>
             }
-            @{ Html.RenderAction("Edit", "Watermark", new { id = Model.WatermarkId }); }
+            <div id="wmEdit">
+                @{ Html.RenderAction("Edit", "Watermark", new { id = Model.WatermarkId }); }
+            </div>
             <br />
             <div class="ui toggle checkbox" id="ProdNeedCheck">
                 <input type="checkbox" name="ProdNeed" autocomplete="off" @Html.Raw(Model.ProductId == null ? "" : "checked") />

@@ -108,6 +108,7 @@
         }
     </div>
 </div>
+<div id="go-top"></div>
 @{ Html.RenderPartial("_Templates"); }
 @Scripts.Render("~/bundles/grid")
 <script>
@@ -120,6 +121,12 @@
     $(function () {
         var userCardTmpl = $.templates('#miniUserCardTmpl');
         var grid = $('.services.grid').masonry();
+        $('#go-top').goTop({
+            scrollTop: 100,
+            scrollSpeed: 1000,
+            fadeInSpeed: 1000,
+            fadeOutSpeed: 500
+        });
         $('#sortType').dropdown({
             onChange: function () {
                 if (SearchFilters.initialized) {
@@ -278,6 +285,11 @@
                     }
                 },
             ]
+        });
+        Scrolling.init('footer', function () {
+            if (!$('.loader-wrapper').hasClass('active')) {
+                return SearchFilters.loadNext();
+            }
         });
         VK.Widgets.Group("vk_groups", { mode: 3, no_cover: 1, width: $('#vk_groups')[0].offsetWidth }, 143219082);
     });

@@ -13,15 +13,15 @@ namespace Mite.Models
         public Guid PostId { get; set; }
         public int Price { get; set; }
     }
-    public class ProductShowModel
-    {
-        public Guid Id { get; set; }
-        public string ImageSrc { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public IList<ProductItemModel> Items { get; set; }
-    }
-    public class ProductEditModel
+    //public class ProductShowModel
+    //{
+    //    public Guid Id { get; set; }
+    //    public string ImageSrc { get; set; }
+    //    public string Title { get; set; }
+    //    public string Description { get; set; }
+    //    public IList<ProductItemModel> Items { get; set; }
+    //}
+    public class ProductModel
     {
         public Guid? Id { get; set; }
         public Guid PostId { get; set; }
@@ -38,6 +38,10 @@ namespace Mite.Models
         [UIHint("Checkbox")]
         [DisplayName("Для авторов")]
         public bool ForAuthors { get; set; }
+        /// <summary>
+        /// Куплен ли товар текущим пользователем(только для показа)
+        /// </summary>
+        public bool IsBought { get; set; }
     }
     public class ProductItemModel
     {

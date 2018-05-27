@@ -21,6 +21,11 @@ namespace Mite.DAL.Entities
         public bool ForAuthors { get; set; }
         public IList<Purchase> Purchases { get; set; }
         /// <summary>
+        /// Какой кол-во символов надо показывать из контента(для товаров-документов)
+        /// </summary>
+        public int? ContentLimit { get; set; }
+        //public IList<AnonymousPurchase> AnonymousPurchases { get; set; }
+        /// <summary>
         /// Привязанная работа
         /// </summary>
         //[ForeignKey("Post")]

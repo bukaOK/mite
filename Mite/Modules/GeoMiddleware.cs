@@ -4,10 +4,8 @@ using Mite.BLL.Services;
 using Mite.CodeData.Constants;
 using Mite.Extensions;
 using Mite.ExternalServices.IpApi.Requests;
-using Mite.ExternalServices.YandexGeocoder.Requests;
 using Mite.Models;
 using NLog;
-using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -53,27 +51,21 @@ namespace Mite.Modules
             }
             await Next.Invoke(context);
         }
+
         private async Task<CityModel> GetCityAsync(string ip)
         {
             var ipReq = new IpApiRequest(httpClient);
             var ipResult = await ipReq.PerformAsync(ip);
-            CityModel city;
-            try
+            if (ipResult != null && ipResult.Longitude != 0 && ipResult.Latitude != 0)
             {
-                var yaReq = new YaGeocoderRequest(httpClient);
-                var cityName = await yaReq.GetCityNameAsync(ipResult.Latitude, ipResult.Longitude);
-
-                city = await cityService.GetByNameAsync(cityName);
-                if (city == null)
-                    city = await cityService.GetByNameAsync("Москва");
+                var nearliestCity = await cityService.GetNearliestAsync(ipResult.Latitude, ipResult.Longitude);
+                return nearliestCity;
             }
-            catch(Exception e)
+            else
             {
-                logger.Error("Ошибка при определении города :" + e.Message);
-                city = await cityService.GetByNameAsync("Москва");
+                var city = await cityService.GetByNameAsync("Москва");
+                return city;
             }
-
-            return city;
         }
     }
 }

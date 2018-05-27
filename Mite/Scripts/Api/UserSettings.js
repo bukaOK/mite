@@ -33,7 +33,7 @@
         if (!$form.form('validate form')) {
             return;
         }
-        $form.addClass('loading')
+        $form.addClass('loading');
         return $.ajax({
             url: '/User/Settings/UserProfile',
             type: 'post',
@@ -154,6 +154,24 @@
         }).always(function () {
             $(btn).removeClass('loading disabled');
         });
+    },
+    /**
+     * Стать автором
+     * @param {string} inviteKey ключ приглашения
+     */
+    changeClientRole: function (inviteKey, btn) {
+        $(btn).addClass('loading disabled');
+        return $.post('/user/settings/changeclientrole', {
+            inviteKey: inviteKey
+        }, function () {
+            $('#inviteSuccessMsg').show();
+            $('#inviteErrorMsg').hide();
+        }).fail(function () {
+            $('#inviteSuccessMsg').hide();
+                $('#inviteErrorMsg').show();
+            }).always(function () {
+                $(btn).removeClass('loading disabled');
+            });
     },
     /**
      * Показывать только подписки

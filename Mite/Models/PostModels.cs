@@ -45,6 +45,10 @@ namespace Mite.Models
         public PostTypes Type { get; set; }
         public PostContentTypes ContentType { get; set; }
         /// <summary>
+        /// Наложить водяной знак на элементы коллекции(комикса)
+        /// </summary>
+        public bool UseWatermarkForCols { get; set; }
+        /// <summary>
         /// True, если это изображение, или коллекция изображений
         /// </summary>
         public int Views { get; set; }
@@ -83,7 +87,7 @@ namespace Mite.Models
         public Guid? WatermarkId { get; set; }
         public Guid? ProductId { get; set; }
         public WatermarkEditModel Watermark { get; set; }
-        public ProductEditModel Product { get; set; }
+        public ProductModel Product { get; set; }
     }
     public class WritingPostModel
     {
@@ -129,6 +133,9 @@ namespace Mite.Models
         public PostContentTypes ContentType { get; set; }
         public IList<string> Tags { get; set; }
         public IList<string> AvailableTags { get; set; }
+        [DisplayName("Использовать для элементов коллекции")]
+        [UIHint("Checkbox")]
+        public bool UseWatermarkForCols { get; set; }
         public IList<PostCollectionItemModel> Collection { get; set; }
         public IList<PostComicsItemModel> ComicsItems { get; set; }
     }

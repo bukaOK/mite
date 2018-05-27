@@ -43,6 +43,7 @@ namespace Mite.Models
         public Guid? City { get; set; }
         public Guid? ServiceType { get; set; }
         public string Input { get; set; }
+        public IEnumerable<SelectListItem> Countries { get; set; }
         public IEnumerable<SelectListItem> Cities { get; set; }
         public IEnumerable<SelectListItem> ServiceTypes { get; set; }
         public ServiceSortFilter SortFilter { get; set; }
@@ -54,6 +55,7 @@ namespace Mite.Models
         public Guid? OrderTypeId { get; set; }
         public IEnumerable<SelectListItem> OrderTypes { get; set; }
         public Guid? CityId { get; set; }
+        public IEnumerable<SelectListItem> Countries { get; set; }
         public IEnumerable<SelectListItem> Cities { get; set; }
         public int? MinPrice { get; set; }
         public int? MaxPrice { get; set; }

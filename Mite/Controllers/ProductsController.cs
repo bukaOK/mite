@@ -2,10 +2,8 @@
 using Mite.Core;
 using Mite.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
 
 namespace Mite.Controllers
@@ -22,7 +20,7 @@ namespace Mite.Controllers
         [ChildActionOnly]
         public ActionResult Edit(Guid? id)
         {
-            var product = id != null ? productsService.GetForEdit((Guid)id) : new ProductEditModel();
+            var product = id != null ? productsService.GetForEdit((Guid)id) : new ProductModel();
             return PartialView(product);
         }
         public async Task<ActionResult> Buy(Guid id)
@@ -47,9 +45,14 @@ namespace Mite.Controllers
             var result = await productsService.GetTopAsync(filterModel);
             return Json(JsonStatuses.Success, result);
         }
-        public async Task<ActionResult> ConfirmBuying(string code)
+        public async Task<ActionResult> Download(Guid id)
         {
-            var result = a
+            var result = await productsService.DownloadPurchaseAsync(id, CurrentUserId);
+            if (result.Succeeded)
+            {
+                return File(result.ResultData as MemoryStream, "application/zip", id.ToString() + ".zip");
+            }
+            return BadRequest();
         }
     }
 }

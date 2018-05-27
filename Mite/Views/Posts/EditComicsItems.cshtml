@@ -10,6 +10,15 @@
         .p-item-form .close.icon {
             float: left;
         }
+        #wmEdit:not(.active), #productEdit:not(.active) {
+            display: none;
+        }
+        .dashed.drop-zone.segment {
+            text-align: center;
+        }
+        input[type="file"] {
+            display: none;
+        }
     </style>
 }
 <div class="ui segment">
@@ -30,7 +39,7 @@
                 <div class="label">Загрузка изображения</div>
             </div>
             <div class="field">
-                <div class="ui image img-wrapper">
+                <div class="ui image img-wrapper" id="img-wrapper">
                     @if (!string.IsNullOrEmpty(Model.Content))
                     {
                         <img src="@Model.Content" />
@@ -48,13 +57,38 @@
                     @Html.HiddenFor(x => x.Tags, new { Value = tagsRow })
                     <div class="default text">Теги</div>
                     <div class="menu">
-                        @foreach(var tagName in Model.AvailableTags)
+                        @foreach (var tagName in Model.AvailableTags)
                         {
                             <div class="item" data-value="@tagName">@tagName</div>
                         }
                     </div>
                 </div>
             </div>
+            @if (Model.WatermarkId != null)
+            {
+                <button type="button" class="ui margined red button" id="removeWatBtn">Удалить водяной знак</button>
+                <div class="ui toggle checkbox" id="WmNeedCheck" style="display: none">
+                    <input type="checkbox" name="WmNeed" autocomplete="off" checked />
+                    <label>Водяной знак</label>
+                </div>
+            }
+            else
+            {
+                <div class="ui toggle checkbox" id="WmNeedCheck">
+                    <input type="checkbox" name="WmNeed" autocomplete="off" />
+                    <label>Водяной знак</label>
+                </div>
+            }
+            <div id="wmEdit">
+                @Html.EditorFor(x => x.UseWatermarkForCols)
+                @{ Html.RenderAction("Edit", "Watermark", new { id = Model.WatermarkId }); }
+            </div>
+            <br />
+            <div class="ui toggle checkbox" id="ProdNeedCheck">
+                <input type="checkbox" name="ProdNeed" autocomplete="off" @Html.Raw(Model.ProductId == null ? "" : "checked") />
+                <label>Товар</label>
+            </div>
+            @{ Html.RenderAction("Edit", "Products", new { id = Model.ProductId }); }
             <div class="ui error message"></div>
         </div>
     </form>
@@ -186,6 +220,17 @@
                             }
                         ]
                     }
+                }
+            });
+            $('#UseWatermarkForCols').parent().checkbox();
+            $('#WmNeedCheck').checkbox({
+                onChange: function () {
+                    $('#wmEdit').toggleClass('active');
+                }
+            });
+            $('#ProdNeedCheck').checkbox({
+                onChange: function () {
+                    $('#productEdit').toggleClass('active');
                 }
             });
             $('#select-tags').dropdown({

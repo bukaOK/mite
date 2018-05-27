@@ -1,10 +1,6 @@
 ﻿using Mite.CodeData.Constants;
 using Mite.DAL.Initializers.Core;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Mite.DAL.Infrastructure;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;

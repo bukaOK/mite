@@ -16,9 +16,9 @@ namespace Mite.Infrastructure.Automapper
         const string ImageCachePath = "/images/post/";
         public ProductProfile()
         {
-            CreateMap<Product, ProductEditModel>()
+            CreateMap<Product, ProductModel>()
                 .ForMember(dest => dest.BonusBase64, opt => opt.MapFrom(src => src.BonusPath));
-            CreateMap<ProductEditModel, Product>()
+            CreateMap<ProductModel, Product>()
                 .ForMember(dest => dest.BonusPath, opt => opt.Ignore());
 
             CreateMap<PostDTO, ProductDTO>()

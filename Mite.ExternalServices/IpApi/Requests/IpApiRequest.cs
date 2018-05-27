@@ -1,10 +1,6 @@
 ﻿using Mite.ExternalServices.IpApi.Responses;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Mite.ExternalServices.IpApi.Requests
@@ -20,10 +16,9 @@ namespace Mite.ExternalServices.IpApi.Requests
         public async Task<IpApiResponse> PerformAsync(string ip)
         {
             var reqUri = "http://ip-api.com/json/" + ip;
-            var resp = await httpClient.GetAsync(reqUri);
-            var content = await resp.Content.ReadAsStringAsync();
+            var resp = await httpClient.GetStringAsync(reqUri);
 
-            var ipResp = JsonConvert.DeserializeObject<IpApiResponse>(content);
+            var ipResp = JsonConvert.DeserializeObject<IpApiResponse>(resp);
             return ipResp;
         }
     }

@@ -195,32 +195,44 @@
         {
             <div class="five wide column">
                 <div class="ui segment">
-                    <h4 class="ui header">
-                        <span class="content">
-                            Цена: @Model.Product.Price
-                            @if (User.Identity.GetUserId() != Model.User.Id)
-                            {
-                                <a class="ui violet label" id="buyButton">Купить</a>
-                            }
-                        </span>
-                        <span class="sub header">
-                            С покупкой вы получите:
-                            <div class="ui bulleted list">
-                                <div class="item">
-                                    доступ к оригиналу изображения
-                                </div>
-                                <div class="item">
-                                    право на коммерческое использование без указания ссылки на автора
-                                </div>
-                                @if (!string.IsNullOrEmpty(Model.Product.BonusDescription))
+                    @if (Model.Product.IsBought || User.Identity.GetUserId() == Model.User.Id)
+                    {
+                        @Html.ActionLink("Скачать", "Download", "Products", new { id = Model.ProductId }, new { @class = "ui violet button" })
+                    }
+                    else
+                    {
+                        <div class="ui small header">
+                            <div class="content">
+                                Цена: @Model.Product.Price
+                                @if (User.Identity.IsAuthenticated && User.Identity.GetUserId() != Model.User.Id)
                                 {
-                                    <div class="item">
-                                        а также бонус: @Model.Product.BonusDescription
-                                    </div>
+                                    <a class="ui violet label" id="buyButton">Купить</a>
+                                }
+                                else if (!User.Identity.IsAuthenticated)
+                                {
+                                    @Html.ActionLink("Не более 2х минут на регистрацию, и вы сможете купить эту работу.", "Register", "Account", new { returnUrl = Request.Url.AbsoluteUri }, null);
                                 }
                             </div>
-                        </span>
-                    </h4>
+                            <div class="sub header">
+                                С покупкой вы получите:
+                                <div class="ui bulleted list">
+                                    <div class="item">
+                                        доступ к оригиналу изображения
+                                    </div>
+                                    <div class="item">
+                                        право на коммерческое использование без указания ссылки на автора
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(Model.Product.BonusDescription))
+                                    {
+                                        <div class="item">
+                                            а также бонус: @Model.Product.BonusDescription
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+
                 </div>
             </div>
         }

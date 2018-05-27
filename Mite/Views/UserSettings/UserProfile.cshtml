@@ -2,9 +2,8 @@
 @model Mite.Models.ProfileSettingsModel
 
 @*WithLabel используется только с TextBox!!*@
-
-<div class="ui center aligned grid">
-    <div class="sixteen wide mobile twelve wide tablet ten wide computer left aligned column">
+<div class="ui grid">
+    <div class="sixteen wide mobile thirteen wide tablet eleven wide computer column">
         @using (Html.BeginForm("UserProfile", "UserSettings", FormMethod.Post, new { @class = "ui form", id = "profileForm" }))
     {
         @Html.EditorFor(x => x.NickName, new { WithLabel = true })
@@ -12,13 +11,37 @@
             @Html.EditorFor(x => x.Gender)
         </div>
         <div class="fields">
-            <div class="four wide field">
+            <div class="two wide field">
                 @Html.LabelFor(x => x.Age)
                 @Html.TextBoxFor(x => x.Age, new { placeholder = "18" })
             </div>
-            <div class="twelve wide field">
+            <div class="seven wide field">
+                @Html.LabelFor(x => x.Country)
+                <div class="ui fluid search selection dropdown" id="countryDrop">
+                    <input type="hidden" value="@Model.Country" name="Cuntry" />
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Страна</div>
+                    <div class="menu">
+                        @foreach (var country in Model.Countries)
+                        {
+                            <div class="item" data-value="@country.Value">@country.Text</div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="seven wide field">
                 @Html.LabelFor(x => x.City)
-                @Html.DropDownListFor(x => x.City, Model.Cities, new { @class = "ui fluid search selection dropdown" })
+                <div class="ui fluid search selection dropdown" id="cityDrop">
+                    <input type="hidden" value="@Model.City" name="City" />
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Город</div>
+                    <div class="menu">
+                        @foreach (var city in Model.Cities)
+                        {
+                            <div class="item" data-value="@city.Value">@city.Text</div>
+                        }
+                    </div>
+                </div>
             </div>
         </div>
         <div class="two fields">
@@ -55,21 +78,34 @@
     </div>
 </div>
 <script>
-    $('#City').dropdown({
+    $('#cityDrop').dropdown({
         fullTextSearch: true,
         match: 'text'
     });
+    $('#countryDrop').dropdown({
+        fullTextSearch: true,
+        match: 'text',
+        onChange: function (value, text) {
+            CitiesApi.loadCities(value).then(function (resp) {
+                $('#cityDrop').dropdown('setup menu', {
+                    values: resp.map(function (city, index) {
+                        return {
+                            name: city.Name,
+                            value: city.Id
+                        }
+                    })
+                }).dropdown('set selected', resp[0].Id);
+            });
+        }
+    });
+    var extRgx = /https?:\/\/.+/i;
     $('#About').on('input', function (ev) {
-        var rgx = /((.*vk.com.*)|(.*vkontakte.ru.*)|(.*artstation.com.*)|(.*dribbble.com.*)|(.*facebook.com.*)|(.*twitter.com.*)|(.*instagram.com))/i,
-            $msg = $('#extServMsg');
-        if ($(this).val().match(rgx)) {
+        var $msg = $('#extServMsg');
+        if ($(this).val().match(extRgx)) {
             $msg.show();
         } else {
             $msg.hide();
         }
-    });
-    $('#City~.search').on('input', function (ev) {
-        cityPs.update();
     });
     $('.ui.checkbox').checkbox();
     @Html.FormValidation("#profileForm")

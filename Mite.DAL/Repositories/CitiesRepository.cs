@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dapper;
 using System.Data.Entity;
+using System;
 
 namespace Mite.DAL.Repositories
 {
@@ -57,6 +58,21 @@ namespace Mite.DAL.Repositories
                 Table.Add(city);
             }
             return SaveAsync();
+        }
+        public Task<City> GetNearliestAsync(double latitude, double longitude)
+        {
+            var query = "select * from dbo.\"Cities\" order by sqrt((\"Latitude\" - @latitude)^2 + (\"Longitude\" - @longitude)^2) asc limit 1;";
+            return Db.QueryFirstOrDefaultAsync<City>(query, new { latitude, longitude });
+        }
+        public async Task<IEnumerable<City>> GetByCountryAsync(Guid countryId)
+        {
+            return await Table.AsNoTracking().Where(x => x.CountryId == countryId)
+                .OrderByDescending(x => x.Population).ThenBy(x => x.Name).ToListAsync();
+        }
+        public async Task<IEnumerable<City>> GetByCountryAsync(string countryCode)
+        {
+            return await Table.AsNoTracking().Where(x => x.Country.IsoCode == countryCode)
+                .OrderByDescending(x => x.Population).ThenBy(x => x.Name).ToListAsync();
         }
     }
 }

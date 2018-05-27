@@ -9,8 +9,14 @@ namespace Mite.DAL.Entities
     {
         public Guid Id { get; set; }
         public string UserEmail { get; set; }
+        /// <summary>
+        /// Код для подтверждения владения e-mail
+        /// </summary>
         [MaxLength(256)]
         public string Code { get; set; }
+        /// <summary>
+        /// Дата окончания срока действия кода
+        /// </summary>
         public DateTime CodeExpires { get; set; }
         [ForeignKey("Product")]
         public Guid ProductId { get; set; }

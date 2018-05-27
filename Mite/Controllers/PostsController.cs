@@ -240,7 +240,7 @@ namespace Mite.Controllers
             var posts = await postsService.GetTopAsync(filter, User.Identity.GetUserId());
             return Json(JsonStatuses.Success, posts);
         }
-        private DataServiceResult ValidateProduct(ProductEditModel editModel)
+        private DataServiceResult ValidateProduct(ProductModel editModel)
         {
             if (editModel.Price == null)
                 return DataServiceResult.Failed("Заполните цену товара");

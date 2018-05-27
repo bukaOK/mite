@@ -14,6 +14,9 @@ namespace Mite.Infrastructure.Automapper
     public class PostProfile : Profile
     {
         const string ImagesPath = "/images/post/";
+        const string ImagesCollectionItemPath = "/images/colitem/";
+        const string ImagesComicsItemPath = "/images/comicitem/";
+
         private readonly ILogger logger = LogManager.GetLogger("LOGGER");
 
         public PostProfile()
@@ -128,13 +131,13 @@ namespace Mite.Infrastructure.Automapper
             CreateMap<PostModel, WritingPostModel>();
 
             CreateMap<PostCollectionItem, PostCollectionItemModel>()
-                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.ContentSrc));
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => ImagesCollectionItemPath + src.Id + $"?watermark={src.Post.WatermarkId != null}"));
             CreateMap<PostCollectionItemModel, PostCollectionItem>()
                 .ForMember(dest => dest.ContentSrc_50, opt => opt.Ignore())
                 .ForMember(dest => dest.ContentSrc, opt => opt.MapFrom(src => src.Content));
             CreateMap<ComicsItem, PostComicsItemModel>()
-                .ForMember(dest => dest.CompressedContent, opt => opt.MapFrom(src => src.ContentSrc_50))
-                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.ContentSrc));
+                .ForMember(dest => dest.CompressedContent, opt => opt.MapFrom(src => ImagesComicsItemPath + src.Id + $"?watermark={src.Post.WatermarkId != null}&resize=true"))
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => ImagesComicsItemPath + src.Id + $"?watermark={src.Post.WatermarkId != null}&resize=false"));
             CreateMap<PostComicsItemModel, ComicsItem>()
                 .ForMember(dest => dest.ContentSrc_50, opt => opt.Ignore())
                 .ForMember(dest => dest.ContentSrc, opt => opt.MapFrom(src => src.Content));

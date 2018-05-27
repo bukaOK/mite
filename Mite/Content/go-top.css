@@ -1,0 +1,22 @@
+﻿#go-top {
+    border-radius: 100px;
+    background-color: #fff;
+    box-shadow: 0 0 5px 3px rgba(0,0,0, 0.2);
+    padding: 10px;
+    padding-top: 8px;
+    font-size: 1.5em;
+    font-family: Icons;
+    color: #b540c6;
+    position: fixed;
+    bottom: 100px;
+    left: 50px;
+    display: none;
+    cursor: pointer;
+    transition: background-color linear 0.2s;
+}
+#go-top:before{
+    content: "\f077";
+}
+#go-top:hover{
+    background-color: rgba(255, 255, 255, 0.5);
+}

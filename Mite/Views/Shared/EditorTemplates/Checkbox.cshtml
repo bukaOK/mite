@@ -1,13 +1,12 @@
 ﻿@model bool?
 
 @{
-    var isChecked = Html.ViewData.TemplateInfo.FormattedModelValue as bool?;
-
+    var isChecked = Html.ViewData.TemplateInfo.FormattedModelValue as bool?;    
 }
 
 <div class="field">
     <div class="ui checkbox">
-        <input type="checkbox" id="@Html.Name("")" value=@Html.Raw(isChecked) name="@Html.Name("")" @Html.Raw(isChecked == true || isChecked != null ? "checked" : "") />
+        <input type="checkbox" id="@Html.Id("")" value="@Html.Raw(isChecked)" name="@Html.Name("")" @Html.Raw(isChecked == true ? "checked" : "") />
         <label>@Html.DisplayName("")</label>
     </div>
 </div>
