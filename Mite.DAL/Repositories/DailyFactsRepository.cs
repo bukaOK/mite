@@ -13,19 +13,18 @@ namespace Mite.DAL.Repositories
         public DailyFactsRepository(AppDbContext dbContext) : base(dbContext)
         {
         }
-        public DailyFact GetDailyFact()
+        public async Task<DailyFact> GetDailyFactAsync()
         {
             var now = DateTime.UtcNow;
-            var query = "select * from dbo.\"DailyFacts\" where \"StartDate\"<=@now and \"EndDate\">=@now limit 1;";
-            var fact = Db.QueryFirstOrDefault<DailyFact>(query, new { now });
+            //Находим факт, который определен на сегодня
+            var fact = await Table.FirstOrDefaultAsync(x => x.StartDate <= now && x.EndDate >= now);
             if (fact != null)
                 return fact;
-            query = "select * from (select * from dbo.\"DailyFacts\" where \"StartDate\" is null or \"EndDate\" is null) " +
-                "tablesample system_rows(1);";
-            fact = Db.QueryFirstOrDefault<DailyFact>(query);
+            //Если такого нет, находим факт без даты
+            fact = await Table.FirstOrDefaultAsync(x => x.StartDate == null && x.EndDate == null);
             if (fact == null)
                 return null;
-
+            //Задаем дату на сегодня
             fact.StartDate = new DateTime(now.Year, now.Month, now.Day);
             fact.EndDate = new DateTime(now.Year, now.Month, now.Day, 23, 59, 59);
             DbContext.Entry(fact).State = EntityState.Modified;
@@ -33,7 +32,7 @@ namespace Mite.DAL.Repositories
 
             return fact;
         }
-        public Task ResetFactDates()
+        public Task ResetFactDatesAsync()
         {
             var query = "update dbo.\"DailyFacts\" set \"StartDate\"=null, \"EndDate\"=null;";
             return Db.ExecuteAsync(query);

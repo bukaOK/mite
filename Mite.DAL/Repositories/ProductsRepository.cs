@@ -29,9 +29,11 @@ namespace Mite.DAL.Repositories
         public async Task<IEnumerable<ProductDTO>> GetForUserAsync(string userId, SortFilter sort)
         {
             var query = "select posts.*, (select count(*) from dbo.\"Comments\" as comments where comments.\"PostId\"=posts.\"Id\") " +
-                "as \"CommentsCount\", products.*, tags.* from dbo.\"Posts\" as posts " +
+                "as \"CommentsCount\", posts.*, products.*, tags.* from dbo.\"Posts\" as posts " +
+                "left outer join dbo.\"Products\" products on products.\"Id\"=posts.\"ProductId\" " +
                 "left outer join dbo.\"TagPosts\" as tag_posts on tag_posts.\"Post_Id\"=posts.\"Id\" " +
-                "left outer join dbo.\"Tags\" as tags on tags.\"Id\"=tag_posts.\"Tag_Id\" ";
+                "left outer join dbo.\"Tags\" as tags on tags.\"Id\"=tag_posts.\"Tag_Id\" " +
+                "where posts.\"ProductId\" is not null and posts.\"UserId\"=@userId ";
             switch (sort)
             {
                 case SortFilter.Popular:
@@ -79,7 +81,9 @@ namespace Mite.DAL.Repositories
             var query = "select posts.\"Id\" from dbo.\"Posts\" as posts inner join dbo.\"Products\" products " +
                 "on products.\"Id\"=posts.\"ProductId\" inner join dbo.\"Users\" users on users.\"Id\"=posts.\"UserId\" " +
                 $"where posts.\"Type\"='{(byte)PostTypes.Published}' and posts.\"PublishDate\" is not null and " +
-                "posts.\"PublishDate\" > @MinDate and posts.\"PublishDate\" < @MaxDate and products.\"ForAuthors\"=@ForAuthors ";
+                "posts.\"PublishDate\" > @MinDate and posts.\"PublishDate\" < @MaxDate ";
+            if (filter.ForAuthors)
+                query += "and products.\"ForAuthors\"=true ";
             if (!string.IsNullOrEmpty(filter.Input))
             {
                 query += "and (setweight(to_tsvector('mite_ru', posts.\"Title\"), 'A') || " +

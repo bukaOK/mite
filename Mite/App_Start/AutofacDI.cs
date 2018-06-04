@@ -71,7 +71,7 @@ namespace Mite
 
             builder.RegisterType<HttpClient>().SingleInstance();
             builder.RegisterType<YaHttpClient>().As<IHttpClient>();
-            builder.RegisterType<Authenticator>();
+            builder.RegisterType<Authenticator>().InstancePerRequest();
 
             builder.Register(c => LogManager.GetLogger("LOGGER")).As<ILogger>().SingleInstance();
 

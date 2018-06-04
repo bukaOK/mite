@@ -29,9 +29,10 @@ namespace Mite.Controllers
         private readonly ITagsService tagsService;
         private readonly IFollowersService followersService;
         private readonly AppUserManager userManager;
+        private readonly IUserService userService;
 
         public PostsController(IPostsService postsService, IRatingService ratingService, IHelpersService helpersService, 
-            ITagsService tagsService, IFollowersService followersService, AppUserManager userManager)
+            ITagsService tagsService, IFollowersService followersService, AppUserManager userManager, IUserService userService)
         {
             this.postsService = postsService;
             this.ratingService = ratingService;
@@ -39,6 +40,7 @@ namespace Mite.Controllers
             this.tagsService = tagsService;
             this.followersService = followersService;
             this.userManager = userManager;
+            this.userService = userService;
         }
         [HttpGet]
         [AllowAnonymous]
@@ -217,10 +219,10 @@ namespace Mite.Controllers
         [AllowAnonymous]
         public async Task<ViewResult> Top()
         {
-            
             var model = new TopModel
             {
-                Tags = await tagsService.GetWithPopularityAsync(true, 30)
+                Tags = await tagsService.GetWithPopularityAsync(true, 30),
+                BestAuthors = await userService.GetDayBestAsync()
             };
             if (User.Identity.IsAuthenticated)
             {
@@ -235,8 +237,7 @@ namespace Mite.Controllers
         public async Task<ActionResult> Top(PostTopFilterModel filter)
         {
             //Плюс зарезервированный символ url, поэтому заменяется пробелом
-            if(!string.IsNullOrEmpty(filter.Tags))
-                filter.Tags = filter.Tags.Replace("18 ", "18+");
+            filter.Input = filter.Input?.Replace("#18 ", "#18+");
             var posts = await postsService.GetTopAsync(filter, User.Identity.GetUserId());
             return Json(JsonStatuses.Success, posts);
         }

@@ -49,27 +49,30 @@
         </div>
         <div class="right aligned column">
             <div id="vk_share" style="display: inline-block;"></div>
-            <div class="ui tiny labeled button" @Html.Raw(User.Identity.IsAuthenticated ? "" : "disabled title='Войдите, чтобы добавлять работы в избранное'")>
-                @if (Model.IsFavorite)
-                {
-                    <button class="ui compact small primary button" onclick="FavoritePostsApi.remove(this, '@Model.Id', '@userId')">
-                        <i class="like icon"></i><span class="content">Из избранных</span>
-                    </button>
-                    <button class="ui compact small primary button" onclick="FavoritePostsApi.add(this, '@Model.Id', '@userId')" style="display: none">
-                        <i class="like icon"></i><span class="content">В избранное</span>
-                    </button>
-                }
-                else
-                {
-                    <button class="ui compact small primary button" onclick="FavoritePostsApi.add(this, '@Model.Id', '@userId')">
-                        <i class="like icon"></i><span class="content">В избранное</span>
-                    </button>
-                    <button class="ui compact small primary button" onclick="FavoritePostsApi.remove(this, '@Model.Id', '@userId')" style="display: none">
-                        <i class="like icon"></i><span class="content">Из избранных</span>
-                    </button>
-                }
-                <span class="ui violet basic left pointing label">@Model.FavoriteCount</span>
-            </div>
+            @if (User.Identity.IsAuthenticated)
+            {
+                <div class="ui tiny labeled button">
+                    @if (Model.IsFavorite)
+                    {
+                        <button class="ui compact small primary button" onclick="FavoritePostsApi.remove(this, '@Model.Id', '@userId')">
+                            <i class="like icon"></i><span class="content">Из избранных</span>
+                        </button>
+                        <button class="ui compact small primary button" onclick="FavoritePostsApi.add(this, '@Model.Id', '@userId')" style="display: none">
+                            <i class="like icon"></i><span class="content">В избранное</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="ui compact small primary button" onclick="FavoritePostsApi.add(this, '@Model.Id', '@userId')">
+                            <i class="like icon"></i><span class="content">В избранное</span>
+                        </button>
+                        <button class="ui compact small primary button" onclick="FavoritePostsApi.remove(this, '@Model.Id', '@userId')" style="display: none">
+                            <i class="like icon"></i><span class="content">Из избранных</span>
+                        </button>
+                    }
+                    <span class="ui violet basic left pointing label">@Model.FavoriteCount</span>
+                </div>
+            }
             @if (currentUserName == pageUserName)
             {
                 @Html.ActionLink("Редактировать", "EditPost", "Posts", new { id = Model.Id }, new { @class = "ui primary small compact button" })

@@ -82,7 +82,7 @@ namespace Mite.ExternalServices.YandexMoney
             authenticator.Token = token.Token;
 
             var accountInfoReq = new AccountInfoRequest<AccountInfoResult>(httpClient, new JsonSerializer<AccountInfoResult>());
-            var accountInfoRes = await accountInfoReq.Perform();
+            var accountInfoRes = await accountInfoReq.Perform().ConfigureAwait(false);
             var user = await userManager.FindByIdAsync(userId);
             user.YandexWalId = accountInfoRes.Account;
             await userManager.UpdateAsync(user);

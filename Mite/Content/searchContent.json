@@ -1,0 +1,96 @@
+﻿[
+  {
+    "baseTitle": "Настройки",
+    "baseUrl": "/user/settings/",
+    "items": [
+      {
+        "title": "изменить аватар",
+        "action": "changeavatar"
+      },
+      {
+        "title": "уведомления",
+        "action": "notifications"
+      },
+      {
+        "title": "профиль",
+        "action": "userprofile"
+      },
+      {
+        "title": "безопасность",
+        "action": "security"
+      },
+      {
+        "title": "мои подписки",
+        "action": "usertags"
+      },
+      {
+        "title": "внешние ссылки",
+        "action": "externallinks"
+      }
+    ]
+  },
+  {
+    "baseTitle": "Профиль",
+    "baseUrl": "/user/profile/",
+    "forAuthors": true,
+    "items": [
+      {
+        "title": "публикации",
+        "action": "posts/published"
+      },
+      {
+        "title": "черновики",
+        "action": "posts/drafts"
+      },
+      {
+        "title": "заблокированные работы",
+        "action": "posts/blocked"
+      },
+      {
+        "title": "подписчики",
+        "action": "followers"
+      },
+      {
+        "title": "мои подписки",
+        "action": "followings"
+      },
+      {
+        "title": "избранное",
+        "action": "favorites"
+      },
+      {
+        "title": "товары",
+        "action": "products"
+      },
+      {
+        "title": "услуги",
+        "action": "services"
+      }
+    ]
+  },
+  {
+    "baseTitle": "Профиль",
+    "baseUrl": "/user/profile/",
+    "forClients": true,
+    "items": [
+      {
+        "title": "мои подписки",
+        "action": "followings"
+      },
+      {
+        "title": "избранное",
+        "action": "favorites"
+      }
+    ]
+  },
+  {
+    "baseTitle": "Счет",
+    "baseUrl": "/user/cash/",
+    "items": [
+      {
+        "title": "мой счет",
+        "action": ""
+      }
+    ]
+  }
+]

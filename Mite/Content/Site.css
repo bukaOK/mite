@@ -13,6 +13,9 @@ label input[type=file]{
 .ui.header>.sub.header {
     overflow: hidden;
 }
+.header.main.item{
+    min-height: 42px;
+}
 .ui.margined.button{
     margin-bottom: 4px;
 }

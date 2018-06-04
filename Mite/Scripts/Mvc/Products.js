@@ -1,6 +1,4 @@
-﻿import iziToast from "../../bower_components/izitoast/types";
-
-var Products = {
+﻿var Products = {
     BonusFile: {
         /**
          * @param {File} file

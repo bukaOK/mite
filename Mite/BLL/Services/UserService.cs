@@ -50,6 +50,11 @@ namespace Mite.BLL.Services
         /// </summary>
         /// <returns></returns>
         Task<DataServiceResult> RecountReliabilityAsync(string userId);
+        /// <summary>
+        /// Лучшие авторы за день
+        /// </summary>
+        /// <returns></returns>
+        Task<IEnumerable<UserShortModel>> GetDayBestAsync();
     }
     public class UserService : DataService, IUserService
     {
@@ -268,6 +273,19 @@ namespace Mite.BLL.Services
             user.InviteId = Guid.NewGuid();
             await userManager.UpdateAsync(user);
             return user.InviteId.ToString();
+        }
+
+        public async Task<IEnumerable<UserShortModel>> GetDayBestAsync()
+        {
+            var usersRepo = Database.GetRepo<UserRepository, User>();
+
+            var now = DateTime.UtcNow;
+            var beginDate = new DateTime(now.Year, now.Month, now.Day);
+            var endDate = beginDate.AddHours(23).AddMinutes(59);
+
+            const int count = 5;
+            var users = await usersRepo.GetDateBestAsync(beginDate, endDate, count);
+            return Mapper.Map<IEnumerable<UserShortModel>>(users);
         }
     }
 }

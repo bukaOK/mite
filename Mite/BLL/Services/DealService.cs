@@ -201,7 +201,7 @@ namespace Mite.BLL.Services
                         var notifyReq = new SendRequest(httpClient, VkSettings.GroupKey)
                         {
                             UserId = vkUserId,
-                            Message = "У Вас новый заказ! Все заказы здесь: http://mitegroup.ru/user/deals/incoming/new. С уважением, MiteGroup."
+                            Message = "У Вас новый заказ! Все заказы здесь: https://mitegroup.ru/user/deals/incoming/new. С уважением, MiteGroup."
                         };
                         await notifyReq.PerformAsync();
                     }

@@ -29,6 +29,16 @@ namespace Mite.Controllers.Api
             var facts = await factsRepository.GetAllAsync();
             return Mapper.Map<IEnumerable<DailyFactModel>>(facts);
         }
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IHttpActionResult> Get(string trash)
+        {
+            var dailyFact = await factsRepository.GetDailyFactAsync();
+            if (dailyFact == null)
+                await factsRepository.ResetFactDatesAsync();
+            dailyFact = await factsRepository.GetDailyFactAsync();
+            return Json(dailyFact);
+        }
         [HttpPost]
         public async Task<IHttpActionResult> Add(DailyFactModel model)
         {

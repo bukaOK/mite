@@ -8,7 +8,7 @@
             type: 'get',
             url: CitiesApi.url,
             success: function (resp) {
-                $container.html(self.tmpl.render(resp));
+                
             },
             error: function (jqXhr) {
                 iziToast.error({

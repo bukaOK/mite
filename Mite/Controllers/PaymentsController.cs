@@ -14,6 +14,7 @@ using System.Web.Mvc;
 using Yandex.Money.Api.Sdk.Exceptions;
 using Yandex.Money.Api.Sdk.Responses;
 using Mite.BLL.Infrastructure;
+using Mite.DAL.Entities;
 
 namespace Mite.Controllers
 {
@@ -54,7 +55,7 @@ namespace Mite.Controllers
                 {
                     //Сохраняем операцию в базу
                     var operationId = (string)result.ResultData;
-                    await paymentService.AddAsync(sum, operationId, userId, PaymentType.YandexWallet);
+                    await paymentService.AddAsync(sum, operationId, userId, PaymentType.YandexWallet, PaymentStatus.Payed);
                     return Json(JsonStatuses.Success);
                 }
                 else
@@ -104,7 +105,7 @@ namespace Mite.Controllers
                 {
                     //Сохраняем операцию в базу
                     var operationId = (string)result.ResultData;
-                    await paymentService.AddAsync(-sum, operationId, user.Id, PaymentType.YandexWallet);
+                    await paymentService.AddAsync(-sum, operationId, user.Id, PaymentType.YandexWallet, PaymentStatus.Payed);
 
                     //Перечисляем системе
                     await cashService.AddAsync(user.Id, null, comissionSum, CashOperationTypes.Comission);
@@ -173,6 +174,22 @@ namespace Mite.Controllers
                 return Json(JsonStatuses.Success);
             }
             return Json(JsonStatuses.ValidationError, result.Errors);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> PayInQiwi(QiwiPayInModel model)
+        {
+            if (!ModelState.IsValid)
+                return Json(JsonStatuses.ValidationError, GetModelErrors());
+            var result = await paymentService.AddAsync((double)model.QiwiPayInSum, null, CurrentUserId, PaymentType.QIWI, PaymentStatus.Waiting);
+            var payment = result.ResultData as Payment;
+
+            var commonUrl = $"{Request.Url.Scheme}://{Request.Url.Host}/cash/";
+            return Json(JsonStatuses.Success, new
+            {
+                url = $"https://bill.qiwi.com/order/external/create.action?from={QiwiSettings.ApiId}&summ={model.QiwiPayInSum}&" +
+                $"currency=RUB&to={model.QiwiPhoneNumber}&comm=Пополнение счета&txn_id={payment.Id}&successUrl={commonUrl}&failUrl={commonUrl}"
+            });
         }
         [HttpPost]
         [ValidateAntiForgeryToken]

@@ -56,7 +56,6 @@ namespace Mite.DAL.DTO
         /// Элементы коллекции(если работа - коллекция)
         /// </summary>
         public List<PostCollectionItem> Collection { get; set; }
-        public double? Price { get; set; }
         public string UserId { get; set; }
         public User User { get; set; }
         public int CommentsCount { get; set; }

@@ -41,6 +41,12 @@
         </table>
     </div>
     <div class="ui loading basic segment tab" data-tab="cities">
+        <div class="ui selection dropdown" id="countriesDrop">
+            <input name="Country" id="Country" type="hidden" />
+            <i class="dropdown icon"></i>
+            <div class="default text">Страна</div>
+            <div class="menu"></div>
+        </div>
         <button class="ui primary button" onclick="showCityAddModal(this)">Добавить город</button>
         <table class="ui celled table">
             <thead>
@@ -205,7 +211,26 @@
         }).modal('show');
     }
     $(function () {
-        CitiesApi.init($('.tab[data-tab="cities"] tbody'));
+        var cityTmpl = $.templates('#citiesRowTmpl');
+        $.getJSON('/api/countries', null, function (resp) {
+            $('#countriesDrop').dropdown({
+                fullTextSearch: true,
+                values: resp.map(function (cItem, index) {
+                    var item = {
+                        value: cItem.Id,
+                        name: cItem.Name
+                    };
+                    if (index === 0)
+                        item.selected = true;
+                    return item;    
+                }),
+                onChange: function (val, text) {
+                    $.getJSON('/api/cities/' + val, null, function (resp) {
+                        $('.tab[data-tab="cities"] tbody').html(cityTmpl.render(resp));
+                    })
+                }
+            });
+        });
         $('.moder-panel.item').addClass('active');
         //Грузим таблицы с тегами
         $('.ui.tabs .item').tab({

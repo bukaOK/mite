@@ -278,7 +278,7 @@
         <div class="ui tab four column doubling basic segment grid" data-tab="followings"></div>
         <div class="ui tab three column doubling basic segment grid" data-tab="services"></div>
         <div class="ui tab four column basic segment grid" data-tab="products"></div>
-        <div class="ui tab stackable four column basic segment grid" data-tab="favorites"></div>
+        <div class="ui tab stackable three column basic segment grid" data-tab="favorites"></div>
     }
     <div class="dot-loader-wrapper">
         <div class="dot-loader">
@@ -290,10 +290,14 @@
 }
 else
 {
-    if (Model.ShowAd)
-    {
-        <div class="ui stackable grid">
-            <div class="three wide column">
+    <div class="ui stackable grid">
+        <div class="three wide column">
+            <div class="ui loading segment">
+                <div class="ui dividing header" id="dailyFactHeader">Факт дня</div>
+                <p id="dailyFactDesc"></p>
+            </div>
+            @if (Model.ShowAd)
+            {
                 <div class="ui segment">
                     <h4 class="ui dividing header">Реклама</h4>
                     <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
@@ -305,56 +309,34 @@ else
                          data-ad-format="auto"></ins>
                     <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
                 </div>
-            </div>
-            <div class="thirteen wide column">
-                @if (isMobileDevice)
-                {
-                    <div class="ui tab stackable two column basic segment grid" data-tab="posts/published"></div>
-                    <div class="ui doubling tab three column basic segment grid" data-tab="followers"></div>
-                    <div class="ui tab stackable two column basic segment grid" data-tab="services"></div>
-                    <div class="ui tab stackable two column basic segment grid" data-tab="products"></div>
-                    <div class="ui tab stackable two column basic segment grid" data-tab="favorites"></div>
-                }
-                else
-                {
-                    <div class="ui tab three column basic segment grid" data-tab="posts/published"></div>
-                    <div class="ui tab four column basic segment grid" data-tab="followers"></div>
-                    <div class="ui tab three column basic segment grid" data-tab="services"></div>
-                    <div class="ui tab three column basic segment grid" data-tab="products"></div>
-                    <div class="ui tab stackable four column basic segment grid" data-tab="favorites"></div>
-                }
-                <div class="dot-loader-wrapper">
-                    <div class="dot-loader">
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                    </div>
+            }
+        </div>
+        <div class="thirteen wide column">
+            @if (isMobileDevice)
+            {
+                <div class="ui tab stackable two column basic segment grid" data-tab="posts/published"></div>
+                <div class="ui doubling tab three column basic segment grid" data-tab="followers"></div>
+                <div class="ui tab stackable two column basic segment grid" data-tab="services"></div>
+                <div class="ui tab stackable two column basic segment grid" data-tab="products"></div>
+                <div class="ui tab stackable two column basic segment grid" data-tab="favorites"></div>
+            }
+            else
+            {
+                <div class="ui tab three column basic segment grid" data-tab="posts/published"></div>
+                <div class="ui tab four column basic segment grid" data-tab="followers"></div>
+                <div class="ui tab three column basic segment grid" data-tab="services"></div>
+                <div class="ui tab three column basic segment grid" data-tab="products"></div>
+                <div class="ui tab stackable three column basic segment grid" data-tab="favorites"></div>
+            }
+            <div class="dot-loader-wrapper">
+                <div class="dot-loader">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
                 </div>
             </div>
         </div>
-    }
-    else
-    {
-        if (isMobileDevice)
-        {
-            <div class="ui tab stackable two column basic segment grid" data-tab="posts/published"></div>
-            <div class="ui doubling tab three column basic segment grid" data-tab="followers"></div>
-            <div class="ui tab stackable two column basic segment grid" data-tab="services"></div>
-        }
-        else
-        {
-            <div class="ui tab four column basic segment grid" data-tab="posts/published"></div>
-            <div class="ui tab four column basic segment grid" data-tab="followers"></div>
-            <div class="ui tab three column basic segment grid" data-tab="services"></div>
-        }
-        <div class="dot-loader-wrapper">
-            <div class="dot-loader">
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-            </div>
-        </div>
-    }
+    </div>
 }
 @{ Html.RenderPartial("_Modals"); }
 @{ Html.RenderPartial("_Templates"); }
@@ -419,6 +401,7 @@ else
                 }
             }
         });
+        DailyFactsApi.getDailyFact();
         $('#userActionsDrop').dropdown({
             action: 'nothing',
             transition: 'slide right',

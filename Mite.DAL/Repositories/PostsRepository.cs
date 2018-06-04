@@ -112,10 +112,9 @@ namespace Mite.DAL.Repositories
         public async Task<IEnumerable<PostDTO>> GetByUserAsync(string userId, PostTypes postType, SortFilter sort)
         {
             var query = "select posts.*, (select count(*) from dbo.\"Comments\" as comments where comments.\"PostId\"=posts.\"Id\") " +
-                "as \"CommentsCount\", products.\"Price\", tags.* from dbo.\"Posts\" as posts " +
+                "as \"CommentsCount\", tags.* from dbo.\"Posts\" as posts " +
                 "left outer join dbo.\"TagPosts\" as tag_posts on tag_posts.\"Post_Id\"=posts.\"Id\" " +
-                "left outer join dbo.\"Tags\" as tags on tags.\"Id\"=tag_posts.\"Tag_Id\" " +
-                "left outer join dbo.\"Products\" products on products.\"Id\"=posts.\"ProductId\" ";
+                "left outer join dbo.\"Tags\" as tags on tags.\"Id\"=tag_posts.\"Tag_Id\" ";
             if (postType == PostTypes.Favorite)
                 query += "right outer join dbo.\"FavoritePosts\" as favorites on favorites.\"PostId\"=posts.\"Id\" where favorites.\"UserId\"=@userId ";
             else

@@ -46,15 +46,15 @@ namespace Mite.CodeData.Constants
                     string redirect;
                     if (context.Request.Url.IsDefaultPort)
                     {
-                        redirect = $"http://{context.Request.Url.Host}/yandex/authorize";
+                        redirect = $"{context.Request.Url.Scheme}://{context.Request.Url.Host}/yandex/authorize";
                     }
                     else
                     {
-                        redirect = $"http://{context.Request.Url.Host}:{context.Request.Url.Port}/yandex/authorize";
+                        redirect = $"{context.Request.Url.Scheme}://{context.Request.Url.Host}:{context.Request.Url.Port}/yandex/authorize";
                     }
                     return redirect;
                 }
-                return "http://mitegroup.ru/yandex/authorize";
+                return $"http://mitegroup.ru/yandex/authorize";
             }
         }
         public static string ExtPayRedirectSuccess
@@ -67,15 +67,15 @@ namespace Mite.CodeData.Constants
                     string redirect;
                     if (context.Request.Url.IsDefaultPort)
                     {
-                        redirect = $"http://{context.Request.Url.Host}/yandex/confirmexternalpayment?success=true";
+                        redirect = $"{context.Request.Url.Scheme}://{context.Request.Url.Host}/yandex/confirmexternalpayment?success=true";
                     }
                     else
                     {
-                        redirect = $"http://{context.Request.Url.Host}:{context.Request.Url.Port}/yandex/confirmexternalpayment?success=true";
+                        redirect = $"{context.Request.Url.Scheme}://{context.Request.Url.Host}:{context.Request.Url.Port}/yandex/confirmexternalpayment?success=true";
                     }
                     return redirect;
                 }
-                return "http://mitegroup.ru/yandex/confirmexternalpayment?success=true";
+                return "https://mitegroup.ru/yandex/confirmexternalpayment?success=true";
             }   
         }
         public static string ExtPayRedirectFailed
@@ -88,15 +88,15 @@ namespace Mite.CodeData.Constants
                     string redirect;
                     if (context.Request.Url.IsDefaultPort)
                     {
-                        redirect = $"http://{context.Request.Url.Host}/yandex/confirmexternalpayment?success=false";
+                        redirect = $"{context.Request.Url.Scheme}://{context.Request.Url.Host}/yandex/confirmexternalpayment?success=false";
                     }
                     else
                     {
-                        redirect = $"http://{context.Request.Url.Host}:{context.Request.Url.Port}/yandex/confirmexternalpayment?success=false";
+                        redirect = $"{context.Request.Url.Scheme}://{context.Request.Url.Host}:{context.Request.Url.Port}/yandex/confirmexternalpayment?success=false";
                     }
                     return redirect;
                 }
-                return "http://mitegroup.ru/yandex/confirmexternalpayment?success=false";
+                return "https://mitegroup.ru/yandex/confirmexternalpayment?success=false";
             }
         }
     }

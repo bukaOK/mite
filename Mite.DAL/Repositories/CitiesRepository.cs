@@ -45,7 +45,7 @@ namespace Mite.DAL.Repositories
         }
         public void AddRange(IEnumerable<City> cities)
         {
-            foreach(var city in cities)
+            foreach (var city in cities)
             {
                 Table.Add(city);
             }
@@ -63,6 +63,10 @@ namespace Mite.DAL.Repositories
         {
             var query = "select * from dbo.\"Cities\" order by sqrt((\"Latitude\" - @latitude)^2 + (\"Longitude\" - @longitude)^2) asc limit 1;";
             return Db.QueryFirstOrDefaultAsync<City>(query, new { latitude, longitude });
+        }
+        public async Task<City> GetLargestByCountryAsync(Guid countryId)
+        {
+            return await Table.AsNoTracking().Where(x => x.CountryId == countryId).OrderByDescending(x => x.Population).FirstAsync();
         }
         public async Task<IEnumerable<City>> GetByCountryAsync(Guid countryId)
         {

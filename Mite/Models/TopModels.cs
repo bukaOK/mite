@@ -1,8 +1,5 @@
-﻿using Mite.BLL.DTO;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace Mite.Models
 {
@@ -11,6 +8,7 @@ namespace Mite.Models
         public int FollowersCount { get; set; }
         public bool ShowOnlyFollowings { get; set; }
         public IEnumerable<TagModel> Tags { get; set; }
+        public IEnumerable<UserShortModel> BestAuthors { get; set; }
     }
     public class TopPostModel
     {

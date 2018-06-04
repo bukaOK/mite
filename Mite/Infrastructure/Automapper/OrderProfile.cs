@@ -28,7 +28,7 @@ namespace Mite.Infrastructure.Automapper
                 .ForMember(dest => dest.OrderTypes, opt => opt.Ignore());
 
             CreateMap<Order, OrderShowModel>()
-                .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => ImagesPath + src.Id))
+                .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => src.ImageSrc == null ? null : ImagesPath + src.Id))
                 .ForMember(dest => dest.Deadline, opt => opt.ResolveUsing(src =>
                 {
                     var deadlineCases = new string[3];
@@ -56,7 +56,7 @@ namespace Mite.Infrastructure.Automapper
 
             CreateMap<OrderTopDTO, OrderTopModel>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString("N")))
-                .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => ImagesPath + src.Id + "?resize=true"))
+                .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => src.ImageSrc == null ? null : ImagesPath + src.Id + "?resize=true"))
                 .ForMember(dest => dest.Deadline, opt => opt.ResolveUsing(src =>
                 {
                     var deadlineCases = new string[3];

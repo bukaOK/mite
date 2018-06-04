@@ -29,7 +29,7 @@ namespace Mite.Controllers
                 logger.Error($"Ошибка при авторизации в Google Api: {authCode.Error}");
             else
             {
-                var result = await googleService.AuthorizeAsync(authCode.Code, $"http://{Request.Url.Host}/google/authorize", User.Identity.GetUserId());
+                var result = await googleService.AuthorizeAsync(authCode.Code, $"{Request.Url.Scheme}://{Request.Url.Host}/google/authorize", User.Identity.GetUserId());
             }
             return RedirectToAction("Index", "Admin");
         }

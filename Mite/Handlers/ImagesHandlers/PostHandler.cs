@@ -51,7 +51,7 @@ namespace Mite.Handlers.ImagesHandlers
                 }
 
                 if (watVal == "true" || resizeVal == "true")
-                //{
+                {
                     var cachedImagePath = "";
                     resp.ContentType = "image/jpeg";
 

@@ -16,7 +16,7 @@
                 <a class="item" data-tab="payOut">Вывод</a>
             </nav>
             <div class="ui active tab" data-tab="payIn">
-                @Html.EnumDropDownListFor(x => x.PaymentType, new { @class = "ui margined selection fluid dropdown" })
+                @Html.EnumDropDownListFor(x => x.PaymentType, new { @class = "ui margined selection fluid dropdown", autocomplete = "off" })
                 <div class="ui tab" data-tab="payIn/yandex">
                     @if (Model.IsYandexAuthorized)
                     {
@@ -37,6 +37,9 @@
                 </div>
                 <div class="ui tab" data-tab="payIn/bank">
                     @{ Html.RenderPartial("PayInBankCard", new BankPayInModel()); }
+                </div>
+                <div class="ui tab" data-tab="payIn/qiwi">
+                    @{ Html.RenderPartial("PayInQiwi", new QiwiPayInModel()); }
                 </div>
             </div>
             <div class="ui tab" data-tab="payOut">
@@ -164,6 +167,9 @@
                         break;
                     case '@((byte)PaymentType.BankCard)':
                         tabName = 'payIn/bank';
+                        break;
+                    case '@((byte)PaymentType.QIWI)':
+                        tabName = 'payIn/qiwi';
                         break;
                     default:
                         tabName = 'payIn/yandex';

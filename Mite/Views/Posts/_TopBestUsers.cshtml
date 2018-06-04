@@ -1,0 +1,20 @@
+﻿@model IEnumerable<Mite.Models.UserShortModel>
+
+@if (Model.Count() > 0)
+{
+    <div class="ui segment">
+        <h3 class="ui dividing header">Авторы дня</h3>
+        <div class="ui relaxed list" style="word-break: break-all">
+            @foreach (var user in Model)
+            {
+                <div class="best-author item">
+                    <img class="ui avatar image" src="@user.AvatarSrc" />
+                    <div class="content">
+                        @Html.ActionLink(user.UserName, "Index", "UserProfile", new { name = user.UserName }, new { @class = "header" })
+                        <div class="description">@(user.Description != null && user.Description.Length > 70 ? user.Description.Substring(70) + "..." : user.Description)</div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}

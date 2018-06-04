@@ -101,5 +101,18 @@ namespace Mite.DAL.Repositories
             var count = Db.QueryFirst<int>(query, new { userId });
             return count > 0;
         }
+        /// <summary>
+        /// Получить лучших авторов за промежуток времени
+        /// </summary>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public Task<IEnumerable<User>> GetDateBestAsync(DateTime beginDate, DateTime endDate, int count)
+        {
+            var query = "select * from dbo.\"Users\" users where users.\"Id\" in (select posts.\"UserId\" from dbo.\"Posts\" posts left outer join " +
+                "(select \"PostId\", sum(ratings.\"Value\") as \"RateValue\" from dbo.\"Ratings\" ratings where \"RateDate\" <= @endDate and " +
+                "\"RateDate\" >= @beginDate and \"PostId\" is not null group by \"PostId\") as rate_vals on rate_vals.\"PostId\"=posts.\"Id\" " +
+                "group by posts.\"UserId\" having sum(rate_vals.\"RateValue\") is not null order by sum(rate_vals.\"RateValue\") desc limit @count);";
+            return Db.QueryAsync<User>(query, new { beginDate, endDate, count });
+        }
     }
 }

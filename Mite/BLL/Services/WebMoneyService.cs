@@ -60,7 +60,8 @@ namespace Mite.BLL.Services
             {
                 var response = result.ResultData as ExpressPaymentConfirmResponse;
                 var payResult = await 
-                    paymentService.AddAsync(response.Operation.Amount, response.Operation.TransactionId.ToString(), userId, PaymentType.WebMoney);
+                    paymentService.AddAsync(response.Operation.Amount, response.Operation.TransactionId.ToString(), userId, PaymentType.WebMoney,
+                        PaymentStatus.Payed);
                 if(payResult.Succeeded)
                     return DataServiceResult.Success(response.UserDescription);
             }

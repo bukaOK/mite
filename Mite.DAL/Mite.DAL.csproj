@@ -34,11 +34,11 @@
     <Reference Include="AutoMapper, Version=6.2.2.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>..\packages\AutoMapper.6.2.2\lib\net45\AutoMapper.dll</HintPath>
     </Reference>
-    <Reference Include="Dapper, Version=1.50.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Dapper.1.50.4\lib\net451\Dapper.dll</HintPath>
+    <Reference Include="Dapper, Version=1.50.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Dapper.1.50.5\lib\net451\Dapper.dll</HintPath>
     </Reference>
-    <Reference Include="Dapper.Contrib, Version=1.50.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Dapper.Contrib.1.50.4\lib\net451\Dapper.Contrib.dll</HintPath>
+    <Reference Include="Dapper.Contrib, Version=1.50.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Dapper.Contrib.1.50.5\lib\net451\Dapper.Contrib.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
@@ -69,6 +69,7 @@
     <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.4.0\lib\net461\System.ValueTuple.dll</HintPath>
     </Reference>
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -147,6 +148,7 @@
     <Compile Include="Infrastructure\IUnitOfWork.cs" />
     <Compile Include="Infrastructure\UnitOfWork.cs" />
     <Compile Include="Initializers\ClientRoleInitializer.cs" />
+    <Compile Include="Initializers\CompressedRemoveInitializer.cs" />
     <Compile Include="Initializers\Core\IInitializer.cs" />
     <Compile Include="Initializers\Core\DBInitializer.cs" />
     <Compile Include="Initializers\ExternalLinksInitializer.cs" />
@@ -270,6 +272,10 @@
     <Compile Include="Migrations\201805261502143_AddUseWatForCols.cs" />
     <Compile Include="Migrations\201805261502143_AddUseWatForCols.Designer.cs">
       <DependentUpon>201805261502143_AddUseWatForCols.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805271448077_AddPaymentStatus.cs" />
+    <Compile Include="Migrations\201805271448077_AddPaymentStatus.Designer.cs">
+      <DependentUpon>201805271448077_AddPaymentStatus.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -410,6 +416,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201805261502143_AddUseWatForCols.resx">
       <DependentUpon>201805261502143_AddUseWatForCols.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805271448077_AddPaymentStatus.resx">
+      <DependentUpon>201805271448077_AddPaymentStatus.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

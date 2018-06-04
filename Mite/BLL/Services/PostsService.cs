@@ -437,8 +437,8 @@ namespace Mite.BLL.Services
             {
                 MaxDate = filter.InitialDate,
                 OnlyFollowings = PostUserFilter.OnlyFollowings == filter.PostUserFilter,
-                PostName = filter.PostName,
-                Tags = filter.Tags?.Split(','),
+                PostName = filter.Input?.Split('#').FirstOrDefault(),
+                Tags = filter.Input?.Split('#').Skip(1).ToArray(),
                 SortType = filter.SortFilter,
                 PostType = PostTypes.Published,
                 CurrentUserId = currentUserId

@@ -38,21 +38,16 @@ namespace Mite.Handlers.ImagesHandlers
             resp.StatusCode = 200;
             resp.Cache.SetMaxAge(ImageMaxAge);
 
-            if (req.Headers["If-None-Match"] != null)
+            using (var md5 = new MD5Cng())
             {
-                using (var sha1 = new SHA1Managed())
-                {
-                    var bytes = sha1.ComputeHash(Encoding.UTF8.GetBytes(imageSrc));
-                    var fileHash = string.Join("", bytes.Select(x => x.ToString("x2")));
-                    if (fileHash == req.Headers["If-None-Match"])
-                        resp.StatusCode = 304;
-                    else
-                        await HandleRequestAsync(context);
-                    resp.Cache.SetETag(fileHash);
-                }
+                var bytes = md5.ComputeHash(Encoding.UTF8.GetBytes(imageSrc));
+                var fileHash = string.Join("", bytes.Select(x => x.ToString("x2")));
+                if (fileHash == req.Headers["If-None-Match"])
+                    resp.StatusCode = 304;
+                else
+                    await HandleRequestAsync(context);
+                resp.Headers["ETag"] = fileHash;
             }
-            else
-                await HandleRequestAsync(context);
         }
         protected abstract Task<string> GetOriginSrcAsync(HttpRequest req);
         /// <summary>

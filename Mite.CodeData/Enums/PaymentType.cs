@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Mite.CodeData.Enums
 {
@@ -22,6 +18,6 @@ namespace Mite.CodeData.Enums
         [Display(Name = "Банковская карта")]
         BankCard,
         WebMoney,
-        //QIWI
+        QIWI
     }
 }

@@ -1,32 +1,53 @@
-﻿<div class="ui segment">
-    <h2 class="ui dividing segment">FAQ</h2>
+﻿@model IEnumerable<Mite.Models.FaqQuestionModel>
+@{ 
+    ViewBag.Title = "Вопросы и ответы";
+}
+@section styles{
+    <style>
+        .faq-nav{
+            max-height: 500px;
+            overflow: auto;
+        }
+        .fixed.faq-nav{
+            position: fixed;
+        }
+    </style>
+}
+<div class="ui segment">
+    <h2 class="ui dividing header">Вопросы и ответы</h2>
     <div class="ui grid">
         <div class="four wide column">
-
+            <div class="ui faq-nav vertical menu">
+                @foreach (var item in Model)
+                {
+                    <a class="item" href="#@item.Id">@item.Header</a>
+                }
+            </div>
         </div>
         <div class="twelve wide column">
-            <h3 class="ui header">Что такое MiteGroup?</h3>
-            <p>
-                MiteGroup - открытая площадка, посвященная любым сферам искусства.
-                Здесь пользователи могут публиковать работы, услуги, осуществлять сделки,
-                общаться в чатах и многое другое.
-            </p>
-            <h3 class="ui header">Для кого предназначен сервис?</h3>
-            <p>Если вы художник, писатель, или просто любите искусство, MiteGroup - для вас</p>
-            <h3 class="ui header">В чем разница между автором и клиентом?</h3>
-            <p>
-                Клиент не может добавлять услуги и работы, автору же доступен весь функционал,
-                тем не менее клиент может регистрироваться без ключа для приглашения.
-            </p>
-            <h3 class="ui header">За что взымается комиссия?</h3>
-            <p>Комиссия взымается только за вывод средств из системы.</p>
-            <h3 class="ui header">Ваша комиссия действительно 4%?</h3>
-            <p>Да, но стоит также учитывать комиссию платежной системы, обычно она не превышает 5%.</p>
-            <h3 class="ui header">Некоторые элементы не отображаются, или отображаются неправильно.</h3>
-            <p>
-                Попробуйте очистить кэш браузера(в Google Chrome это можно сделать, длительно удерживая левую кнопку мыши на значке обновления и
-                выбрав пункт "Очистка кэша и жесткая перезагрузка")
-            </p>
+            @foreach(var item in Model)
+            {
+                <h3 class="ui header" id="@item.Id">@item.Header</h3>
+                if (!string.IsNullOrEmpty(item.Content))
+                {
+                    <p>@item.Content</p>
+                }
+                if(item.Items != null)
+                {
+                    <ol>
+                        @foreach(var listItem in item.Items)
+                        {
+                            <li>@listItem</li>
+                        }
+                    </ol>
+                }
+            }
         </div>
     </div>
 </div>
+<script>
+    $('.faq-nav').visibility({
+        type: 'fixed',
+        offset: 50
+    }).css('width', '17em');
+</script>

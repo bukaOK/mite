@@ -13,8 +13,8 @@ namespace Mite.BLL.Helpers
 {
     public static class PostsHelper
     {
-        const string imagesFolder = "/Public/images/";
-        const string documentsFolder = "/Public/documents/";
+        const string imagesFolder = "/upload/images/posts";
+        const string documentsFolder = "/upload/documents/";
         /// <summary>
         /// Обновляем контент документа, а также обложку
         /// </summary>

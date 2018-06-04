@@ -156,7 +156,7 @@ namespace Mite.Controllers
         {
             try
             {
-                var products = await productsService.GetForUserAsync(name, sort);
+                var products = await productsService.GetForUserAsync(name, sort, CurrentUserId);
                 return Json(JsonStatuses.Success, products);
             }
             catch(Exception e)

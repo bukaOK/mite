@@ -30,6 +30,10 @@ namespace Mite.DAL.Entities
         /// </summary>
         public PaymentType PaymentType { get; set; }
         /// <summary>
+        /// Статус оплаты
+        /// </summary>
+        public PaymentStatus Status { get; set; }
+        /// <summary>
         /// Пользователь, с которым совершалась операция
         /// </summary>
         [ForeignKey("User")]

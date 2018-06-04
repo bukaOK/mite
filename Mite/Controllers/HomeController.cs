@@ -1,5 +1,8 @@
 ﻿using Hangfire;
 using Mite.BLL.Services;
+using Mite.Models;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
@@ -30,7 +33,7 @@ namespace Mite.Controllers
             if (isConfirmed)
                 return Redirect(url);
             else
-                return View(url);
+                return View("Away", (object)url);
         }
         public ActionResult Help()
         {
@@ -51,6 +54,11 @@ namespace Mite.Controllers
         public ActionResult BadJs()
         {
             return View();
+        }
+        public ActionResult Faq()
+        {
+            var model = JsonConvert.DeserializeObject<IEnumerable<FaqQuestionModel>>(System.IO.File.ReadAllText(Server.MapPath("/Files/faqData.json")));
+            return View(model);
         }
         [Authorize(Roles = "admin")]
         public ActionResult RunHangfire()

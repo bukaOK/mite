@@ -47,6 +47,7 @@
                     <img src="/Content/images/mite-logo-icon.png">
                 </a>
                 <div class="right menu" role="list">
+                    @Html.ActionLink("FAQ", "Faq", "Home", null, new { @class = "item", role = "listitem" })
                     @Html.ActionLink("Условия пользования", "Terms", "Home", null, new { @class = "item", role = "listitem" })
                     @Html.ActionLink("Политика конфиденциальности", "Privacy", "Home", null, new { @class = "item", role = "listitem" })
                     <div class="item">
@@ -57,6 +58,7 @@
                     <div class="ui dropdown item">
                         <i class="sidebar icon"></i>Меню
                         <div class="ui inverted menu">
+                            @Html.ActionLink("FAQ", "Faq", "Home", null, new { @class = "item", role = "listitem" })
                             @Html.ActionLink("Условия пользования", "Terms", "Home", null, new { @class = "item" })
                             @Html.ActionLink("Политика конфиденциальности", "Privacy", "Home", null, new { @class = "item" })
                             @Html.ActionLink("Войти", "Login", "Account", null, new { @class = "item" })

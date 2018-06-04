@@ -1,7 +1,7 @@
 ﻿@using Mite.Helpers
 @model Mite.Models.ProductTopFilterModel
 @{
-    ViewBag.Title = "Картины, фотографии, и другие товары из сфер искусства";
+    ViewBag.Title = "Арты, фото, и другие товары из сфер искусства";
     var isMobile = ViewHelper.IsMobileDevice(Request);
 }
 <div class="active loader-wrapper"><div class="ui active loader"></div></div>
@@ -25,7 +25,7 @@
             <label>Для авторов</label>
         </div>
     </div>
-    <div class="item">
+    @*<div class="item">
         <div class="ui inline dropdown" id="cityFilter">
             @Html.HiddenFor(x => x.City)
             <i class="building icon"></i>
@@ -46,7 +46,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div>*@
     <div class="right item" id="searchItem">
         <div class="ui transparent icon input">
             <input type="text" placeholder="Название или описание работы" id="productsSearch" role="search" onfocus="$('#searchItem').addClass('maximised')"
@@ -107,15 +107,6 @@
         var userCardTmpl = $.templates('#miniUserCardTmpl'),
             grid = $('.products.grid').masonry();
         $('#sortType').dropdown({
-            onChange: function () {
-                if (SearchFilters.initialized) {
-                    SearchFilters.changeFilter();
-                }
-            }
-        });
-        $('#cityFilter').dropdown({
-            forceSelection: false,
-            match: 'text',
             onChange: function () {
                 if (SearchFilters.initialized) {
                     SearchFilters.changeFilter();
@@ -253,16 +244,6 @@
                     },
                     updateState: function (newVal) {
                         $(this.selector).dropdown('set selected', newVal);
-                    }
-                },
-                {
-                    name: 'city',
-                    selector: '#City',
-                    getVal: function () {
-                        return $(this.selector).val();
-                    },
-                    updateState: function (newVal) {
-                        $('#cityFilter').dropdown('set selected', newVal);
                     }
                 },
                 {

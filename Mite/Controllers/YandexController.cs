@@ -53,7 +53,7 @@ namespace Mite.Controllers
             var result = await yandexService.ExternalPayIn(sessionPayment.RequestID, sessionPayment.InstanceID);
             if (result.Succeeded)
             {
-                await paymentService.AddAsync(sessionPayment.Sum, sessionPayment.RequestID, User.Identity.GetUserId(), PaymentType.BankCard);
+                await paymentService.AddAsync(sessionPayment.Sum, sessionPayment.RequestID, User.Identity.GetUserId(), PaymentType.BankCard, PaymentStatus.Payed);
                 Session[SessionKeys.YaMoneyExternal] = null;
                 return Json(JsonStatuses.Success);
             }

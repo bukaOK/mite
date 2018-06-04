@@ -20,10 +20,13 @@
             min-width: 0px;
             flex-shrink: 1;
         }
+        .best-author .content{
+            max-width: 80%;
+        }
     </style>
 }
 <div class="active loader-wrapper"><div class="ui active loader"></div></div>
-<div class="ui stackable menu">
+<div class="ui stackable menu" id="filterMenu">
     <div class="item">
         <i class="filter icon"></i>
         Сначала&nbsp;
@@ -77,6 +80,7 @@
 </div>
 <div class="ui stackable grid">
     <div class="three wide computer four wide tablet column">
+        @{ Html.RenderPartial("_TopBestUsers", Model.BestAuthors); }
         <div class="ui top-tags segment">
             <div class="ui dividing medium header">
                 Теги
@@ -161,7 +165,7 @@
             fadeInSpeed: 1000,
             fadeOutSpeed: 500
         });
-        $('.ui.dropdown').dropdown({
+        $('#filterMenu .ui.dropdown').dropdown({
             onChange: function (ev) {
                 if (SearchFilters.initialized) {
                     SearchFilters.changeFilter();
@@ -268,17 +272,13 @@
             },
             filters: [
                 {
-                    name: 'tags',
+                    name: 'input',
                     selector: '#postsSearch',
                     getVal: function () {
-                        var arr = $(this.selector).val().split('#')
-                        arr.shift();
-                        return arr.join();
+                        return $(this.selector).val();
                     },
                     updateState: function (newVal) {
-                        var arr = newVal.split(',');
-                        var str = arr.length > 0 ? '#' + arr.join('#') : '';
-                        $(this.selector).val(str);
+                        $(this.selector).val(newVal);
                     }
                 },
                 {

@@ -53,6 +53,7 @@
     <Compile Include="Constants\GoogleCaptchaSettings.cs" />
     <Compile Include="Constants\GooglePlusSettings.cs" />
     <Compile Include="Constants\PathConstants.cs" />
+    <Compile Include="Constants\QiwiSettings.cs" />
     <Compile Include="Constants\RequestItemsKeys.cs" />
     <Compile Include="Constants\RoleNames.cs" />
     <Compile Include="Constants\SessionKeys.cs" />
@@ -61,6 +62,7 @@
     <Compile Include="Constants\YaGeoCoderSettings.cs" />
     <Compile Include="Constants\YaMoneySettings.cs" />
     <Compile Include="Enums\AttachmentTypes.cs" />
+    <Compile Include="Enums\BestInDayTypes.cs" />
     <Compile Include="Enums\CashOperationTypes.cs" />
     <Compile Include="Enums\ChatMemberStatuses.cs" />
     <Compile Include="Enums\ChatTypes.cs" />
@@ -74,12 +76,14 @@
     <Compile Include="Enums\NotificationTypes.cs" />
     <Compile Include="Enums\OrderStatuses.cs" />
     <Compile Include="Enums\OrderTypes.cs" />
+    <Compile Include="Enums\PaymentStatus.cs" />
     <Compile Include="Enums\PaymentType.cs" />
     <Compile Include="Enums\PostContentTypes.cs" />
     <Compile Include="Enums\PostTimeFilter.cs" />
     <Compile Include="Enums\PostTypes.cs" />
     <Compile Include="Enums\PostUserFilter.cs" />
     <Compile Include="Enums\ProductFilter.cs" />
+    <Compile Include="Enums\QiwiBillStatuses.cs" />
     <Compile Include="Enums\RatingRecountTypes.cs" />
     <Compile Include="Enums\ReliabilityRecountTypes.cs" />
     <Compile Include="Enums\ServiceSortFilter.cs" />

@@ -49,6 +49,21 @@ namespace Mite.Models
         [RegularExpression(@"\+7\([0-9]{3}\)[0-9]{3}-[0-9]{2}-[0-9]{2}", ErrorMessage = "Введите правильный номер")]
         public string WmPhoneNumber { get; set; }
     }
+    /// <summary>
+    /// Ввод через Qiwi
+    /// </summary>
+    public class QiwiPayInModel
+    {
+        [Required]
+        [UIHint("TextBox")]
+        [DisplayName("Сумма")]
+        public int? QiwiPayInSum { get; set; }
+        [Required, OffClientValidation]
+        [UIHint("TextBox")]
+        [DisplayName("Телефон")]
+        [RegularExpression(@"\+7\([0-9]{3}\)[0-9]{3}-[0-9]{2}-[0-9]{2}", ErrorMessage = "Введите правильный номер")]
+        public string QiwiPhoneNumber { get; set; }
+    }
     public class WmPayInConfirmModel
     {
         [Required]

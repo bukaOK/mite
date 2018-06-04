@@ -95,5 +95,17 @@
                 successContent: 'Счёт успешно пополнен'
             });
         }
+    },
+    qiwi: {
+        payIn: function () {
+            var $form = $('#qiwiPayInForm'),
+                $msg = $('#qiwiPayInMsg');
+            return PaymentsApi._send($form, {
+                container: $msg,
+                successContent: 'Ожидайте перенаправления на страницу оплаты...'
+            }, function (resp) {
+                location.href = resp.data.url;
+            });
+        }
     }
 }

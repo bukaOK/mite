@@ -1,6 +1,12 @@
 ﻿var DailyFactsApi = {
     url: '/api/facts',
     formSelector: '#factsForm',
+    getDailyFact: function () {
+        return $.getJSON(this.url, 'trash=22', function (resp) {
+            $('#dailyFactHeader').text(resp.Title);
+            $('#dailyFactDesc').text(resp.Content).parent().removeClass('loading');
+        });
+    },
     init: function ($container) {
         var self = this;
         if(!self.tmpl)

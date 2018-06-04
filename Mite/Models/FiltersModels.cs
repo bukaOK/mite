@@ -16,27 +16,23 @@ namespace Mite.Models
     public class PostTopFilterModel : BaseFilterModel
     {
         /// <summary>
-        /// Список тегов(через запятую)
+        /// ПоискЫ
         /// </summary>
-        public string Tags { get; set; }
-        /// <summary>
-        /// Строка поста
-        /// </summary>
-        public string PostName { get; set; }
+        public string Input { get; set; }
         public SortFilter SortFilter { get; set; }
         public PostTimeFilter PostTimeFilter { get; set; }
         public PostUserFilter PostUserFilter { get; set; }
 
-        private string[] tagNames;
-        public string[] TagNames
-        {
-            get
-            {
-                if (tagNames == null)
-                    tagNames = string.IsNullOrEmpty(Tags) ? new string[0] : Tags.Split(',');
-                return tagNames;
-            }
-        }
+        //private string[] tagNames;
+        //public string[] TagNames
+        //{
+        //    get
+        //    {
+        //        if (tagNames == null)
+        //            tagNames = string.IsNullOrEmpty(Tags) ? new string[0] : Tags.Split(',');
+        //        return tagNames;
+        //    }
+        //}
     }
     public class ServiceTopFilterModel : BaseFilterModel
     {

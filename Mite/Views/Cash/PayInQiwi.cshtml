@@ -1,0 +1,17 @@
+﻿@using Mite.Extensions
+@model Mite.Models.QiwiPayInModel
+
+@using (Html.BeginForm("PayInQiwi", "Payments", FormMethod.Post, new { @class = "ui form", id = "qiwiPayInForm" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.EditorFor(x => x.QiwiPayInSum)
+    @Html.EditorFor(x => x.QiwiPhoneNumber)
+    <button type="button" class="ui primary button" onclick="PaymentsApi.qiwi.payIn()">Пополнить</button>
+    <div class="ui error message" id="qiwiPayInMsg"></div>
+}
+<script>
+    $(function () {
+        @Html.Raw(Html.FormValidation("#qiwiPayInForm"))
+        $('#QiwiPhoneNumber').mask('+7(999)999-99-99');
+    });
+</script>

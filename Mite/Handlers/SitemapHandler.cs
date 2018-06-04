@@ -1,7 +1,4 @@
-﻿using Mite.BLL.IdentityManagers;
-using Mite.Core;
-using Mite.DAL.Entities;
-using Mite.DAL.Infrastructure;
+﻿using Mite.DAL.Infrastructure;
 using Mite.DAL.Repositories;
 using Mite.Models;
 using System;
@@ -9,27 +6,29 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
 using System.Xml.Linq;
 
-namespace Mite.Controllers
+namespace Mite.Handlers
 {
-    public class SitemapController : BaseController
+    public class SitemapHandler : HttpTaskAsyncHandler
     {
-        private readonly IUnitOfWork unitOfWork;
-        private readonly AppDbContext dbContext;
+        AppDbContext dbContext;
+        HttpContext context;
 
-        public SitemapController(IUnitOfWork unitOfWork, AppDbContext dbContext)
+        public SitemapHandler()
         {
-            this.unitOfWork = unitOfWork;
-            this.dbContext = dbContext;
+            dbContext = new AppDbContext();
         }
-        public async Task<ContentResult> Index()
+        public override async Task ProcessRequestAsync(HttpContext context)
         {
+            this.context = context;
+            var resp = context.Response;
+            resp.ContentType = "text/xml";
             var sitemap = await GetSitemapDoc();
-            return Content(sitemap, "text/xml", Encoding.UTF8);
+            resp.Write(sitemap);
         }
         private async Task<string> GetSitemapDoc()
         {
@@ -38,7 +37,7 @@ namespace Mite.Controllers
 
             var nodes = await GetNodes();
 
-            foreach(var node in nodes)
+            foreach (var node in nodes)
             {
                 var urlElement = new XElement(
                     xmlns + "url",
@@ -60,8 +59,8 @@ namespace Mite.Controllers
         }
         private async Task<IEnumerable<SitemapNode>> GetNodes()
         {
-            var postsRepo = unitOfWork.GetRepo<PostsRepository, Post>();
-            var servicesRepo = unitOfWork.GetRepo<AuthorServiceRepository, AuthorService>();
+            var postsRepo = new PostsRepository(dbContext);
+            var servicesRepo = new AuthorServiceRepository(dbContext);
 
             var nodes = new List<SitemapNode>
             {
@@ -87,18 +86,18 @@ namespace Mite.Controllers
                 }
             };
 
-            var users = await dbContext.Users.ToListAsync();
+            var users = await dbContext.Users.AsNoTracking().ToListAsync();
             var posts = await postsRepo.GetAllAsync();
             var authorServices = await servicesRepo.GetAllAsync();
 
-            foreach(var user in users)
+            foreach (var user in users)
             {
                 nodes.Add(new SitemapNode
                 {
                     Url = AbsoluteRouteUrl("UserProfile", new { name = user.UserName.ToLower() })
                 });
             }
-            foreach(var post in posts)
+            foreach (var post in posts)
             {
                 nodes.Add(new SitemapNode
                 {
@@ -106,7 +105,7 @@ namespace Mite.Controllers
                     LastModified = post.LastEdit
                 });
             }
-            foreach(var service in authorServices)
+            foreach (var service in authorServices)
             {
                 nodes.Add(new SitemapNode
                 {
@@ -118,9 +117,8 @@ namespace Mite.Controllers
         }
         private string AbsoluteRouteUrl(string routeName, object routeValues = null)
         {
-            string scheme = Url.RequestContext.HttpContext.Request.Url.Scheme;
-            return Url.RouteUrl(routeName, routeValues, "https");
+            var helper = new UrlHelper(context.Request.RequestContext);
+            return helper.RouteUrl(routeName, routeValues, "https");
         }
     }
-    
 }

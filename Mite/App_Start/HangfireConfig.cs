@@ -39,7 +39,7 @@ namespace Mite
             });
             app.UseHangfireServer();
             RecurringJob.AddOrUpdate(() => LoadAdSenseIncome(), Cron.Daily);
-            RecurringJob.AddOrUpdate(() => ClearImagesCache(), Cron.Minutely);
+            RecurringJob.AddOrUpdate(() => ClearImagesCache(), Cron.Weekly);
         }
         /// <summary>
         /// Раздаем заработок за день пользователям
@@ -85,12 +85,12 @@ namespace Mite
         public static void ClearImagesCache()
         {
             var cacheDir = HostingEnvironment.MapPath(PathConstants.VirtualImageCacheFolder);
-            var cacheLifetime = new TimeSpan(1, 0, 0);
+            var cacheLifetime = new TimeSpan(3, 0, 0, 0);
 
             foreach(var dir in Directory.EnumerateDirectories(cacheDir))
             {
                 var info = new DirectoryInfo(dir);
-                if (DateTime.UtcNow - info.CreationTimeUtc < cacheLifetime)
+                if (DateTime.UtcNow - info.LastAccessTimeUtc < cacheLifetime)
                     info.Delete(true);
             }
         }

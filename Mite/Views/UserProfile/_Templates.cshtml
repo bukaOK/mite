@@ -10,7 +10,7 @@
             <div class="five wide column">
                 <img src="{{:AvatarSrc}}" class="ui small circular image">
             </div>
-            <div class="eleven wide column">
+            <div class="ten wide column">
                 <h4 class="ui header">
                     <span class="content">
                         <a href="/user/profile/{{:UserName}}">{{:UserName}}</a> &bull; <i class="yellow star icon"></i>{{:Rating}}
@@ -107,9 +107,6 @@
                     <i class="{{if Cover == null}}blue{{else}}black{{/if}} unhide icon"></i>{{:Views}}
                     <i class="black comments outline icon"></i>{{:CommentsCount}}
                     {{/if}}
-                    {{if Price}}
-                    <i class="green ruble icon"></i>{{:Price}}
-                    {{/if}}
                 </div>
                 {{/if}}
 
@@ -122,6 +119,53 @@
                 </div>
             </div>
             {{/if}}
+        </div>
+    </div>
+</script>
+<script id="productsTmpl" type="text/x-jsrender">
+    <div class="column" data-product-id="{{:Id}}" id="prod{{:Id}}">
+        <div class="ui service-item segment">
+            @if (currentUserName == pageUserName)
+            {
+                <div class="extra content">
+                    <div class="ui violet compact buttons">
+                        <a class="ui button" href="@Url.Action("Edit", "Posts")/{{:PostId}}">Редактировать</a>
+                        <div class="ui floating dropdown icon button">
+                            <i class="dropdown icon"></i>
+                            <div class="menu">
+                                <div class="item" onclick="Products.Mvc.remove('{{:Id}}')"><i class="delete icon"></i>Удалить</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ui divider"></div>
+            }
+            <div class="img-content">
+                <a href="@Url.Action("ShowPost", "Posts")/{{:PostId}}">
+                    <img src="{{:Content}}" class="ui image" />
+                </a>
+            </div>
+            <div class="ui divider"></div>
+            <div class="extra content">
+                <a class="ui header" href="@Url.Action("ShowPost", "Posts")/{{:PostId}}">
+                    {{:Title}}
+                    <span class="sub header">{{:Description}}</span>
+                </a>
+            </div>
+            <div class="ui divider"></div>
+            <div class="extra content">
+                {{for Tags}}
+                <a class="ui label" href="/posts/top?tags={{>#data}}">{{>#data}}</a>
+                {{/for}}
+            </div>
+            <div class="ui divider"></div>
+            <div class="extra content">
+                {{if Price}}
+                <span title="Цена"><i class="ruble green icon"></i>{{:Price}} руб.</span>
+                {{else}}
+                <span title="Цена"><i class="ruble green icon"></i>Бесплатно</span>
+                {{/if}}
+            </div>
         </div>
     </div>
 </script>
@@ -195,7 +239,7 @@
 <script id="servicesTmpl" type="text/x-jsrender">
     <div class="column" data-service-id="{{:Id}}" id="service{{:Id}}">
         <div class="ui service-item segment">
-            @if(pageUserName == currentUserName)
+            @if (pageUserName == currentUserName)
             {
                 <div class="extra content">
                     <div class="ui violet compact buttons">
@@ -208,8 +252,8 @@
                         </div>
                     </div>
                 </div>
+                <div class="ui divider"></div>
             }
-            <div class="ui divider"></div>
             <div class="img-content">
                 <a href="@Url.Action("Show", "AuthorServices")/{{:Id}}">
                     <img src="{{:ImageSrc}}" class="ui image" />
@@ -238,53 +282,6 @@
                     <span title="Цена"><i class="ruble green icon"></i>Бесплатно</span>
                     {{/if}}
                 </div>
-            </div>
-        </div>
-    </div>
-</script>
-<script id="productsTmpl" type="text/x-jsrender">
-    <div class="column" data-product-id="{{:Id}}" id="prod{{:Id}}">
-        <div class="ui service-item segment">
-            <div class="extra content">
-                @if (currentUserName == pageUserName)
-                {
-                    <div class="ui violet compact buttons">
-                        <a class="ui button" href="@Url.Action("Edit", "Products")/{{:Id}}">Редактировать</a>
-                        <div class="ui floating dropdown icon button">
-                            <i class="dropdown icon"></i>
-                            <div class="menu">
-                                <div class="item" onclick="Products.Mvc.remove('{{:Id}}')"><i class="delete icon"></i>Удалить</div>
-                            </div>
-                        </div>
-                    </div>
-                }
-            </div>
-            <div class="ui divider"></div>
-            <div class="img-content">
-                <a href="@Url.Action("Show", "Products")/{{:Id}}">
-                    <img src="{{:ImageSrc}}" class="ui image" />
-                </a>
-            </div>
-            <div class="ui divider"></div>
-            <div class="extra content">
-                <a class="ui header" href="@Url.Action("Show", "Products")/{{:Id}}">
-                    {{:Title}}
-                    <span class="sub header">{{:Description}}</span>
-                </a>
-            </div>
-            <div class="ui divider"></div>
-            <div class="extra content">
-                {{for Tags}}
-                <a class="ui label" href="/posts/top?tags={{>#data}}">{{>#data}}</a>
-                {{/for}}
-            </div>
-            <div class="ui divider"></div>
-            <div class="extra content">
-                {{if Price}}
-                <span title="Цена"><i class="ruble green icon"></i>{{:Price}} руб.</span>
-                {{else}}
-                <span title="Цена"><i class="ruble green icon"></i>Бесплатно</span>
-                {{/if}}
             </div>
         </div>
     </div>

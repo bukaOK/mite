@@ -17,7 +17,8 @@ namespace Mite.DAL.Repositories
         }
         public async Task<IEnumerable<Payment>> GetByUserAsync(string userId)
         {
-            var payments = await Table.Where(x => x.UserId == userId).OrderByDescending(x => x.Date).ToListAsync();
+            var payments = await Table.AsNoTracking().Where(x => x.UserId == userId && x.Status == PaymentStatus.Payed)
+                .OrderByDescending(x => x.Date).ToListAsync();
             return payments;
         }
         public Task<Payment> GetLastOperationAsync(PaymentType paymentType)

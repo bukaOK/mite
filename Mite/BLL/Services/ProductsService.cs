@@ -34,7 +34,7 @@ namespace Mite.BLL.Services
         /// <param name="userId"></param>
         /// <param name="sort"></param>
         /// <returns></returns>
-        Task<IEnumerable<ProductTopModel>> GetForUserAsync(string userName, SortFilter sort);
+        Task<IEnumerable<ProductTopModel>> GetForUserAsync(string userName, SortFilter sort, string currentUserId);
         Task<DataServiceResult> RemoveAsync(Guid id);
         ProductModel GetForEdit(Guid id);
         Task<DataServiceResult> BuyAsync(Guid productId, string userId);
@@ -91,6 +91,8 @@ namespace Mite.BLL.Services
             {
                 var cash = await cashService.GetUserCashAsync(userId);
                 var product = await productsRepository.GetAsync(productId);
+                if(product == null)
+                    return DataServiceResult.Failed("Товар не найден");
                 var post = await Database.GetRepo<PostsRepository, Post>().GetByProductAsync(productId);
                 if(cash < product.Price)
                     return DataServiceResult.Failed("Недостаточно средств");
@@ -208,11 +210,12 @@ namespace Mite.BLL.Services
             return Mapper.Map<ProductModel>(product);
         }
 
-        public async Task<IEnumerable<ProductTopModel>> GetForUserAsync(string userName, SortFilter sort)
+        public async Task<IEnumerable<ProductTopModel>> GetForUserAsync(string userName, SortFilter sort, string currentUserId)
         {
             var user = await userManager.FindByNameAsync(userName);
+            var currentUser = string.IsNullOrEmpty(currentUserId) ? null : await userManager.FindByIdAsync(currentUserId);
             var products = await productsRepository.GetForUserAsync(user.Id, sort);
-            return Mapper.Map<IEnumerable<ProductTopModel>>(products);
+            return Mapper.Map<IEnumerable<ProductTopModel>>(products, opts => opts.Items.Add("currentUser", currentUser));
         }
 
         public async Task<IEnumerable<ProductTopModel>> GetTopAsync(ProductTopFilterModel filterModel)
@@ -283,6 +286,7 @@ namespace Mite.BLL.Services
             //В контроллере валидация не пропустит пустое описание и непустой файл
             existingProduct.BonusDescription = editModel.BonusDescription;
             existingProduct.Price = editModel.Price ?? 0;
+            existingProduct.ForAuthors = editModel.ForAuthors;
 
             try
             {

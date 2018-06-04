@@ -99,7 +99,6 @@ namespace Mite.Models
         public bool ShowAdultContent { get; set; }
         public string PostTypeName { get; set; }
         public int Rating { get; set; }
-        public int? Price { get; set; }
         public IEnumerable<string> Tags { get; set; }
     }
     public class ProfileProductModel : ProfilePostModel

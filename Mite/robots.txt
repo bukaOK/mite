@@ -2,3 +2,4 @@
 Disallow: /account/login/
 Disallow: /account/register/
 Host: https://mitegroup.ru
+Sitemap: https://mitegroup.ru/sitemap

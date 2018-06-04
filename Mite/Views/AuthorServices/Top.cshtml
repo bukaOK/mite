@@ -34,10 +34,31 @@
         </div>
     </div>
     <div class="item">
+        <div class="ui inline dropdown" id="countryDrop">
+            <input name="Country" id="Country" type="hidden" />
+            <i class="globe icon"></i>
+            <span class="text">Страна</span>
+            <i class="dropdown icon"></i>
+            <div class="menu">
+                @foreach (var country in Model.Countries)
+                {
+                    if (country.Selected)
+                    {
+                        <div class="active item" data-value="@country.Value">@country.Text</div>
+                    }
+                    else
+                    {
+                        <div class="item" data-value="@country.Value">@country.Text</div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+    <div class="item">
         <div class="ui inline dropdown" id="cityFilter">
             @Html.HiddenFor(x => x.City)
             <i class="building icon"></i>
-            <span class="text">Выберите город</span>
+            <span class="text">Город</span>
             <i class="dropdown icon"></i>
             <div class="menu">
                 <div class="ui icon search input">
@@ -45,7 +66,7 @@
                     <input type="text" placeholder="Введите название..." />
                 </div>
                 <div class="scrolling menu">
-                    <div class="item" data-value="">Выберите город</div>
+                    <div class="item" data-value="">Любой город</div>
                     @foreach (var city in Model.Cities)
                     {
                         if (city.Selected)
@@ -143,6 +164,18 @@
                 }
             }
         });
+        $('#countryDrop').dropdown({
+            onChange: function (val) {
+                $.getJSON('/api/cities/' + val, null, function (resp) {
+                    var pasteHtml = '<div class="item" data-value="">Любой город</div>';
+                    resp.forEach(function (cItem) {
+                        pasteHtml += '<div class="item" data-value="' + cItem.Id + '">' + cItem.Name + '</div>';
+                    });
+                    $('#cityFilter .scrolling.menu').html(pasteHtml);
+                    $('#cityFilter').dropdown('refresh');
+                });
+            }
+        });
         $('input[type="number"]').focusin(function (ev) {
             $(this).siblings('.label').addClass('violet');
         }).focusout(function (ev) {
@@ -175,7 +208,7 @@
                     } else {
                         grid.html(html);
                     }
-                } else {
+                } else if (SearchFilters._page <= 1){
                     grid.html($('#emptyServiceTmpl').html());
                 }
                 grid.masonry('reloadItems')
@@ -194,20 +227,12 @@
                     preserve: true,
                     onShow: function (item) {
                         var $popup = this;
-                        $.ajax({
-                            url: '/userprofile/getuserprofile',
-                            data: 'name=' + item.dataset.username,
-                            type: 'get',
-                            success: function (resp) {
-                                if (resp.status === undefined) {
-                                    resp = JSON.parse(resp);
-                                }
-                                var respData = resp.data;
-                                respData.PostsCountWord = ViewHelper.getWordCase(respData.PostsCount, 'Работа', 'Работы', 'Работ');
-                                respData.FollowersWord = ViewHelper.getWordCase(respData.FollowersCount, 'Подписка', 'Подписки', 'Подписок');
-                                $(item).popup('change content', userCardTmpl.render(resp.data))
-                                    .popup('reposition').addClass('initialized');
-                            }
+                        $.getJSON('/userprofile/getuserprofile', 'name=' + item.dataset.username, function (resp) {
+                            var respData = resp.data;
+                            respData.PostsCountWord = ViewHelper.getWordCase(respData.PostsCount, 'Работа', 'Работы', 'Работ');
+                            respData.FollowersWord = ViewHelper.getWordCase(respData.FollowersCount, 'Подписка', 'Подписки', 'Подписок');
+                            $(item).popup('change content', userCardTmpl.render(resp.data))
+                                .popup('reposition').addClass('initialized');
                         });
                     }
                 });

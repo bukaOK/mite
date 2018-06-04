@@ -18,10 +18,12 @@ namespace Mite
             routes.Ignore("images/colitem/{all}");
             routes.Ignore("images/comicitem/{all}");
             routes.Ignore("files/attachments/{all}");
+            routes.Ignore("geo/detect");
+            routes.Ignore("sitemap");
 
             routes.MapMvcAttributeRoutes();
 
-            routes.MapRoute("Sitemap", "sitemap.xml", new { controller = "Sitemap", action = "Index" });
+            //routes.MapRoute("Sitemap", "sitemap.xml", new { controller = "Sitemap", action = "Index" });
             routes.MapRoute(
                 name: "UserProfile",
                 url: "User/Profile/{name}/{action}/{type}",

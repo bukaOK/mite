@@ -30,7 +30,8 @@ namespace Mite.DAL.Migrations
             {
                 new StartInitializer(userManager, roleManager, context),
                 new ClientRoleInitializer(roleManager, context),
-                new ExternalLinksInitializer(context)
+                new ExternalLinksInitializer(context),
+                new CompressedRemoveInitializer(context)
             };
             foreach(var init in initializers)
             {

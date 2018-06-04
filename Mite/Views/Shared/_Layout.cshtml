@@ -130,7 +130,6 @@
                             @Html.RouteLink("Комикс", "AddPost", new { postType = PostContentTypes.Comics.ToString().ToLower() }, new { @class = "item", title = "Комиксы" })
                             @Html.ActionLink("Услугу", "Add", "AuthorServices", null, new { @class = "item", title = "Услуги" })
                             @Html.ActionLink("Заказ", "Add", "Orders", null, new { @class = "item", title = "Заказы" })
-                            @Html.ActionLink("Товар", "Add", "Products", null, new { @class = "item", title = "Товары" })
                         </div>
                     }
                     else
@@ -179,18 +178,36 @@
     <div class="pusher">
         <header class="ui fixed borderless menu">
             <div class="ui container">
-                <a href="@Url.Action("Index", "Home")" class="header main item" 
-                   data-content="@Html.Raw(User.Identity.IsAuthenticated ? "Публикации" : "Главная")">
-                    <img class="logo" src="/Content/images/mite-logo-icon.png" alt="Логотип" />
-                </a>
-                @Html.ActionLink("Арт", "Top", "Posts", new { tags = "арт" }, new { @class = "computer tablet only item" })
-                @Html.ActionLink("Литература", "Top", "Posts", new { tags = "литература" }, new { @class = "computer tablet only item" })
-                @Html.ActionLink("Фото", "Top", "Posts", new { tags = "фотография" }, new { @class = "computer tablet only item" })
-                @Html.ActionLink("Услуги", "Top", "AuthorServices", null, new { @class = "item" })
-
-                @if (Request.IsAuthenticated)
+                @if (isMobile)
                 {
-                    @Html.ActionLink("Заказы", "Top", "Orders", null, new { @class = "item" })
+                    <div class="ui floating dropdown header main item" id="mainMenu">
+                        <img class="logo" src="/Content/images/mite-logo-icon.png" />
+                        <div class="menu">
+                            @Html.ActionLink("Работы", "Top", "Posts", null, new { @class = "item" })
+                            @Html.ActionLink("Услуги", "Top", "AuthorServices", null, new { @class = "item" })
+                            @Html.ActionLink("Товары", "Top", "Products", null, new { @class = "item" })
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                @Html.ActionLink("Заказы", "Top", "Orders", null, new { @class = "item" })
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <a href="@Url.Action("Index", "Home")" class="header main item"
+                       data-content="@Html.Raw(User.Identity.IsAuthenticated ? "Публикации" : "Главная")">
+                        <img class="logo" src="/Content/images/mite-logo-icon.png" alt="Логотип" />
+                    </a>
+                    @Html.ActionLink("Услуги", "Top", "AuthorServices", null, new { @class = "item" })
+                    @Html.ActionLink("Товары", "Top", "Products", null, new { @class = "item" })
+                }
+                @if (User.Identity.IsAuthenticated)
+                {
+                    if (!isMobile)
+                    {
+                        @Html.ActionLink("Заказы", "Top", "Orders", null, new { @class = "item" })
+                    }
                     <div class="right menu">
                         @if (isMobile)
                         {
@@ -198,6 +215,15 @@
                         }
                         else
                         {
+                            <div class="item" style="padding: 0">
+                                <div class="ui small search" id="pagesSearch">
+                                    <div class="ui small icon input">
+                                        <input class="prompt" placeholder="Поиск по страницам" type="text" />
+                                        <i class="search icon"></i>
+                                    </div>
+                                    <div class="results"></div>
+                                </div>
+                            </div>
                             <div class="item">
                                 <div class="ui dropdown top right pointing violet button" id="addPostMenu">
                                     Добавить
@@ -210,7 +236,6 @@
                                             @Html.RouteLink("Комикс", "AddPost", new { postType = PostContentTypes.Comics.ToString().ToLower() }, new { @class = "item", title = "Комиксы, манга" })
                                             @Html.ActionLink("Услугу", "Add", "AuthorServices", null, new { @class = "item", title = "Услуги" })
                                             @Html.ActionLink("Заказ", "Add", "Orders", null, new { @class = "item", title = "Заказы" })
-                                            @Html.ActionLink("Товар", "Add", "Products", null, new { @class = "item", title = "Товары"})
                                         }
                                         else
                                         {
@@ -301,6 +326,7 @@
                     <div class="ten wide column">
                         <div class="ui inverted horizontal link list" role="list">
                             @*@Html.ActionLink("Помощь", "Help", "Home", null, new { @class = "item", role = "listitem" })*@
+                            @Html.ActionLink("FAQ", "Faq", "Home", null, new { @class = "item", role = "listitem" })
                             @Html.ActionLink("Условия пользования", "Terms", "Home", null, new { @class = "item", role = "listitem" })
                             @Html.ActionLink("Политика конфиденциальности", "Privacy", "Home", null, new { @class = "item", role = "listitem" })
                         </div>
@@ -392,8 +418,13 @@
         </text>
     }
         $(function () {
+            PageSearch.currentUserName = '@(User.Identity.Name ?? "")';
+            PageSearch.init('#pagesSearch', @User.IsInRole(RoleNames.Author).ToString().ToLower());
             $('article').css('margin-bottom', $('footer').height() + 50 + 'px');
             $('#addPostMenu').dropdown({
+                action: 'nothing'
+            });
+            $('#mainMenu').dropdown({
                 action: 'nothing'
             });
             $(".ui.sidebar").sidebar({
