@@ -214,8 +214,10 @@ article.ui.container{
     background-color: #6D6788 !important;
     color: white !important;
 }
-.ui.profile.segment {
-    margin-top: 130px;
+@media(min-width: 767px){
+    .ui.profile.segment {
+        margin-top: 130px;
+    }
 }
 .ui.profile.segment #avatar-img{
     background-color: white;

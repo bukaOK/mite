@@ -43,7 +43,6 @@ namespace Mite
 
             app.UseAutofacMiddleware(container);
 
-            CitiesInitializer.Initialize();
 #if !DEBUG
             HangfireConfig.Initialize(app, container);
 #endif

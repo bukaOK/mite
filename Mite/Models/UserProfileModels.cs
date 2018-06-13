@@ -51,6 +51,7 @@ namespace Mite.Models
         public int PostsCount { get; set; }
         public string YandexWalId { get; set; }
         public bool ShowAd { get; set; }
+        public string PlaceName { get; set; }
         public IEnumerable<ExternalLinkModel> ExternalLinks { get; set; }
     }
     /// <summary>

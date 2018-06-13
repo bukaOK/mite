@@ -7,9 +7,14 @@
 }
 <script type="text/x-jsrender" id="publicChatTmpl">
     <div class="ui chat-wrap segments" data-id="{{:Id}}">
-        <div class="ui chat-header two column grid segment">
-            <div class="column">
-                <span class="ui small header"><b>{{:Name}}</b></span>
+        <div class="ui chat-header grid segment">
+            <div class="twelve wide column">
+                <span class="ui small header">
+                    <span class="content">
+                        <span onclick="PublicChats.showChat(this)" class="chat-rollback"><i class="left arrow icon"></i></span>
+                        <b>{{:Name}}</b>
+                    </span>
+                </span>
             </div>
         </div>
         <div class="ui msg-chat-wrapper segment">
@@ -31,15 +36,25 @@
 </script>
 <script type="text/x-jsrender" id="chatTmpl">
     <div class="ui chat-wrap segments" data-id="{{:Id}}">
-        <div class="ui chat-header two column grid segment">
-            <div class="column">
+        <div class="ui chat-header grid segment">
+            <div class="twelve wide column">
                 {{if ChatType == @((byte)ChatTypes.Private)}}
-                <a class="ui small header" href="/user/profile/{{:Name}}" style="display: block"><b>{{:Name}}</b></a>
+                <div class="ui small header">
+                    <span class="content">
+                        <span onclick="ChatsApi.showChat(this)" class="chat-rollback"><i class="left arrow icon"></i></span>
+                        <b><a href="/user/profile/{{:Name}}">{{:Name}}</a></b>
+                    </span>
+                </div>
                 {{else}}
-                <h4 class="ui header"><b>{{:Name}}</b></h4>
+                <div class="ui small header">
+                    <span class="content">
+                        <span onclick="ChatsApi.showChat(this)" class="chat-rollback"><i class="left arrow icon"></i></span>
+                        <b>{{:Name}}</b>
+                    </span>
+                </div>
                 {{/if}}
             </div>
-            <div class="right aligned column">
+            <div class="right aligned four wide column">
                 <div class="msg-actions">
                     <button class="ui red small compact button" onclick="ChatMessages.Api.remove()">Удалить</button>
                 </div>

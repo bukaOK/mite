@@ -189,6 +189,10 @@ var ChatsApi = {
             }
         });
     },
+    showChat: function (elem) {
+        $(elem).parents('.chat-wrap').removeClass('active');
+        $('.chat-items').parents('.column').first().show();
+    },
     Loader: {
         page: 0,
         range: 30,
@@ -248,6 +252,9 @@ var ChatsApi = {
                 window.chats[lastChatId].hasNew = false;
             }
             $('.chat.feed[data-id="' + chatId + '"]').parents('.chat-wrap').addClass('active');
+            if (window.innerWidth <= 767) {
+                $('.chat-items').parents('.column').first().hide();
+            }
         },
         initSource: function () {
             var self = ChatsApi.Loader,
@@ -284,7 +291,7 @@ var ChatsApi = {
         */
         loadNext: function (inputVal) {
             var self = ChatsApi.Loader,
-                emptyChats = $('.empty-chats'),
+                emptyChats = $('.chat-items .empty-chats'),
                 offset = self.range * self.page,
                 items = [];
             if (offset >= self.items.length && $('.chat-items .chat-item:visible').length === 0) {

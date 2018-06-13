@@ -80,20 +80,22 @@ namespace Mite.DAL.Repositories
                 "left outer join (select msgs.\"ChatId\", count(msgs.\"ChatId\") as \"MessagesCount\" from dbo.\"ChatMessages\" msgs " +
                     "left outer join dbo.\"ChatMessageUsers\" msg_users on msg_users.\"MessageId\"=msgs.\"Id\" " +
                     "where msg_users.\"UserId\"=@userId and msg_users.\"Read\"=false group by msgs.\"ChatId\") as msgs_count on msgs_count.\"ChatId\"=chats.\"Id\" " +
-                "left outer join (select msgs.*, sender.* from dbo.\"ChatMessages\" as msgs " +
+                "left outer join (select msgs.*, atts.*, sender.* from dbo.\"ChatMessages\" as msgs " +
                     "left outer join dbo.\"ChatMessageUsers\" as msg_users on msg_users.\"MessageId\"=msgs.\"Id\" " +
                     "left outer join dbo.\"Users\" as sender on msgs.\"SenderId\"=sender.\"Id\" " +
+                    "left outer join dbo.\"ChatMessageAttachments\" atts on atts.\"MessageId\"=msgs.\"Id\" " +
                     "where msg_users.\"UserId\"=@UserId order by msgs.\"SendDate\" desc) as last_msg on last_msg.\"ChatId\"=chats.\"Id\" " +
                 "inner join dbo.\"ChatMembers\" as chat_members on chat_members.\"ChatId\"=chats.\"Id\" left outer join " +
                 "(select * from dbo.\"ChatMembers\" as ch_mem1 inner join dbo.\"Users\" as mem on mem.\"Id\"=ch_mem1.\"UserId\" " +
                 "where ch_mem1.\"UserId\" != @userId) as companion on companion.\"ChatId\"=chats.\"Id\" " +
                 "where chats.\"Type\"!=@DisputeType and chats.\"Type\"!=@DealType and chat_members.\"UserId\"=@UserId and " +
                 "chat_members.\"Status\"!=@RemovedStatus order by chats.\"Id\", last_msg.\"SendDate\" desc) as tbl order by tbl.\"SendDate\" desc;";
-            return await Db.QueryAsync<UserChatDTO, ChatMessage, User, User, UserChatDTO>(query, (chat, msg, sender, companion) =>
+            return await Db.QueryAsync<UserChatDTO, ChatMessage, ChatMessageAttachment, User, User, UserChatDTO>(query, (chat, msg, att, sender, companion) =>
             {
                 if(msg != null)
                 {
                     msg.Sender = sender;
+                    msg.Attachments = new List<ChatMessageAttachment> { att };
                     chat.LastMessage = msg;
                 }
                 if (string.IsNullOrEmpty(chat.ImageSrc) && companion != null)

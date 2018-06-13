@@ -1,19 +1,26 @@
 ﻿@model Mite.Models.InviteSettingsModel
 
-<div class="ui labeled action input">
+<form class="ui form" id="inviteSettingsForm">
+    <div class="field">
+        <label>Код для приглашения</label>
+        @if (User.IsInRole(RoleNames.Author))
+        {
+            @Html.TextBoxFor(x => x.InviteKey, new { placeholder = "Код для приглашения", @readonly = true, onclick = "select()", size = "36" })
+        }
+        else
+        {
+            @Html.TextBoxFor(x => x.InviteKey, new { placeholder = "Код для приглашения", size = "36" })
+        }
+    </div>
     @if (User.IsInRole(RoleNames.Author))
     {
-        <div class="ui label">Код для приглашения</div>
-        @Html.TextBoxFor(x => x.InviteKey, new { placeholder = "Код для приглашения", @readonly = true, onclick = "select()", size = "36" })
-        <button class="ui primary button" onclick="UserSettingsApi.generateInvite(this)">Создать новый</button>
+        <button type="button" class="ui primary button" onclick="UserSettingsApi.generateInvite(this)">Создать новый</button>
     }
     else
     {
-        <div class="ui label">Код для приглашения</div>
-        @Html.TextBoxFor(x => x.InviteKey, new { placeholder = "Код для приглашения", size = "36" })
-        <button class="ui primary button" onclick="UserSettingsApi.changeClientRole($('#InviteKey').val(), this)">Стать автором</button>
+        <button type="button" class="ui primary button" onclick="UserSettingsApi.changeClientRole($('#InviteKey').val(), this)">Стать автором</button>
     }
-</div>
+</form>
 @if (!User.IsInRole(RoleNames.Author))
 {
     <div class="ui blue message">
@@ -26,3 +33,6 @@
         Ошибка при смене роли.
     </div>
 }
+<script>
+    ViewHelper.disableFormSubmitting('#inviteSettingsForm');
+</script>

@@ -3,7 +3,6 @@ using Mite.CodeData.Enums;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -65,16 +64,14 @@ namespace Mite.BLL.Helpers
             if (!match.Groups["contentType"].Success || match.Groups["contentType"].Value != "image")
                 throw new ArgumentException("Неизвестный тип файла");
             var imgFormat = match.Groups["format"].Value;
-            if (imgFormat == "jpeg")
+            if (imgFormat == "jpeg" || imgFormat == "png")
                 imgFormat = "jpg";
             base64Str = match.Groups["base64"].Value;
             //Кодируем строку base64 в изображение
             var bytes = Convert.FromBase64String(base64Str);
-            using(var mStream = new MemoryStream(bytes))
-            {
-                var optimizer = new ImageOptimizer();
-                optimizer.LosslessCompress(mStream);
 
+            using(var mImg = new MagickImage(bytes))
+            {
                 string imageName;
                 string imagePath;
                 //Проверяем на то, есть ли уже изображения с таким именем
@@ -83,12 +80,11 @@ namespace Mite.BLL.Helpers
                     imageName = Guid.NewGuid() + "." + imgFormat;
                     imagePath = path[path.Length - 1] == '\\' ? path + imageName : path + "\\" + imageName;
                 } while (File.Exists(imagePath));
-                //Сохраняем на диск
-                using (var fStream = new FileStream(imagePath, FileMode.CreateNew, FileAccess.Write))
-                {
-                    mStream.Position = 0;
-                    mStream.WriteTo(fStream);
-                }
+                if(mImg.HasAlpha)
+                    mImg.ColorAlpha(new MagickColor(Color.White));
+
+                mImg.Quality = 75;
+                mImg.Write(imagePath);
 
                 virtualPath += virtualPath[virtualPath.Length - 1] == '/' ? "" : "/";
                 return Regex.Replace(virtualPath, "~", "") + imageName;
@@ -101,25 +97,34 @@ namespace Mite.BLL.Helpers
                 throw new ArgumentException("Неверный формат");
 
             var imgFormat = file.ContentType.Split('/')[1];
-            if (imgFormat == "jpeg")
+            if (imgFormat == "jpeg" || imgFormat == "png")
                 imgFormat = "jpg";
 
-            string imageName;
-            string imagePath;
-            //Проверяем на то, есть ли уже изображения с таким именем
-            do
+            using(var mStream = new MemoryStream())
             {
-                imageName = Guid.NewGuid() + "." + imgFormat;
-                imagePath = path[path.Length - 1] == '\\' ? path + imageName : path + "\\" + imageName;
-            } while (File.Exists(imagePath));
-            //Сохраняем на диск
-            file.SaveAs(imagePath);
+                file.InputStream.CopyTo(mStream);
+                mStream.Position = 0;
+                using(var mImg = new MagickImage(mStream))
+                {
+                    string imageName;
+                    string imagePath;
+                    //Проверяем на то, есть ли уже изображения с таким именем
+                    do
+                    {
+                        imageName = Guid.NewGuid() + "." + imgFormat;
+                        imagePath = path[path.Length - 1] == '\\' ? path + imageName : path + "\\" + imageName;
+                    } while (File.Exists(imagePath));
 
-            var optimizer = new ImageOptimizer();
-            optimizer.LosslessCompress(imagePath);
+                    if(mImg.HasAlpha)
+                        mImg.ColorAlpha(new MagickColor(Color.White));
 
-            virtualPath += virtualPath[virtualPath.Length - 1] == '/' ? "" : "/";
-            return Regex.Replace(virtualPath, "~", "") + imageName;
+                    mImg.Quality = 75;
+                    mImg.Write(imagePath);
+
+                    virtualPath += virtualPath[virtualPath.Length - 1] == '/' ? "" : "/";
+                    return Regex.Replace(virtualPath, "~", "") + imageName;
+                }
+            }
         }
         public static string ToVirtualPath(string path)
         {

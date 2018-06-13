@@ -205,6 +205,9 @@ namespace Mite.BLL.Services
             var userModel = Mapper.Map<ProfileModel>(user);
             userModel.ExternalLinks = await linksService.GetByUserForShowAsync(user.Id);
             userModel.IsAuthor = await userManager.IsInRoleAsync(user.Id, RoleNames.Author);
+            var userCity = await Database.GetRepo<CitiesRepository, City>().GetWithCountryAsync(user.CityId);
+            if (userCity != null)
+                userModel.PlaceName = $"{userCity.Country.Name}, {userCity.Name}";
 
             if (userModel.IsAuthor)
             {

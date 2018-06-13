@@ -371,10 +371,11 @@ namespace Mite.BLL.Services
             var postModel = Mapper.Map<PostModel>(post);
 
             if (post.ContentType == PostContentTypes.Document)
-            {
                 //Заменяем путь к документу на содержание
                 postModel.Content = await FilesHelper.ReadDocumentAsync(post.Content);
-            }
+            else
+                postModel.Content = $"/images/post/{post.Id}?watermark={post.WatermarkId != null}&resize=false";
+
             postModel.User = Mapper.Map<UserShortModel>(user);
             postModel.IsFavorite = await favoritesRepo.IsFavoriteAsync(postId, currentUserId);
             postModel.FavoriteCount = await favoritesRepo.FavoriteCountAsync(postId);
@@ -384,7 +385,6 @@ namespace Mite.BLL.Services
             {
                 postModel.Product.IsBought = await Database.GetRepo<PurchaseRepository, Purchase>().IsBuyerAsync(currentUserId, (Guid)post.ProductId);
             }
-            postModel.Content = $"/images/post/{post.Id}?watermark={post.WatermarkId != null}&resize=false";
             return postModel;
         }
         public async Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userName, string currentUserId, SortFilter sort, PostTypes type)

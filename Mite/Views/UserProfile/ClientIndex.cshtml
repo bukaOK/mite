@@ -13,8 +13,10 @@
         .center.aligned.statistics{
             justify-content: center;
         }
-        .tab.grid.segment{
+        .ui.tab.grid{
             height: auto;
+            margin-top: 0;
+            margin: -1rem;
         }
         p.about{
             font-size: 1.1em;
@@ -22,35 +24,38 @@
     </style>
 }
 <div class="ui stackable grid">
-    <div class="center aligned four wide column">
+    <div class="center aligned three wide column">
         <div class="ui segment">
-            <img src="@Model.AvatarSrc" class="ui centered small circular image" />
+            <img src="@Model.AvatarSrc" class="ui centered tiny circular image" width="80" height="80" />
             <h2 class="ui header">@Model.UserName</h2>
             <div class="ui center aligned small statistics">
                 <div class="statistic">
                     <div class="value">@Model.Reliability</div>
                     <div class="label">Надежность</div>
                 </div>
-                <div class="statistic">
+                <div class="small statistic">
                     <div class="value">@Model.FollowingsCount</div>
                     <div class="label">@ViewHelper.GetWordCase(Model.FollowingsCount, "Подписка", "Подписки", "Подписок")</div>
                 </div>
             </div>
             <div class="ui divider"></div>
             <p class="about">@Model.About</p>
-            <h3 class="ui header">Ссылки</h3>
-            @foreach(var link in Model.ExternalLinks)
+            @if (Model.ExternalLinks != null && Model.ExternalLinks.Count() > 0)
             {
-                <a href="@link" class="link">
-                    <i class="@link.IconClass icon"></i>
-                    @link.ShowUrl
-                </a><br />
+                foreach (var link in Model.ExternalLinks)
+                {
+                    <a href="@link" class="link">
+                        <i class="@link.IconClass icon"></i>
+                        @link.ShowUrl
+                    </a><br />
+                }
             }
         </div>
     </div>
-    <div class="twelve wide column">
+    <div class="thirteen wide column">
         <div class="ui stackable tabs menu" role="tablist">
-            <div class="active item" role="tab" data-tab="followings">Подписки</div>
+            <a class="active item" role="tab" data-tab="followings">Подписки</a>
+            <a class="item" role="tab" data-tab="favorites">Избранное</a>
             <div class="right item">
                 <i class="filter icon"></i>
                 Сначала&nbsp;
@@ -67,65 +72,29 @@
         </div>
         @if (isMobileDevice)
         {
-            <div class="ui loading basic active tab two column stackable grid segment" data-tab="followings"></div>
+            <div class="ui loading active tab two column stackable grid" data-tab="followings"></div>
+            <div class="ui tab two column stackable grid" data-tab="favorites"></div>
         }
         else
         {
-            <div class="ui loading basic active tab three column doubling grid segment" data-tab="followings"></div>
+            <div class="ui loading basic active tab three column stackable grid segment" data-tab="followings"></div>
+            <div class="ui tab three column stackable grid" data-tab="favorites"></div>
         }
     </div>
 </div>
-<script id="followersTmpl" type="text/x-jsrender">
-    <div class="column">
-        <div class="ui compact segment">
-            <div class="ui grid follower-card">
-                <div class="five wide column">
-                    <img src="{{:AvatarSrc}}" class="ui small circular image">
-                    <span><i class="yellow star icon"></i>{{:Rating}}</span>
-                </div>
-                <div class="eleven wide column">
-                    <h3 class="ui header">
-                        <span class="content">
-                            <a href="/user/profile/{{:UserName}}">{{:UserName}}</a>
-                            <span class="sub header">{{:Description}}</span>
-                        </span>
-                    </h3>
-                </div>
-            </div>
-        </div>
-    </div>
-</script>
-<script type="text/html" id="emptyFollowingsTmpl">
-    <div class="column"></div>
-    <div class="column">
-        <h3 class="ui center aligned icon header" style="color: #6D6788">
-            <i class="users icon"></i>
-            @if (currentUserName == pageUserName)
-            {
-                <span class="content">
-                    Вы пока ни на кого не подписались.
-                </span>
-            }
-            else
-            {
-                <span class="content">
-                    Пользователь пока ни на кого не подписался.
-                </span>
-            }
-        </h3>
-    </div>
-</script>
+@{ Html.RenderPartial("_ClientTemplates", Model); }
 @section scripts{
     @Scripts.Render("~/bundles/grid", "~/bundles/jsrender")
     <script>
         var isOwner = @((currentUserName == pageUserName).ToString().ToLower());
         $(function () {
-            var grids = [
-                {
-                    tabName: 'followings',
-                    elem: $('.tab[data-tab="posts/published"]').masonry()
-                }
-            ];
+            var grids = [];
+            $('.tab.grid[data-tab]').each(function (index, elem) {
+                grids.push({
+                    tabName: elem.dataset.tab,
+                    elem: $(elem).masonry()
+                });
+            });
             var followingsTab = new Tab({
                 parentTab: null,
                 name: 'followings',
@@ -133,7 +102,14 @@
                 tmplSelector: '#followersTmpl',
                 emptyTmplSelector: '#emptyFollowingsTmpl'
             });
-            TabFilter.Tabs.items = [followingsTab];
+            var favoritesTab = new Tab({
+                parentTab: null,
+                name: 'favorites',
+                isActive: false,
+                tmplSelector: '#favoritePostsTmpl',
+                emptyTmplSelector: '#emptyPostTmpl'
+            });
+            TabFilter.Tabs.items = [followingsTab, favoritesTab];
             TabFilter.Filters.add({
                 name: 'sort',
                 elem: $('#sortDropDown'),
@@ -157,6 +133,17 @@
                         tab.content.html(html);
                     } else if(resp.length > 0) {
                         var tmpl = $.templates(tab.tmplSelector);
+                        if (tab.name === 'favorites') {
+                            resp.forEach(function (elem) {
+                                elem.LastEdit += elem.LastEdit[elem.LastEdit - 1] == 'Z' ? '' : 'Z';
+                                if (elem.PublishDate != null) {
+                                    elem.PublishDate += elem.PublishDate[elem.PublishDate - 1] == 'Z' ? '' : 'Z';
+                                    elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.PublishDate).getTime());
+                                } else {
+                                    elem.PublicTimeStr = ViewHelper.getPastTense(new Date(elem.LastEdit).getTime());
+                                }
+                            });
+                        }
                         html = tmpl.render(resp);
 
                         if(TabFilter.loadNextPage) {

@@ -7,8 +7,8 @@
     border-radius: 100px;
     cursor: pointer;
 }
-.chat-create-img:hover{
-}
+/*.chat-create-img:hover{
+}*/
 /*chat items*/
 .empty-chats{
     text-align: center;
@@ -95,7 +95,18 @@
     height: 36px;
 }
 /*chat*/
-.ui.segments.chat-wrap{
+.chat-rollback{
+    display: none;
+}
+@media(max-width: 767px){
+    .ui.grid#chatsMainGrid {
+        flex-direction: column-reverse;
+    }
+    .chat-rollback{
+        display: inline-block;
+    }
+}
+.ui.segments.chat-wrap {
     margin: 0;
 }
 .chat-wrap:not(.active), .public-chat-wrap:not(.active) {

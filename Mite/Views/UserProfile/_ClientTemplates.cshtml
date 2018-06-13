@@ -1,0 +1,120 @@
+﻿@using Microsoft.AspNet.Identity
+@{ 
+    var pageUserName = Model.UserName.ToLower();
+    var currentUserName = User.Identity.Name.ToLower();
+    var userId = User.Identity.GetUserId();
+}
+<script id="followersTmpl" type="text/x-jsrender">
+    <div class="column">
+        <div class="ui compact segment follower-card grid" style="margin: 0px;">
+            <div class="five wide column">
+                <img src="{{:AvatarSrc}}" class="ui small circular image">
+            </div>
+            <div class="ten wide column">
+                <h4 class="ui header">
+                    <span class="content">
+                        <a href="/user/profile/{{:UserName}}">{{:UserName}}</a> &bull; <i class="yellow star icon"></i>{{:Rating}}
+                        <span class="sub header">{{:Description}}</span>
+                    </span>
+                </h4>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/html" id="emptyFollowingsTmpl">
+    <div class="column"></div>
+    <div class="column">
+        <h3 class="ui center aligned icon header" style="color: #6D6788">
+            <i class="users icon"></i>
+            @if (currentUserName == pageUserName)
+            {
+                <span class="content">
+                    Вы пока ни на кого не подписались.
+                </span>
+            }
+            else
+            {
+                <span class="content">
+                    Пользователь пока ни на кого не подписался.
+                </span>
+            }
+        </h3>
+    </div>
+</script>
+<script id="favoritePostsTmpl" type="text/x-jsrender">
+    <div class="column" data-post-id="{{:Id}}">
+        <div class="ui segment {{if !IsImage && Cover != null}}invert{{/if}}{{if !ShowAdultContent}} hide-adult-content{{/if}} post-item"
+             {{if !IsImage && Cover != null}} style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})" {{/if}}
+             id="post{{:Id}}">
+            @if (currentUserName == pageUserName)
+            {
+                <div class="extra content">
+                    <button class="ui red floating compact button" onclick="FavoritePostsApi.remove(this, '{{:Id}}', '@userId', true)">Удалить</button>
+                </div>
+                <div class="ui {{if !IsImage && Cover != null}}inverted {{/if}} divider"></div>
+            }
+            {{if IsImage}}
+            <div class="img-content">
+                {{if IsPublished}}
+                <a href="@Url.Action("ShowPost", "Posts")/{{:Id}}">
+                    <img src="{{:Content}}" class="ui image" />
+                </a>
+                {{else}}
+                <a href="/posts/edit/{{:Id}}">
+                    <img src="{{:Content}}" class="ui image" />
+                </a>
+                {{/if}}
+                {{if IsGif}}
+                <div class="active gif-wrapper">
+                    <button class="ui large primary circular icon button" onclick="loadFullGif('{{:FullPath}}', '{{:Id}}', $(this))"><i class="fire icon"></i></button>
+                    <span class="ui violet label">gif</span>
+                </div>
+                {{/if}}
+            </div>
+            {{else}}
+            <a class="post-content content" href="@Url.Action("ShowPost", "Posts")/{{:Id}}">
+                {{:Content}}
+            </a>
+            {{/if}}
+            <div class="ui {{if !IsImage && Cover != null}}inverted{{/if}} divider"></div>
+            <div class="extra content">
+                <a class="ui {{if !IsImage && Cover != null}}inverted {{/if}}header" style="margin-bottom: 5px" href="/posts/showpost/{{:Id}}">
+                    {{:Header}}
+                    <span class="sub header">
+                        {{:Description}}
+                    </span>
+                </a>
+                {{for Tags}}
+                <a class="ui{{if !~root.IsImage && ~root.Cover != null}} invert{{/if}} label" href="/posts/top?tags={{>#data}}">{{>#data}}</a>
+                {{/for}}
+            </div>
+            <div class="ui {{if !IsImage && Cover != null}}inverted{{/if}} divider"></div>
+            <div class="extra content">
+                {{:PublicTimeStr}}
+                <div class="right">
+                    <i class="yellow star icon"></i>{{:Rating}}
+                    <i class="{{if Cover == null}}blue{{else}}black{{/if}} unhide icon"></i>{{:Views}}
+                    <i class="green comments outline icon"></i>{{:CommentsCount}}
+                </div>
+            </div>
+            {{if !ShowAdultContent}}
+            <div class="ui center aligned dimmer">
+                <div class="content">
+                    <h2 class="ui inverted header">Взрослый контент(18+)</h2>
+                    <button class="ui primary button" onclick="$(this).parents('.post-item').dimmer('hide')">Показать</button>
+                </div>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+</script>
+<script type="text/html" id="emptyPostTmpl">
+    <div class="sixteen wide column">
+        <h2 class="ui center aligned icon header" style="color: #6D6788; margin-top: 20px;">
+            <i class="meh outline icon"></i>
+            <span class="content">
+                Работы не найдены.
+            </span>
+        </h2>
+    </div>
+</script>

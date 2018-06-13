@@ -60,6 +60,9 @@ namespace Mite.Controllers
         public async Task<ActionResult> GetByUser(Guid? writingChat)
         {
             var chats = await chatService.GetByUserAsync(User.Identity.GetUserId(), writingChat);
+            if(chats != null && chats.Count() > 0)
+                foreach (var chat in chats.Where(x => string.IsNullOrEmpty(x.LastMessage?.Message) && x.LastMessage?.Attachments?.Count() > 0))
+                    chat.LastMessage.Message = "Прикреплен файл";
             if (writingChat != null && Session[SessionKeys.NewChats] is List<ChatModel> sChats && sChats.Any(x => x.Id == writingChat))
             {
                 chats.Insert(0, sChats.Where(x => x.Id == writingChat).Select(x => new ShortChatModel

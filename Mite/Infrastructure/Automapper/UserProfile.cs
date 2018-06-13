@@ -26,6 +26,7 @@ namespace Mite.Infrastructure.Automapper
                 .ForMember(dest => dest.About, opt => opt.MapFrom(src => src.Description));
 
             CreateMap<User, ProfileModel>()
+                .ForMember(dest => dest.PlaceName, opt => opt.Ignore())
                 .ForMember(dest => dest.ExternalLinks, opt => opt.Ignore())
                 .ForMember(dest => dest.AvatarSrc, opt => opt.MapFrom(src => src.AvatarSrc ?? PathConstants.AvatarSrc))
                 .ForMember(dest => dest.About, opt => opt.MapFrom(src => src.Description))

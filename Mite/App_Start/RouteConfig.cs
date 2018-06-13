@@ -55,11 +55,6 @@ namespace Mite
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
             );
-            routes.MapRoute(
-                name: "NotFound",
-                url: "{all}",
-                defaults: new { controller = "Error", action = "NotFound", id = UrlParameter.Optional }
-            );
         }
     }
 }

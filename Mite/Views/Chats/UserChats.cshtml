@@ -13,9 +13,13 @@
         #possibleChatCompanions .list .empty.active{
             display: block;
         }
+        .ui.unstackable.items > .item > .image,
+        .ui.unstackable.items > .item > .image {
+            width: 50px !important;
+        }
     </style>
 }
-<div class="ui stackable grid">
+<div class="ui stackable grid" id="chatsMainGrid">
     <div class="thirteen wide column">
         <div class="ui active tab" data-tab="private" role="tabpanel">
             <div class="ui stackable grid">
@@ -26,7 +30,7 @@
                             <i title="Найти собеседников" class="chat-add link violet plus icon" onclick="$('#possibleChatCompanions').modal('show')"></i>
                         </div>
                         <div class="chat-items-outer">
-                            <div class="ui items chat-items">
+                            <div class="ui unstackable items chat-items">
                                 <div class="center aligned empty-chats">Чаты не найдены</div>
                                 <div class="active dot-loader-wrapper">
                                     <div class="dot-loader">
@@ -54,7 +58,7 @@
                             <input type="text" placeholder="Найти чат" oninput="PublicChats.Loader.refresh(this.value)" />
                         </div>
                         <div class="chat-items-outer">
-                            <div class="ui items public-chat-items">
+                            <div class="ui unstackable items public-chat-items">
                                 <div class="center aligned empty-chats">Чаты не найдены</div>
                                 <div class="active dot-loader-wrapper">
                                     <div class="dot-loader">

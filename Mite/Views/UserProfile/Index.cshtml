@@ -23,11 +23,8 @@
 }
 @section styles{
     <style>
-        [followers].grid.tab, [followings].tab{
-            margin: -0.5rem !important;
-        }
-        [followers].grid.tab>.column, [followings].grid.tab>.column{
-            padding: 0.5rem;
+        [data-tab=followers].grid.tab>.column, [followings].grid.tab>.column{
+            padding: 1rem 0.5rem 0rem 0.5rem;
         }
         .link{
             color: rgba(0,0,0,0.8);
@@ -55,6 +52,9 @@
                     Поддержать
                 </button>
             }
+            <h4 class="ui header">
+                <span class="content"><i class="map marker alternate icon"></i>@Model.PlaceName</span>
+            </h4>
         </div>
         <div class="column">
             <div class="ui centered circular image" id="avatar-img">
@@ -278,7 +278,7 @@
         <div class="ui tab four column doubling basic segment grid" data-tab="followings"></div>
         <div class="ui tab three column doubling basic segment grid" data-tab="services"></div>
         <div class="ui tab four column basic segment grid" data-tab="products"></div>
-        <div class="ui tab stackable three column basic segment grid" data-tab="favorites"></div>
+        <div class="ui tab stackable four column basic segment grid" data-tab="favorites"></div>
     }
     <div class="dot-loader-wrapper">
         <div class="dot-loader">
@@ -339,7 +339,7 @@ else
     </div>
 }
 @{ Html.RenderPartial("_Modals"); }
-@{ Html.RenderPartial("_Templates"); }
+@{ Html.RenderPartial("_Templates", Model); }
 @Scripts.Render("~/bundles/jsrender", "~/bundles/grid", "~/bundles/api")
 <script>
     var delPostId;

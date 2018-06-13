@@ -573,11 +573,13 @@ namespace Mite.BLL.Services
             deal.Status = DealStatuses.Dispute;
 
             var chatRepo = Database.GetRepo<ChatRepository, Chat>();
-            var disputeChat = new Chat();
-            disputeChat.Members = new List<ChatMember>
+            var disputeChat = new Chat
             {
-                new ChatMember { UserId = deal.ClientId },
-                new ChatMember { UserId = deal.AuthorId }
+                Members = new List<ChatMember>
+                {
+                    new ChatMember { UserId = deal.ClientId },
+                    new ChatMember { UserId = deal.AuthorId }
+                }
             };
             deal.DisputeChatId = disputeChat.Id;
             using(var transaction = repo.BeginTransaction())

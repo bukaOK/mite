@@ -26,6 +26,10 @@ function PublicChat(chatId, chatName, currentUser) {
 }
 var PublicChats = {
     chats: new Object(),
+    showChat: function (elem) {
+        $(elem).parents('.chat-wrap').removeClass('active');
+        $('.public-chat-items').parents('.column').first().show();
+    },
     Loader: {
         page: 0,
         range: 30,
@@ -60,6 +64,9 @@ var PublicChats = {
             }
             $('#publicChatContext .chat-wrap.active').removeClass('active');
             $('.chat.feed[data-id="' + chatId + '"]').parents('.chat-wrap').addClass('active');
+            if (window.innerWidth <= 767) {
+                $('.public-chat-items').parents('.column').first().hide();
+            }
         },
         /**
          * Подгружаем следующую страницу

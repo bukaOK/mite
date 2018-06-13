@@ -68,6 +68,12 @@ namespace Mite.DAL.Repositories
         {
             return await Table.AsNoTracking().Where(x => x.CountryId == countryId).OrderByDescending(x => x.Population).FirstAsync();
         }
+        public async Task<City> GetWithCountryAsync(Guid? id)
+        {
+            if (id == null)
+                return null;
+            return await Table.AsNoTracking().Include(x => x.Country).FirstOrDefaultAsync(x => x.Id == id);
+        }
         public async Task<IEnumerable<City>> GetByCountryAsync(Guid countryId)
         {
             return await Table.AsNoTracking().Where(x => x.CountryId == countryId)
