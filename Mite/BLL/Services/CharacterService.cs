@@ -26,6 +26,7 @@ namespace Mite.BLL.Services
         Task<DataServiceResult> RemoveAsync(Guid id);
         Task<IEnumerable<ProfileCharacterModel>> GetByFilterAsync(string currentUserId, CharacterTopFilterModel filter);
         Task<IEnumerable<SelectListItem>> GetForPostAsync(string userId);
+        Task<List<string>> GetUniversesAsync();
     }
     public class CharacterService : DataService, ICharacterService
     {
@@ -84,6 +85,11 @@ namespace Mite.BLL.Services
             return Mapper.Map<IEnumerable<SelectListItem>>(chars);
         }
 
+        public Task<List<string>> GetUniversesAsync()
+        {
+            return repository.GetUniversesAsync();
+        }
+
         public async Task<DataServiceResult> RemoveAsync(Guid id)
         {
             try
@@ -109,17 +115,20 @@ namespace Mite.BLL.Services
                 return DataServiceResult.Failed("Неизвестный персонаж");
             try
             {
+                var httpRegex = new Regex(@"^https?:\/\/");
                 var character = await repository.GetAsync(model.Id);
                 if(!string.IsNullOrEmpty(model.ImageSrc) && character.ImageSrc != model.ImageSrc)
                 {
-                    if(Regex.IsMatch(model.ImageSrc, @"^https?:\/\/"))
+                    if(httpRegex.IsMatch(model.ImageSrc))
                     {
-                        FilesHelper.DeleteFile(character.ImageSrc);
+                        if (!httpRegex.IsMatch(character.ImageSrc))
+                            FilesHelper.DeleteFile(character.ImageSrc);
                         character.ImageSrc = model.ImageSrc;
                     }
                     else if (FilesHelper.IsBase64(model.ImageSrc))
                     {
-                        FilesHelper.DeleteFile(character.ImageSrc);
+                        if (!httpRegex.IsMatch(character.ImageSrc))
+                            FilesHelper.DeleteFile(character.ImageSrc);
                         character.ImageSrc = FilesHelper.CreateImage(PathConstants.PublicVirtualImageFolder, model.ImageSrc);
                     }
                 }
@@ -134,6 +143,7 @@ namespace Mite.BLL.Services
                 character.Name = model.Name;
                 character.Original = model.Original;
                 character.UserId = model.UserId;
+                character.Universe = model.Universe;
                 await repository.UpdateAsync(character);
                 return Success;
             }

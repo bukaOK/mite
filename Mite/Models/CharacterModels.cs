@@ -29,7 +29,9 @@ namespace Mite.Models
         [DisplayName("Оригинальный персонаж")]
         public bool Original { get; set; }
         public string UserId { get; set; }
+        public string Universe { get; set; }
         public List<CharacterFeatureModel> Features { get; set; }
+        public List<string> Universes { get; set; }
     }
     public class CharacterFeatureModel
     {

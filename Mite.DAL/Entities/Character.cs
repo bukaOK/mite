@@ -16,6 +16,8 @@ namespace Mite.DAL.Entities
         public string Name { get; set; }
         public string DescriptionSrc { get; set; }
         public string ImageSrc { get; set; }
+        [MaxLength(200)]
+        public string Universe { get; set; }
         /// <summary>
         /// Является ли персонаж оригинальным
         /// </summary>

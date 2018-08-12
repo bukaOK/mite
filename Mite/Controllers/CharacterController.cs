@@ -1,4 +1,5 @@
 ﻿using Mite.BLL.Services;
+using Mite.CodeData.Constants;
 using Mite.Core;
 using Mite.Models;
 using System;
@@ -17,15 +18,20 @@ namespace Mite.Controllers
         {
             this.characterService = characterService;
         }
-        public ActionResult Add()
+        public async Task<ActionResult> Add()
         {
-            return View("Edit", new CharacterModel());
+            var model = new CharacterModel();
+            if (User.IsInRole(RoleNames.Moderator))
+                model.Universes = await characterService.GetUniversesAsync();
+            return View("Edit", model);
         }
         public async Task<ActionResult> Edit(string id)
         {
             if(Guid.TryParse(id, out Guid gId))
             {
                 var model = await characterService.GetAsync(gId);
+                if (User.IsInRole(RoleNames.Moderator))
+                    model.Universes = await characterService.GetUniversesAsync();
                 if (model.UserId != CurrentUserId)
                     return Forbidden();
                 return View(model);

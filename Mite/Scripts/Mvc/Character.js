@@ -33,6 +33,7 @@
             Name: $('#Name').val(),
             Description: description,
             Original: $('#Original').length ? $('#Original').parent().checkbox('is checked') : true,
+            Universe: $('#Universe').val(),
             Features: []
         };
         $items.each(function (index, elem) {

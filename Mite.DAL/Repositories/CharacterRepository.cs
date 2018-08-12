@@ -55,6 +55,11 @@ namespace Mite.DAL.Repositories
             }, filter);
         }
 
+        public async Task<List<string>> GetUniversesAsync()
+        {
+            return await Table.AsNoTracking().Where(x => !string.IsNullOrEmpty(x.Universe)).GroupBy(x => x.Universe).Select(x => x.Key).ToListAsync();
+        }
+
         public async Task AddWithPostAsync(List<Guid> chars, Guid postId)
         {
             var existingChars = await DbContext.PostCharacters.Where(x => x.PostId == postId).ToListAsync();

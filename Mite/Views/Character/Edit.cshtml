@@ -54,6 +54,20 @@
                     @if (User.IsInRole(RoleNames.Moderator))
                     {
                         @Html.EditorFor(x => x.Original)
+                        <div class="ui fluid search selection dropdown" id="select-universe">
+                            <i class="dropdown icon"></i>
+                            @Html.HiddenFor(x => x.Universe)
+                            <div class="default text">Вселенная</div>
+                            <div class="menu">
+                                @if (Model.Universes != null && Model.Universes.Count > 0)
+                                {
+                                    foreach (var item in Model.Universes)
+                                    {
+                                        <div class="item" data-value="@item">@item</div>
+                                    }
+                                }
+                            </div>
+                        </div>
                     }
                     <div class="ui green m-success message">Персонаж успешно добавлен</div>
                     <div class="ui error message"></div>
@@ -117,7 +131,16 @@
         $('#img-wrapper').html('<img src="' + srcVal + '" alt="@Model.Name" style="max-width: 100%" />');
         $('#ImageSrc').val(srcVal);
     });
-
+    if ($('#select-universe').length) {
+        $('#select-universe').dropdown({
+            fullTextSearch: true,
+            match: 'text',
+            allowAdditions: true,
+            keys: {
+                delimiter: 13
+            },
+        });
+    }
     ClassicEditor.create($('#editor')[0], {
         toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'imageUpload' , 'blockQuote', '|' ,'save'],
         language: 'ru',
