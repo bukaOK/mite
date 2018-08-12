@@ -29,6 +29,10 @@ namespace Mite.CodeData.Enums
         /// <summary>
         /// Покупка товара
         /// </summary>
-        Purchase = 4
+        Purchase = 4,
+        /// <summary>
+        /// Оплата платной подписки на автора
+        /// </summary>
+        TariffPay = 5
     }
 }

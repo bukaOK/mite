@@ -28,8 +28,8 @@ namespace Mite
                 .IncludeDirectory("~/Scripts/Mvc", "*.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/croppie").Include("~/node_modules/croppie/croppie.js"));
-            bundles.Add(new ScriptBundle("~/bundles/editor").Include(
-                "~/Scripts/content-tools.js", "~/bower_components/pep/src/jquery.pep.js"));
+            bundles.Add(new Bundle("~/bundles/editor").Include(
+                "~/ckeditor5-build-classic/build/ckeditor.js", "~/ckeditor5-build-classic/build/translations/ru.js"));
             bundles.Add(new ScriptBundle("~/bundles/jsrender").Include("~/bower_components/jsrender/jsrender.min.js"));
             bundles.Add(new ScriptBundle("~/bundles/grid").Include("~/Scripts/masonry.pkgd.min.js", 
                 "~/bower_components/imagesloaded/imagesloaded.pkgd.min.js"));
@@ -63,7 +63,6 @@ namespace Mite
                 "~/Content/dotloader.css",
                 "~/Content/Site.css",
                 "~/Content/ident.css",
-                "~/Content/content-tools.min.css",
                 "~/node_modules/perfect-scrollbar/css/perfect-scrollbar.css",
                 "~/Content/UserMenu.css",
                 "~/Content/go-top.css"
@@ -75,6 +74,10 @@ namespace Mite
                 "~/Content/gallery.css"
             ));
             bundles.Add(new StyleBundle("~/Content/dialog").Include("~/Content/dialogs.css"));
+            bundles.Add(new StyleBundle("~/Content/editor").Include("~/Content/DataEditing.css"));
+            bundles.Add(new StyleBundle("~/Content/userprofile").Include("~/Content/UserProfile.css"));
+            bundles.Add(new StyleBundle("~/Content/editorcontent").Include("~/Content/EditorContent.css"));
+
             bundles.UseCdn = true;
         }
     }

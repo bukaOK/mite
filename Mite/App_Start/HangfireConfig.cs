@@ -10,6 +10,7 @@ using Microsoft.Owin.Security.DataProtection;
 using Mite.BLL.IdentityManagers;
 using Mite.BLL.Services;
 using Mite.CodeData.Constants;
+using Mite.CodeData.Enums;
 using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
 using Mite.ExternalServices.Google;
@@ -20,6 +21,8 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Web.Hosting;
+using System.Data.Entity;
+using System.Threading.Tasks;
 
 namespace Mite
 {
@@ -40,6 +43,7 @@ namespace Mite
             app.UseHangfireServer();
             RecurringJob.AddOrUpdate(() => LoadAdSenseIncome(), Cron.Daily);
             RecurringJob.AddOrUpdate(() => ClearImagesCache(), Cron.Weekly);
+            RecurringJob.AddOrUpdate(() => TariffsCheckoutAsync(), Cron.Minutely);
         }
         /// <summary>
         /// Раздаем заработок за день пользователям
@@ -58,9 +62,8 @@ namespace Mite
 
             //За какой день начислить доход
             var incomeDay = DateTime.UtcNow.AddDays(-1);
-            var dailyIncomeTask = googleService.GetAdsenseSumAsync(incomeDay, incomeDay, admin.Id);
-            dailyIncomeTask.Wait();
-            var dailyIncome = dailyIncomeTask.Result;
+            var dailyIncome = googleService.GetAdsenseSumAsync(incomeDay, incomeDay, admin.Id).GetAwaiter().GetResult();
+            
             if (dailyIncome == 0)
                 return;
             //30% остается у MiteGroup - остальное пользователям
@@ -82,6 +85,7 @@ namespace Mite
                 cashService.AdSensePay(author.Id, incomePart * authorsIncome, incomeDay);
             }
         }
+
         public static void ClearImagesCache()
         {
             var cacheDir = HostingEnvironment.MapPath(PathConstants.VirtualImageCacheFolder);
@@ -92,6 +96,38 @@ namespace Mite
                 var info = new DirectoryInfo(dir);
                 if (DateTime.UtcNow - info.LastAccessTimeUtc < cacheLifetime)
                     info.Delete(true);
+            }
+        }
+
+        public static async Task TariffsCheckoutAsync()
+        {
+            using(var scope = container.BeginLifetimeScope())
+            {
+                var dbContext = scope.Resolve<AppDbContext>();
+                //var unitOfWork = scope.Resolve<IUnitOfWork>();
+                var cashService = scope.Resolve<ICashService>();
+
+                var tariffs = await dbContext.ClientTariffs.Include(x => x.Tariff).Where(x => x.PayStatus == TariffStatuses.Paid).ToListAsync();
+                foreach (var clTariff in tariffs)
+                {
+                    if((DateTime.UtcNow - clTariff.LastPayTimeUtc).Days >= 30)
+                    {
+                        var cash = await cashService.GetUserCashAsync(clTariff.ClientId);
+                        if(cash - clTariff.Tariff.Price < 0)
+                        {
+                            clTariff.PayStatus = TariffStatuses.NotPaid;
+                        }
+                        else
+                        {
+                            await cashService.AddAsync(clTariff.ClientId, clTariff.Tariff.AuthorId, clTariff.Tariff.Price, CashOperationTypes.TariffPay);
+                            clTariff.LastPayTimeUtc = DateTime.UtcNow;
+                            clTariff.PayStatus = TariffStatuses.Paid;
+                            dbContext.Entry(clTariff).State = EntityState.Modified;
+                        }
+                        dbContext.Entry(clTariff).State = EntityState.Modified;
+                    }
+                }
+                await dbContext.SaveChangesAsync();
             }
         }
     }

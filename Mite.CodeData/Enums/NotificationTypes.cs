@@ -10,22 +10,26 @@ namespace Mite.CodeData.Enums
         /// <summary>
         /// Оценка поста
         /// </summary>
-        PostRating,
+        PostRating = 0,
         /// <summary>
         /// Новый подписчик
         /// </summary>
-        Follower,
+        Follower = 1,
         /// <summary>
         /// Комментарий поста
         /// </summary>
-        PostComment,
+        PostComment = 2,
         /// <summary>
         /// Оценка коммента
         /// </summary>
-        CommentRating,
+        CommentRating = 3,
         /// <summary>
         /// Ответ на комментарий
         /// </summary>
-        CommentReply
+        CommentReply = 4,
+        /// <summary>
+        /// Оплата за платную подписку
+        /// </summary>
+        TariffPayment = 5
     }
 }

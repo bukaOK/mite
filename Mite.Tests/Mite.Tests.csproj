@@ -86,6 +86,8 @@
     <Compile Include="BLL\ImageDTOTest.cs" />
     <Compile Include="BLL\Services\PostsServiceTest.cs" />
     <Compile Include="BLL\Services\UserReviewsServiceTest.cs" />
+    <Compile Include="DAL\Repositories\CharacterTest.cs" />
+    <Compile Include="DAL\Repositories\ClientTariffTest.cs" />
     <Compile Include="DAL\Repositories\PostsRepoTest.cs" />
     <Compile Include="DAL\Repositories\ProductsRepoTest.cs" />
     <Compile Include="Helpers\ImageHelperTest.cs" />

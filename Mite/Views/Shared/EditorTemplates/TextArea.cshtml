@@ -1,9 +1,18 @@
-﻿@model string
+﻿@using System.Reflection
+@using Mite.Attributes.DataAnnotations
+@model string
 
+@{ 
+    var phAttr = (ViewData.ModelMetadata)
+            .ContainerType
+            .GetProperty(ViewData.ModelMetadata.PropertyName)
+            .GetCustomAttribute<PlaceholderAttribute>(false);
+    var placeholder = phAttr?.Placeholder ?? Html.DisplayName("").ToHtmlString();
+}
 <div class="field">
     @if (ViewData["WithLabel"] as bool? == true)
     {
         @Html.Label("")
     }
-    @Html.TextArea("", Model, new { placeholder = Html.DisplayName("") })
+    @Html.TextArea("", Model, new { placeholder = placeholder })
 </div>

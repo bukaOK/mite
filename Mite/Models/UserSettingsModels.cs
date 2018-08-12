@@ -120,4 +120,27 @@ namespace Mite.Models
         public Guid? Id { get; set; }
         public string Url { get; set; }
     }
+    public class ESPublishModel
+    {
+        public bool TwitterAuthenticated { get; set; }
+        public bool DeviantArtAuthenticated { get; set; }
+
+        //[DisplayName("Id страницы Facebook")]
+        //public long FacebookPageId { get; set; }
+        //[DisplayName("Id/короткое имя страницы ВКонтакте")]
+        //public long VkGroupId { get; set; }
+
+        //[DisplayName("Автоматически публиковать ВКонтакте")]
+        //[UIHint("Checkbox")]
+        //public bool PublishVk { get; set; }
+        //[DisplayName("Автоматически публиковать на Facebook")]
+        //[UIHint("Checkbox")]
+        //public bool PublishFb { get; set; }
+        [UIHint("Checkbox")]
+        [DisplayName("Автоматически публиковать на DeviantArt")]
+        public bool PublishDeviant { get; set; }
+        [UIHint("Checkbox")]
+        [DisplayName("Автоматически публиковать на Twitter")]
+        public bool PublishTwitter { get; set; }
+    }
 }

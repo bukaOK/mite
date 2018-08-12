@@ -7,6 +7,8 @@
     var vkLogin = externalLogins.First(x => x.AuthenticationType.ToLower() == "vkontakte");
     var facebookLogin = externalLogins.First(x => x.AuthenticationType.ToLower() == "facebook");
     var twitterLogin = externalLogins.First(x => x.AuthenticationType.ToLower() == "twitter");
+    var devArtLogin = externalLogins.First(x => x.AuthenticationType.ToLower() == "deviantart");
+    //var instagramLogin = externalLogins.First(x => x.AuthenticationType.ToLower() == "instagram");
 }
 <div class="ui middle aligned center aligned grid">
     <div class="sixteen wide mobile twelve wide tablet six wide computer column">
@@ -31,6 +33,9 @@
                         </button>
                         <button type="submit" class="ui circular twitter icon button" name="provider" value="@twitterLogin.AuthenticationType" title="Твиттер">
                             <i class="twitter icon"></i>
+                        </button>
+                        <button type="submit" class="ui circular black icon button" name="provider" value="@devArtLogin.AuthenticationType" title="@devArtLogin.Caption">
+                            <i class="green deviantart icon"></i>
                         </button>
                     </div>
                 </div>

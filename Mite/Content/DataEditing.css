@@ -1,0 +1,35 @@
+﻿:root {
+    --ck-color-list-button-on-background: #b540c6;
+    --ck-color-list-button-hover-background: rgba(232, 232, 232, 0.5);
+    --ck-color-list-button-on-background-focus: #ad2dc0;
+    --ck-border-radius: 5px;
+    --ck-color-dropdown-panel-border: rgb(232, 232, 232);
+}
+.ck.ck-editor{
+    margin-top: 10px;
+}
+.ck.ck-content.ck-editor__editable.ck-blurred {
+    border: 2px solid rgb(232, 232, 232);
+    transition: border linear 0.2s;
+}
+.ck.ck-content.ck-editor__editable.ck-focused {
+    box-shadow: none;
+    border: 2px solid #b540c6;
+}
+.ck.ck-toolbar {
+    border: 2px solid rgb(232, 232, 232);
+    border-bottom: none;
+}
+.ck.ck-toolbar__separator {
+    width: 2px;
+    background-color: rgb(232, 232, 232);
+}
+
+/*.ck-content .image-style-align-center, .ck-content .image-style-align-left, 
+.ck-content .image-style-align-right, .ck-content .image-style-side{
+    max-width: 30%;
+    max-height: 80vh;
+}
+.ck-content .image > img{
+    max-height: 100%;
+}*/

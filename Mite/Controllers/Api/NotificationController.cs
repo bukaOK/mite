@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNet.Identity;
-using Mite.BLL.IdentityManagers;
 using Mite.BLL.Services;
-using Mite.Core;
 using Mite.Models;
 using NLog;
 using System;

@@ -62,12 +62,12 @@ namespace Mite.BLL.Helpers
         /// <param name="oldVPath">Путь(вирт.) к старому оригинальному изображению</param>
         /// <param name="base64">Строка изображения с base64</param>
         /// <returns>vPath - вирт. путь к изобр., compressedVPath - вирт. путь к сжатому изобр.</returns>
-        public static string UpdateImage(string oldVPath,string base64)
+        public static string UpdateImage(string oldVPath, string folder, string base64)
         {
             string vPath = null;
             try
             {
-                vPath = FilesHelper.CreateImage(ImagesFolder, base64);
+                vPath = FilesHelper.CreateImage(oldVPath, base64);
                 var fullPath = HostingEnvironment.MapPath(vPath);
                 //Удаляем старые
                 FilesHelper.DeleteFile(oldVPath);
@@ -113,7 +113,7 @@ namespace Mite.BLL.Helpers
         /// <param name="height"></param>
         /// <param name="adaptive"></param>
         /// <returns>Относительный путь к созданному изображению</returns>
-        public static string Create(string saveFolder, string base64, int width, int? height = null, bool adaptive = true)
+        public static string Create(string saveFolder, string base64, int width, int? height = null)
         {
             var imgFormat = Regex.Match(base64, @"data:image/(.+);base64,").Groups[1].Value;
             if (imgFormat == "jpeg")
@@ -131,10 +131,8 @@ namespace Mite.BLL.Helpers
                 if (height == null)
                     height = width * img.Height / img.Width;
                 var size = new MagickGeometry(width, (int)height);
-                if (adaptive)
-                    img.AdaptiveResize(size);
-                else
-                    img.Resize(size);
+                
+                img.Resize(size);
                 img.Write(fullPath);
             }
             return savePath;
@@ -159,6 +157,7 @@ namespace Mite.BLL.Helpers
                 mStream.Position = 0;
                 using(var magick = new MagickImage(mStream))
                 {
+                    magick.ColorAlpha(new MagickColor(Color.White));
                     if (height == null)
                         height = width * magick.Height / magick.Width;
                     var size = new MagickGeometry(width, (int)height);

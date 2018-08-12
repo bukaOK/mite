@@ -17,6 +17,10 @@ using Mite.BLL.Helpers;
 using Mite.CodeData;
 using Mite.CodeData.Constants;
 using System.Web;
+using Mite.ExternalServices.VkApi.Groups;
+using System.Net.Http;
+using System.Linq;
+using Mite.ExternalServices.VkApi.Core;
 
 namespace Mite.BLL.Services
 {
@@ -61,13 +65,15 @@ namespace Mite.BLL.Services
         private readonly AppUserManager userManager;
         private readonly AppSignInManager signInManager;
         private readonly IExternalLinksService linksService;
+        private readonly HttpClient client;
 
         public UserService(AppUserManager userManager, AppSignInManager signInManager, IUnitOfWork unitOfWork,
-            ILogger logger, IExternalLinksService linksService): base(unitOfWork, logger)
+            ILogger logger, IExternalLinksService linksService, HttpClient client): base(unitOfWork, logger)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.linksService = linksService;
+            this.client = client;
         }
 
         public async Task<SignInStatus> LoginAsync(LoginModel model)
@@ -110,18 +116,6 @@ namespace Mite.BLL.Services
                 Email = registerModel.Email,
                 RegisterDate = DateTime.UtcNow,
             };
-            if ((RegisterRoles?)registerModel.RegisterRole == RegisterRoles.Author)
-            {
-                if(!Guid.TryParse(registerModel.InviteKey, out Guid gInvite))
-                    return new IdentityResult(new[] { "Неизвестный пригласитель" });
-                else
-                {
-                    var inviter = await userManager.GetByInviteIdAsync(gInvite);
-                    if (inviter == null)
-                        return new IdentityResult(new[] { "Неизвестный пригласитель" });
-                    user.RefererId = inviter.Id;
-                }
-            }
             var result = external
                 ? await userManager.CreateAsync(user)
                 : await userManager.CreateAsync(user, registerModel.Password);
@@ -167,7 +161,7 @@ namespace Mite.BLL.Services
             try
             {
                 //Раньше создавался оригинал и сжатая копия, сейчас только фиксированный размер
-                vPath = ImagesHelper.Create(imagesFolder, img, 400);
+                vPath = ImagesHelper.Create(imagesFolder, img, 150);
             }
             catch (FormatException)
             {
@@ -198,6 +192,7 @@ namespace Mite.BLL.Services
             var postsRepo = Database.GetRepo<PostsRepository, Post>();
             var followersRepo = Database.GetRepo<FollowersRepository, Follower>();
             var blackListRepo = Database.GetRepo<BlackListUserRepository, BlackListUser>();
+            var tariffRepo = Database.GetRepo<ClientTariffRepository, ClientTariff>();
 
             var user = await userManager.FindByNameAsync(name);
             if (user == null)
@@ -205,6 +200,7 @@ namespace Mite.BLL.Services
             var userModel = Mapper.Map<ProfileModel>(user);
             userModel.ExternalLinks = await linksService.GetByUserForShowAsync(user.Id);
             userModel.IsAuthor = await userManager.IsInRoleAsync(user.Id, RoleNames.Author);
+
             var userCity = await Database.GetRepo<CitiesRepository, City>().GetWithCountryAsync(user.CityId);
             if (userCity != null)
                 userModel.PlaceName = $"{userCity.Country.Name}, {userCity.Name}";
@@ -213,11 +209,68 @@ namespace Mite.BLL.Services
             {
                 userModel.PostsCount = await postsRepo.GetPublishedPostsCount(user.Id);
                 userModel.FollowersCount = await followersRepo.GetFollowersCount(user.Id);
+                userModel.SponsorsCount = await tariffRepo.GetSponsorsCountAsync(user.Id);
             }
             else
             {
                 userModel.FollowingsCount = await followersRepo.GetFollowingsCountAsync(user.Id);
             }
+            //Получаем инфу по группе пользователя
+            var externalServiceRepo = Database.GetRepo<ExternalServiceRepository, ExternalService>();
+            //Инфа есть, если пользователь заходил через вк
+            var vkInfo = await externalServiceRepo.GetAsync(user.Id, VkSettings.DefaultAuthType);
+
+            if(vkInfo != null)
+            {
+                if (string.IsNullOrEmpty(vkInfo.GroupId))
+                {
+                    var vkLink = (await Database.GetRepo<ExternalLinksRepository, ExternalLink>().GetByUserAsync(user.Id))
+                        ?.FirstOrDefault(x => Regex.IsMatch(x.Url, @"vk\.com\/"))?.Url;
+                    if (!string.IsNullOrEmpty(vkLink))
+                    {
+                        var groupDomain = Regex.Match(vkLink, @"vk\.com\/(?<groupDomain>.+)$").Groups["groupDomain"].Value;
+                        var token = vkInfo.AccessToken ?? VkSettings.GroupKey;
+
+                        try
+                        {
+                            var groupResp = await new GroupsGetByIdRequest(client, token)
+                            {
+                                GroupId = groupDomain
+                            }.PerformAsync();
+                            userModel.VkGroupId = groupResp.FirstOrDefault()?.Id;
+                        }
+                        catch (VkApiException e)
+                        {
+                            if (token != VkSettings.GroupKey)
+                            {
+                                try
+                                {
+                                    var groupResp = await new GroupsGetByIdRequest(client, VkSettings.GroupKey)
+                                    {
+                                        GroupId = groupDomain
+                                    }.PerformAsync();
+                                    userModel.VkGroupId = groupResp.FirstOrDefault()?.Id;
+                                }
+                                catch (VkApiException e1)
+                                {
+                                    logger.Warn("Ошибка при попытке получения группы: " + e1.Message);
+                                }
+                            }
+                            else
+                                logger.Warn("Ошибка при попытке получения группы: " + e.Message);
+                        }
+                    }
+                }
+                else
+                    userModel.VkGroupId = vkInfo.GroupId;
+
+                if (!string.IsNullOrEmpty(userModel.VkGroupId) && userModel.VkGroupId != vkInfo.GroupId)
+                {
+                    vkInfo.GroupId = userModel.VkGroupId;
+                    await externalServiceRepo.UpdateAsync(vkInfo);
+                }
+            }
+
             if(user.Id != currentUserId)
             {
                 userModel.IsFollowing = await followersRepo.IsFollowerAsync(currentUserId, user.Id);

@@ -3,8 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 
 namespace Mite.Models
@@ -21,6 +19,7 @@ namespace Mite.Models
         /// Сколько пользователей добавили в избранное
         /// </summary>
         public int FavoriteCount { get; set; }
+        public bool CanSeeContent { get; set; }
         private string content;
         /// <summary>
         /// Если коллекция изображений или документ, то хранится документ, иначе изображение(это на входе)
@@ -61,10 +60,15 @@ namespace Mite.Models
         public DateTime LastEdit { get; set; }
         public DateTime? PublishDate { get; set; }
         public List<string> AvailableTags { get; set; }
+        public List<SelectListItem> AvailableCharacters { get; set; }
+
+        public Guid? TariffId { get; set; }
+        public List<SelectListItem> AvailableTariffs { get; set; }
         /// <summary>
         /// Список имен тегов
         /// </summary>
         public List<string> Tags { get; set; }
+        public List<Guid> Characters { get; set; }
         /// <summary>
         /// Обложка, если документ(т.е. главное текст), или главное изображение коллекции изображений.(при создании/редактировании)
         /// Документ если коллекция изображений(при показе поста)
@@ -88,6 +92,10 @@ namespace Mite.Models
         public Guid? ProductId { get; set; }
         public WatermarkEditModel Watermark { get; set; }
         public ProductModel Product { get; set; }
+        /// <summary>
+        /// Публиковать ли работу во внешних сервисах
+        /// </summary>
+        public bool? PublishOnExternalServices { get; set; }
     }
     public class WritingPostModel
     {
@@ -105,11 +113,24 @@ namespace Mite.Models
         public string Description { get; set; }
         public PostTypes Type { get; set; }
         public bool IsPublished => Type == PostTypes.Published;
+
+        public Guid? TariffId { get; set; }
+        public IList<SelectListItem> AvailableTariffs { get; set; }
+
         public IList<string> AvailableTags { get; set; }
         public IList<string> Tags { get; set; }
+
+        public IList<Guid> Characters { get; set; }
+        public IList<SelectListItem> AvailableCharacters { get; set; }
         public string Cover { get; set; }
         public HelperModel Helper { get; set; }
         public bool Blocked { get; set; }
+        /// <summary>
+        /// Публиковать ли работу во внешних сервисах
+        /// </summary>
+        [DisplayName("Публиковать на внешних сервисах")]
+        [UIHint("Checkbox")]
+        public bool? PublishOnExternalServices { get; set; }
     }
     public class ImagePostModel
     {
@@ -130,14 +151,29 @@ namespace Mite.Models
         public bool Blocked { get; set; }
         public Guid? WatermarkId { get; set; }
         public Guid? ProductId { get; set; }
+
+        public Guid? TariffId { get; set; }
+        public IList<SelectListItem> AvailableTariffs { get; set; }
+
         public PostContentTypes ContentType { get; set; }
+
         public IList<string> Tags { get; set; }
         public IList<string> AvailableTags { get; set; }
+
+        public IList<Guid> Characters { get; set; }
+        public IList<SelectListItem> AvailableCharacters { get; set; }
+
         [DisplayName("Использовать для элементов коллекции")]
         [UIHint("Checkbox")]
         public bool UseWatermarkForCols { get; set; }
         public IList<PostCollectionItemModel> Collection { get; set; }
         public IList<PostComicsItemModel> ComicsItems { get; set; }
+        /// <summary>
+        /// Публиковать ли работу во внешних сервисах
+        /// </summary>
+        [DisplayName("Публиковать на внешних сервисах")]
+        [UIHint("Checkbox")]
+        public bool? PublishOnExternalServices { get; set; }
     }
     public class PostRatingModel
     {

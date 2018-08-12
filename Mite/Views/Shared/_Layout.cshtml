@@ -31,7 +31,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="~/Content/icons/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="96x96" href="~/Content/icons/favicon-96x96.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="~/Content/icons/favicon-16x16.png" />
-    <link href="https://fonts.googleapis.com/css?family=Roboto:100&amp;subset=cyrillic" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100&amp;subset=cyrillic" rel="stylesheet" type="text/css">
     <meta name="msapplication-TileColor" content="#b540c6" />
     <meta name="msapplication-TileImage" content="~/Content/icons/ms-icon-144x144.png" />
     <meta name="theme-color" content="#b540c6" />
@@ -55,7 +55,28 @@
 <body class="pushable" style="height: 100% !important">
     @Scripts.Render("~/bundles/jquery", "~/bundles/semantic", "~/bundles/site", "~/bundles/jsrender")
     <script src="~/signalr/hubs"></script>
-    <script type="text/javascript"> (function (d, w, c) { (w[c] = w[c] || []).push(function() { try { w.yaCounter45009220 = new Ya.Metrika({ id:45009220, clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true }); } catch(e) { } }); var n = d.getElementsByTagName("script")[0], s = d.createElement("script"), f = function () { n.parentNode.insertBefore(s, n); }; s.type = "text/javascript"; s.async = true; s.src = "https://mc.yandex.ru/metrika/watch.js"; if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); } })(document, window, "yandex_metrika_callbacks"); </script> <noscript><div><img src="https://mc.yandex.ru/watch/45009220" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <script type="text/javascript">(function (d, w, c) { (w[c] = w[c] || []).push(function () { try { w.yaCounter45009220 = new Ya.Metrika({ id: 45009220, clickmap: true, trackLinks: true, accurateTrackBounce: true, webvisor: true }); } catch (e) { } }); var n = d.getElementsByTagName("script")[0], s = d.createElement("script"), f = function () { n.parentNode.insertBefore(s, n); }; s.type = "text/javascript"; s.async = true; s.src = "https://mc.yandex.ru/metrika/watch.js"; if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); } })(document, window, "yandex_metrika_callbacks");</script> <noscript><div><img src="https://mc.yandex.ru/watch/45009220" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- Facebook Pixel Code -->
+    <script>
+        !function (f, b, e, v, n, t, s) {
+            if (f.fbq) return; n = f.fbq = function () {
+                n.callMethod ?
+                    n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+            };
+            if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+            n.queue = []; t = b.createElement(e); t.async = !0;
+            t.src = v; s = b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t, s)
+        }(window, document, 'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '2073558402686845');
+        fbq('track', 'PageView');
+    </script>
+    <noscript>
+        <img height="1" width="1" style="display:none"
+             src="https://www.facebook.com/tr?id=2073558402686845&ev=PageView&noscript=1" />
+    </noscript>
+    <!-- End Facebook Pixel Code -->
     <script type="text/javascript">(window.Image ? (new Image()) : document.createElement('img')).src = 'https://vk.com/rtrg?p=VK-RTRG-133112-6Ayto';</script>
     <script>
         Settings.init();
@@ -130,6 +151,7 @@
                             @Html.RouteLink("Комикс", "AddPost", new { postType = PostContentTypes.Comics.ToString().ToLower() }, new { @class = "item", title = "Комиксы" })
                             @Html.ActionLink("Услугу", "Add", "AuthorServices", null, new { @class = "item", title = "Услуги" })
                             @Html.ActionLink("Заказ", "Add", "Orders", null, new { @class = "item", title = "Заказы" })
+                            @Html.ActionLink("Персонажа", "Add", "Character", null, new { @class = "item", title = "Персонаж" })
                         </div>
                     }
                     else
@@ -180,7 +202,7 @@
             <div class="ui container">
                 @if (isMobile)
                 {
-                    <div class="ui floating dropdown header main item" id="mainMenu">
+                    <div class="ui floating pointing dropdown header main item" id="mainMenu">
                         <img class="logo" src="/Content/images/mite-logo-icon.png" />
                         <div class="menu">
                             @Html.ActionLink("Работы", "Top", "Posts", null, new { @class = "item" })
@@ -236,6 +258,7 @@
                                             @Html.RouteLink("Комикс", "AddPost", new { postType = PostContentTypes.Comics.ToString().ToLower() }, new { @class = "item", title = "Комиксы, манга" })
                                             @Html.ActionLink("Услугу", "Add", "AuthorServices", null, new { @class = "item", title = "Услуги" })
                                             @Html.ActionLink("Заказ", "Add", "Orders", null, new { @class = "item", title = "Заказы" })
+                                            @Html.ActionLink("Персонажа", "Add", "Character", null, new { @class = "item", title = "Персонаж" })
                                         }
                                         else
                                         {
@@ -265,7 +288,7 @@
             @RenderBody()
         </article>
         @if (User.Identity.IsAuthenticated)
-                {
+        {
             <div class="ui right fixed vertical icon user-menu menu">
                 @if (User.IsInRole("admin"))
                 {
@@ -303,7 +326,7 @@
                 </a>
                 <a class="violet deals item" href="@Url.Action("Index", "UserDeals")" data-content="Сделки">
                     <i class="handshake outline icon"></i>
-                    @if(layoutModel.NewDealsCount > 0)
+                    @if (layoutModel.NewDealsCount > 0)
                     {
                         <div class="ui violet floating label">@layoutModel.NewDealsCount</div>
                     }
@@ -311,6 +334,9 @@
                     {
                         <div class="ui violet floating label" style="display: none">@layoutModel.NewDealsCount</div>
                     }
+                </a>
+                <a href="@Url.Action("Characters", "Character")" class="violet characters item" data-content="Персонажи">
+                    <i class="users icon"></i>
                 </a>
                 <a href="@Url.Action("Index", "Cash")" class="violet cash item" data-content="Счёт">
                     <i class="ruble icon"></i>

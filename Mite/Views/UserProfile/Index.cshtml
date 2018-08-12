@@ -17,48 +17,23 @@
     var pageUserName = Model.UserName.ToLower();
     var currentUserName = User.Identity.Name.ToLower();
     var isMobileDevice = ViewHelper.IsMobileDevice(Request);
+    var vkGroupLink = "";
+    if(Model.ExternalLinks != null && Model.ExternalLinks.Count() > 0)
+    {
+        vkGroupLink = Model.ExternalLinks.FirstOrDefault(x => x.ShowUrl.Contains("vk.com/"))?.ShowUrl.Replace("vk.com/", "");
+    }
 }
 @section meta{
     @ViewHelper.GenerateMeta(openGraphMeta)
 }
 @section styles{
-    <style>
-        [data-tab=followers].grid.tab>.column, [followings].grid.tab>.column{
-            padding: 1rem 0.5rem 0rem 0.5rem;
-        }
-        .link{
-            color: rgba(0,0,0,0.8);
-            transition: color linear 0.3s;
-        }
-        .link:hover{
-            color: #b540c6;
-        }
-        .ui.dropdown#sortDropdown .item[data-value="3"]{
-            display: none;
-        }
-        #avatar-img{
-            width: 150px;
-            height: 150px;
-        }
-    </style>
+    @Styles.Render("~/Content/userprofile")
 }
-<div class="ui profile center aligned three column stackable grid segment">
-    <div class="computer tablet only row">
-        <div class="right aligned column">
-            @if (Model.YandexWalId != null)
-            {
-                <button class="ui primary icon button" onclick="$('#donateModal').modal('show')">
-                    <i class="heart icon"></i>
-                    Поддержать
-                </button>
-            }
-            <h4 class="ui header">
-                <span class="content"><i class="map marker alternate icon"></i>@Model.PlaceName</span>
-            </h4>
-        </div>
-        <div class="column">
+<div class="ui grid">
+    <div class="three wide column">
+        <div class="ui center aligned segment">
             <div class="ui centered circular image" id="avatar-img">
-                @if(currentUserName == pageUserName)
+                @if (currentUserName == pageUserName)
                 {
                     <div class="ui center aligned dimmer">
                         <div class="content">
@@ -66,35 +41,33 @@
                         </div>
                     </div>
                 }
-                <img src="@Model.AvatarSrc" width="150" height="150" />
+                <img src="@Model.AvatarSrc" width="100" height="100" />
             </div>
-            <h2 class="ui header">
+            <h2 class="ui centered header">
                 @Model.UserName
                 <span class="sub header">
                     @Model.About
                 </span>
             </h2>
-            @foreach(var link in Model.ExternalLinks)
+            @if (!string.IsNullOrEmpty(Model.PlaceName))
             {
-                <a href="@link.Url" class="link" target="_blank">
-                    <i class="@link.IconClass icon"></i>
-                    @link.ShowUrl
-                </a><br />
+                <h5 class="ui centered header">
+                    <i class="map marker alternate icon"></i>
+                    <span class="content">@Model.PlaceName</span>
+                </h5>
             }
-        </div>
-        <div class="left aligned column">
-            @if (User.Identity.IsAuthenticated)
+            @if (currentUserName != pageUserName)
             {
                 <form class="ui form">
-                    @if(currentUserName != pageUserName)
-                    {
-                        <button type="button" class="ui green button" onclick="FollowersApi.add('@Model.UserId', this)"@Html.Raw(Model.IsFollowing ? " style=\"display: none\"" : "")>
-                            <i class="add user icon"></i>Подписаться
+                    <div class="ui margined small compact basic buttons">
+                        <button type="button" class="ui green button" onclick="FollowersApi.add('@Model.UserId', this)" @Html.Raw(Model.IsFollowing ? " style=\"display: none\"" : "")>
+                            <i class="add user icon"></i> Подписаться
                         </button>
-                        <button type="button" class="ui red button" onclick="FollowersApi.delete('@Model.UserId', this)"@Html.Raw(!Model.IsFollowing ? " style=\"display: none\"" : "")>
-                            <i class="remove user icon"></i>Отписаться
+                        <button type="button" class="ui red button" title="Отписаться"
+                                onclick="FollowersApi.delete('@Model.UserId', this)" @Html.Raw(!Model.IsFollowing ? " style=\"display: none\"" : "")>
+                            <i class="remove user icon"></i> Отписаться
                         </button>
-                        <div class="ui top center blue user-actions floating icon dropdown button">
+                        <div class="ui small compact user-actions floating icon dropdown button">
                             <i class="dropdown icon"></i>
                             <div class="menu" role="menu">
                                 <div class="blist item" role="menuitem" onclick="BlackListApi.remove('@Model.UserId', this)" @Html.Raw(!Model.BlackListed ? "style=\"display: none\"" : "") title="Убрать из черного списка">
@@ -114,59 +87,27 @@
                                 }
                             </div>
                         </div>
-                    }
-                    else
-                    {
-                        <a href="/user/settings" class="ui blue button"><i class="setting icon"></i>Настройки</a>
-                    }
+                    </div>
                     <div class="ui error message"></div>
                 </form>
             }
-        </div>
-    </div>
-    <div class="stackable mobile only row">
-        <div class="column">
-            <img class="ui centered circular image" src="@Model.AvatarSrc" width="150" height="150" />
-            <h2 class="ui header">
-                @Model.UserName
-                <span class="sub header">
-                    @Model.About
-                </span>
-            </h2>
-        </div>
-        <div class="column">
-            @if (Model.YandexWalId != null)
+            <a class="ui green small compact basic labeled icon margined button" target="_blank" href="@Url.Action("ClientList", "Tariff", new { authorname = Model.UserName })" title="Стать спонсором">
+                <i class="heart icon"></i>
+                Поддержать
+            </a>
+            @if (Model.ExternalLinks != null && Model.ExternalLinks.Count() > 0)
             {
-                <button class="ui green labeled icon button" onclick="$('#donateModal').modal('show')">
-                    <i class="heart icon"></i>
-                    Поддержать
-                </button>
+                <div class="ui list">
+                    @foreach (var link in Model.ExternalLinks)
+                    {
+                        <a href="@link.Url" class="item" target="_blank">
+                            <i class="@link.IconClass icon"></i>
+                            @link.ShowUrl
+                        </a>
+                    }
+                </div>
             }
-        </div>
-        <div class="column">
-            @if (currentUserName != pageUserName && !Model.IsFollowing && User.Identity.IsAuthenticated)
-            {
-                <button class="ui primary button" onclick="FollowersApi.add('@Model.UserId', this)">
-                    <i class="add user icon"></i>Подписаться
-                </button>
-                <button class="ui red button" onclick="FollowersApi.delete('@Model.UserId', this)" style="display: none">
-                    <i class="remove user icon"></i>Отписаться
-                </button>
-            }
-            @if (Model.IsFollowing)
-            {
-                <button class="ui red button" onclick="FollowersApi.delete('@Model.UserId', this)">
-                    <i class="remove user icon"></i>Отписаться
-                </button>
-                <button class="ui primary button" onclick="FollowersApi.add('@Model.UserId', this)" style="display: none">
-                    <i class="add user icon"></i>Подписаться
-                </button>
-            }
-        </div>
-    </div>
-    <div class="four column row">
-        <div class="column">
-            <div class="ui small statistic">
+            <div class="ui tiny statistic">
                 <div class="value">
                     @Model.FollowersCount
                 </div>
@@ -174,17 +115,13 @@
                     @ViewHelper.GetWordCase(Model.FollowersCount, "Подписчик", "Подписчика", "Подписчиков")
                 </div>
             </div>
-        </div>
-        <div class="column">
-            <div class="ui small statistic">
+            <div class="ui tiny statistic">
                 <div class="value">
                     @Model.Reliability
                 </div>
                 <div class="label">Надежность</div>
             </div>
-        </div>
-        <div class="column">
-            <div class="ui small statistic">
+            <div class="ui tiny statistic">
                 <div class="value">
                     @Model.Rating
                 </div>
@@ -192,9 +129,7 @@
                     Рейтинг
                 </div>
             </div>
-        </div>
-        <div class="column">
-            <div class="ui small statistic">
+            <div class="ui tiny statistic">
                 <div class="value">
                     @Model.PostsCount
                 </div>
@@ -202,161 +137,158 @@
                     @ViewHelper.GetWordCase(Model.PostsCount, "Работа", "Работы", "Работ")
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-<div class="ui tabs stackable menu" id="tabs-context">
-    @if (currentUserName == pageUserName)
-    {
-        <a class="active item" data-tab="posts">Работы</a>
-        <a class="item" data-tab="followings">Я подписан</a>
-    }
-    else
-    {
-        <a class="active item" data-tab="posts/published">Работы</a>
-    }
-    <a class="item" id="followers-tab" data-tab="followers">Подписчики</a>
-    <a class="item" data-tab="favorites">Избранное</a>
-    <a class="item" data-tab="services">Услуги</a>
-    <a class="item" data-tab="products">Товары</a>
-    <div class="right item" id="postFilter">
-        <i class="filter icon"></i>
-        Сначала&nbsp;
-        <div class="ui inline dropdown" id="sortDropdown">
-            <div class="text">новые</div>
-            <i class="dropdown icon"></i>
-            <div class="menu">
-                <div class="active item" data-text="новые" data-value="@((byte)SortFilter.New)">Новые</div>
-                <div class="item" data-text="высший рейтинг" data-value="@((byte)SortFilter.Popular)">Высший рейтинг</div>
-                <div class="item" data-text="надежные" data-value="@((byte)SortFilter.Reliable)">Надежные</div>
-                <div class="item" data-text="старые" data-value="@((byte)SortFilter.Old)">Старые</div>
+            <div class="ui tiny statistic">
+                <div class="value">
+                    @Model.SponsorsCount
+                </div>
+                <div class="label">
+                    @ViewHelper.GetWordCase(Model.SponsorsCount, "Спонсор", "Спонсора", "Спонсоров")
+                </div>
             </div>
         </div>
-    </div>
-</div>
-@if (currentUserName == pageUserName)
-{
-    <div class="ui tab" data-tab="posts">
-        <div class="ui stackable center aligned labeled icon secondary tabs menu">
-            <a class="active item" data-tab="published">
-                <i class="announcement icon"></i>
-                Публикации
-            </a>
-            <a class="item" data-tab="drafts">
-                <i class="edit icon"></i>
-                Черновики
-            </a>
-            <a class="item" data-tab="blocked">
-                <i class="lock icon"></i>
-                Блокированные
-            </a>
-        </div>
-        @if (isMobileDevice)
+        @if (!string.IsNullOrEmpty(Model.VkGroupId))
         {
-            <div class="ui tab stackable two column grid basic segment" data-tab="published"></div>
-            <div class="ui tab stackable two column basic segment grid" data-tab="drafts"></div>
-            <div class="ui tab stackable two column basic segment grid" data-tab="blocked"></div>
+            <div id="vk_groups"></div>
+        }
+        @if (Model.ShowAd)
+        {
+            <div class="ui segment">
+                <h4 class="ui dividing header">Реклама</h4>
+                <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                <!-- TopAd -->
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-7675079294669395"
+                     data-ad-slot="2018290469"
+                     data-ad-format="auto"></ins>
+                <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+            </div>
+        }
+        <div class="ui loading segment">
+            <div class="ui dividing header" id="dailyFactHeader">Факт дня</div>
+            <p id="dailyFactDesc"></p>
+        </div>
+    </div>
+    <div class="thirteen wide column">
+        <div class="ui tabs stackable menu" id="tabs-context">
+            @if (currentUserName == pageUserName)
+            {
+                <a class="active item" data-tab="posts">Работы</a>
+                <a class="item" data-tab="followings" data-tmpl="#followersTmpl" data-empty-tmpl="#emptyFollowingsTmpl" data-range="50">Я подписан</a>
+            }
+            else
+            {
+                <a class="active item" data-tab="posts/published" data-tmpl="#postsTmpl" data-empty-tmpl="#emptyPostTmpl">Работы</a>
+            }
+            <a class="item" id="followers-tab" data-tab="followers" data-tmpl="#followersTmpl" data-empty-tmpl="#emptyFollowersTmpl">Подписчики</a>
+            <a class="item" data-tab="services" data-tmpl="#servicesTmpl" data-empty-tmpl="#emptyServicesTmpl">Услуги</a>
+            <div class="ui dropdown item" id="moreDropdown">
+                <div class="text">Ещё</div>
+                <i class="dropdown icon"></i>
+                <div class="menu">
+                    <a class="item" data-tab="favorites" data-tmpl="#favoritePostsTmpl" data-empty-tmpl="#emptyPostTmpl">Избранное</a>
+                    <a class="item" data-tab="products" data-tmpl="#productsTmpl" data-empty-tmpl="#emptyProductsTmpl">Товары</a>
+                    <a class="item" data-tab="sponsors" data-tmpl="#followersTmpl" data-empty-tmpl="#emptySponsorsTmpl">Спонсоры</a>
+                </div>
+            </div>
+            <div class="right item" id="postFilter">
+                <i class="filter icon"></i>
+                Сначала&nbsp;
+                <div class="ui inline dropdown" id="sortDropdown">
+                    <div class="text">новые</div>
+                    <i class="dropdown icon"></i>
+                    <div class="menu">
+                        <div class="active item" data-text="новые" data-value="@((byte)SortFilter.New)">Новые</div>
+                        <div class="item" data-text="высший рейтинг" data-value="@((byte)SortFilter.Popular)">Высший рейтинг</div>
+                        <div class="item" data-text="надежные" data-value="@((byte)SortFilter.Reliable)">Надежные</div>
+                        <div class="item" data-text="старые" data-value="@((byte)SortFilter.Old)">Старые</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @if (currentUserName == pageUserName)
+        {
+            <div class="ui tab" data-tab="posts">
+                <div class="ui stackable center aligned labeled icon secondary tabs menu">
+                    <a class="active item" data-tab="published" data-tmpl="#postsTmpl" data-empty-tmpl="#emptyPostTmpl" data-parent="posts">
+                        <i class="announcement icon"></i>
+                        Публикации
+                    </a>
+                    <a class="item" data-tab="drafts" data-tmpl="#postsTmpl" data-empty-tmpl="#emptyPostTmpl" data-parent="posts">
+                        <i class="edit icon"></i>
+                        Черновики
+                    </a>
+                    <a class="item" data-tab="blocked" data-tmpl="#postsTmpl" data-empty-tmpl="#emptyBlockedTmpl" data-parent="posts">
+                        <i class="lock icon"></i>
+                        Блокированные
+                    </a>
+                </div>
+                @if (isMobileDevice)
+                {
+                    <div class="ui tab stackable two column grid basic segment" data-tab="published"></div>
+                    <div class="ui tab stackable two column basic segment grid" data-tab="drafts"></div>
+                    <div class="ui tab stackable two column basic segment grid" data-tab="blocked"></div>
+                }
+                else
+                {
+                    <div class="ui tab three column doubling grid basic segment" data-tab="published"></div>
+                    <div class="ui tab three column doubling basic segment grid" data-tab="drafts"></div>
+                    <div class="ui tab three column doubling basic segment grid" data-tab="blocked"></div>
+                }
+            </div>
+
         }
         else
         {
-            <div class="ui tab four column doubling grid basic segment" data-tab="published"></div>
-            <div class="ui tab four column doubling basic segment grid" data-tab="drafts"></div>
-            <div class="ui tab four column doubling basic segment grid" data-tab="blocked"></div>
-        }
-    </div>
-    if (isMobileDevice)
-    {
-        <div class="ui tab stackable three column basic segment grid" data-tab="followers"></div>
-        <div class="ui tab stackable three column basic segment grid" data-tab="followings"></div>
-        <div class="ui tab stackable two column basic segment grid" data-tab="services"></div>
-        <div class="ui tab stackable two column basic segment grid" data-tab="products"></div>
-        <div class="ui tab stackable two column basic segment grid" data-tab="favorites"></div>
-    }
-    else
-    {
-        <div class="ui tab four column doubling basic segment grid" data-tab="followers"></div>
-        <div class="ui tab four column doubling basic segment grid" data-tab="followings"></div>
-        <div class="ui tab three column doubling basic segment grid" data-tab="services"></div>
-        <div class="ui tab four column basic segment grid" data-tab="products"></div>
-        <div class="ui tab stackable four column basic segment grid" data-tab="favorites"></div>
-    }
-    <div class="dot-loader-wrapper">
-        <div class="dot-loader">
-            <div class="dot"></div>
-            <div class="dot"></div>
-            <div class="dot"></div>
-        </div>
-    </div>
-}
-else
-{
-    <div class="ui stackable grid">
-        <div class="three wide column">
-            <div class="ui loading segment">
-                <div class="ui dividing header" id="dailyFactHeader">Факт дня</div>
-                <p id="dailyFactDesc"></p>
-            </div>
-            @if (Model.ShowAd)
-            {
-                <div class="ui segment">
-                    <h4 class="ui dividing header">Реклама</h4>
-                    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-                    <!-- TopAd -->
-                    <ins class="adsbygoogle"
-                         style="display:block"
-                         data-ad-client="ca-pub-7675079294669395"
-                         data-ad-slot="2018290469"
-                         data-ad-format="auto"></ins>
-                    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-                </div>
-            }
-        </div>
-        <div class="thirteen wide column">
-            @if (isMobileDevice)
+            if (isMobileDevice)
             {
                 <div class="ui tab stackable two column basic segment grid" data-tab="posts/published"></div>
-                <div class="ui doubling tab three column basic segment grid" data-tab="followers"></div>
-                <div class="ui tab stackable two column basic segment grid" data-tab="services"></div>
-                <div class="ui tab stackable two column basic segment grid" data-tab="products"></div>
-                <div class="ui tab stackable two column basic segment grid" data-tab="favorites"></div>
             }
             else
             {
                 <div class="ui tab three column basic segment grid" data-tab="posts/published"></div>
-                <div class="ui tab four column basic segment grid" data-tab="followers"></div>
-                <div class="ui tab three column basic segment grid" data-tab="services"></div>
-                <div class="ui tab three column basic segment grid" data-tab="products"></div>
-                <div class="ui tab stackable three column basic segment grid" data-tab="favorites"></div>
             }
-            <div class="dot-loader-wrapper">
-                <div class="dot-loader">
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                </div>
+        }
+        @if (isMobileDevice)
+        {
+            <div class="ui tab stackable three column basic segment grid" data-tab="followers"></div>
+            <div class="ui tab stackable three column basic segment grid" data-tab="followings"></div>
+            <div class="ui tab stackable two column basic segment grid" data-tab="services"></div>
+            <div class="ui tab stackable two column basic segment grid" data-tab="products"></div>
+            <div class="ui tab stackable two column basic segment grid" data-tab="favorites"></div>
+            <div class="ui tab stackable three column basic segment grid" data-tab="sponsors"></div>
+        }
+        else
+        {
+            <div class="ui tab four column doubling basic segment grid" data-tab="followers"></div>
+            <div class="ui tab four column doubling basic segment grid" data-tab="followings"></div>
+            <div class="ui tab three column doubling basic segment grid" data-tab="services"></div>
+            <div class="ui tab three column basic segment grid" data-tab="products"></div>
+            <div class="ui tab stackable four column basic segment grid" data-tab="favorites"></div>
+            <div class="ui tab four column doubling basic segment grid" data-tab="sponsors"></div>
+        }
+        <div class="dot-loader-wrapper">
+            <div class="dot-loader">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
             </div>
         </div>
     </div>
-}
+</div>
 @{ Html.RenderPartial("_Modals"); }
 @{ Html.RenderPartial("_Templates", Model); }
 @Scripts.Render("~/bundles/jsrender", "~/bundles/grid", "~/bundles/api")
 <script>
     var delPostId;
     var isOwner = @((currentUserName == pageUserName).ToString().ToLower());
-    function changeTab() {
-
-    }
-    function publishPost(postId){
-        $.ajax({
-            url: '@Url.Action("PublishPost", "Posts")' + '/' + postId,
-            type: 'post',
-            success: function (){
-                window.location.reload();
-            },
-            error: function(){
-                alert('Ошибка при попытке публикации');
-            }
+    function publishPost(postId) {
+        $.post('/posts/publishpost/' + postId, null, function () {
+            location.reload();
+        }).fail(function () {
+            iziToast.error({
+                title: 'Ошибка при попытке публикации'
+            });
         });
     }
     function showDeletePostModal(postId){
@@ -377,36 +309,14 @@ else
     $(function () {
         $('.radio.checkbox').checkbox();
         $('.user-actions').dropdown({
-            action: 'hide',
-            //context: $(this).parents('.column')[0]
+            action: 'hide'
         });
-        $('#donateForm').form({
-            on: 'submit',
-            fields: {
-                sum: {
-                    rules: [
-                        {
-                            type: 'integer',
-                            prompt: 'В качестве суммы укажите целое число'
-                        }
-                    ]
-                },
-                paymentType: {
-                    rules: [
-                        {
-                            type: 'empty',
-                            prompt: 'Выберите тип оплаты'
-                        }
-                    ]
-                }
-            }
+        $('#moreDropdown').dropdown({
+            action: 'hide',
+            on: 'hover'
         });
         DailyFactsApi.getDailyFact();
-        $('#userActionsDrop').dropdown({
-            action: 'nothing',
-            transition: 'slide right',
-            duration: 300
-        });
+        
         var currentUser = '@currentUserName'
         var pageUser = '@pageUserName';
         if (currentUser === pageUser) {
@@ -429,94 +339,29 @@ else
             onApprove: function() {
                 var postId = delPostId;
                 var deleteElem = $('.column[data-post-id="' + postId + '"]')[0];
-                $.ajax({
-                    url: '/posts/deletepost/' + postId,
-                    type: 'post',
-                    success: function (data) {
-                        var tab = TabFilter.Tabs.getLastActiveTab();
-                        $('.tab[data-tab="' + tab.name + '"]').masonry('remove', deleteElem).masonry('layout');
-                    },
-                    error: function (jqXhr) {
-                    }
+                $.post('/posts/deletepost/' + postId, null, function (data) {
+                    var tab = TabFilter.Tabs.getLastActiveTab();
+                    $('.tab[data-tab="' + tab.name + '"]').masonry('remove', deleteElem).masonry('layout');
                 });
             }
         });
-        if(isOwner){
-            var postsTab = new Tab({
-                parentTab: null,
-                name: 'posts',
-                isActive: true,
-            });
-            var publishedTab = new Tab({
-                parentTab: postsTab,
-                name: 'published',
-                isActive: true,
-                tmplSelector: '#postsTmpl',
-                emptyTmplSelector: '#emptyPostTmpl'
-            });
-            var blockedTab = new Tab({
-                parentTab: postsTab,
-                name: 'blocked',
-                isActive: false,
-                tmplSelector: '#postsTmpl',
-                emptyTmplSelector: '#emptyBlockedTmpl'
-            });
-            var draftsTab = new Tab({
-                parentTab: postsTab,
-                name: 'drafts',
-                isActive: false,
-                tmplSelector: '#postsTmpl',
-                emptyTmplSelector: '#emptyPostTmpl'
-            });
-            var followingsTab = new Tab({
-                parentTab: null,
-                name: 'followings',
-                range: 50,
-                isActive: false,
-                tmplSelector: '#followersTmpl',
-                emptyTmplSelector: '#emptyFollowingsTmpl'
-            });
-            TabFilter.Tabs.items = [postsTab, publishedTab, draftsTab, blockedTab, followingsTab];
-        } else{
-            var postsTab = new Tab({
-                parentTab: null,
-                name: 'posts/published',
-                tmplSelector: '#postsTmpl',
-                emptyTmplSelector: '#emptyPostTmpl',
-                isActive: true
-            });
-            TabFilter.Tabs.items = [postsTab];
-        }
-        var followersTab = new Tab({
-            parentTab: null,
-            name: 'followers',
-            isActive: false,
-            range: 50,
-            tmplSelector: '#followersTmpl',
-            emptyTmplSelector: '#emptyFollowersTmpl'
+        var tabItems = [];
+        $('.item[data-tab]').each(function (index, el) {
+            var $el = $(el);
+            var itemSettings = {
+                name: $el.data('tab'),
+                isActive: $el.hasClass('active'),
+                tmplSelector: $el.data('tmpl'),
+                emptyTmplSelector: $el.data('emptyTmpl'),
+                parentTab: tabItems.find(function (tabItem) {
+                    return tabItem.name == $el.data('parent');
+                })
+            }
+            if ($el.data('range'))
+                itemSettings.range = $el.data('range');
+            tabItems.push(new Tab(itemSettings));
         });
-        var favoritesTab = new Tab({
-            parentTab: null,
-            name: 'favorites',
-            isActive: false,
-            tmplSelector: '#favoritePostsTmpl',
-            emptyTmplSelector: '#emptyPostTmpl'
-        });
-        var servicesTab = new Tab({
-            parentTab: null,
-            name: 'services',
-            isActive: false,
-            tmplSelector: '#servicesTmpl',
-            emptyTmplSelector: '#emptyServicesTmpl'
-        });
-        var productsTab = new Tab({
-            parentTab: null,
-            name: 'products',
-            isActive: false,
-            tmplSelector: '#productsTmpl',
-            emptyTmplSelector: '#emptyProductsTmpl'
-        });
-        TabFilter.Tabs.items.push(followersTab, servicesTab, favoritesTab, productsTab);
+        TabFilter.Tabs.items = tabItems;
         TabFilter.Filters.add({
             name: 'sort',
             elem: $('#sortDropdown'),
@@ -558,7 +403,7 @@ else
                         tab.content.html(html);
                     }
                 }
-                var $dimm = $('.post-item.hide-adult-content:not(.dimmed,.dimmable)');
+                var $dimm = $('.post-item.hide-content:not(.dimmed,.dimmable)');
                 $dimm.dimmer({
                     closable: false
                 });
@@ -605,5 +450,9 @@ else
                 TabFilter.refresh();
             }
         });
+        @if (!string.IsNullOrEmpty(Model.VkGroupId))
+        {
+            <text>VK.Widgets.Group("vk_groups", { mode: 3, width: $('#avatar-img').parent().css('width') }, @Model.VkGroupId);</text>
+        }
     });
 </script>

@@ -16,6 +16,7 @@ using System.Web.Mvc;
 using Mite.BLL.IdentityManagers;
 using Mite.DAL.Filters;
 using Mite.CodeData.Enums;
+using System.IO;
 
 namespace Mite.BLL.Services
 {
@@ -66,8 +67,7 @@ namespace Mite.BLL.Services
         public async Task<DataServiceResult> AddAsync(AuthorServiceModel model)
         {
             var authorService = Mapper.Map<AuthorService>(model);
-            authorService.ImageSrc = FilesHelper.CreateImage(PathConstants.VirtualImageFolder, model.ImageBase64);
-            authorService.ImageSrc_50 = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(authorService.ImageSrc), 500));
+            authorService.ImageSrc = FilesHelper.CreateImage(PathConstants.PublicVirtualImageFolder, model.ImageBase64);
             authorService.CreateDate = DateTime.UtcNow;
 
             try
@@ -78,7 +78,6 @@ namespace Mite.BLL.Services
             catch(Exception e)
             {
                 FilesHelper.DeleteFile(authorService.ImageSrc);
-                FilesHelper.DeleteFile(authorService.ImageSrc_50);
 
                 logger.Error("Ошибка при попытке создать услугу: " + e.Message);
                 return DataServiceResult.Failed("Ошибка при попытке создать услугу.");
@@ -101,7 +100,6 @@ namespace Mite.BLL.Services
                 ServiceTypes = await serviceTypeService.GetSelectListAsync(Guid.Empty)
             };
         }
-
         public async Task<IEnumerable<ProfileServiceModel>> GetByUserAsync(string userName, SortFilter sort)
         {
             var user = await userManager.FindByNameAsync(userName);
@@ -110,7 +108,6 @@ namespace Mite.BLL.Services
             var services = await repo.GetByUserAsync(user.Id, sort);
             return Mapper.Map<IEnumerable<ProfileServiceModel>>(services);
         }
-
         public async Task<DataServiceResult> RemoveAsync(Guid id, string ownerId)
         {
             var authorService = await repo.GetAsync(id);
@@ -124,6 +121,9 @@ namespace Mite.BLL.Services
             try
             {
                 await repo.RemoveAsync(id);
+                FilesHelper.DeleteFile(authorService.ImageSrc);
+                if(File.Exists(HostingEnvironment.MapPath(authorService.ImageSrc_50)))
+                    FilesHelper.DeleteFile(authorService.ImageSrc_50);
                 return Success;
             }
             catch(Exception e)
@@ -136,16 +136,14 @@ namespace Mite.BLL.Services
         public async Task<DataServiceResult> UpdateAsync(AuthorServiceModel model)
         {
             var authorService = await repo.GetAsync(model.Id);
+            if (authorService.AuthorId != model.AuthorId)
+                return DataServiceResult.Failed("Неизвестный пользователь");
             Mapper.Map(model, authorService);
 
-            if(!string.Equals(model.ImageBase64, authorService.ImageSrc, StringComparison.OrdinalIgnoreCase))
+            if(FilesHelper.IsBase64(model.ImageBase64))
             {
                 FilesHelper.DeleteFile(authorService.ImageSrc);
                 authorService.ImageSrc = FilesHelper.CreateImage(PathConstants.VirtualImageFolder, model.ImageBase64);
-
-                FilesHelper.DeleteFile(authorService.ImageSrc_50);
-                ImagesHelper.Compressed.Compress(HostingEnvironment.MapPath(authorService.ImageSrc));
-                authorService.ImageSrc_50 = ImagesHelper.Compressed.CompressedVirtualPath(authorService.ImageSrc);
             }
             try
             {
@@ -155,7 +153,6 @@ namespace Mite.BLL.Services
             catch(Exception e)
             {
                 FilesHelper.DeleteFile(authorService.ImageSrc);
-                FilesHelper.DeleteFile(authorService.ImageSrc_50);
 
                 logger.Error("Ошибка при попытке обновить услугу автора: " + e.Message);
                 return DataServiceResult.Failed("Ошибка при попытке обновить услугу автора.");

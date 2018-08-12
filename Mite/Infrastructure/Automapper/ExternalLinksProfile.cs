@@ -30,7 +30,7 @@ namespace Mite.Infrastructure.Automapper
                         return match.Groups[2].Value;
                     return "external alternate";
                 }))
-                .ForMember(dest => dest.ShowUrl, opt => opt.MapFrom(src => Regex.Replace(src.Url, @"^https?:\/\/", "")))
+                .ForMember(dest => dest.ShowUrl, opt => opt.MapFrom(src => Regex.Replace(src.Url, @"^(https?:\/\/)(www\.)?([\w\.]+)\.(\w+)\/(\w+)", "$3/$5")))
                 .ForMember(dest => dest.Url, opt => opt.MapFrom(src => "https://mitegroup.ru/away?url=" + src.Url));
         }
     }

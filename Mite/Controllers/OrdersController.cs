@@ -69,11 +69,12 @@ namespace Mite.Controllers
         {
             if(!string.IsNullOrEmpty(id) && Guid.TryParse(id, out Guid gId))
             {
-                var model = new OrderEditModel
-                {
-                    OrderTypes = await typeService.GetSelectListAsync(Guid.Empty)
-                };
-                return View(model);
+                var order = await orderService.GetToEditAsync(gId);
+                if (order.UserId != CurrentUserId)
+                    return Forbidden();
+
+                order.OrderTypes = await typeService.GetSelectListAsync(Guid.Empty);
+                return View(order);
             }
             return HttpNotFound();
         }
@@ -89,6 +90,7 @@ namespace Mite.Controllers
         {
             if (!ModelState.IsValid)
                 return Json(JsonStatuses.ValidationError, GetModelErrors());
+            model.UserId = CurrentUserId;
             var result = await orderService.UpdateAsync(model);
             if (result.Succeeded)
                 return Json(JsonStatuses.Success);

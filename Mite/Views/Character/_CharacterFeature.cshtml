@@ -1,0 +1,16 @@
+﻿@model Mite.Models.CharacterFeatureModel
+        
+<form class="ui char-item-form form">
+    <div class="two fields">
+        <div class="field">
+            <label>@Html.DisplayNameFor(x => x.FeatureName)</label>
+            <input type="text" name="@Html.NameFor(x => x.FeatureName)" placeholder="Дата рождения" value="@Model.FeatureName" />
+        </div>
+        <div class="field">
+            <label>@Html.DisplayNameFor(x => x.FeatureDescription)</label>
+            <textarea rows="2" name="@Html.NameFor(x => x.FeatureDescription)" placeholder="31 июля 1980 года">@Model.FeatureDescription</textarea>
+        </div>
+        <i class="red close feature-close icon" title="Удалить" onclick="$(this).parent().remove()"></i>
+    </div>
+    <div class="ui error message"></div>
+</form>

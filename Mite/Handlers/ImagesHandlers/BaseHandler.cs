@@ -57,58 +57,52 @@ namespace Mite.Handlers.ImagesHandlers
         /// <returns>Путь к основному изображению</returns>
         protected abstract Task HandleRequestAsync(HttpContext context);
 
-        /// <summary>
-        /// Изменяем размер и рисуем водяной знак
-        /// </summary>
-        /// <param name="originPath">Относит. путь к оригиналу изображения</param>
-        /// <param name="wat">Относит. путь к водяному знаку</param>
-        /// <param name="savePath">Полный путь к сохранению</param>
-        /// <param name="gravity">Расположение водяного знака</param>
-        /// <param name="width">Ширина нового изображения</param>
-        /// <param name="height">Высота нового изображения</param>
-        protected void ResizeAndDrawWat(string originPath, Watermark wat, string savePath, int width, int? height = null)
+        protected string GetCachedImagePath(string originPath, bool watermark, bool resize, bool blur)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(savePath));
-            using (var img = new MagickImage(HostingEnvironment.MapPath(originPath)))
+            string cachedImageName;
+            var imageName = Path.GetFileNameWithoutExtension(originPath);
+            var ext = Path.GetExtension(originPath) == ".gif" ? "gif" : "jpg";
+            if (blur)
             {
-                img.Format = MagickFormat.Jpeg;
-                img.BackgroundColor = new MagickColor(Color.White);
-                if (height == null)
-                    height = width * img.Height / img.Width;
-                img.AdaptiveResize(width, (int)height);
-                var gr = (Gravity)((int)wat.Gravity);
+                if (resize)
+                    cachedImageName = "blur_thumb.jpg";
+                else
+                    cachedImageName = "blur.jpg";
+            }
+            else
+            {
+                if (watermark && resize)
+                    cachedImageName = "wat_thumb.jpg";
+                else if (watermark)
+                    cachedImageName = $"wat.{ext}";
+                else
+                    cachedImageName = "thumb.jpg";
+            }
+            return Path.Combine(CacheFolderPath, imageName, cachedImageName);
+        }
 
-                //Рисуем водяной знак
-                using (var watImg = string.IsNullOrEmpty(wat.VirtualPath)
-                    ? new MagickImage(ImagesHelper.DrawWatermark(wat.FontSize ?? 0, wat.Text, wat.Invert ?? false))
-                    : new MagickImage(HostingEnvironment.MapPath(wat.VirtualPath)))
-                {
-                    img.Composite(watImg, gr, CompositeOperator.Over);
-                }
-                img.Write(savePath);
-            }
-        }
-        protected void Resize(string originPath, string savePath, int width, int? height = null)
+        protected byte[] Resize(byte[] originBytes, int width, int? height = null)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(savePath));
-            using (var img = new MagickImage(HostingEnvironment.MapPath(originPath)))
+            //Directory.CreateDirectory(Path.GetDirectoryName(savePath));
+            using (var img = new MagickImage(originBytes))
             {
                 img.Format = MagickFormat.Jpeg;
-                img.BackgroundColor = new MagickColor(Color.White);
+                img.ColorAlpha(new MagickColor(Color.White));
                 if (height == null)
                     height = width * img.Height / img.Width;
-                img.AdaptiveResize(width, (int)height);
-                img.Write(savePath);
+                img.Resize(width, (int)height);
+                return img.ToByteArray();
             }
         }
-        protected void DrawWatermark(string originPath, Watermark wat, string savePath)
+
+        protected byte[] DrawWatermark(byte[] originBytes, Watermark wat, string extension)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(savePath));
+            //Directory.CreateDirectory(Path.GetDirectoryName(savePath));
             var gr = (Gravity)((int)wat.Gravity);
 
-            if (Path.GetExtension(originPath) == ".gif")
+            if (extension == ".gif" || extension == "gif")
             {
-                using (var coll = new MagickImageCollection(HostingEnvironment.MapPath(originPath)))
+                using (var coll = new MagickImageCollection(originBytes))
                 {
                     //Рисуем водяной знак
                     using (var watImg = string.IsNullOrEmpty(wat.VirtualPath)
@@ -118,12 +112,13 @@ namespace Mite.Handlers.ImagesHandlers
                         foreach (var img in coll)
                             img.Composite(watImg, gr, CompositeOperator.Over);
                     }
-                    coll.Write(savePath);
+                    //coll.Write(savePath);
+                    return coll.ToByteArray();
                 }
             }
             else
             {
-                using (var img = new MagickImage(HostingEnvironment.MapPath(originPath)))
+                using (var img = new MagickImage(originBytes))
                 {
                     img.Format = MagickFormat.Jpeg;
                     //Рисуем водяной знак
@@ -133,8 +128,25 @@ namespace Mite.Handlers.ImagesHandlers
                     {
                         img.Composite(watImg, gr, CompositeOperator.Over);
                     }
-                    img.Write(savePath);
+                    //img.Write(savePath);
+                    return img.ToByteArray();
                 }
+            }
+        }
+
+        protected byte[] Blur(byte[] originBytes)
+        {
+            const int coef = 10000;
+            using (var img = new MagickImage(originBytes))
+            {
+                img.Format = MagickFormat.Jpeg;
+                var originalWidth = img.Width;
+                var originalHeight = img.Height;
+                img.Scale(new Percentage(20));
+                img.Blur(0, 10);
+                img.Scale(new Percentage(500));
+
+                return img.ToByteArray();
             }
         }
     }

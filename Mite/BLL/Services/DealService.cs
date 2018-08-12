@@ -257,6 +257,7 @@ namespace Mite.BLL.Services
             dealModel.Chat.Companion = companion;
 
             var logins = await userManager.GetLoginsAsync(currentUserId);
+
             dealModel.VkAuthenticated = logins.Any(x => x.LoginProvider == VkSettings.DefaultAuthType);
             return dealModel;
         }
@@ -374,7 +375,7 @@ namespace Mite.BLL.Services
             async Task<bool> FindVkRepost(int offset)
             {
                 const int count = 1000;
-                var req = new GetRepostsRequest(httpClient, vkService.AccessToken)
+                var req = new GetReposts(httpClient, vkService.AccessToken)
                 {
                     Count = count,
                     OwnerId = vkRepost.OwnerId,

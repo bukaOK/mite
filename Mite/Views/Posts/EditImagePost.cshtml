@@ -1,9 +1,9 @@
 ﻿@using Mite.Extensions
-@using Mite.CodeData.Enums
 @model Mite.Models.ImagePostModel
 
 @{
     var tagsRow = Model.Tags == null ? string.Empty : string.Join(",", Model.Tags);
+    var charsRow = Model.Characters == null ? string.Empty : string.Join(",", Model.Characters);
     var url = string.IsNullOrEmpty(Model.Header) ? "/posts/addpost" : "/posts/updatepost";
 }
 @section styles{
@@ -46,7 +46,7 @@
                 <div class="content">
                     <div class="header">Информация</div>
                     <ul class="list">
-                        <li>Максимальный суммарный размер всех файлов, включая изображения и бонус для товара - <b>50 мбайт</b></li>
+                        <li>Возможные форматы: jpeg, png, gif, psd</li>
                         <li>Бонусы необходимо загружать в архиве <b>rar</b> или <b>zip</b></li>
                         <li>Для удаления товара переместите ползунок в неактивное состояние</li>
                         <li>Поскольку при изменении работы используется оригинал изображения, <b>водяной знак может быть не виден</b></li>
@@ -74,7 +74,34 @@
                     </div>
                 </div>
             </div>
-            @if(Model.WatermarkId != null)
+            <div class="field">
+                <div class="ui fluid search multiple selection dropdown" id="select-chars">
+                    <i class="dropdown icon"></i>
+                    @Html.HiddenFor(x => x.Characters, new { Value = charsRow })
+                    <div class="default text">Персонажи</div>
+                    <div class="menu">
+                        @foreach(var item in Model.AvailableCharacters)
+                        {
+                            <div class="item" data-value="@item.Value">@item.Text</div>
+                        }
+                    </div>
+                </div>
+            </div>
+            @if(Model.AvailableTariffs != null && Model.AvailableTariffs.Count > 0)
+            {
+                <div class="ui fluid search selection dropdown" id="select-tariffs">
+                    <i class="dropdown icon"></i>
+                    @Html.HiddenFor(x => x.TariffId)
+                    <div class="default text">Тарифы</div>
+                    <div class="menu">
+                        @foreach(var tariff in Model.AvailableTariffs)
+                        {
+                            <div class="item" data-value="@tariff.Value">@tariff.Text</div>
+                        }
+                    </div>
+                </div>
+            }
+            @*@if(Model.WatermarkId != null)
             {
                 <button type="button" class="ui margined red button" id="removeWatBtn">Удалить водяной знак</button>
                 <div class="ui toggle checkbox" id="WmNeedCheck" style="display: none">
@@ -91,8 +118,7 @@
             }
             <div id="wmEdit">
                 @{ Html.RenderAction("Edit", "Watermark", new { id = Model.WatermarkId }); }
-            </div>
-            <br />
+            </div>*@
             <div class="ui toggle checkbox" id="ProdNeedCheck">
                 <input type="checkbox" name="ProdNeed" autocomplete="off" @Html.Raw(Model.ProductId == null ? "" : "checked") />
                 <label>Товар</label>
@@ -138,11 +164,11 @@
             var isImageLarge = false;
             ViewHelper.activateSidebarItem('#editImageItem');
             ViewHelper.disableFormSubmitting('#imgPostForm');
-            $('#WmNeedCheck').checkbox({
-                onChange: function () {
-                    $('#wmEdit').toggleClass('active');
-                }
-            });
+            //$('#WmNeedCheck').checkbox({
+            //    onChange: function () {
+            //        $('#wmEdit').toggleClass('active');
+            //    }
+            //});
             $('#ProdNeedCheck').checkbox({
                 onChange: function () {
                     $('#productEdit').toggleClass('active');
@@ -150,6 +176,14 @@
             });
             $('#select-tags').dropdown({
                 allowAdditions: true,
+                fullTextSearch: true,
+                keys: {
+                    delimiter: 13
+                },
+                match: 'text',
+                forceSelection: false
+            });
+            $('#select-chars,#select-tariffs').dropdown({
                 fullTextSearch: true,
                 keys: {
                     delimiter: 13

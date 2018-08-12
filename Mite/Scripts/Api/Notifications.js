@@ -3,7 +3,8 @@
     follower: 1,
     postComment: 2,
     commentRating: 3,
-    commentReply: 4
+    commentReply: 4,
+    tariffPayment: 5
 };
 var NotificationsApi = {
     add: function (notificType, targetUserId, sourceValue) {

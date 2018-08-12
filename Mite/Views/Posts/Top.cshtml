@@ -3,7 +3,8 @@
 @model Mite.Models.TopModel
 @{
     ViewBag.Title = "Публикации";
-    ViewBag.MetaDescription = "Топ работ";
+    var showOnlyFollow = Model.ShowOnlyFollowings;
+    ViewBag.MetaDescription = "Работы";
 }
 @section styles{
     <style>
@@ -27,44 +28,19 @@
 }
 <div class="active loader-wrapper"><div class="ui active loader"></div></div>
 <div class="ui stackable menu" id="filterMenu">
-    <div class="item">
-        <i class="filter icon"></i>
-        Сначала&nbsp;
-        <div class="ui inline dropdown" id="sortType">
-            <div class="text">новые</div>
-            <i class="dropdown icon"></i>
-            <div class="menu">
-                <div class="active item" data-text="новые" data-value="@((byte)SortFilter.New)">Новые</div>
-                <div class="item" data-text="высший рейтинг" data-value="@((byte)SortFilter.Popular)">Высший рейтинг</div>
-                <div class="item" data-text="старые" data-value="@((byte)SortFilter.Old)">Старые</div>
-            </div>
-        </div>
-    </div>
-    <div class="item">
-        <i class="calendar icon"></i>
-        Искать за&nbsp;
-        <div class="ui inline dropdown" id="postTimeFilter">
-            <div class="text">все время</div>
-            <i class="dropdown icon"></i>
-            <div class="menu">
-                <div class="active item" data-text="все время" data-value="@((byte)PostTimeFilter.All)">Все время</div>
-                <div class="item" data-text="последний месяц" data-value="@((byte)PostTimeFilter.Month)">Последний месяц</div>
-                <div class="item" data-text="последнюю неделю" data-value="@((byte)PostTimeFilter.Week)">Последняя неделя</div>
-                <div class="item" data-text="последний день" data-value="@((byte)PostTimeFilter.Day)">Последний день</div>
-            </div>
-        </div>
-    </div>
-    <div class="item">
+    <a class="top-sort item" data-value="@TopSort.New"><i class="calendar alternate outline icon"></i>@ViewHelper.GetEnumDisplayName(TopSort.New)</a>
+    <a class="top-sort item" data-value="@TopSort.Tranding"><i class="fire icon"></i>@ViewHelper.GetEnumDisplayName(TopSort.Tranding)</a>
+    <div class="item" style="padding: 10px;">
         @if (User.Identity.IsAuthenticated)
         {
-            <div class="ui checkbox" id="postUserFilter">
+            <div class="ui checkbox" id="onlyFollowings">
                 <input type="checkbox" @Html.Raw(Model.ShowOnlyFollowings ? "checked" : "") />
                 <label>Только подписки</label>
             </div>
         }
         else
         {
-            <div class="ui disabled checkbox" id="postUserFilter">
+            <div class="ui disabled toggle checkbox" id="onlyFollowings">
                 <input type="checkbox" disabled />
                 <label>Только подписки</label>
             </div>
@@ -128,6 +104,7 @@
 <script>
     var tagsInitialized = false;
     var userCardTmpl = $.templates('#miniUserCardTmpl');
+    var postTmpl = $.templates('#topPostTmpl');
     function loadTag(name) {
         $('#postsSearch').val(name);
         SearchFilters.changeFilter();
@@ -165,14 +142,11 @@
             fadeInSpeed: 1000,
             fadeOutSpeed: 500
         });
-        $('#filterMenu .ui.dropdown').dropdown({
-            onChange: function (ev) {
-                if (SearchFilters.initialized) {
-                    SearchFilters.changeFilter();
-                }
-            }
+        $('.top-sort.item').click(function (ev) {
+            $(this).addClass('active').siblings('.top-sort').removeClass('active');
+            SearchFilters.changeFilter();
         });
-        $('#postUserFilter').checkbox({
+        $('#onlyFollowings').checkbox({
             onChange: function () {
                 if (SearchFilters.initialized) {
                     SearchFilters.changeFilter();
@@ -181,7 +155,7 @@
         });
         insertionQ('.post-item').every(function (elem) {
             var $elem = $(elem);
-            if ($elem.hasClass('hide-adult-content')) {
+            if ($elem.hasClass('hide-content')) {
                 $elem.dimmer({
                     closable: false
                 }).dimmer('show');
@@ -238,10 +212,9 @@
                         elem.User.ShowName = elem.User.UserName;
                     }
                 });
-                $('.posts.grid:visible .loader').remove();
+                //$('.posts.grid:visible .loader').remove();
                 if (resp.length > 0) {
-                    var tmpl = $.templates('#topPostTmpl');
-                    var html = tmpl.render(resp);
+                    var html = postTmpl.render(resp);
 
                     if (SearchFilters._loadNextPage) {
                         grid.append(html);
@@ -282,40 +255,24 @@
                     }
                 },
                 {
-                    name: 'sortFilter',
-                    selector: '#sortType',
+                    name: 'sort',
+                    selector: '.top-sort.active',
                     getVal: function () {
-                        return $(this.selector).dropdown('get value') == ''
-                            ? '@((byte)SortFilter.New)' : $(this.selector).dropdown('get value');
+                        return $(this.selector).data('value');
                     },
                     updateState: function (newVal) {
-                        $(this.selector).dropdown('set selected', newVal);
+                        $('.top-sort[data-value=' + newVal + ']').addClass('active').siblings('.top-sort').removeClass('active');
                     }
                 },
                 {
-                    name: 'postTimeFilter',
-                    selector: '#postTimeFilter',
+                    name: 'onlyfollowings',
+                    selector: '#onlyFollowings',
                     getVal: function () {
-                        return $(this.selector).dropdown('get value') == ''
-                            ? '0' : $(this.selector).dropdown('get value');
+                        return $(this.selector).checkbox('is checked');
                     },
                     updateState: function (newVal) {
-                        $(this.selector).dropdown('set selected', newVal);
-                    }
-                },
-                {
-                    name: 'postUserFilter',
-                    selector: '#postUserFilter',
-                    getVal: function () {
-                        var isChecked = $(this.selector).checkbox('is checked');
-                        if (isChecked) {
-                            return '@((byte)PostUserFilter.OnlyFollowings)';
-                        } else {
-                            return '@((byte)PostUserFilter.All)';
-                        }
-                    },
-                    updateState: function (newVal) {
-                        $(this.selector).dropdown('set selected', newVal);
+                        if (newVal == 'true')
+                            $(this.selector).checkbox('set checked');
                     }
                 }
             ]

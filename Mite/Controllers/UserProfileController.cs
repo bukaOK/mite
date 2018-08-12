@@ -19,15 +19,22 @@ namespace Mite.Controllers
         private readonly IFollowersService followersService;
         private readonly IAuthorServiceService authorService;
         private readonly IProductsService productsService;
+        private readonly ICharacterService characterService;
+        private readonly AppUserManager userManager;
+        private readonly ITariffService tariffService;
 
         public UserProfileController(IUserService userService, IPostsService postsService, IFollowersService followersService,
-            IAuthorServiceService authorService, IProductsService productsService, AppUserManager userManager)
+            IAuthorServiceService authorService, IProductsService productsService, ICharacterService characterService,
+            AppUserManager userManager, ITariffService tariffService)
         {
             this.userService = userService;
             this.postsService = postsService;
             this.followersService = followersService;
             this.authorService = authorService;
             this.productsService = productsService;
+            this.characterService = characterService;
+            this.userManager = userManager;
+            this.tariffService = tariffService;
         }
         /// <summary>
         /// Страница пользователя
@@ -114,6 +121,10 @@ namespace Mite.Controllers
         {
             return Index(name);
         }
+        public Task<ActionResult> Characters(string name)
+        {
+            return Index(name);
+        }
         [HttpPost]
         public async Task<ActionResult> Followings(string name, SortFilter sort)
         {
@@ -130,7 +141,7 @@ namespace Mite.Controllers
             }
             catch (DataServiceException e)
             {
-                return Json(JsonStatuses.ValidationError, e.Message);
+                return Json(JsonStatuses.ValidationError, "Внутренняя ошибка");
             }
         }
         [HttpPost]
@@ -143,8 +154,22 @@ namespace Mite.Controllers
             }
             catch (DataServiceException e)
             {
-                return Json(JsonStatuses.ValidationError, e.Message);
+                return Json(JsonStatuses.ValidationError, "Внутренняя ошибка");
             }
+        }
+        [HttpGet]
+        public Task<ActionResult> Sponsors(string name)
+        {
+            return Index(name);
+        }
+        [HttpPost]
+        public async Task<ActionResult> Sponsors(string name, SortFilter sort)
+        {
+            var user = await userManager.FindByNameAsync(name);
+            if (user == null)
+                return NotFound();
+            var sponsors = await tariffService.GetSponsorsAsync(user.Id, sort);
+            return Json(JsonStatuses.Success, sponsors);
         }
         [HttpGet]
         public Task<ActionResult> Products(string name)
@@ -159,9 +184,9 @@ namespace Mite.Controllers
                 var products = await productsService.GetForUserAsync(name, sort, CurrentUserId);
                 return Json(JsonStatuses.Success, products);
             }
-            catch(Exception e)
+            catch(Exception)
             {
-                return Json(JsonStatuses.ValidationError, e.Message);
+                return Json(JsonStatuses.ValidationError, "Внутренняя ошибка");
             }
         }
     }

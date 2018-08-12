@@ -1,9 +1,4 @@
-﻿using NLog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
+﻿using System.Web.Mvc;
 
 namespace Mite.Controllers
 {
@@ -16,20 +11,23 @@ namespace Mite.Controllers
         /// <returns></returns>
         public ActionResult NotFound()
         {
-            Response.StatusCode = 404;
             if (Request.IsAjaxRequest())
                 return new HttpStatusCodeResult(404);
-            ViewBag.Title = "Страница не найдена";
-            ViewBag.ErrorImg = "/Content/images/404err.png";
+            ViewBag.Title = ViewBag.ErrorText = "404. Страница не найдена";
+            return View(ErrorTemplate);
+        }
+        public ActionResult Forbidden()
+        {
+            if (Request.IsAjaxRequest())
+                return new HttpStatusCodeResult(403);
+            ViewBag.Title = ViewBag.ErrorText = "403. Доступ запрещен";
             return View(ErrorTemplate);
         }
         public ActionResult InternalError()
         {
-            Response.StatusCode = 500;
             if (Request.IsAjaxRequest())
                 return new HttpStatusCodeResult(500);
-            ViewBag.Title = "Внутренняя ошибка сервера";
-            ViewBag.ErrorImg = "/Content/images/500err.png";
+            ViewBag.Title = ViewBag.ErrorText = "500. Внутренняя ошибка сервера";
             return View(ErrorTemplate);
         }
     }

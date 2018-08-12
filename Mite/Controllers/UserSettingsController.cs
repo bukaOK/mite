@@ -32,12 +32,16 @@ namespace Mite.Controllers
         private readonly ITagsService tagsService;
         private readonly IExternalLinksService linksService;
         private readonly ICountryService countryService;
+        private readonly IVkService vkService;
+        private readonly IExternalServices externalServices;
+        private readonly ITariffService tariffService;
         private readonly ILogger logger;
         private readonly ICityService cityService;
 
         public UserSettingsController(IUserService userService, AppUserManager userManager, ICityService cityService,
             IAuthenticationManager authManager, ITagsService tagsService, IExternalLinksService linksService, 
-            ICountryService countryService, ILogger logger)
+            ICountryService countryService, IVkService vkService, IExternalServices externalServices, 
+            ITariffService tariffService, ILogger logger)
         {
             this.userService = userService;
             this.userManager = userManager;
@@ -45,6 +49,9 @@ namespace Mite.Controllers
             this.tagsService = tagsService;
             this.linksService = linksService;
             this.countryService = countryService;
+            this.vkService = vkService;
+            this.externalServices = externalServices;
+            this.tariffService = tariffService;
             this.logger = logger;
             this.cityService = cityService;
         }
@@ -235,6 +242,17 @@ namespace Mite.Controllers
             var tags = await tagsService.GetForUserTagsAsync(CurrentUserId);
             return PartialView(tags);
         }
+        public async Task<ActionResult> ClientTariffs()
+        {
+            var tariffs = await tariffService.GetForClientAsync(CurrentUserId);
+            return PartialView(tariffs);
+        }
+        [Authorize(Roles = RoleNames.Author)]
+        public async Task<ActionResult> AuthorTariffs()
+        {
+            var tariffs = await tariffService.GetForAuthorAsync(CurrentUserId);
+            return PartialView(tariffs);
+        }
         public async Task<ActionResult> ShowOnlyFollowings(bool show)
         {
             try
@@ -272,6 +290,19 @@ namespace Mite.Controllers
                 return Json(JsonStatuses.Success);
             else
                 return Json(JsonStatuses.ValidationError, result.Errors);
+        }
+        public async Task<ActionResult> ParseVkId(string vkDomain)
+        {
+            if (Regex.IsMatch(vkDomain, "https?://"))
+                vkDomain = Regex.Replace(vkDomain, "https?://vk.com/", string.Empty);
+            var result = await vkService.GetGroupIdAsync(CurrentUserId, vkDomain);
+            return result.Succeeded ? Json(JsonStatuses.Success, new
+            {
+                id = result.ResultData
+            }) : Json(JsonStatuses.ValidationError, new
+            {
+                message = result.Errors.First()
+            });
         }
     }
 }

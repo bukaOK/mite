@@ -1,0 +1,45 @@
+﻿@using Microsoft.AspNet.Identity
+@model Mite.Models.CharacterModel
+
+@{
+    ViewBag.Title = Model.Name;
+}
+@section styles{
+@Styles.Render("~/Content/editorcontent")
+}
+<div class="ui grid">
+    <div class="twelve wide column">
+        <div class="ui segment">
+            <h2 class="ui dividing header">@Model.Name</h2>
+            <div class="e-content">
+                @Html.Raw(Model.Description)
+            </div>
+            <div class="ui fitted clearing hidden divider"></div>
+        </div>
+    </div>
+    <div class="four wide column">
+        <div class="ui basic segment" style="padding: 0">
+            @if(Model.UserId == User.Identity.GetUserId())
+            {
+                @Html.ActionLink("Редактировать", "Edit", "Character", new { id = Model.Id }, new { @class = "ui inverted violet fluid button" })
+            }
+            <table class="ui collapsing celled table">
+                <tbody>
+                    <tr>
+                        <td colspan="2">
+                            <img src="@Model.ImageSrc" class="ui fluid image" />
+                        </td>
+                    </tr>
+                    @foreach (var feature in Model.Features)
+                    {
+                        <tr>
+                            <td>@feature.FeatureName</td>
+                            <td>@feature.FeatureDescription</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

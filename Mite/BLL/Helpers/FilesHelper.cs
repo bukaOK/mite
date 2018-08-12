@@ -15,6 +15,12 @@ namespace Mite.BLL.Helpers
 {
     public static class FilesHelper
     {
+        public static bool IsBase64(string str)
+        {
+            if (string.IsNullOrEmpty(str))
+                return false;
+            return Regex.IsMatch(str, @"^data:[^;]+;base64,");
+        }
         /// <summary>
         /// Тип вложения по его mime типу
         /// </summary>
@@ -37,7 +43,7 @@ namespace Mite.BLL.Helpers
         public static string GetContentTypeByExtension(string ext)
         {
             if (ext[0] == '.')
-                ext = ext.Substring(1, ext.Length - 1);
+                ext = ext.Substring(1);
             switch (ext)
             {
                 case "jpg":
@@ -69,26 +75,36 @@ namespace Mite.BLL.Helpers
             base64Str = match.Groups["base64"].Value;
             //Кодируем строку base64 в изображение
             var bytes = Convert.FromBase64String(base64Str);
-
-            using(var mImg = new MagickImage(bytes))
+            string imageName;
+            string imagePath;
+            //Проверяем на то, есть ли уже изображения с таким именем
+            do
             {
-                string imageName;
-                string imagePath;
-                //Проверяем на то, есть ли уже изображения с таким именем
-                do
+                imageName = Guid.NewGuid() + "." + imgFormat;
+                imagePath = Path.Combine(path, imageName);
+            } while (File.Exists(imagePath));
+
+            if (imgFormat == "gif")
+            {
+                using(var mCol = new MagickImageCollection(bytes))
                 {
-                    imageName = Guid.NewGuid() + "." + imgFormat;
-                    imagePath = path[path.Length - 1] == '\\' ? path + imageName : path + "\\" + imageName;
-                } while (File.Exists(imagePath));
-                if(mImg.HasAlpha)
-                    mImg.ColorAlpha(new MagickColor(Color.White));
-
-                mImg.Quality = 75;
-                mImg.Write(imagePath);
-
-                virtualPath += virtualPath[virtualPath.Length - 1] == '/' ? "" : "/";
-                return Regex.Replace(virtualPath, "~", "") + imageName;
+                    mCol.Write(imagePath);
+                }
             }
+            else
+            {
+                using (var mImg = new MagickImage(bytes))
+                {
+                    if (mImg.HasAlpha)
+                        mImg.ColorAlpha(new MagickColor(Color.White));
+
+                    if(mImg.Width + mImg.Height > 5000)
+                        mImg.Quality = 75;
+                    mImg.Write(imagePath);
+                }
+            }
+            virtualPath += virtualPath[virtualPath.Length - 1] == '/' ? "" : "/";
+            return Regex.Replace(virtualPath, "~", "") + imageName;
         }
         public static string CreateImage(string virtualPath, HttpPostedFileBase file)
         {
@@ -176,7 +192,7 @@ namespace Mite.BLL.Helpers
                 fileName = Guid.NewGuid() + $".{ext}";
                 filePath = path[path.Length - 1] == '\\' ? path + fileName : path + "\\" + fileName;
             } while (File.Exists(filePath));
-
+            
             File.WriteAllText(filePath, content, Encoding.UTF8);
             virtualPath += virtualPath[virtualPath.Length - 1] == '/' ? "" : "/";
             return Regex.Replace(virtualPath, "~", "") + fileName;
@@ -284,45 +300,12 @@ namespace Mite.BLL.Helpers
         private static string HandleReading(string text, int charsCount)
         {
             //После удаляем картинки и таблицы, т.к. они будут некорректно отображаться
-            var substr = Regex.Replace(text, @"<img[^>]+>|<table>.+<\/table>", "");
-            var cropped = substr.Length > charsCount;
+            text = Regex.Replace(text, @"<img[^>]+>|<table>.+<\/table>", "");
 
-            substr = substr.Substring(0, substr.Length < charsCount ? substr.Length : charsCount);
-            //Удаляем все недооткрытые(вроде <p) в конце теги
-            substr = Regex.Replace(substr, @"(<|<\/|<(h3|h2|p|i|b)[^>]*>*)$", "");
-            substr = Regex.Replace(substr, @"(<h3[^>]*|<h2[^>]*)", "<p");
-
-            var tags = new[] { "p", "i", "b" };
-            var closeTagsStack = new Stack<string>();
-            if (cropped)
-                substr += "...";
-
-            foreach (var tag in tags)
-            {
-                substr = Regex.Replace(substr, $"<\\/{tag}\\s*$", $"<\\/{tag}>");
-                //Проверяем, закрыт ли тег в конце, т.к. мы обрезали строку
-                var lastTagMatches = Regex.Matches(substr, $"<{tag}[^>]*>");
-                if (lastTagMatches.Count == 0)
-                    continue;
-
-                var lastTag = lastTagMatches[lastTagMatches.Count - 1];
-                var lastTagCloseMatches = Regex.Matches(substr, $"</{tag}");
-                if (lastTagCloseMatches.Count > 0)
-                {
-                    var lastTagClose = lastTagCloseMatches[lastTagCloseMatches.Count - 1];
-                    if (lastTag.Index > lastTagClose.Index)
-                        closeTagsStack.Push(tag);
-                }
-                else
-                {
-                    closeTagsStack.Push(tag);
-                }
-            }
-            foreach (var closeTag in closeTagsStack)
-            {
-                substr += $"</{closeTag}>";
-            }
-            return substr;
+            text = Regex.Replace(text, @"<([^\/])[^>]+>", "");
+            text = Regex.Replace(text, @"<\/(h3|h2|h1|p|li|ul)\s*>", "<br>");
+            
+            return text.Length <= charsCount ? text : text.Substring(0, charsCount);
         }
     }
 }

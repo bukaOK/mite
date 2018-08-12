@@ -16286,7 +16286,7 @@ img.ui.bordered.image {
   text-align: left;
   line-height: 1.21428571em;
   font-family: "Open Sans", sans-serif;
-  padding: 0.67857143em 1em;
+  padding: 8px 10px;
   background: #FFFFFF;
   border: 2px solid #e8e8e8;
   color: rgba(0, 0, 0, 0.87);

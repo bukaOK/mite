@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using ImageMagick;
 using Mite.CodeData.Enums;
 using Mite.DAL.DTO;
 using Mite.DAL.Entities;
@@ -7,16 +6,12 @@ using Mite.DAL.Filters;
 using Mite.Helpers;
 using Mite.Models;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using System.Web.Hosting;
 
 namespace Mite.Infrastructure.Automapper
 {
     public class OrderProfile : Profile
     {
-        const string ImagesPath = "/images/orders/";
         public OrderProfile()
         {
             CreateMap<OrderEditModel, Order>()
@@ -28,7 +23,6 @@ namespace Mite.Infrastructure.Automapper
                 .ForMember(dest => dest.OrderTypes, opt => opt.Ignore());
 
             CreateMap<Order, OrderShowModel>()
-                .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => src.ImageSrc == null ? null : ImagesPath + src.Id))
                 .ForMember(dest => dest.Deadline, opt => opt.ResolveUsing(src =>
                 {
                     var deadlineCases = new string[3];
@@ -56,7 +50,7 @@ namespace Mite.Infrastructure.Automapper
 
             CreateMap<OrderTopDTO, OrderTopModel>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString("N")))
-                .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => src.ImageSrc == null ? null : ImagesPath + src.Id + "?resize=true"))
+                .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => src.ImageSrc == null ? null : $"/images/resize?path={src.ImageSrc}&size=400"))
                 .ForMember(dest => dest.Deadline, opt => opt.ResolveUsing(src =>
                 {
                     var deadlineCases = new string[3];

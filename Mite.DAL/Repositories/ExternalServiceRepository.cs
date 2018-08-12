@@ -5,6 +5,7 @@ using Dapper;
 using System.Threading.Tasks;
 using Mite.DAL.Infrastructure;
 using System.Data.Entity;
+using System.Collections.Generic;
 
 namespace Mite.DAL.Repositories
 {
@@ -12,6 +13,10 @@ namespace Mite.DAL.Repositories
     {
         public ExternalServiceRepository(AppDbContext db) : base(db)
         {
+        }
+        public async Task<IEnumerable<ExternalService>> GetByUserAsync(string userId)
+        {
+            return await Table.AsNoTracking().Where(x => x.UserId == userId).ToListAsync();
         }
         public Task<ExternalService> GetAsync(string userId, string serviceName)
         {

@@ -20,9 +20,9 @@
             </div>
         </div>
         <div class="thirteen wide column">
-            <div class="ui items tab" role="tabpanel" data-tab="open"></div>
-            <div class="ui items tab" role="tabpanel" data-tab="chosed"></div>
-            <div class="ui items tab" role="tabpanel" data-tab="closed"></div>
+            <div class="ui divided items tab" role="tabpanel" data-tab="open"></div>
+            <div class="ui divided items tab" role="tabpanel" data-tab="chosed"></div>
+            <div class="ui divided items tab" role="tabpanel" data-tab="closed"></div>
             <div class="dot-loader-wrapper">
                 <div class="dot-loader">
                     <div class="dot"></div>
@@ -55,6 +55,10 @@
         {{/if}}
         <div class="content">
             <a class="header" href="@Url.Action("Show", "Orders")/{{:Id}}">{{:Title}}</a>
+            {{if Status == 0}}
+            <a class="ui red label" onclick="OrdersMvc.remove('{{:Id}}', $(this).parents('.item')[0])">Удалить</a>
+            <a class="ui violet label" href="/orders/edit/{{:Id}}">Редактировать</a>
+            {{/if}}
             <div class="meta">{{:Requests}}</div>
             <div class="description">{{:Description}}</div>
             <div class="extra">

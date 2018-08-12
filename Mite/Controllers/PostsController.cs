@@ -30,9 +30,12 @@ namespace Mite.Controllers
         private readonly IFollowersService followersService;
         private readonly AppUserManager userManager;
         private readonly IUserService userService;
+        private readonly ICharacterService characterService;
+        private readonly ITariffService tariffService;
 
         public PostsController(IPostsService postsService, IRatingService ratingService, IHelpersService helpersService, 
-            ITagsService tagsService, IFollowersService followersService, AppUserManager userManager, IUserService userService)
+            ITagsService tagsService, IFollowersService followersService, AppUserManager userManager, IUserService userService,
+            ICharacterService characterService, ITariffService tariffService)
         {
             this.postsService = postsService;
             this.ratingService = ratingService;
@@ -41,6 +44,8 @@ namespace Mite.Controllers
             this.followersService = followersService;
             this.userManager = userManager;
             this.userService = userService;
+            this.characterService = characterService;
+            this.tariffService = tariffService;
         }
         [HttpGet]
         [AllowAnonymous]
@@ -67,6 +72,8 @@ namespace Mite.Controllers
         {
             ViewBag.Title = "Добавление работы";
             var tags = (await tagsService.GetForUserAsync()).ToList();
+            var chars = (await characterService.GetForPostAsync(CurrentUserId)).ToList();
+            var tariffs = (await tariffService.GetForPostAsync(null, CurrentUserId)).ToList();
             
             switch (postType)
             {
@@ -74,22 +81,29 @@ namespace Mite.Controllers
                     return View("EditImagePost", new ImagePostModel
                     {
                         AvailableTags = tags,
-                        
+                        AvailableCharacters = chars,
+                        AvailableTariffs = tariffs
                     });
                 case PostContentTypes.Document:
                     return View("EditWritePost", new WritingPostModel
                     {
-                        AvailableTags = tags
+                        AvailableTags = tags,
+                        AvailableCharacters = chars,
+                        AvailableTariffs = tariffs
                     });
                 case PostContentTypes.ImageCollection:
                     return View("EditImageCollection", new ImagePostModel
                     {
-                        AvailableTags = tags
+                        AvailableTags = tags,
+                        AvailableCharacters = chars,
+                        AvailableTariffs = tariffs
                     });
                 case PostContentTypes.Comics:
                     return View("EditComicsItems", new ImagePostModel
                     {
-                        AvailableTags = tags
+                        AvailableTags = tags,
+                        AvailableCharacters = chars,
+                        AvailableTariffs = tariffs
                     });
                 default:
                     return NotFound();
@@ -107,6 +121,9 @@ namespace Mite.Controllers
             if (User.Identity.GetUserId() != post.User.Id)
                 return Forbidden();
             post.AvailableTags = (await tagsService.GetForUserAsync()).ToList();
+            post.AvailableCharacters = (await characterService.GetForPostAsync(CurrentUserId)).ToList();
+            post.AvailableTariffs = (await tariffService.GetForPostAsync(post.TariffId, CurrentUserId)).ToList();
+
             switch (post.ContentType)
             {
                 case PostContentTypes.Image:
@@ -211,7 +228,7 @@ namespace Mite.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> UserGallery(string userId, Guid postId)
         {
-            var result = await postsService.GetGalleryByUserAsync(userId);
+            var result = await postsService.GetGalleryByUserAsync(userId, postId);
             result.InitialIndex = Array.IndexOf(result.Items, result.Items.First(x => string.Equals(x.Id, postId.ToString())));
 
             return Json(JsonStatuses.Success, result);

@@ -111,5 +111,14 @@ namespace Mite.DAL.Repositories
                     ImageSrcCompressed = x.ImageResultSrc_50,                    
                 }).ToListAsync();
         }
+        /// <summary>
+        /// Существуют ли сделки с таким заказом
+        /// </summary>
+        /// <param name="orderId"></param>
+        /// <returns></returns>
+        public async Task<bool> IsExistByOrderAsync(Guid orderId)
+        {
+            return await Table.AnyAsync(x => x.OrderId == orderId);
+        }
     }
 }

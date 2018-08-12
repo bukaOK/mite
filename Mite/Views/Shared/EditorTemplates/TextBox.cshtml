@@ -1,11 +1,18 @@
-﻿@model object
+﻿@using System.Reflection
+@using Mite.Attributes.DataAnnotations
+@model object
     
 @{
-    string dataType = Html.ViewData.ModelMetadata.DataTypeName;
+    var dataType = Html.ViewData.ModelMetadata.DataTypeName;
     if (string.IsNullOrEmpty(dataType) || dataType == "EmailAddress")
     {
         dataType = "text";
     }
+    var phAttr = (ViewData.ModelMetadata)
+            .ContainerType
+            .GetProperty(ViewData.ModelMetadata.PropertyName)
+            .GetCustomAttribute<PlaceholderAttribute>(false);
+    var placeholder = phAttr?.Placeholder ?? Html.DisplayName("").ToHtmlString();
 }
 @if (ViewData["InputIcon"] != null)
 {
@@ -18,7 +25,7 @@
             }
             @*<label style="display: none">@Html.DisplayName("")</label>*@
             <i class="@iconClass"></i>
-            @Html.TextBox("", Model, new { placeholder = Html.DisplayName(""), type = dataType})
+            @Html.TextBox("", Model, new { placeholder = placeholder, type = dataType})
         </div>
     </div>
 }
@@ -29,11 +36,9 @@ else
         {
             <label>@Html.DisplayName("")</label>
         }
-        @Html.TextBox("", Model, new {type = dataType, placeholder = Html.DisplayName("")})
+        @Html.TextBox("", Model, new {type = dataType, placeholder = placeholder})
     </div>
 }
-
-
 @*
         Если передавать данные из EditorTemplate в View =>
 

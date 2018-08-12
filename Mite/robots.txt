@@ -1,5 +1,6 @@
 ﻿User-agent: *
 Disallow: /account/login/
 Disallow: /account/register/
+Disallow: /userprofile/getuserprofile
 Host: https://mitegroup.ru
 Sitemap: https://mitegroup.ru/sitemap

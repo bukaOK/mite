@@ -12,6 +12,8 @@ using Mite.DAL.Entities;
 using Mite.DAL.Infrastructure;
 using Mite.DAL.Migrations;
 using Owin;
+using Owin.Security.Providers.DeviantArt;
+using Owin.Security.Providers.DeviantArt.Provider;
 using Owin.Security.Providers.VKontakte;
 using Owin.Security.Providers.VKontakte.Provider;
 using System;
@@ -42,7 +44,6 @@ namespace Mite
             });
 
             app.UseAutofacMiddleware(container);
-
 #if !DEBUG
             HangfireConfig.Initialize(app, container);
 #endif
@@ -71,8 +72,8 @@ namespace Mite
             //    clientSecret: "");
             app.UseTwitterAuthentication(new TwitterAuthenticationOptions
             {
-                ConsumerKey = "wqHlrgtp5UYi7mZtiBWpVawbN",
-                ConsumerSecret = "hhvpYmzxFLHTiH3aOIMukkIepZ3hRsMxeQnKcE2uZmrZDu8y1s",
+                ConsumerKey = TwitterSettings.ConsumerKey,
+                ConsumerSecret = TwitterSettings.ConsumerSecret,
                 AuthenticationType = TwitterSettings.DefaultAuthType,
                 Provider = new TwitterAuthenticationProvider
                 {
@@ -85,10 +86,10 @@ namespace Mite
                     }
                 }
             });
-            app.UseFacebookAuthentication(new FacebookAuthenticationOptions
+            var fbOptions = new FacebookAuthenticationOptions
             {
-                AppId = "1709833739044048",
-                AppSecret = "f8e4260827532461cf2eb39584f79fd7",
+                AppId = FacebookSettings.AppId,
+                AppSecret = FacebookSettings.AppSecret,
                 AuthenticationType = FacebookSettings.DefaultAuthType,
                 Provider = new FacebookAuthenticationProvider
                 {
@@ -100,7 +101,8 @@ namespace Mite
                         });
                     }
                 }
-            });
+            };
+            app.UseFacebookAuthentication(fbOptions);
 
             app.UseVKontakteAuthentication(new VKontakteAuthenticationOptions
             {
@@ -108,18 +110,35 @@ namespace Mite
                 ClientSecret = VkSettings.Secret,
                 AuthenticationType = VkSettings.DefaultAuthType,
                 Caption = "Вконтакте",
-                Scope = new[] { "market" },
+                Scope = new[] { "market", "offline" },
                 Provider = new VKontakteAuthenticationProvider
                 {
                     OnAuthenticated = context =>
                     {
-                        return Task.Run(() =>
-                        {
-                            context.Identity.AddClaim(new Claim(ClaimConstants.ExternalServiceToken, context.AccessToken));
-                        });
+                        context.Identity.AddClaim(new Claim(ClaimConstants.ExternalServiceToken, context.AccessToken));
+                        return Task.FromResult(0);
                     }
                 }
             });
+            var devOps = new DeviantArtAuthenticationOptions
+            {
+                AuthenticationType = DeviantArtSettings.DefaultAuthType,
+                ClientId = DeviantArtSettings.ClientId,
+                ClientSecret = DeviantArtSettings.ClientSecret,
+                Provider = new DeviantArtAuthenticationProvider
+                {
+                    OnAuthenticated = context =>
+                    {
+                        context.Identity.AddClaim(new Claim(ClaimConstants.ExternalServiceToken, context.Properties.Dictionary["refresh_token"]));
+                        return Task.FromResult(0);
+                    }
+                }
+            };
+            devOps.Scope.Add("browse");
+            devOps.Scope.Add("stash");
+            devOps.Scope.Add("publish");
+            app.UseDeviantArtAuthentication(devOps);
+
             //app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
             //{
             //    ClientId = "",

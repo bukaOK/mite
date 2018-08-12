@@ -1,0 +1,33 @@
+﻿@model IEnumerable<Mite.Models.TariffModel>
+
+@if (Model.Count() > 0)
+{
+    <div class="ui divided items">
+        @foreach (var tariff in Model)
+        {
+            <div class="item">
+                <a class="ui tiny circular image" href="/user/profile/@tariff.Author.UserName">
+                    <img src="@tariff.Author.AvatarSrc" />
+                </a>
+                <div class="content">
+                    @Html.ActionLink(tariff.Header, "Clientlist", "Tariff", new { authorName = tariff.Author.UserName }, new { @class = "header" })
+                    <div class="meta">@tariff.Price руб.</div>
+                    <div class="description">@Html.Raw(tariff.Description)</div>
+                    <div class="extra">
+                        <button class="ui red small compact button" onclick="TariffMvc.removeForClient('@tariff.Id', $(this).parents('.item')[0])">
+                            Удалить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <h3 class="ui center aligned header" style="color: #6D6788; margin-top: 20px;">
+        <span class="content">
+            У вас пока нет платных подписок. Подпишитесь на интересные Вам теги и найдите достойных авторов!
+        </span>
+    </h3>
+}

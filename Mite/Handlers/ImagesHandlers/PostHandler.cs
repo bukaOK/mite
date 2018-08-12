@@ -13,11 +13,13 @@ namespace Mite.Handlers.ImagesHandlers
     public class PostHandler : BaseHandler
     {
         const int DefaultWidth = 500;
-        private readonly PostsRepository postsRepo;
+        private readonly PostsRepository postsRepository;
+        private readonly ClientTariffRepository clientTariffRepository;
 
         public PostHandler() : base()
         {
-            postsRepo = new PostsRepository(dbContext);
+            postsRepository = new PostsRepository(dbContext);
+            clientTariffRepository = new ClientTariffRepository(dbContext);
         }
 
         protected async override Task<string> GetOriginSrcAsync(HttpRequest req)
@@ -25,8 +27,14 @@ namespace Mite.Handlers.ImagesHandlers
             var postIdStr = req.Path.Split('/').Last();
             if (Guid.TryParse(postIdStr, out Guid postId))
             {
-                var post = await postsRepo.GetAsync(postId);
-                return post.Content;
+                var post = await postsRepository.GetAsync(postId);
+
+                var resize = req.QueryString["resize"];
+                var needResize = resize == "true";
+                var needWatermark = post.WatermarkId != null;
+                var needBlur = post.TariffId != null;
+
+                return post.Content + GetCachedImagePath(post.Content, needWatermark, needResize, needBlur);
             }
             throw new HttpException(404, "Страница не найдена");
         }
@@ -39,63 +47,64 @@ namespace Mite.Handlers.ImagesHandlers
             var postIdStr = req.Path.Split('/').Last();
             if (Guid.TryParse(postIdStr, out Guid postId))
             {
-                var post = await postsRepo.GetWithWatermarkAsync(postId);
-                var postImageName = Path.GetFileNameWithoutExtension(post.Content);
+                var resize = req.QueryString["resize"];
+                const int defaultWidth = 500;
 
-                var watVal = req.QueryString["watermark"].ToLower();
-                var resizeVal = req.QueryString["resize"]?.ToLower();
+                var post = await postsRepository.GetWithWatermarkAsync(postId);
 
-                if (post.ContentType == PostContentTypes.Document || !File.Exists(context.Server.MapPath(post.Content)))
+                var fullImgPath = context.Server.MapPath(post.Content);
+
+                var needResize = resize == "true";
+                var needWatermark = post.WatermarkId != null;
+                var needBlur = post.TariffId != null;
+                if (context.User.Identity.GetUserId() == post.UserId)
+                    needBlur = false;
+                //Если человек оформил подписку, то не нужно смазывать
+                else if (needBlur)
                 {
-                    throw new HttpException(404, "Страница не найдена");
+                    var clientTariff = await clientTariffRepository.GetAsync((Guid)post.TariffId, context.User.Identity.GetUserId());
+                    if (clientTariff != null && clientTariff.PayStatus == TariffStatuses.Paid)
+                        needBlur = false;
                 }
 
-                if (watVal == "true" || resizeVal == "true")
+                if (post.ContentType == PostContentTypes.Document || !File.Exists(fullImgPath))
+                    throw new HttpException(404, "Страница не найдена");
+
+                var fileBytes = File.ReadAllBytes(fullImgPath);
+                if (needBlur || needWatermark || needResize)
                 {
-                    var cachedImagePath = "";
-                    resp.ContentType = "image/jpeg";
+                    var cachedImagePath = GetCachedImagePath(fullImgPath, needWatermark, needResize, needBlur);
+                    var ext = Path.GetExtension(cachedImagePath);
+                    var contentType = FilesHelper.GetContentTypeByExtension(ext);
 
-                    if (resizeVal == "true" && watVal == "true")
+                    if (File.Exists(cachedImagePath))
                     {
-                        if (post.WatermarkId == null)
-                        {
-                            throw new HttpException(404, "Страница не найдена");
-                        }
+                        resp.ContentType = contentType;
+                        resp.WriteFile(cachedImagePath);
+                    }
+                    else
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(cachedImagePath));
+                        if (needResize)
+                            fileBytes = Resize(fileBytes, defaultWidth);
+                        //Если смазываем, нет смысла еще и ватермарку добавлять
+                        if (needBlur)
+                            fileBytes = Blur(fileBytes);
+                        else if(needWatermark)
+                            fileBytes = DrawWatermark(fileBytes, post.Watermark, ext);
 
-                        cachedImagePath = Path.Combine(CacheFolderPath, postImageName, "wat_thumb.jpg");
 
-                        if (!File.Exists(cachedImagePath))
-                            ResizeAndDrawWat(post.Content, post.Watermark, cachedImagePath, DefaultWidth);
+                        File.WriteAllBytes(cachedImagePath, fileBytes);
+                        resp.ContentType = contentType;
+                        resp.BinaryWrite(fileBytes);
                     }
-                    else if (watVal == "true")
-                    {
-                        if (post.WatermarkId == null)
-                        {
-                            throw new HttpException(404, "Страница не найдена");
-                        }
-                        var ext = Path.GetExtension(post.Content) == ".gif" ? "gif" : "jpg";
-                        cachedImagePath = Path.Combine(CacheFolderPath, postImageName, $"wat.{ext}");
-                        if (!File.Exists(cachedImagePath))
-                            DrawWatermark(post.Content, post.Watermark, cachedImagePath);
-                        if (ext == "gif")
-                            resp.ContentType = "image/gif";
-                    }
-                    else //if (req.QueryString["resize"] == "true")
-                    {
-                        cachedImagePath = Path.Combine(CacheFolderPath, postImageName, "thumb.jpg");
-                        if (!File.Exists(cachedImagePath))
-                            Resize(post.Content, cachedImagePath, DefaultWidth);
-                    }
-                    resp.WriteFile(cachedImagePath);
                 }
                 else
                 {
-                    if(post.WatermarkId != null && post.UserId != context.User.Identity.GetUserId())
-                    {
-                        throw new HttpException(404, "Страница не найдена");
-                    }
-                    resp.ContentType = FilesHelper.GetContentTypeByExtension(Path.GetExtension(post.Content));
-                    resp.WriteFile(context.Server.MapPath(post.Content));
+                    //Достаем оригинал
+                    var ext = Path.GetExtension(fullImgPath);
+                    resp.ContentType = FilesHelper.GetContentTypeByExtension(ext);
+                    resp.WriteFile(fullImgPath);
                 }
             }
             else

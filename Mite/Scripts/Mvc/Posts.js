@@ -95,7 +95,7 @@
     },
     Api: {
         /**
-         * 
+         * Сохранить изображение
          */
         saveImage: function (isPublished, url, postId) {
             var $saveBtn = $('#save-btn'),
@@ -103,31 +103,33 @@
                 $resultMsg = $('#result-msg'),
                 postType = isPublished ? 'Published' : 'Drafts',
                 model = {
-                    WatermarkId: $('#WatermarkId').val(),
+                    //WatermarkId: $('#WatermarkId').val(),
                     ProductId: $('#ProductId').val(),
                     Header: $('#Header').val(),
                     Content: $('#Content').val(),
                     Description: $('#Description').val(),
+                    TariffId: $('#TariffId').val(),
                     ContentType: 'Image',
                     Type: postType,
                     Id: postId,
-                    Tags: $('#Tags').val().split(',')
+                    Tags: $('#Tags').val().split(','),
+                    Characters: $('#Characters').val().split(',')
                 }, reqSize = model.Content.length;
             if (isPublished) {
                 model.PublishDate = new Date().toISOString();
             }
-            if ($('#WmNeedCheck').checkbox('is checked')) {
-                model.Watermark = {
-                    WmPath: $('#WmPath').val(),
-                    Gravity: $('#Gravity').val(),
-                    FontSize: $('#FontSize').val(),
-                    WmText: $('#WmText').val(),
-                    Inverted: $('#invertCheck').checkbox('is checked'),
-                    UseCustomImage: $('#UseCustomImage').val()
-                };
-                if (model.Watermark.WmPath)
-                    reqSize += model.Watermark.WmPath.length;
-            }
+            //if ($('#WmNeedCheck').checkbox('is checked')) {
+            //    model.Watermark = {
+            //        WmPath: $('#WmPath').val(),
+            //        Gravity: $('#Gravity').val(),
+            //        FontSize: $('#FontSize').val(),
+            //        WmText: $('#WmText').val(),
+            //        Inverted: $('#invertCheck').checkbox('is checked'),
+            //        UseCustomImage: $('#UseCustomImage').val()
+            //    };
+            //    if (model.Watermark.WmPath)
+            //        reqSize += model.Watermark.WmPath.length;
+            //}
             if ($('#ProdNeedCheck').checkbox('is checked')) {
                 model.Product = {
                     Id: $('#ProductId').val(),
@@ -231,10 +233,12 @@
                 Id: $('#Id').val(),
                 Header: $('#Header').val(),
                 Description: $('#Description').val(),
+                TariffId: $('#TariffId').val(),
                 Content: $('#Content').val(),
                 ContentType: collectionType === 'imagecol' ? 'ImageCollection' : 'Comics',
                 Tags: $('[name="Tags"]').val().split(','),
-                UseWatermarkForCols: $('#UseWatermarkForCols').parent().checkbox('is checked'),
+                Characters: $('#Characters').val().split(','),
+                //UseWatermarkForCols: $('#UseWatermarkForCols').parent().checkbox('is checked'),
                 Collection: [],
                 ComicsItems: []
             };
@@ -269,18 +273,18 @@
                 default:
                     throw 'Unknown content type';
             }
-            if ($('#WmNeedCheck').checkbox('is checked')) {
-                model.Watermark = {
-                    WmPath: $('#WmPath').val(),
-                    Gravity: $('#Gravity').val(),
-                    FontSize: $('#FontSize').val(),
-                    WmText: $('#WmText').val(),
-                    Inverted: $('#invertCheck').checkbox('is checked'),
-                    UseCustomImage: $('#UseCustomImage').val(),
-                };
-                if (model.Watermark.WmPath)
-                    reqSize += model.Watermark.WmPath.length;
-            }
+            //if ($('#WmNeedCheck').checkbox('is checked')) {
+            //    model.Watermark = {
+            //        WmPath: $('#WmPath').val(),
+            //        Gravity: $('#Gravity').val(),
+            //        FontSize: $('#FontSize').val(),
+            //        WmText: $('#WmText').val(),
+            //        Inverted: $('#invertCheck').checkbox('is checked'),
+            //        UseCustomImage: $('#UseCustomImage').val(),
+            //    };
+            //    if (model.Watermark.WmPath)
+            //        reqSize += model.Watermark.WmPath.length;
+            //}
             if ($('#ProdNeedCheck').checkbox('is checked')) {
                 model.Product = {
                     Id: $('#ProductId').val(),
@@ -313,6 +317,61 @@
             } else {
                 self._sendCol(model, saveUrl, btn);
             }
+        },
+        saveArticle: function (saveUrl, needPublish) {
+            var $form = $('#writeEditForm').addClass('loading');
+            if (!$form.form('validate form')) {
+                return false;
+            }
+            var formData = {
+                Content: $('#Content').val(),
+                Header: $('#Header').val(),
+                Description: $('#Description').val(),
+                Id: $('#Id').val(),
+                ContentType: 'Document',
+                Tags: $('#Tags').val().split(','),
+                Cover: $('#Cover').val(),
+                TariffId: $('#TariffId').val(),
+                Characters: $('#Characters').val().split(',')
+            };
+            if (needPublish) {
+                formData.PublishDate = new Date().toISOString();
+            }
+            if (isCoverLarge) {
+                iziToast.error({
+                    title: 'Обложка не может иметь размер больше 10 мбайт.'
+                });
+                return false;
+            }
+            if (formData.Content === '') {
+                $('#writeEditForm').form('add errors', ['Заполните контент.'])
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Заполните контент.'
+                });
+                return false;
+            }
+            return $.post(saveUrl, formData, function (resp) {
+                if (resp.status == undefined) {
+                    resp = JSON.parse(resp);
+                }
+                if (resp.status == Settings.apiStatuses.validationError) {
+                    $('#writeEditForm').form('add errors', resp.data);
+                    iziToast.error({
+                        title: 'Упс!',
+                        message: 'Ошибка при сохранении, подробности в форме.'
+                    });
+                } else {
+                    location.reload();
+                }
+            }).fail(function () {
+                iziToast.error({
+                    title: 'Упс!',
+                    message: 'Внутренняя ошибка. Если повторяется, свяжитесь со службой поддержки.'
+                });
+            }).always(function () {
+                $form.removeClass('loading');
+            });
         }
     }
 }

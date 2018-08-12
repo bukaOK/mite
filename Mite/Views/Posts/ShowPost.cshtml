@@ -7,15 +7,21 @@
     ViewBag.Title = Model.Header;
     ViewBag.MetaDescription = string.Format("Публикация пользователя {0} {1} | {2}", Model.User.UserName, Model.Header, Model.Description);
 
-    var openGraphMeta = new Dictionary<string, string>
+    var meta = new Dictionary<string, string>
     {
         { "og:title", Model.Header },
         { "og:type", "article" },
-        { "og:url", Url.Action("Index", "ShowPost", new{id = Model.Id}, "http") }
+        { "og:url", Url.Action("Index", "ShowPost", new{id = Model.Id}, "http") },
+
+        { "twitter:card", "summary" },
+        { "twitter:site", "@fanmitegroup" },
+        { "twitter:title", Model.Header },
+        { "twitter:description", Model.Description }
     };
-    if (Model.ContentType == PostContentTypes.Image || Model.ContentType == PostContentTypes.ImageCollection)
+    if (Model.ContentType != PostContentTypes.Document)
     {
-        openGraphMeta.Add("og:image", Model.Content);
+        meta.Add("og:image", Model.Content);
+        meta.Add("twitter:image", Model.Content);
     }
 
     var userId = User.Identity.GetUserId();
@@ -29,7 +35,7 @@
     }
 }
 @section meta{
-    @ViewHelper.GenerateMeta(openGraphMeta)
+    @ViewHelper.GenerateMeta(meta)
 }
 @section styles{
     @Styles.Render("~/Content/lgallery")
@@ -39,209 +45,72 @@
         }
     </style>
 }
-<div class="ui segment grid">
-    <div class="stackable two column row">
-        <div class="column">
-            <h2 class="ui header">
-                @Model.Header
-                <span class="sub header post-time"></span>
-            </h2>
-        </div>
-        <div class="right aligned column">
-            <div id="vk_share" style="display: inline-block;"></div>
+<div class="ui stackable grid" itemscope itemtype="http://schema.org/CreativeWork">
+    <div class="four wide column">
+        <div class="ui segment">
             @if (User.Identity.IsAuthenticated)
             {
-                <div class="ui tiny labeled button">
+                <div class="ui fluid labeled button">
                     @if (Model.IsFavorite)
                     {
-                        <button class="ui compact small primary button" onclick="FavoritePostsApi.remove(this, '@Model.Id', '@userId')">
+                        <button class="ui compact fluid primary button" onclick="FavoritePostsApi.remove(this, '@Model.Id', '@userId')">
                             <i class="like icon"></i><span class="content">Из избранных</span>
                         </button>
-                        <button class="ui compact small primary button" onclick="FavoritePostsApi.add(this, '@Model.Id', '@userId')" style="display: none">
+                        <button class="ui compact fluid primary button" onclick="FavoritePostsApi.add(this, '@Model.Id', '@userId')" style="display: none">
                             <i class="like icon"></i><span class="content">В избранное</span>
                         </button>
                     }
                     else
                     {
-                        <button class="ui compact small primary button" onclick="FavoritePostsApi.add(this, '@Model.Id', '@userId')">
+                        <button class="ui compact fluid primary button" onclick="FavoritePostsApi.add(this, '@Model.Id', '@userId')">
                             <i class="like icon"></i><span class="content">В избранное</span>
                         </button>
-                        <button class="ui compact small primary button" onclick="FavoritePostsApi.remove(this, '@Model.Id', '@userId')" style="display: none">
+                        <button class="ui compact fluid primary button" onclick="FavoritePostsApi.remove(this, '@Model.Id', '@userId')" style="display: none">
                             <i class="like icon"></i><span class="content">Из избранных</span>
                         </button>
                     }
                     <span class="ui violet basic left pointing label">@Model.FavoriteCount</span>
                 </div>
+                <div class="ui segment">
+                    <span>Оценить</span>
+                    @Html.HiddenFor(x => x.CurrentRating.Id)
+                    @Html.HiddenFor(x => x.CurrentRating.PostId)
+                    <div class="ui star rating" data-last-rate="@Model.CurrentRating.Value" data-rating="@Model.CurrentRating.Value" data-max-rating="5"></div>
+                    <span id="post-rating" data-rating="@Model.Rating">
+                        (@Model.Rating)
+                    </span>
+                </div>
             }
             @if (currentUserName == pageUserName)
             {
-                @Html.ActionLink("Редактировать", "EditPost", "Posts", new { id = Model.Id }, new { @class = "ui primary small compact button" })
+                @Html.ActionLink("Редактировать", "EditPost", "Posts", new { id = Model.Id }, new { @class = "ui primary fluid compact button" })
             }
-        </div>
-    </div>
-    @if (Model.Type == PostTypes.Blocked)
-    {
-        <div class="row">
-            <div class="centered twelve wide column">
-                <div class="ui yellow message">
-                    <div class="header">Работа заблокирована!</div>
-                    <div class="content">
-                        Причины блокировки могут быть следующими:
-                        <ul>
-                            <li>Низкое качество работы</li>
-                            <li>Недопустимый контент</li>
-                            <li>Нарушение чужих авторских прав</li>
-                            <li>И другие...</li>
-                        </ul>
-                        По всем вопросам обращайтесь службу поддержки: support@mitegroup.ru
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
-    <div class="row">
-        @if (Model.ContentType == PostContentTypes.Image)
-        {
-            <div data-editable class="fifteen wide centered column">
-                <img src="@Model.Content" class="ui centered image" id="post-content" alt="@ViewBag.Title" />
-            </div>
-        }
-        else if (Model.ContentType == PostContentTypes.Document)
-        {
-            <div data-editable class="fifteen wide centered column" id="post-content">
-                @Html.Raw(Model.Content)
-            </div>
-        }
-        else if (Model.ContentType == PostContentTypes.ImageCollection)
-        {
-            <div class="fifteen wide centered center aligned column col-content">
-                <img src="@Model.Content" class="ui centered image" id="post-content" alt="@Model.Header" />
-                <div class="ui divider"></div>
-                <div class="col-content">
-                    @foreach (var item in Model.Collection)
-                    {
-                        <div class="col-item" data-sub-html="<h3 class='ui inverted header'>@item.Description</h3>" data-src="@item.Content">
-                            <h3 class="ui header">@item.Description</h3>
-                            <img src="@item.Content" class="ui centered image" alt="@item.Description" />
-                        </div>
-                    }
-                </div>
-            </div>
-        }
-        else if (Model.ContentType == PostContentTypes.Comics)
-        {
-            <div class="fifteen wide centered center aligned column">
-                <img src="@Model.Content" class="ui centered image" id="post-content" alt="@Model.Header" />
-                <div class="ui divider"></div>
-                @if (ViewHelper.IsMobileDevice(Request))
-                {
-                    <div class="ui three column stackable grid comics-content">
-                        @foreach (var item in Model.ComicsItems.OrderBy(x => x.Page))
-                        {
-                            <div class="column comics-item" title="Страница @item.Page" data-src="@item.Content">
-                                <img src="@item.CompressedContent" class="ui centered image" alt="Комикс @Model.Header. Страница @item.Page." />
-                            </div>
-                        }
-                    </div>
-                }
-                else
-                {
-                    <div class="ui five column stackable grid comics-content">
-                        @foreach (var item in Model.ComicsItems.OrderBy(x => x.Page))
-                        {
-                            <div class="column comics-item" title="Страница @item.Page" data-src="@item.Content">
-                                <img src="@item.CompressedContent" class="ui centered image" alt="Комикс @Model.Header. Страница @item.Page." />
-                            </div>
-                        }
-                    </div>
-                }
-            </div>
-        }
-    </div>
-    <div class="ui divider"></div>
-    <div class="stackable row">
-        <div class="ten wide centered column">
             <div class="ui items">
-                <div class="item">
+                <div class="item" itemscope itemprop="author" itemtype="http://schema.org/Person">
+                    <meta itemprop="url" content="@Url.Action("Index", "UserProfile", new { name = Model.User.UserName })" />
                     <div class="ui tiny circular image" style="width: 80px !important">
-                        <img src="@Model.User.AvatarSrc" alt="@Model.User.UserName" style="border-radius: 500rem !important;" />
+                        <img itemprop="image" src="@Model.User.AvatarSrc" alt="@Model.User.UserName" style="border-radius: 500rem !important;" />
                     </div>
                     <div class="content">
                         <a href="@Url.Action("Index", "UserProfile", new { name = Model.User.UserName })" class="header">&copy; @Model.User.UserName</a>
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <div class="meta">
-                                <span>Оценить</span>
-                                @Html.HiddenFor(x => x.CurrentRating.Id)
-                                @Html.HiddenFor(x => x.CurrentRating.PostId)
-                                <div class="ui star rating" data-last-rate="@Model.CurrentRating.Value" data-rating="@Model.CurrentRating.Value" data-max-rating="5"></div>
-                                <span id="post-rating" data-rating="@Model.Rating">(@Model.Rating)</span>
-                            </div>
-                        }
                         <div class="description">
-                            <h4 class="ui header">@Model.Description</h4>
+                            <h4 itemprop="about" class="ui header">@Model.User.Description</h4>
                         </div>
-                        @if(Model.Tags != null && Model.Tags.Count > 0)
-                        {
-                            <div class="extra">
-                                @foreach (var tag in Model.Tags)
-                                {
-                                    @Html.ActionLink(tag, "Top", "Posts", new { tags = tag }, new { @class = "ui label" })
-                                }
-                            </div>
-                        }
                     </div>
                 </div>
             </div>
-        </div>
-        @if(Model.Product != null)
-        {
-            <div class="five wide column">
-                <div class="ui segment">
-                    @if (Model.Product.IsBought || User.Identity.GetUserId() == Model.User.Id)
+            @if (Model.Tags != null && Model.Tags.Count > 0)
+            {
+                <div class="tags-wrap">
+                    @foreach (var tag in Model.Tags)
                     {
-                        @Html.ActionLink("Скачать", "Download", "Products", new { id = Model.ProductId }, new { @class = "ui violet button" })
+                        @Html.ActionLink(tag, "Top", "Posts", new { tags = tag }, new { @class = "ui label" })
                     }
-                    else
-                    {
-                        <div class="ui small header">
-                            <div class="content">
-                                Цена: @Model.Product.Price
-                                @if (User.Identity.IsAuthenticated && User.Identity.GetUserId() != Model.User.Id)
-                                {
-                                    <a class="ui violet label" id="buyButton">Купить</a>
-                                }
-                                else if (!User.Identity.IsAuthenticated)
-                                {
-                                    @Html.ActionLink("Не более 2х минут на регистрацию, и вы сможете купить эту работу.", "Register", "Account", new { returnUrl = Request.Url.AbsoluteUri }, null);
-                                }
-                            </div>
-                            <div class="sub header">
-                                С покупкой вы получите:
-                                <div class="ui bulleted list">
-                                    <div class="item">
-                                        доступ к оригиналу изображения
-                                    </div>
-                                    <div class="item">
-                                        право на коммерческое использование без указания ссылки на автора
-                                    </div>
-                                    @if (!string.IsNullOrEmpty(Model.Product.BonusDescription))
-                                    {
-                                        <div class="item">
-                                            а также бонус: @Model.Product.BonusDescription
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                    }
-
                 </div>
-            </div>
-        }
-        @if (User.IsInRole(RoleNames.Moderator))
-        {
-            <div class="four wide column">
+            }
+            @if (User.IsInRole(RoleNames.Moderator))
+            {
+                <h3 class="ui header">Модератор</h3>
                 <div class="ui form">
                     <div class="field">
                         <div class="ui fluid search multiple selection dropdown" id="select-tags">
@@ -271,47 +140,195 @@
                     </div>
                     <div class="ui error message" id="moderActionMsg"></div>
                 </div>
-            </div>
-            <script>
-                $(function () {
-                    $('#moderActionsDropdown').dropdown({
-                        action: 'hide'
+                <script>
+                    $(function () {
+                        $('#moderActionsDropdown').dropdown({
+                            action: 'hide'
+                        });
+                        TagsApi.loadDropdown('#select-tags', '@tagsRow'.split(','));
                     });
-                    TagsApi.loadDropdown('#select-tags', '@tagsRow'.split(','));
-                });
-            </script>
-        }
-    </div>
-    <div class="ui divider"></div>
-    <div class="row">
-        <div class="twelve wide computer twelve wide tablet sixteen wide mobile centered column">
-            <div class="ui large comments">
-                <h4 class="ui header" id="comments-count" data-count="@Model.CommentsCount">
-                    @Model.CommentsCount @ViewHelper.GetWordCase(Model.CommentsCount, "комментарий", "комментария", "комментариев")
-                </h4>
-                @if (User.Identity.IsAuthenticated)
+                </script>
+            }
+            @if (Model.Product != null)
+            {
+                <h3 class="ui header">Товар</h3>
+                if (Model.Product.IsBought || User.Identity.GetUserId() == Model.User.Id)
                 {
-                    <form class="ui form" id="comments-form">
-                        <div class="field">
-                            <textarea name="CommentContent" id="CommentContent" rows="1" data-reply-user-id data-reply-comment></textarea>
-                        </div>
-                        <button type="button" class="ui primary small right labeled icon button" onclick="CommentsApi.add('@Model.Id', '@Model.User.Id')">
-                            Комментировать<i class="icon write"></i>
-                        </button>
-                        <a href="" id="reply-user"></a>
-                        <i id="remove-reply" class="remove red icon" style="display: none; cursor: pointer" onclick="removeReply()"></i>
-                        <div class="ui error message"></div>
-                    </form>
+                    @Html.ActionLink("Скачать", "Download", "Products", new { id = Model.ProductId }, new { @class = "ui violet button" })
                 }
                 else
                 {
-                    @Html.ActionLink("Зарегистрируйтесь, чтобы оставлять комментарии.", "Register", "Account")
+                    <div class="ui small header" style="margin-top: 0">
+                        <div class="content">
+                            Цена: @Model.Product.Price
+                            @if (User.Identity.IsAuthenticated && User.Identity.GetUserId() != Model.User.Id)
+                            {
+                                <a class="ui violet label" id="buyButton">Купить</a>
+                            }
+                            else if (!User.Identity.IsAuthenticated)
+                            {
+                                @Html.ActionLink("Купить", "Register", "Account", new { returnUrl = Request.Url.AbsoluteUri }, new { @class = "ui violet label" });
+                            }
+                        </div>
+                        <div class="sub header">
+                            С покупкой вы получите:
+                            <div class="ui bulleted list">
+                                <div class="item">
+                                    доступ к оригиналу изображения
+                                </div>
+                                <div class="item">
+                                    право на коммерческое использование без указания ссылки на автора
+                                </div>
+                                @if (!string.IsNullOrEmpty(Model.Product.BonusDescription))
+                                {
+                                    <div class="item">
+                                        а также бонус: @Model.Product.BonusDescription
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
                 }
-                <div class="ui comments" id="comments-wrapper">
-                    <div class="active dot-loader" style="position: relative; transform: initial;">
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
+            }
+            <h3 class="ui dividing header">Расскажите друзьям</h3>
+            <div id="vk_share"></div>
+            <button class="ui compact twitter margined button" onclick="shareTwit()">
+                <i class="twitter icon"></i>Твиттер
+            </button>
+            <button class="ui compact facebook button" onclick="shareFacebook()">
+                <i class="facebook icon"></i>Facebook
+            </button>
+        </div>
+    </div>
+    <div class="twelve wide column">
+        <div class="ui grid segment" style="margin-top: 0">
+            <div class="row">
+                <div class="column">
+                    <h2 itemprop="name" class="ui header">
+                        @Model.Header
+                        <span class="sub header post-time"></span>
+                    </h2>
+                </div>
+            </div>
+            @if (Model.Type == PostTypes.Blocked)
+            {
+            <div class="row">
+                <div class="twelve wide centered column">
+                    <div class="ui yellow message" id="blockMsg">
+                        <div class="header">Работа заблокирована!</div>
+                        <div class="content">
+                            Причины блокировки могут быть следующими:
+                            <ul>
+                                <li>Низкое качество работы</li>
+                                <li>Недопустимый контент</li>
+                                <li>Нарушение чужих авторских прав</li>
+                                <li>И другие...</li>
+                            </ul>
+                            По всем вопросам обращайтесь службу поддержки: support@mitegroup.ru
+                        </div>
+                    </div>
+                </div>
+            </div>
+            }
+            <div class="row">
+                <div class="column">
+                    @if(!Model.CanSeeContent)
+                    {
+                        <div class="ui yellow message">
+                            <div class="header">Платный контент</div>
+                            <p>
+                                Контент доступен только платным подписчикам, Вы можете оформить подписку 
+                                @Html.ActionLink("здесь", "ClientList", "Tariff", new { authorName = Model.User.UserName })
+                            </p>
+                        </div>
+                    }
+                    else if (Model.ContentType == PostContentTypes.Image)
+                    {
+                        <img itemprop="image" src="@Model.Content" class="ui centered image" id="post-content" alt="@ViewBag.Title" />
+                    }
+                    else if (Model.ContentType == PostContentTypes.Document)
+                    {
+                        <div data-editable id="post-content">
+                            @Html.Raw(Model.Content)
+                        </div>
+                    }
+                    else if (Model.ContentType == PostContentTypes.ImageCollection)
+                    {
+                        <div class="col-content">
+                            <img src="@Model.Content" class="ui centered image" id="post-content" alt="@Model.Header" />
+                            <div class="ui divider"></div>
+                            <div class="col-content">
+                                @foreach (var item in Model.Collection)
+                                {
+                                    <div class="col-item" data-sub-html="<h3 class='ui inverted header'>@item.Description</h3>" data-src="@item.Content">
+                                        <h3 class="ui header">@item.Description</h3>
+                                        <img src="@item.Content" class="ui centered image" alt="@item.Description" />
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else if (Model.ContentType == PostContentTypes.Comics)
+                    {
+                        <img src="@Model.Content" class="ui centered image" id="post-content" alt="@Model.Header" />
+                        <div class="ui divider"></div>
+                        if (ViewHelper.IsMobileDevice(Request))
+                        {
+                            <div class="ui three column stackable grid comics-content">
+                                @foreach (var item in Model.ComicsItems.OrderBy(x => x.Page))
+                                {
+                                    <div class="column comics-item" title="Страница @item.Page" data-src="@item.Content">
+                                        <img src="@item.CompressedContent" class="ui centered image" alt="Комикс @Model.Header. Страница @item.Page." />
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="ui five column stackable grid comics-content">
+                                @foreach (var item in Model.ComicsItems.OrderBy(x => x.Page))
+                                {
+                                    <div class="column comics-item" title="Страница @item.Page" data-src="@item.Content">
+                                        <img src="@item.CompressedContent" class="ui centered image" alt="Комикс @Model.Header. Страница @item.Page." />
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="row">
+                <div class="twelve wide centered column">
+                    <h4 class="ui header" itemprop="description">@Model.Description</h4>
+                    <div class="ui large comments">
+                        <h4 class="ui header" id="comments-count" data-count="@Model.CommentsCount">
+                            @Model.CommentsCount @ViewHelper.GetWordCase(Model.CommentsCount, "комментарий", "комментария", "комментариев")
+                        </h4>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <form class="ui form" id="comments-form" itemscope itemtype="http://schema.org/UserComments">
+                                <div class="field">
+                                    <textarea name="CommentContent" id="CommentContent" rows="1" data-reply-user-id data-reply-comment></textarea>
+                                </div>
+                                <button type="button" class="ui primary compact right labeled icon button" onclick="CommentsApi.add('@Model.Id', '@Model.User.Id')">
+                                    Комментировать<i class="icon write"></i>
+                                </button>
+                                <a href="" id="reply-user"></a>
+                                <i id="remove-reply" class="remove red icon" style="display: none; cursor: pointer" onclick="removeReply()"></i>
+                                <div class="ui error message"></div>
+                            </form>
+                        }
+                        else
+                        {
+                            @Html.ActionLink("Зарегистрируйтесь, чтобы оставлять комментарии.", "Register", "Account")
+                        }
+                        <div class="ui comments" id="comments-wrapper">
+                            <div class="active dot-loader" style="position: relative; transform: initial;">
+                                <div class="dot"></div>
+                                <div class="dot"></div>
+                                <div class="dot"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -361,9 +378,9 @@
 </script>
 @Scripts.Render("~/bundles/scroll", "~/bundles/gallery", "~/bundles/api", "~/bundles/grid")
 <script>
-    var isImage = @((Model.ContentType == PostContentTypes.Image).ToString().ToLower());
-    var isComics = @((Model.ContentType == PostContentTypes.Comics).ToString().ToLower());
-    var isCollection = @((Model.ContentType == PostContentTypes.ImageCollection).ToString().ToLower());
+    var isImage = @((Model.ContentType == PostContentTypes.Image).ToString().ToLower()),
+        isComics = @((Model.ContentType == PostContentTypes.Comics).ToString().ToLower()),
+        isCollection = @((Model.ContentType == PostContentTypes.ImageCollection).ToString().ToLower());
 
     function loadPostTime(){
         var dateIso = '@Model.LastEdit.ToString("o")';
@@ -437,10 +454,39 @@
             noparse: false,
         }, {
             type: 'custom',
-            text: '<span class="ui vk small compact button"><i class="vk icon"></i>Поделиться</span>'
+            text: '<span class="ui vk compact margined button"><i class="vk icon"></i>ВКонтакте</span>'
         });
     }
+    function shareTwit() {
+        var width = 575,
+            height = 400,
+            left = ($(window).width() - width) / 2,
+            top = ($(window).height() - height) / 2,
+            url = 'https://twitter.com/intent/tweet?text=@Model.Header&hashtags=@tagsRow&url=' + location.href,
+            opts = 'status=1' +
+                ',width=' + width +
+                ',height=' + height +
+                ',top=' + top +
+                ',left=' + left;
+
+        window.open(url, 'twitter', opts);
+    }
+    function shareFacebook() {
+        FB.ui({
+            method: 'share',
+            href: location.href,
+            hashtag: '@string.Join(" ", Model.Tags.Select(x => "#" + x))'
+        }, function (response) { });
+    }
     $(function () {
+        $.getScript('https://connect.facebook.net/en_US/sdk.js', function () {
+            FB.init({
+                appId: '1709833739044048',
+                version: 'v2.7'
+            });
+            //$('#loginbutton,#feedbutton').removeAttr('disabled');
+            //FB.getLoginStatus(updateStatusCallback);
+        });
         $('.modal').click(function(){
             return false;
         });
@@ -457,7 +503,7 @@
             loadUserGallery();
             MiteGallery.initComics('.comics-content');
         }
-        @if(Model.Product != null)
+        @if(Model.Product != null && User.Identity.IsAuthenticated && User.Identity.GetUserId() != Model.User.Id)
         {
             <text>
             $('#buyConfirmModal').modal({

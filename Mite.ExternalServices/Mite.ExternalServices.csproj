@@ -64,6 +64,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DeviantArt\DeviantArtClient.cs" />
+    <Compile Include="DeviantArt\DeviantArtException.cs" />
+    <Compile Include="DeviantArt\Responses\AccessTokenResponse.cs" />
+    <Compile Include="DeviantArt\Responses\Response.cs" />
+    <Compile Include="DeviantArt\Responses\StashSubmitResponse.cs" />
     <Compile Include="Google\AdSense\AdSenseRequestParams.cs" />
     <Compile Include="Google\AdSense\AdSenseResult.cs" />
     <Compile Include="Google\Attributes\ParamNameAttribute.cs" />
@@ -75,6 +80,8 @@
     <Compile Include="IpApi\Requests\IpApiRequest.cs" />
     <Compile Include="IpApi\Responses\IpApiResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Twitter\Responses\UploadResponse.cs" />
+    <Compile Include="Twitter\TwitterClient.cs" />
     <Compile Include="VkApi\Auth\TokenResponse.cs" />
     <Compile Include="VkApi\Board\GetCommentsResponse.cs" />
     <Compile Include="VkApi\Board\GetCommentsRequest.cs" />
@@ -88,6 +95,8 @@
     <Compile Include="VkApi\Friends\FriendsSearchResponse.cs" />
     <Compile Include="VkApi\Groups\GroupsGetByIdRequest.cs" />
     <Compile Include="VkApi\Groups\GroupsGetByIdResponse.cs" />
+    <Compile Include="VkApi\Groups\GroupsGetMembersRequest.cs" />
+    <Compile Include="VkApi\Groups\GroupsGetMembersResponse.cs" />
     <Compile Include="VkApi\Groups\GroupsGetRequest.cs" />
     <Compile Include="VkApi\Groups\GroupsGetResponse.cs" />
     <Compile Include="VkApi\Likes\LikesGetListRequest.cs" />
@@ -102,18 +111,17 @@
     <Compile Include="VkApi\Objects\Photo.cs" />
     <Compile Include="VkApi\Objects\Post.cs" />
     <Compile Include="VkApi\Objects\User.cs" />
-    <Compile Include="VkApi\Photos\PhotoGetAllRequest.cs" />
-    <Compile Include="VkApi\Photos\PhotoGetAllResponse.cs" />
-    <Compile Include="VkApi\Photos\PhotoGetRequest.cs" />
-    <Compile Include="VkApi\Photos\PhotoGetResponse.cs" />
+    <Compile Include="VkApi\Photos\PhotoGetAll.cs" />
+    <Compile Include="VkApi\Photos\PhotoGet.cs" />
     <Compile Include="VkApi\Users\UsersGetRequest.cs" />
     <Compile Include="VkApi\Users\UsersGetResponse.cs" />
     <Compile Include="VkApi\Users\UsersSearchRequest.cs" />
     <Compile Include="VkApi\Users\UsersSearchResponse.cs" />
-    <Compile Include="VkApi\Wall\GetRepostsRequest.cs" />
-    <Compile Include="VkApi\Wall\GetRepostsResponse.cs" />
-    <Compile Include="VkApi\Wall\WallGetRequest.cs" />
-    <Compile Include="VkApi\Wall\WallGetResponse.cs" />
+    <Compile Include="VkApi\Wall\GetReposts.cs" />
+    <Compile Include="VkApi\Photos\PhotoGetWallUploadServer.cs" />
+    <Compile Include="VkApi\Photos\PhotoSaveWallPhoto.cs" />
+    <Compile Include="VkApi\Wall\WallGet.cs" />
+    <Compile Include="VkApi\Wall\WallPost.cs" />
     <Compile Include="WebMoney\Business\Automapper\WebMoneyProfile.cs" />
     <Compile Include="WebMoney\Business\Enums\ExpressClientLoginTypes.cs" />
     <Compile Include="WebMoney\Business\Enums\ExpressConfirmTypes.cs" />

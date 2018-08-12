@@ -48,19 +48,20 @@ namespace Mite.Hubs
                     break;
                 case NotificationTypes.PostComment:
                     //sourceValue like {postId}#com{comId}
-                    notifyModel.Content += $"прокомментировал вашу ";
-                    notifyModel.Content += $"<a href=\"/posts/showpost/{sourceValue}\">работу</a>.";
+                    notifyModel.Content += $"прокомментировал вашу <a href=\"/posts/showpost/{sourceValue}\">работу</a>.";
                     break;
                 case NotificationTypes.PostRating:
                     //sourceValue is post id
-                    notifyModel.Content += "оценил вашу ";
-                    notifyModel.Content += $"<a href=\"/posts/showpost/{sourceValue}\">работу</a>.";
+                    notifyModel.Content += $"оценил вашу <a href=\"/posts/showpost/{sourceValue}\">работу</a>.";
                     break;
                 case NotificationTypes.Follower:
                     notifyModel.Content += "подписался на вас.";
                     break;
                 case NotificationTypes.CommentReply:
                     notifyModel.Content += $"ответил на ваш <a href=\"{sourceValue}\">комментарий</a>.";
+                    break;
+                case NotificationTypes.TariffPayment:
+                    notifyModel.Content += "стал вашим покровителем.";
                     break;
                 default:
                     throw new NotImplementedException("Неизвестный тип уведомления");

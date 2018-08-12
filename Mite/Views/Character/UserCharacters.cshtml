@@ -1,0 +1,158 @@
+﻿@using Microsoft.AspNet.Identity
+@model Mite.Models.UserCharactersModel
+@{
+    ViewBag.Title = "Персонажи";
+    var currentUserId = User.Identity.GetUserId();
+}
+<div class="ui stackable grid">
+    <div class="four wide column">
+        <div class="ui vertical menu" id="userCharactersItems">
+            <a class="active item" data-tab="all">Все</a>
+            <a class="item" data-tab="own">Созданные мной</a>
+            <div class="ui form item" id="originalFilter">
+                @Html.EditorFor(x => x.OriginalType)
+            </div>
+        </div>
+    </div>
+    <div class="twelve wide column">
+        <div class="ui segment">
+            <h3 class="ui dividing header">Персонажи</h3>
+            <div class="ui input">
+                <input type="text" placeholder="Имя персонажа" id="characterSearch" 
+                       onkeypress="if (event.keyCode == '13' || event.which == '13') TabFilter.refresh()" />
+            </div>
+            <button class="ui primary button" onclick="TabFilter.refresh()" title="Вы также можете нажать Enter для поиска">Найти</button>
+            <div class="ui items tab" data-tab="all">
+            </div>
+            <div class="ui items tab" data-tab="own">
+            </div>
+            <div class="dot-loader-wrapper">
+                <div class="dot-loader">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/x-jsrender" id="characterItemTmpl">
+    <div class="item">
+        <div class="image">
+            <img src="{{:ImageSrc}}" />
+        </div>
+        <div class="content">
+            <a class="header" href="/character/show/{{:Id}}">{{:Name}}</a>
+            <div class="meta">
+                {{if !User || User.Id == '@currentUserId'}}
+                <a class="ui violet label" href="@Url.Action("Edit", "Character")/{{:Id}}">Редактировать</a>
+                {{/if}}
+                {{if Original}}
+                <i class="blue user icon" title="Оригинальный персонаж"></i>
+                {{/if}}
+            </div>
+            <div class="description">{{:Description}}</div>
+            {{if User && User.Id != '@currentUserId'}}
+            <div class="extra">
+                <img src="{{:User.AvatarSrc}}" class="ui avatar image" />
+                <a href="/user/profile/{{:User.UserName}}">{{:User.UserName}}</a>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+</script>
+<script type="text/html" id="emptyCharacterTmpl">
+    <h3 class="ui center aligned icon header" style="color: #6D6788; margin-top: 20px;">
+        <i class="meh outline icon"></i>
+        <span class="content">
+            Персонажи не найдены.
+        </span>
+    </h3>
+</script>
+<script>
+    var characterTmpl = $.templates('#characterItemTmpl');
+    var characterItems = $('#characterItems');
+    var tabItems = [];
+    $('#originalFilter .checkbox').checkbox({
+        onChange: function () {
+            TabFilter.refresh();
+        }
+    });
+    $('.item[data-tab]').each(function (index, el) {
+        var $el = $(el);
+        tabItems.push(new Tab({
+            name: $el.data('tab'),
+            isActive: $el.hasClass('active')
+        }));
+    });
+    TabFilter.Tabs.items = tabItems;
+    TabFilter.Filters.add({
+        name: 'input',
+        elem: $('#characterSearch'),
+        getVal: function () {
+            return this.elem.val();
+        },
+        updateState: function (newVal) {
+            this.elem.val(newVal);
+        }
+    });
+    TabFilter.Filters.add({
+        name: 'originaltype',
+        elem: $('#originalFilter .checkbox'),
+        getVal: function () {
+            var val = 0
+            this.elem.each(function (index, rad) {
+                var $rad = $(rad);
+                if ($rad.checkbox('is checked')) {
+                    val = $rad.children('input').val();
+                }
+            });
+            return val;
+        },
+        updateState: function (newVal) {
+            this.elem.each(function (index, rad) {
+                if ($(rad).children('input').val() == newVal) {
+                    $(rad).checkbox('set checked');
+                }
+            });
+        }
+    });
+    TabFilter.init('/user/characters', {
+        beforeLoad: function () {
+            $('.dot-loader-wrapper').addClass('active');
+        },
+        onSuccess: function (resp, tab) {
+            var html;
+            if (resp.length == 0 && TabFilter.page == 1) {
+                html = $('#emptyCharacterTmpl').html();
+                tab.content.html(html);
+            } else if (resp.length > 0) {
+                html = characterTmpl.render(resp);
+
+                if (TabFilter.loadNextPage) {
+                    tab.content.append(html);
+                } else {
+                    tab.content.html(html);
+                }
+            }
+            $('.dot-loader-wrapper').removeClass('active');
+        },
+        onError: function () {
+            $('.dot-loader-wrapper').removeClass('active');
+            iziToast.error({
+                title: 'Упс...',
+                message: 'Ошибка при загрузке работ'
+            });
+        },
+        ajax: {
+            type: 'post'
+        }
+    });
+    Scrolling.init('.dot-loader-wrapper', function () {
+        if (!TabFilter.loading) {
+            var lastTab = TabFilter.Tabs.getLastActiveTab();
+            TabFilter.loadNext();
+        }
+    });
+</script>
+

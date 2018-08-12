@@ -4,6 +4,7 @@
 @{
     var tagsRow = Model.Tags == null ? string.Empty : string.Join(",", Model.Tags);
     var saveMode = Model.Header == null ? "add" : "edit";
+    var charsRow = Model.Characters == null ? string.Empty : string.Join(",", Model.Characters);
     var isPublished = Model.IsPublished.ToString().ToLower();
 }
 @section styles{
@@ -57,26 +58,52 @@
                     </div>
                 </div>
             </div>
-            @if (Model.WatermarkId != null)
-            {
-                <button type="button" class="ui margined red button" id="removeWatBtn">Удалить водяной знак</button>
-                <div class="ui toggle checkbox" id="WmNeedCheck" style="display: none">
-                    <input type="checkbox" name="WmNeed" autocomplete="off" checked />
-                    <label>Водяной знак</label>
+            <div class="field">
+                <div class="ui fluid search multiple selection dropdown" id="select-chars">
+                    <i class="dropdown icon"></i>
+                    @Html.HiddenFor(x => x.Characters, new { Value = charsRow })
+                    <div class="default text">Персонажи</div>
+                    <div class="menu">
+                        @foreach (var item in Model.AvailableCharacters)
+                        {
+                            <div class="item" data-value="@item.Value">@item.Text</div>
+                        }
+                    </div>
                 </div>
-            }
-            else
-            {
-                <div class="ui toggle checkbox" id="WmNeedCheck">
-                    <input type="checkbox" name="WmNeed" autocomplete="off" />
-                    <label>Водяной знак</label>
-                </div>
-            }
-            <div id="wmEdit">
-                @Html.EditorFor(x => x.UseWatermarkForCols)
-                @{ Html.RenderAction("Edit", "Watermark", new { id = Model.WatermarkId }); }
             </div>
-            <br />
+            @if (Model.AvailableTariffs != null && Model.AvailableTariffs.Count > 0)
+            {
+                <div class="ui fluid search selection dropdown" id="select-tariffs">
+                    <i class="dropdown icon"></i>
+                    @Html.HiddenFor(x => x.TariffId)
+                    <div class="default text">Тарифы</div>
+                    <div class="menu">
+                        @foreach (var tariff in Model.AvailableTariffs)
+                        {
+                            <div class="item" data-value="@tariff.Value">@tariff.Text</div>
+                        }
+                    </div>
+                </div>
+            }
+            @*@if (Model.WatermarkId != null)
+        {
+            <button type="button" class="ui margined red button" id="removeWatBtn">Удалить водяной знак</button>
+            <div class="ui toggle checkbox" id="WmNeedCheck" style="display: none">
+                <input type="checkbox" name="WmNeed" autocomplete="off" checked />
+                <label>Водяной знак</label>
+            </div>
+        }
+        else
+        {
+            <div class="ui toggle checkbox" id="WmNeedCheck">
+                <input type="checkbox" name="WmNeed" autocomplete="off" />
+                <label>Водяной знак</label>
+            </div>
+        }
+        <div id="wmEdit">
+            @Html.EditorFor(x => x.UseWatermarkForCols)
+            @{ Html.RenderAction("Edit", "Watermark", new { id = Model.WatermarkId }); }
+        </div>*@
             <div class="ui toggle checkbox" id="ProdNeedCheck">
                 <input type="checkbox" name="ProdNeed" autocomplete="off" @Html.Raw(Model.ProductId == null ? "" : "checked") />
                 <label>Товар</label>
@@ -193,11 +220,11 @@
             }
         });
         $('#UseWatermarkForCols').parent().checkbox();
-        $('#WmNeedCheck').checkbox({
-            onChange: function () {
-                $('#wmEdit').toggleClass('active');
-            }
-        });
+        //$('#WmNeedCheck').checkbox({
+        //    onChange: function () {
+        //        $('#wmEdit').toggleClass('active');
+        //    }
+        //});
         $('#ProdNeedCheck').checkbox({
             onChange: function () {
                 $('#productEdit').toggleClass('active');
@@ -212,7 +239,14 @@
             match: 'text',
             forceSelection: false
         });
-
+        $('#select-chars,#select-tariffs').dropdown({
+            fullTextSearch: true,
+            keys: {
+                delimiter: 13
+            },
+            match: 'text',
+            forceSelection: false
+        });
     });
 </script>
 }

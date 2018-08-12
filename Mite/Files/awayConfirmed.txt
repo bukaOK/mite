@@ -1,0 +1,1 @@
+﻿^https?:\/\/(www\.)?(vk|deviantart|linkedin|instagram|dribbble|facebook|twitter|kickstarter|lastfm|github|artstation|youtube|vimeo)\.com|ru

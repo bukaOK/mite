@@ -3,7 +3,7 @@ using Mite.BLL.Services;
 using Mite.Models;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using System.Web.Mvc;
 
 namespace Mite.Controllers
@@ -11,26 +11,25 @@ namespace Mite.Controllers
     public class HomeController : Controller
     {
         private readonly IUserService userService;
-        private readonly IExternalLinksService linksService;
 
-        public HomeController(IUserService userService, IExternalLinksService linksService)
+        public HomeController(IUserService userService)
         {
             this.userService = userService;
-            this.linksService = linksService;
         }
 
         public ActionResult Index()
         {
-            if (User.Identity.IsAuthenticated)
-                return RedirectToAction("Top", "Posts");
-            var model = userService.GetLandingModel();
-            return View("Land", model);
+            return RedirectToAction("Top", "Posts");
+            //if (User.Identity.IsAuthenticated)
+
+            //var model = userService.GetLandingModel();
+            //return View("Land", model);
         }
         [Route("away")]
-        public async Task<ActionResult> Away(string url)
+        public ActionResult Away(string url)
         {
-            var isConfirmed = await linksService.IsConfirmedAsync(url);
-            if (isConfirmed)
+            var match = Regex.Match(url, System.IO.File.ReadAllText(Server.MapPath("/Files/awayConfirmed.txt")));
+            if (match.Success && match.Groups[2].Success)
                 return Redirect(url);
             else
                 return View("Away", (object)url);
@@ -64,6 +63,11 @@ namespace Mite.Controllers
         public ActionResult RunHangfire()
         {
             BackgroundJob.Enqueue(() => HangfireConfig.LoadAdSenseIncome());
+            return RedirectToAction("Index");
+        }
+        public ActionResult RunTariffsCheck()
+        {
+            BackgroundJob.Enqueue(() => HangfireConfig.TariffsCheckoutAsync());
             return RedirectToAction("Index");
         }
     }

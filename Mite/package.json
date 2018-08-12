@@ -3,10 +3,13 @@
   "name": "asp.net",
   "private": true,
   "devDependencies": {
+    "@ckeditor/ckeditor5-build-classic": "^11.0.1",
     "@types/jquery": "^3.2.12",
     "@types/semantic-ui": "^2.2.5"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-build-classic": "^11.0.1",
+    "@ckeditor/ckeditor5-heading": "^10.0.2",
     "baron": "^3.0.1",
     "gulp": "^3.9.1",
     "jsrender": "^0.9.83",

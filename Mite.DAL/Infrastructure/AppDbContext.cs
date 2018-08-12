@@ -38,6 +38,11 @@ namespace Mite.DAL.Infrastructure
         public DbSet<ExternalLink> ExternalLinks { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Purchase> Purchases { get; set; }
+        public DbSet<Character> Characters { get; set; }
+        public DbSet<CharacterFeature> CharacterFeatures { get; set; }
+        public DbSet<AuthorTariff> AuthorTariffs { get; set; }
+        public DbSet<ClientTariff> ClientTariffs { get; set; }
+        public DbSet<PostCharacter> PostCharacters { get; set; }
 
         public AppDbContext() : base("DefaultConnection")
         {

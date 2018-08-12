@@ -1,0 +1,86 @@
+﻿@model Mite.Models.ClientTariffsModel
+
+@{
+    ViewBag.Title = "Подписки " + Model.Author.UserName;
+}
+@section styles{
+    @Styles.Render("~/Content/editorcontent")
+}
+<div class="ui center aligned grid">
+    <div class="eleven wide computer fourteen wide tablet sixteen wide mobile column">
+        <div class="ui stackable grid">
+            <div class="four wide column">
+                <div class="ui center aligned segment">
+                    <div class="ui centered circular image" id="avatar-img">
+                        <img src="@Model.Author.AvatarSrc" width="100" height="100" />
+                    </div>
+                    <h2 class="ui centered header">
+                        @Model.Author.UserName
+                        <span class="sub header">
+                            @Model.Author.Description
+                        </span>
+                    </h2>
+                </div>
+            </div>
+            <div class="left aligned twelve wide column">
+                <div class="ui segment">
+                    <div class="ui divided items">
+                        @if (Model.Tariffs != null && Model.Tariffs.Count > 0)
+                        {
+                            foreach (var tariff in Model.Tariffs)
+                            {
+                                if (Model.SelectedTariff != null && Model.SelectedTariff.Id == tariff.Id)
+                                {
+                                    <div class="active tariff item" title="Нажмите, чтобы выбрать" data-tariff-id="@tariff.Id">
+                                        <div class="content">
+                                            <div class="header">@tariff.Header</div>
+                                            <div class="meta">@tariff.Price руб.</div>
+                                            <div class="description">@Html.Raw(tariff.Description)</div>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="c-tariff tariff item" title="Нажмите, чтобы выбрать" data-tariff-id="@tariff.Id">
+                                        <div class="content">
+                                            <div class="header">@tariff.Header</div>
+                                            <div class="meta">@tariff.Price руб.</div>
+                                            <div class="description">@Html.Raw(tariff.Description)</div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <h3 class="ui header">У пользователя пока нет доступных тарифов</h3>
+                        }
+                    </div>
+                    @if (Model.Tariffs != null && Model.Tariffs.Count > 0)
+                    {
+                        <button class="ui primary button" id="continueBtn">Продолжить</button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+@Scripts.Render("~/bundles/api")
+<script>
+    $('.tariff').click(function () {
+        $(this).addClass('active').siblings('.tariff').removeClass('active');
+    });
+    $('#continueBtn').click(function () {
+        var $tariffElem = $('.tariff.active');
+        if ($tariffElem.length) {
+            var tariffId = $tariffElem.data('tariffId');
+            TariffMvc.tariffBill(tariffId, '@Model.Author.Id');
+        } else {
+            iziToast.error({
+                title: 'Вы не выбрали тариф'
+            });
+        }
+    });
+</script>
+    }

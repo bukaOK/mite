@@ -160,7 +160,7 @@ namespace Mite.Controllers
 
                         var accessToken = loginInfo.ExternalIdentity.FindFirstValue(ClaimConstants.ExternalServiceToken);
                         var expires = loginInfo.ExternalIdentity.FindFirstValue(ClaimConstants.ExternalServiceExpires);
-                        await externalServices.Add(user.Id, loginInfo.Login.LoginProvider, accessToken);
+                        await externalServices.AddAsync(user.Id, loginInfo.Login.LoginProvider, accessToken);
                     }
                     if(!string.IsNullOrEmpty(returnUrl))
                         return RedirectToLocal(returnUrl);
@@ -187,8 +187,6 @@ namespace Mite.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Register(RegisterModel model, string returnUrl)
         {
-            if ((RegisterRoles?)model.RegisterRole == RegisterRoles.Author && string.IsNullOrEmpty(model.InviteKey))
-                ModelState.AddModelError("InviteKey", "Введите код приглашения");
 #if !DEBUG
             var recaptchaResult = await googleService.RecaptchaValidateAsync(Request["g-recaptcha-response"]);
             if (!recaptchaResult)
@@ -224,8 +222,6 @@ namespace Mite.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ExternalRegister(ShortRegisterModel model, string returnUrl)
         {
-            if ((RegisterRoles?)model.RegisterRole == RegisterRoles.Author && string.IsNullOrEmpty(model.InviteKey))
-                ModelState.AddModelError("InviteKey", "Введите код приглашения");
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -240,7 +236,6 @@ namespace Mite.Controllers
             {
                 UserName = model.UserName,
                 Email = model.Email,
-                InviteKey = model.InviteKey,
                 RegisterRole = model.RegisterRole
             };
             var result = await userService.RegisterAsync(regModel, loginInfo);
@@ -250,7 +245,7 @@ namespace Mite.Controllers
                 //Добавляем внешний сервис
                 var accessToken = loginInfo.ExternalIdentity.FindFirstValue(ClaimConstants.ExternalServiceToken);
                 var expires = loginInfo.ExternalIdentity.FindFirstValue(ClaimConstants.ExternalServiceExpires);
-                await externalServices.Add(user.Id, loginInfo.Login.LoginProvider, accessToken);
+                await externalServices.AddAsync(user.Id, loginInfo.Login.LoginProvider, accessToken);
                 //Отправляем e-mail для подтверждения адреса эл. почты
                 string code = await userManager.GenerateEmailConfirmationTokenAsync(user.Id);
                 var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, Request.Url.Scheme);

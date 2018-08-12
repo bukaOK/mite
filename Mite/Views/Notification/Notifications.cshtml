@@ -1,5 +1,4 @@
 ﻿@model Mite.Models.UserNotificationsModel
-@using Mite.CodeData.Enums
 @{
     ViewBag.Title = "Уведомления";
 }
@@ -19,7 +18,7 @@
                 </button>
             </div>
             <div class="eleven wide column">
-                <div class="ui center aligned segment">
+                <div class="ui segment">
                     <h3 class="ui left aligned dividing header">
                         Уведомления
                     </h3>
@@ -114,6 +113,13 @@
                         {
                             <span>Уведомлений нет</span>
                         }
+                    </div>
+                    <div class="dot-loader-wrapper">
+                        <div class="dot-loader">
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                        </div>
                     </div>
                 </div>
             </div>

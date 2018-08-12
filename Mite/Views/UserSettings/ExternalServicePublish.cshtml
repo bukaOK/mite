@@ -1,0 +1,38 @@
+﻿@model Mite.Models.ESPublishModel
+
+<form class="ui form" id="esPublishForm">
+    @if (Model.TwitterAuthenticated)
+    {
+        @Html.EditorFor(x => x.PublishTwitter)
+    }
+    else
+    {
+        using (Html.BeginForm("InitExternalAuth", "Account", new { returnUrl = Request.CurrentExecutionFilePath }, FormMethod.Post, new { @class = "ui form" }))
+        {
+            @Html.AntiForgeryToken()
+            <button type="submit" class="ui twitter button" name="provider" value="@VkSettings.DefaultAuthType" title="Чтобы проверить репост ВКонтакте, необходимо войти">
+                <i class="twitter icon"></i>Войти в Twitter
+            </button>
+        }
+    }
+    @if (Model.DeviantArtAuthenticated)
+    {
+        @Html.EditorFor(x => x.PublishDeviant)
+    }
+    else
+    {
+        using (Html.BeginForm("InitExternalAuth", "Account", new { returnUrl = Request.CurrentExecutionFilePath }, FormMethod.Post, new { @class = "ui form" }))
+        {
+            @Html.AntiForgeryToken()
+            <button type="submit" class="ui black button" name="provider" value="@VkSettings.DefaultAuthType" title="Чтобы проверить репост ВКонтакте, необходимо войти">
+                <i class="green deviantart icon"></i>Войти в DeviantArt
+            </button>
+        }
+    }
+    <button class="ui green button" type="button">Сохранить</button>
+</form>
+<script>
+    function sendEs(btn) {
+        $(btn).addClass('loading disabled');
+    }
+</script>

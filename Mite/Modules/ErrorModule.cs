@@ -1,16 +1,19 @@
 ﻿using NLog;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Web;
-using System.Web.Hosting;
+using System.Web.Mvc;
+using System.Web.Routing;
 
 namespace Mite.Modules
 {
     public class ErrorModule : IHttpModule
     {
-        private static readonly int[] errorCodes = new[] { 404, 500, 403 };
+        private static readonly Dictionary<int, string> errorCodes = new Dictionary<int, string>{
+            { 404, "NotFound" },
+            { 500, "InternalServerError" },
+            { 403, "Forbidden" }
+        };
         private readonly ILogger logger = LogManager.GetLogger("LOGGER");
 
         public void Dispose()
@@ -45,13 +48,19 @@ namespace Mite.Modules
         private void EndRequest_Handler(object sender, EventArgs e)
         {
             var resp = HttpContext.Current.Response;
+
             if (resp.StatusCode == 403 && resp.SubStatusCode == 14)
                 resp.StatusCode = 404;
-            if (errorCodes.Contains(resp.StatusCode))
+
+            if (errorCodes.TryGetValue(resp.StatusCode, out string action))
             {
-                resp.Clear();
-                var content = File.ReadAllText(HostingEnvironment.MapPath($"/Views/ErrorPages/{resp.StatusCode}.html"));
-                resp.Write(content);
+                var routeData = new RouteData();
+                routeData.Values["controller"] = "Error";
+                routeData.Values["action"] = action;
+
+                var requestContext = new RequestContext(new HttpContextWrapper(HttpContext.Current), routeData);
+                var controller = ControllerBuilder.Current.GetControllerFactory().CreateController(requestContext, "Error");
+                controller.Execute(requestContext);
             }
         }
     }

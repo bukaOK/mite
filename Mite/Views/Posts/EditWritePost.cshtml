@@ -5,6 +5,8 @@
 @{
     var tagsRow = Model.Tags == null ? string.Empty : string.Join(",", Model.Tags);
     var isEdit = !string.IsNullOrEmpty(Model.Header);
+    var charsRow = Model.Characters == null ? string.Empty : string.Join(",", Model.Characters);
+    var saveUrl = isEdit ? "/posts/updatepost" : "/posts/addpost";
 }
 <div class="ui edit post segment">
     <h2 class="ui dividing header">@ViewBag.Title</h2>
@@ -37,10 +39,12 @@
     </div>
     @using (Html.BeginForm("AddPost", "Posts", FormMethod.Post, new { @class = "ui form", id = "writeEditForm" }))
     {
+        @Html.HiddenFor(x => x.Id)
         <div class="field">
             @Html.TextBoxFor(x => x.Header, new { placeholder = Html.DisplayNameFor(x => x.Header), oninput = "onHeaderInput(this)" })
         </div>
         @Html.HiddenFor(x => x.Cover)
+        @Html.HiddenFor(x => x.Content)
         <input type="file" id="wrapperImg" style="display: none" />
         <div class="two fields">
             <div class="field">
@@ -53,7 +57,7 @@
                     @Html.HiddenFor(x => x.Tags, new { Value = tagsRow })
                     <div class="default text">Теги</div>
                     <div class="menu">
-                        @foreach(var aTag in Model.AvailableTags)
+                        @foreach (var aTag in Model.AvailableTags)
                         {
                             <div class="item" data-value="@aTag">@aTag</div>
                         }
@@ -71,6 +75,31 @@
                         </p>
                     </div>
                 </div>
+                <div class="ui margined fluid search multiple selection dropdown" id="select-chars">
+                    <i class="dropdown icon"></i>
+                    @Html.HiddenFor(x => x.Characters, new { Value = charsRow })
+                    <div class="default text">Персонажи</div>
+                    <div class="menu">
+                        @foreach (var item in Model.AvailableCharacters)
+                        {
+                            <div class="item" data-value="@item.Value">@item.Text</div>
+                        }
+                    </div>
+                </div>
+                @if (Model.AvailableTariffs != null && Model.AvailableTariffs.Count > 0)
+                {
+                    <div class="ui fluid search selection dropdown" id="select-tariffs">
+                        <i class="dropdown icon"></i>
+                        @Html.HiddenFor(x => x.TariffId)
+                        <div class="default text">Тарифы</div>
+                        <div class="menu">
+                            @foreach (var tariff in Model.AvailableTariffs)
+                            {
+                                <div class="item" data-value="@tariff.Value">@tariff.Text</div>
+                            }
+                        </div>
+                    </div>
+                }
             </div>
         </div>
         if (Model.Header == null)
@@ -81,12 +110,8 @@
         {
             <h2 id="title">@Model.Header</h2>
         }
-        <div style="clear: both" data-editable data-name="@Html.NameFor(x => x.Content)">
-            @if (string.IsNullOrEmpty(Model.Content))
-            {
-                <p id="initial-content"></p>
-            }
-            else
+        <div id="editor">
+            @if (!string.IsNullOrEmpty(Model.Content))
             {
                 @Html.Raw(Model.Content)
             }
@@ -108,28 +133,8 @@
     </div>
 </div>
 @Scripts.Render("~/bundles/editor", "~/bundles/api")
+@Styles.Render("~/Content/editor")
 <script>
-    function initEditPopup(){
-        var $editBtn = $('.ct-ignition__button--edit').popup({
-            on: 'manual',
-            position: 'right center',
-            content: 'Нажми на меня!'
-        });
-        var $initialContent = $('#initial-content').popup({
-            content: 'Нажмите сюда, чтобы начать!',
-            variation: 'small'
-        });
-        $editBtn.popup('show');
-        $editBtn.click(function (ev) {
-            $editBtn.popup('hide');
-
-            $initialContent.popup('show');
-            $initialContent.click(function () {
-                $initialContent.popup('hide');
-            });
-            localStorage.setItem('editDocHelper', 'true');
-        });
-    }
     function onHeaderInput(headerInput) {
         document.getElementById('title').innerText = headerInput.value;
     }
@@ -138,37 +143,7 @@
         $('#img-wrapper').html('');
         $('#img-wrapper').parent('.row').hide();
     }
-    function articleImageUploader(dialog) {
-        var image;
-        dialog.addEventListener('imageuploader.fileready', function (ev) {
-            var reader = new FileReader();
-            image = new Image();
-            var file = ev.detail().file;
-            reader.onload = function () {
-                image.src = reader.result;
-            }
-            image.onload = function () {
-                this.size = [this.width, this.height];
-                dialog.populate(this.src, this.size);
-            };
-            reader.readAsDataURL(file);
-            image.src = window.URL.createObjectURL(file);
-        });
-        dialog.addEventListener('imageuploader.cancelupload', function () {
-            dialog.state('empty');
-        });
-        dialog.addEventListener('imageuploader.clear', function () {
-            dialog.clear();
-            image = null;
-        });
-        dialog.addEventListener('imageuploader.save', function () {
-            var crop, cropRegion, formData;
-
-            dialog.save(image.src, image.size, {
-                'data-ce-max-width': image.size[0]
-            });
-        });
-    }
+    
     function readImage(file, evt) {
         var reader = new FileReader();
         reader.onload = function () {
@@ -183,134 +158,12 @@
         var file = evt.target.files[0];
         readImage(file, evt);
     }
-    function savePost(isPublished, editorInstance) {
-        @{
-            var url = string.IsNullOrEmpty(Model.Header)
-                ? "/posts/addpost"
-                : "/posts/updatepost";
-        }
-        if(isPublished){
-            formData.PublishDate = new Date().toISOString();
-        }
-        editorInstance.busy(true);
-        $.ajax({
-            data: formData,
-            type: 'post',
-            url: '@url',
-            success: function (resp) {
-                if(resp.status == undefined){
-                    resp = JSON.parse(resp);
-                }
-                var validErrorStatus = @((byte)Mite.Core.JsonStatuses.ValidationError);
-                if(resp.status == validErrorStatus){
-                    $('#writeEditForm').form('add errors', resp.data);
-                    iziToast.error({
-                        title: 'Упс!',
-                        message: 'Ошибка при сохранении, подрбности в форме.'
-                    });
-                } else{
-                    if(isPublished){
-                        location.href = '/user/profile/@User.Identity.Name#posts/published';
-                    } else{
-                        location.href = '/user/profile/@User.Identity.Name#posts/drafts';
-                    }
-                }
-            },
-            error: function (jqXhr) {
-                $('.ct-ignition__button--edit').css('background', '#e74c3c');
-                iziToast.error({
-                    title: 'Упс!',
-                    message: 'Ошибка при сохранении.'
-                });
-            },
-            complete: function (jqXhr) {
-                editorInstance.busy(false);
-            }
-        });
-    }
+    
     var isCoverLarge = false,
         postId = '@Model.Id',
         defaultId = '@Guid.Empty',
         formData;
 
-    ContentTools.DEFAULT_TOOLS = [
-        [
-            'bold',
-            'italic',
-            'image'
-        ], [
-            'align-left',
-            'align-center',
-            'align-right'
-        ],
-        [
-            'heading',
-            'subheading',
-            'paragraph',
-            'unordered-list',
-            'ordered-list',
-            'table',
-            'indent',
-            'unindent',
-            'line-break'
-        ], [
-            'undo',
-            'redo',
-            'remove'
-        ]
-    ];
-    ContentTools.StylePalette.add([
-        new ContentTools.Style('Описание', 'description', ['h3'])
-    ]);
-    ContentTools.Tools.Heading.tagName = "h2";
-    ContentTools.Tools.Subheading.tagName = "h3";
-    $.getJSON('/bower_components/ContentTools/translations/ru.json', function (data) {
-        ContentEdit.addTranslations('ru', data);
-        ContentEdit.LANGUAGE = 'ru';
-    });
-    ContentTools.IMAGE_UPLOADER = articleImageUploader;
-
-    ContentTools.ToolboxUI.prototype.mount = function () {
-        var coord, position, restore;
-        this._domElement = this.constructor.createDiv(['ct-widget', 'ct-toolbox']);
-        this.parent().domElement().appendChild(this._domElement);
-        this._domGrip = this.constructor.createDiv(['ct-toolbox__grip', 'ct-grip']);
-        this._domElement.appendChild(this._domGrip);
-        this._domGrip.appendChild(this.constructor.createDiv(['ct-grip__bump']));
-        this._domGrip.appendChild(this.constructor.createDiv(['ct-grip__bump']));
-        this._domGrip.appendChild(this.constructor.createDiv(['ct-grip__bump']));
-        this._domToolGroups = this.constructor.createDiv(['ct-tool-groups']);
-        this._domElement.appendChild(this._domToolGroups);
-        this.tools(this._tools);
-        restore = window.localStorage.getItem('ct-toolbox-position');
-        if (restore && /^\d+,\d+$/.test(restore)) {
-            position = (function () {
-                var _i, _len, _ref, _results;
-                _ref = restore.split(',');
-                _results = [];
-                for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-                    coord = _ref[_i];
-                    _results.push(parseInt(coord));
-                }
-                return _results;
-            })();
-            this._domElement.style.left = "" + position[0] + "px";
-            this._domElement.style.top = "" + position[1] + "px";
-            this._contain();
-        }
-        var self = this;
-        $(this._domElement).pep({
-            initiate: function () {
-                self.addCSSClass('ct-toolbox--dragging');
-            },
-            stop: function () {
-                self.removeCSSClass('ct-toolbox--dragging');
-            },
-            elementsWithInteraction: '.ct-tool-groups'
-        });
-        $(this._domElement).css('position', 'fixed');
-        return this._addDOMEventListeners();
-    };
     $(function () {
         ViewHelper.activateSidebarItem('#editDocItem');
         ViewHelper.disableFormSubmitting('#writeEditForm');
@@ -323,60 +176,45 @@
             match: 'text',
             forceSelection: false
         });
-
-        @Html.Raw(Html.FormValidation<Mite.Models.WritingPostModel>("#writeEditForm"))
-        var editor = ContentTools.EditorApp.get();
-
-        editor.init('*[data-editable]', 'data-name');
-
-        editor.inspector().show = function () { return false; }
-        editor.addEventListener('saved',
-            function (ev) {
-                if (!$('#writeEditForm').form('validate form')) {
-                    return false;
-                }
-                var isEditMode = @isEdit.ToString().ToLower();
-                var content = ev.detail().regions.Content;
-                if (isCoverLarge) {
-                    alert('Обложка не может иметь размер больше 10 мбайт.');
-                    return false;
-                }
-                if (content === '' || (!isEditMode && content === undefined)) {
-                    $('#writeEditForm').form('add errors', ['Заполните контент.'])
-                    iziToast.error({
-                        title: 'Упс!',
-                        message: 'Заполните контент.'
-                    });
-                    return false;
-                }
-                formData = {
-                    Content: content,
-                    Header: $('#Header').val(),
-                    Description: $('#Description').val(),
-                    Id: '@Model.Id',
-                    ContentType: '@PostContentTypes.Document',
-                    Tags: $('#Tags').val().split(','),
-                    Cover: $('#Cover').val()
-                };
-                var isPublished = @Model.IsPublished.ToString().ToLower();
-                if(isPublished){
-                    savePost(true, editor);
-                } else{
-                    $('#saveModal').modal('show');
-                }
-            });
-        $("#saveModal").modal({
-            onDeny: function(){
-                savePost(false, editor);
+        $('#select-chars,#select-tariffs').dropdown({
+            fullTextSearch: true,
+            keys: {
+                delimiter: 13
             },
-            onApprove: function(){
-                savePost(true, editor);
+            match: 'text',
+            forceSelection: false
+        });
+        ClassicEditor.create($('#editor')[0], {
+            language: 'ru',
+            miteUpload: {
+                uploadUrl: '@Url.Action("UploadDocImg", "Files")'
+            },
+            save: {
+                callback: function (data) {
+                    var isPublished = @Model.IsPublished.ToString().ToLower();
+                    $('#Content').val(data);
+                    console.log(data);
+                    return isPublished ? Posts.Api.saveArticle('@saveUrl', false)
+                        : new Promise(function (resolve) {
+                            $("#saveModal").modal('show');
+                            resolve();
+                        });
+                }
+            }
+        }).catch(function (error) {
+            console.error(error)
+        });
+        @Html.Raw(Html.FormValidation<Mite.Models.WritingPostModel>("#writeEditForm"))
+        
+        $("#saveModal").modal({
+            onDeny: function () {
+                Posts.Api.saveArticle('@saveUrl', false);
+            },
+            onApprove: function () {
+                Posts.Api.saveArticle('@saveUrl', true);
             }
         });
         var wrapperInput = document.getElementById("wrapperImg");
         wrapperInput.onchange = inputDownloadHandler;
-        if (localStorage.getItem('editDocHelper') !== 'true') {
-            initEditPopup();
-        }
     });
 </script>

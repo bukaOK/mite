@@ -1,0 +1,72 @@
+﻿.e-content .image {
+	clear: both;
+	text-align: center;
+}
+.e-content .image > img {
+    /* Prevent unnecessary margins caused by line-height (see #44). */
+    display: block;
+    /* Center the image if its width is smaller than the content's width. */
+    margin: 0 auto;
+    /* Make sure the image never exceeds the size of the parent container (ckeditor/ckeditor5-ui#67). */
+    max-width: 100%;
+}
+.e-content .image > figcaption {
+    color: hsl(0, 0%, 20%);
+    background-color: hsl(0, 0%, 97%);
+    padding: .6em;
+    font-size: .75em;
+    outline-offset: -1px;
+}
+.image-style-side,
+.image-style-align-left,
+.image-style-align-center,
+.image-style-align-right {
+    max-width: 50%;
+}
+.image-style-side {
+    float: right;
+    margin-left: 1.5em;
+}
+
+.image-style-align-left {
+    float: left;
+    margin-right: 1.5em;
+}
+
+.image-style-align-center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.image-style-align-right {
+    float: right;
+    margin-left: 1.5em;
+}
+/*
+    Отображение тарифов для клиента(появляются галочки для выбора)
+*/
+.item.c-tariff {
+    position: relative;
+}
+.item.c-tariff::before {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    font-family: Icons;
+    font-size: 50px;
+    color: #b540c6;
+    top: 45%;
+    left: 45%;
+    content: "\f058";
+    opacity: 0;
+    transition: opacity ease-in-out 0.2s;
+}
+.item.c-tariff:hover::before {
+    opacity: 0.5;
+}
+.item.c-tariff.active::before{
+    opacity: 0.7;
+}
+.c-tariff:hover {
+    cursor: pointer;
+}

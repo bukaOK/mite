@@ -30,7 +30,7 @@ Tab.prototype.activate = function (activateChild) {
         return;
     }
     this.isActive = true;
-    if (this.parentTab !== null && !this.parentTab.isActive) {
+    if (this.parentTab && !this.parentTab.isActive) {
         this.parentTab.activate();
     }
     if (activateChild === true && this.childrenTabs.length > 0) {

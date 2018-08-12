@@ -109,7 +109,7 @@ namespace Mite.DAL.Repositories
         /// <param name="userId">Id пользователя</param>
         /// <param name="postType">Тип поста</param>
         /// <returns></returns>
-        public async Task<IEnumerable<PostDTO>> GetByUserAsync(string userId, PostTypes postType, SortFilter sort)
+        public async Task<IEnumerable<PostDTO>> GetByUserAsync(string userId, string currentUserId, PostTypes postType, SortFilter sort)
         {
             var query = "select posts.*, (select count(*) from dbo.\"Comments\" as comments where comments.\"PostId\"=posts.\"Id\") " +
                 "as \"CommentsCount\", tags.* from dbo.\"Posts\" as posts " +
@@ -150,6 +150,19 @@ namespace Mite.DAL.Repositories
                     dto.Tags.Add(tag);
                 return post;
             }, new { postType, userId });
+
+            query = "select \"TariffId\" from dbo.\"ClientTariffs\" where \"TariffId\"=any(@tariffIds) and \"ClientId\"=@userId;";
+            var tariffIds = posts.Where(x => x.TariffId != null).GroupBy(x => x.TariffId)
+                .Select(x => (Guid)x.Key).ToList();
+            var clientTariffs = await Db.QueryAsync<Guid>(query, new { tariffIds, userId = currentUserId });
+            foreach (var post in posts)
+            {
+                if (post.TariffId != null)
+                {
+                    if (string.IsNullOrEmpty(currentUserId) || !clientTariffs.Any(id => id == post.TariffId))
+                        post.Blurred = true;
+                }
+            }
             return posts;
         }
         /// <summary>
@@ -159,7 +172,8 @@ namespace Mite.DAL.Repositories
         /// <returns></returns>
         public Task<Post> GetWithTagsAsync(Guid id)
         {
-            return DbContext.Posts.Include(x => x.Tags).Include(x => x.Collection).Include(x => x.ComicsItems).FirstOrDefaultAsync(x => x.Id == id);
+            return DbContext.Posts.Include(x => x.Tags).Include(x => x.Collection)
+                .Include(x => x.Characters).Include(x => x.ComicsItems).FirstOrDefaultAsync(x => x.Id == id);
         }
         public Task<Post> GetFullAsync(Guid id)
         {
@@ -208,7 +222,11 @@ namespace Mite.DAL.Repositories
             var query = "select posts.\"Id\" from dbo.\"Posts\" as posts ";
             if (filter.OnlyFollowings)
                 query += "inner join dbo.\"Users\" as users on users.\"Id\"=posts.\"UserId\" ";
-            query += "where posts.\"Type\"=@PostType and \"PublishDate\" is not null and \"PublishDate\" > @MinDate and \"PublishDate\" < @MaxDate ";
+            query += "where posts.\"Type\"=@PostType and \"PublishDate\" is not null and \"PublishDate\" < @MaxDate ";
+            if (filter.MinDate != null)
+                query += "and \"PublishDate\" > @MinDate ";
+            if (filter.Sort == TopSort.Tranding)
+                query += "and posts.\"Rating\" > 0 ";
             if (!string.IsNullOrEmpty(filter.PostName))
             {
                 query += "and (setweight(to_tsvector('mite_ru', posts.\"Title\"), 'A') || " +
@@ -232,30 +250,27 @@ namespace Mite.DAL.Repositories
             if (filter.OnlyFollowings)
             {
                 //Обработка пользователей, на которых подписался текущий
-                query += $"and (users.\"Id\" in (select flw.\"FollowingUserId\" from dbo.\"Followers\" flw where flw.\"UserId\"=@CurrentUserId) or ";
+                query += "and (users.\"Id\" in (select flw.\"FollowingUserId\" from dbo.\"Followers\" flw where flw.\"UserId\"=@CurrentUserId) or ";
 
                 //Обработка тегов, на которые подписался пользователь
-                query += $"posts.\"Id\" in (select tag_posts1.\"Post_Id\" from dbo.\"TagPosts\" tag_posts1 " +
+                query += "posts.\"Id\" in (select tag_posts1.\"Post_Id\" from dbo.\"TagPosts\" tag_posts1 " +
                         "where tag_posts1.\"Tag_Id\" in (select user_tags.\"TagId\" from dbo.\"UserTags\" user_tags where " +
                         "user_tags.\"UserId\"=@CurrentUserId)))";
             }
             var sortQuery = "order by posts.\"PublishDate\" desc";
-            switch (filter.SortType)
+            switch (filter.Sort)
             {
-                case SortFilter.Popular:
-                    sortQuery = "order by posts.\"Rating\" desc, posts.\"PublishDate\" desc";
-                    break;
-                case SortFilter.New:
+                case TopSort.New:
                     sortQuery = "order by posts.\"PublishDate\" desc";
                     break;
-                case SortFilter.Old:
-                    sortQuery = "order by posts.\"PublishDate\" asc";
+                case TopSort.Tranding:
+                    sortQuery = "order by posts.\"Rating\" desc, posts.\"PublishDate\" desc";
                     break;
             }
             query += $"{sortQuery} limit {filter.Range} offset {filter.Offset}";
             filter.PostIds = (await Db.QueryAsync<Guid>(query, filter)).ToList();
 
-            var finalQuery = "select posts.*, (select count(*) from dbo.\"Comments\" as comments where comments.\"PostId\"=posts.\"Id\") " +
+            query = "select posts.*, (select count(*) from dbo.\"Comments\" as comments where comments.\"PostId\"=posts.\"Id\") " +
                 "as \"CommentsCount\", rating.\"Value\" as \"CurrentRating\", users.*, tags.* from dbo.\"Posts\" as posts " +
                 "inner join dbo.\"Users\" as users on posts.\"UserId\"=users.\"Id\" " +
                 "left outer join dbo.\"TagPosts\" as tag_posts on tag_posts.\"Post_Id\"=posts.\"Id\" " +
@@ -265,7 +280,7 @@ namespace Mite.DAL.Repositories
                 //$"where posts.\"Id\"=any(@PostIds) {sortQuery};";
 
             var posts = new List<PostDTO>();
-            await Db.QueryAsync<PostDTO, User, Tag, PostDTO>(finalQuery, (post, user, tag) =>
+            await Db.QueryAsync<PostDTO, User, Tag, PostDTO>(query, (post, user, tag) =>
             {
                 var existingPost = posts.FirstOrDefault(x => x.Id == post.Id);
                 if (existingPost == null)
@@ -280,13 +295,25 @@ namespace Mite.DAL.Repositories
                     existingPost.Tags.Add(tag);
                 return post;
             }, filter);
+            query = "select \"TariffId\" from dbo.\"ClientTariffs\" where \"TariffId\"=any(@tariffIds) and \"ClientId\"=@userId;";
+            var tariffIds = posts.Where(x => x.TariffId != null).GroupBy(x => x.TariffId)
+                .Select(x => (Guid)x.Key).ToList();
+            var clientTariffs = await Db.QueryAsync<Guid>(query, new { tariffIds, userId = filter.CurrentUserId });
+            foreach(var post in posts)
+            {
+                if(post.TariffId != null)
+                {
+                    if (string.IsNullOrEmpty(filter.CurrentUserId) || !clientTariffs.Any(id => id == post.TariffId))
+                        post.Blurred = true;
+                }
+            }
             return posts;
         }
         public Task<List<Guid>> GetAllIdsAsync()
         {
             return Table.Select(x => x.Id).ToListAsync();
         }
-        public async Task<IEnumerable<Post>> GetGalleryByUserAsync(string userId)
+        public async Task<IList<Post>> GetGalleryByUserAsync(string userId)
         {
             return await Table.AsNoTracking().Where(x => x.UserId == userId && x.Type == PostTypes.Published && x.ContentType != PostContentTypes.Document)
                 .ToListAsync();

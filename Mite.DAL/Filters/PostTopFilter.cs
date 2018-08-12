@@ -1,9 +1,6 @@
 ﻿using Mite.CodeData.Enums;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mite.DAL.Filters
 {
@@ -17,11 +14,11 @@ namespace Mite.DAL.Filters
         public string PostName { get; set; }
         public string[] Tags { get; set; }
         public Guid[] FollowingTags { get; set; }
-        public DateTime MinDate { get; set; }
+        public DateTime? MinDate { get; set; }
         public DateTime MaxDate { get; set; }
         public bool OnlyFollowings { get; set; }
         public string CurrentUserId { get; set; }
-        public SortFilter SortType { get; set; }
+        public TopSort Sort { get; set; }
         public int Offset { get; set; }
         public int Range { get; set; }
         public PostTypes PostType { get; set; }

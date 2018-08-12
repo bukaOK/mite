@@ -1,0 +1,18 @@
+﻿@model IEnumerable<Mite.Models.TariffModel>
+
+@if (Model.Count() > 0)
+{
+    <div class="ui divided items">
+        @foreach (var tariff in Model)
+        {
+            <div class="e-content tariff item">
+                <div class="content">
+                    @Html.ActionLink(tariff.Header, "Edit", "Tariff", new { id = tariff.Id }, new { @class = "header", title = "Редактировать" })
+                    <div class="meta">@tariff.Price руб.</div>
+                    <div class="description">@Html.Raw(tariff.Description)</div>
+                </div>
+            </div>
+        }
+    </div>
+}
+@Html.ActionLink("Добавить тариф", "Add", "Tariff", null, new { @class = "ui center aligned primary button" })

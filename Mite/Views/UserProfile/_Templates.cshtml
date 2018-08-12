@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNet.Identity
+@model Mite.Models.ProfileModel
 @{ 
     var pageUserName = Model.UserName.ToLower();
     var currentUserName = User.Identity.Name.ToLower();
@@ -23,19 +24,19 @@
 </script>
 <script id="postsTmpl" type="text/x-jsrender">
     <div class="column" data-post-id="{{:Id}}" id="post{{:Id}}">
-        <div class="ui segment {{if !IsImage && Cover != null}}invert{{/if}}{{if !ShowAdultContent}} hide-adult-content{{/if}} post-item"
+        <div class="ui segment {{if !IsImage && Cover != null}}invert{{/if}}{{if !ShowAdultContent || Blurred}} hide-content{{/if}} post-item"
              {{if !IsImage && Cover != null}} style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})" {{/if}}
              id="post{{:Id}}">
             @if (currentUserName == pageUserName)
             {
                 <div class="extra content">
                     {{if IsPublished}}
-                    <div class="ui default floating compact dropdown button">
+                    <div class="ui {{if Cover}} violet{{/if}} floating compact dropdown button">
                         Действия
                         <i class="dropdown icon"></i>
-                        <div class="menu" role="menu">
+                        <div class="{{if Cover}}inverted {{/if}}menu" role="menu">
                             <a class="item" href="/posts/edit/{{:Id}}" role="menuitem"><i class="edit icon"></i>Редактировать</a>
-                            <div class="item" onclick="showDeletePostModal('{{:Id}}')" role="menuitem"><i class="remove icon"></i>Удалить</div>
+                            <a class="item" onclick="showDeletePostModal('{{:Id}}')" role="menuitem"><i class="remove icon"></i>Удалить</a>
                         </div>
                     </div>
                     {{else}}
@@ -60,14 +61,14 @@
             <div class="img-content">
                 {{if IsPublished}}
                 <a href="@Url.Action("ShowPost", "Posts")/{{:Id}}">
-                    <img src="{{:Content}}" class="ui image" {{if width}}width="{{:width}}" height="{{:height}}"{{/if}} />
+                    <img src="{{:Content}}" class="ui image" {{if width}} width="{{:width}}" height="{{:height}}" {{/if}} />
                 </a>
                 {{else}}
                 <a href="/posts/edit/{{:Id}}">
                     <img src="{{:Content}}" class="ui image" />
                 </a>
                 {{/if}}
-                {{if IsGif}}
+                {{if IsGif && !Blurred}}
                 <div class="active gif-wrapper">
                     <button class="ui large primary circular icon button" onclick="loadFullGif('{{:FullPath}}', '{{:Id}}', $(this))"><i class="fire icon"></i></button>
                     <span class="ui violet label">gif</span>
@@ -93,8 +94,8 @@
                         {{:Description}}
                     </span>
                 </a>
-                {{for Tags}}
-                <a class="ui{{if !~root.IsImage && ~root.Cover != null}} invert{{/if}} label" href="/posts/top?tags={{>#data}}">{{>#data}}</a>
+                {{for Tags ~IsImage=IsImage ~Cover=Cover}}
+                <a class="ui{{if !~IsImage && ~Cover != null}} violet{{/if}} label" href="/posts/top?tags={{>#data}}">{{>#data}}</a>
                 {{/for}}
             </div>
             <div class="ui {{if !IsImage && Cover != null}}inverted{{/if}} divider"></div>
@@ -109,9 +110,15 @@
                     {{/if}}
                 </div>
                 {{/if}}
-
             </div>
-            {{if !ShowAdultContent}}
+            {{if Blurred}}
+            <div class="ui center aligned dimmer">
+                <div class="content">
+                    <h2 class="ui inverted header">Платный контент</h2>
+                    @Html.ActionLink("Получить доступ", "ClientList", "Tariff", new { authorName = pageUserName }, new { target = "_blank", @class = "ui primary button"})
+                </div>
+            </div>
+            {{else !ShowAdultContent}}
             <div class="ui center aligned dimmer">
                 <div class="content">
                     <h2 class="ui inverted header">Взрослый контент(18+)</h2>
@@ -353,6 +360,23 @@
                 else
                 {
                     @Html.Raw("У пользователя пока нет товаров.")
+                }
+            </span>
+        </h3>
+    </div>
+</script>
+<script type="text/html" id="emptySponsorsTmpl">
+    <div class="sixteen wide column">
+        <h3 class="ui center aligned icon header" style="color: #6D6788">
+            <i class="suitcase icon"></i>
+            <span class="content">
+                @if (pageUserName == currentUserName)
+                {
+                    @Html.Raw("У вас пока нет спонсоров.")
+                }
+                else
+                {
+                    @Html.Raw("У пользователя пока нет спонсоров.")
                 }
             </span>
         </h3>

@@ -2,6 +2,7 @@
     ViewBag.Title = "Настройки";
 }
 @section styles{
+    @Styles.Render("~/Content/editorcontent")
     <style>
         #City ~ .menu .ps__rail-y {
             margin: 5px 0;
@@ -21,20 +22,28 @@
                 <a class="item" data-tab="userprofile" role="tab">Профиль</a>
                 <a class="item" data-tab="changeavatar" role="tab">Изменить аватар</a>
                 <a class="item" data-tab="security" role="tab">Безопасность</a>
-                <a class="item" data-tab="invite" role="tab">Приглашения</a>
                 <a class="item" data-tab="externallinks" role="tab">Внешние ссылки</a>
                 <a class="item" data-tab="notifications" role="tab">Уведомления</a>
                 <a class="item" data-tab="usertags" role="tab">Теги</a>
+                @if (User.IsInRole(RoleNames.Author))
+                {
+                    <a class="item" data-tab="authortariffs" role="tab">Мои тарифы</a>
+                }
+                <a class="item" data-tab="clienttariffs" role="tab">Платные подписки</a>
             </nav>
         </div>
         <div class="twelve wide column">
             <div class="ui loading active tab" data-tab="userprofile" role="tabpanel"></div>
             <div class="ui loading tab" data-tab="changeavatar" role="tabpanel"></div>
             <div class="ui loading tab" data-tab="security" role="tabpanel"></div>
-            <div class="ui loading tab" data-tab="invite" role="tabpanel"></div>
             <div class="ui loading tab" data-tab="externallinks" role="tabpanel"></div>
             <div class="ui loading tab" data-tab="notifications" role="tabpanel"></div>
             <div class="ui loading tab" data-tab="usertags" role="tabpanel"></div>
+            @if (User.IsInRole(RoleNames.Author))
+            {
+                <div class="ui loading tab" data-tab="authortariffs" role="tabpanel"></div>
+            }
+                <div class="ui loading tab" data-tab="clienttariffs" role="tabpanel"></div>
         </div>
     </div>
 </div>

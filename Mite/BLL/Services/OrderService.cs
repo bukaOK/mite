@@ -99,8 +99,7 @@ namespace Mite.BLL.Services
                 var order = Mapper.Map<Order>(model);
                 if (model.ImageStream != null)
                 {
-                    order.ImageSrc = FilesHelper.CreateImage(PathConstants.VirtualImageFolder, model.ImageStream);
-                    order.ImageSrc_600 = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(order.ImageSrc), 600));
+                    order.ImageSrc = FilesHelper.CreateImage(PathConstants.PublicVirtualImageFolder, model.ImageStream);
                 }
                 order.CreateDate = DateTime.UtcNow;
                 await repository.AddAsync(order);
@@ -156,6 +155,10 @@ namespace Mite.BLL.Services
             var order = await repository.GetAsync(id);
             if (order == null)
                 return DataServiceResult.Failed("Шаблон заказа не найден");
+
+            var isDealsExist = await Database.GetRepo<DealRepository, Deal>().IsExistByOrderAsync(id);
+            if (isDealsExist)
+                return DataServiceResult.Failed("Нельзя удалить заказ, по которому есть сделки");
             try
             {
                 FilesHelper.DeleteFile(order.ImageSrc);
@@ -194,11 +197,13 @@ namespace Mite.BLL.Services
                 var order = await repository.GetAsync(model.Id);
                 if (order == null)
                     return DataServiceResult.Failed("Заказ не найден");
+                if(order.UserId != model.UserId)
+                    return DataServiceResult.Failed("Неизвестный пользователь");
+
                 if(model.ImageStream != null)
                 {
-                    order.ImageSrc = ImagesHelper.UpdateImage(order.ImageSrc, model.ImageStream);
-                    FilesHelper.DeleteFile(order.ImageSrc_600);
-                    order.ImageSrc_600 = ImagesHelper.Resize(HostingEnvironment.MapPath(order.ImageSrc), 600);
+                    FilesHelper.DeleteFile(order.ImageSrc);
+                    order.ImageSrc = FilesHelper.CreateImage(PathConstants.PublicVirtualImageFolder, model.ImageStream);
                 }
                 order.Title = model.Header;
                 order.Description = model.Description;

@@ -45,7 +45,13 @@ namespace Mite.BLL.Services
         /// <param name="type">Тип работы</param>
         /// <returns></returns>
         Task<IEnumerable<ProfilePostModel>> GetByUserAsync(string userName, string currentUserId, SortFilter sort, PostTypes type);
-        Task<GalleryModel> GetGalleryByUserAsync(string userId);
+        /// <summary>
+        /// Получить список изображений работ пользователя
+        /// </summary>
+        /// <param name="userId">Пользователь, чьи работы хотим получить</param>
+        /// <param name="postId">Текущая работа(на нее кликнули)</param>
+        /// <returns></returns>
+        Task<GalleryModel> GetGalleryByUserAsync(string userId, Guid postId);
         /// <summary>
         /// Добавляем к посту один просмотр
         /// </summary>
@@ -99,6 +105,13 @@ namespace Mite.BLL.Services
                 tags = Mapper.Map<List<Tag>>(postModel.Tags.Where(x => !string.IsNullOrWhiteSpace(x)));
                 postModel.Tags = null;
             }
+            var chars = (List<Guid>)null;
+            if(postModel.Characters != null && postModel.Characters.Count > 0)
+            {
+                chars = postModel.Characters.ToList();
+                postModel.Characters = null;
+            }
+            
             var post = Mapper.Map<Post>(postModel);
             using (var transaction = repo.BeginTransaction())
             {
@@ -153,7 +166,7 @@ namespace Mite.BLL.Services
                 try
                 {
                     await repo.AddAsync(post);
-                    if(tags != null)
+                    if(tags != null && tags.Count > 0)
                         await tagsRepo.AddWithPostAsync(tags, post.Id);
                     transaction.Commit();
                     return DataServiceResult.Success();
@@ -316,6 +329,7 @@ namespace Mite.BLL.Services
                     currentPost.Title = postModel.Header;
                     currentPost.UseWatermarkForCols = postModel.UseWatermarkForCols;
                     currentPost.LastEdit = DateTime.UtcNow;
+                    currentPost.TariffId = postModel.TariffId;
 
                     if (currentPost.PublishDate == null && postModel.Type == PostTypes.Published)
                     {
@@ -329,6 +343,11 @@ namespace Mite.BLL.Services
                     if (tags != null)
                         await Database.GetRepo<TagsRepository, Tag>().AddWithPostAsync(tags, currentPost.Id);
                     currentPost.Tags = null;
+
+                    var chars = postModel.Characters ?? new List<Guid>();
+                    await Database.GetRepo<CharacterRepository, Character>().AddWithPostAsync(chars, currentPost.Id);
+
+                    currentPost.Characters = null;
                     await repo.UpdateAsync(currentPost);
 
                     transaction.Commit();
@@ -349,7 +368,6 @@ namespace Mite.BLL.Services
             if (post == null)
                 return null;
             post.Tags = post.Tags.Where(x => !string.IsNullOrEmpty(x.Name)).ToList();
-            
             var postModel = Mapper.Map<PostModel>(post);
             postModel.User = new UserShortModel
             {
@@ -363,12 +381,18 @@ namespace Mite.BLL.Services
         {
             var repo = Database.GetRepo<PostsRepository, Post>();
             var favoritesRepo = Database.GetRepo<FavoritePostsRepository, FavoritePost>();
+            var clientTariffsRepo = Database.GetRepo<ClientTariffRepository, ClientTariff>();
 
             var post = await repo.GetFullAsync(postId);
             if (post == null)
                 return null;
             var user = await _userManager.FindByIdAsync(post.UserId);
             var postModel = Mapper.Map<PostModel>(post);
+            postModel.CanSeeContent = true;
+
+            if (post.TariffId != null && (string.IsNullOrEmpty(currentUserId) 
+                || (post.UserId != currentUserId && !(await clientTariffsRepo.IsExistAsync((Guid)post.TariffId, currentUserId)))))
+                postModel.CanSeeContent = false;
 
             if (post.ContentType == PostContentTypes.Document)
                 //Заменяем путь к документу на содержание
@@ -394,7 +418,7 @@ namespace Mite.BLL.Services
             var user = await _userManager.FindByNameAsync(userName);
             if (user == null)
                 throw new DataServiceException("Неизвестный пользователь");
-            var posts = await repo.GetByUserAsync(user.Id, type, sort);
+            var posts = await repo.GetByUserAsync(user.Id, currentUserId, type, sort);
 
             var currentUser = string.IsNullOrEmpty(currentUserId) ? null : await _userManager.FindByIdAsync(currentUserId);
             const int minChars = 400;
@@ -436,31 +460,17 @@ namespace Mite.BLL.Services
             var repoFilter = new PostTopFilter(range, filter.Page)
             {
                 MaxDate = filter.InitialDate,
-                OnlyFollowings = PostUserFilter.OnlyFollowings == filter.PostUserFilter,
+                OnlyFollowings = filter.OnlyFollowings,
                 PostName = filter.Input?.Split('#').FirstOrDefault(),
                 Tags = filter.Input?.Split('#').Skip(1).ToArray(),
-                SortType = filter.SortFilter,
+                Sort = filter.Sort,
                 PostType = PostTypes.Published,
                 CurrentUserId = currentUserId
             };
-            var currentDate = DateTime.UtcNow;
-            switch (filter.PostTimeFilter)
-            {
-                case PostTimeFilter.All:
-                    repoFilter.MinDate = new DateTime(1800, 1, 1);
-                    break;
-                case PostTimeFilter.Day:
-                    repoFilter.MinDate = currentDate.AddDays(-1);
-                    break;
-                case PostTimeFilter.Month:
-                    repoFilter.MinDate = currentDate.AddMonths(-1);
-                    break;
-                case PostTimeFilter.Week:
-                    repoFilter.MinDate = currentDate.AddDays(-7);
-                    break;
-                default:
-                    throw new NullReferenceException("Не задан фильтр времени при поиске поста");
-            }
+            //Дата для подбора постов "в тренде"
+            if(filter.Sort == TopSort.Tranding)
+                repoFilter.MinDate = DateTime.UtcNow.AddDays(-3);
+            
             //var user = await _userManager.FindByIdAsync(currentUserId);
             //if (user.ShowOnlyFollowings)
             //    repoFilter.FollowingTags = (await tagsRepo.GetForUserAsync(currentUserId)).Select(x => x.Id).ToArray();
@@ -477,10 +487,14 @@ namespace Mite.BLL.Services
             return postModels;
         }
 
-        public async Task<GalleryModel> GetGalleryByUserAsync(string userId)
+        public async Task<GalleryModel> GetGalleryByUserAsync(string userId, Guid postId)
         {
             var repo = Database.GetRepo<PostsRepository, Post>();
             var posts = await repo.GetGalleryByUserAsync(userId);
+
+            var post = await repo.GetAsync(postId);
+            if (post.Type == PostTypes.Blocked)
+                posts.Insert(0, post);
 
             return new GalleryModel
             {

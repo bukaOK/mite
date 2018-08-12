@@ -65,5 +65,6 @@ namespace Mite.Models
         public string UserName { get; set; }
         public string Deadline { get; set; }
         public string ImageSrc { get; set; }
+        public OrderStatuses Status { get; set; }
     }
 }

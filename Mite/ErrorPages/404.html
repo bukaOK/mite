@@ -35,11 +35,74 @@
             justify-content: center;
             align-items: center;
         }
+        .tt-board {
+            border-collapse: collapse;
+            border-style: hidden;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .tt-cell {
+            border: 5px solid #0da192;
+            width: 50px;
+            height: 50px;
+            padding: 5px;
+        }
+        .cross-svg path {
+            animation: dash 1s cubic-bezier(0.4,0,0.2,1) alternate;
+            stroke: rgb(84, 84, 84);
+            stroke-dasharray: 136;
+        }
+
+        .zero-svg path {
+            fill: none;
+            stroke-width: 10px;
+            animation: zero-dash 1s cubic-bezier(0.4,0,0.2,1) alternate;
+            stroke: rgb(242, 235, 211);
+            stroke-dasharray: 302;
+        }
+        .zero-svg path, .cross-svg path {
+            width: 50px;
+            height: 50px;
+        }
     </style>
 </head>
 <body>
+    <table class="tt-board">
+        <tbody>
+            <tr class="tt-row">
+                <td class="tt-cell" data-cell="0"></td>
+                <td class="tt-cell" data-cell="1"></td>
+                <td class="tt-cell" data-cell="2"></td>
+            </tr>
+            <tr class="tt-row">
+                <td class="tt-cell" data-cell="3"></td>
+                <td class="tt-cell" data-cell="4"></td>
+                <td class="tt-cell" data-cell="5"></td>
+            </tr>
+            <tr class="tt-row">
+                <td class="tt-cell" data-cell="6"></td>
+                <td class="tt-cell" data-cell="7"></td>
+                <td class="tt-cell" data-cell="8"></td>
+            </tr>
+        </tbody>
+    </table>
     <div class="error">
         <a href="/"><img src="/Content/images/404err.png" /></a>
     </div>
+    <template id="crossTmpl">
+        <svg version="1.1" class="cross-svg" viewBox="0 0 128 128">
+            <path stroke="black" stroke-width="10px" d="M16,16L112,112"></path>
+            <path stroke="black" stroke-width="10px" d="M112,16L16,112"></path>
+        </svg>
+    </template>
+    <template id="zeroTmpl">
+        <svg class="zero-svg" aria-label="O" role="img" viewBox="0 0 128 128">
+            <path fill="none" d="M64,16A48,48 0 1,0 64,112A48,48 0 1,0 64,16"></path>
+        </svg>
+    </template>
+    <script src="/Scripts/Custom/TicTacToe.js"></script>
+    <script>
+        var game = new TicTacToe($('.tt-board'));
+    </script>
 </body>
 </html>

@@ -31,8 +31,11 @@ namespace Mite.Controllers
         {
             ViewBag.Title = "Изменение услуги";
             var authorService = await authorServiceService.GetAsync(id);
+            
             if (authorService == null)
                 return NotFound();
+            if (authorService.AuthorId != CurrentUserId)
+                return Forbidden();
             return View(authorService);
         }
         public async Task<ActionResult> AddVkServices()

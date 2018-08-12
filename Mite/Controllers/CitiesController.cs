@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNet.Identity;
+using Microsoft.Owin.Security;
 using Mite.BLL.IdentityManagers;
 using Mite.BLL.Services;
 using Mite.CodeData.Constants;
 using Mite.Core;
+using Mite.Extensions;
 using Mite.Helpers;
 using Mite.Infrastructure;
 using System.Threading.Tasks;
@@ -14,13 +16,14 @@ namespace Mite.Controllers
     public class CitiesController : BaseController
     {
         private readonly ICityService cityService;
-        private readonly MiteCookie miteCookie;
         private readonly AppUserManager userManager;
+        private readonly IAuthenticationManager authenticationManager;
 
-        public CitiesController(ICityService cityService, MiteCookie miteCookie, AppUserManager userManager)
+        public CitiesController(ICityService cityService, AppUserManager userManager,
+            IAuthenticationManager authenticationManager)
         {
-            this.miteCookie = miteCookie;
             this.userManager = userManager;
+            this.authenticationManager = authenticationManager;
             this.cityService = cityService;
         }
         [HttpPost]
@@ -45,12 +48,7 @@ namespace Mite.Controllers
                 }
                 else
                 {
-                    cityId = miteCookie[CookieKeys.UserCityId];
-                    if (string.IsNullOrEmpty(cityId))
-                    {
-                        cityId = city.Id.ToString();
-                        miteCookie[CookieKeys.UserCityId] = cityId;
-                    }
+                    User.Identity.AddUpdateClaim(authenticationManager, ClaimConstants.UserCityId, city.Id.ToString());
                 }
                 return Json(JsonStatuses.Success);
             }

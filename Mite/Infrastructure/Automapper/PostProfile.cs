@@ -14,14 +14,16 @@ namespace Mite.Infrastructure.Automapper
     public class PostProfile : Profile
     {
         const string ImagesPath = "/images/post/";
-        const string ImagesCollectionItemPath = "/images/colitem/";
-        const string ImagesComicsItemPath = "/images/comicitem/";
+        //const string ImagesCollectionItemPath = "/images/colitem/";
+        //const string ImagesComicsItemPath = "/images/comicitem/";
+        const string ResizePath = "/images/resize";
 
         private readonly ILogger logger = LogManager.GetLogger("LOGGER");
 
         public PostProfile()
         {
             CreateMap<Post, PostModel>()
+                .ForMember(dest => dest.Characters, opt => opt.ResolveUsing(src => src.Characters?.Select(x => x.Id)))
                 .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
                 .ForMember(dest => dest.Header, opt => opt.MapFrom(src => src.Title))
                 .ForMember(dest => dest.Watermark, opt => opt.Ignore())
@@ -75,19 +77,14 @@ namespace Mite.Infrastructure.Automapper
                                 return "Ошибка при чтении файла.";
                             }
                         default:
-                            return $"{ImagesPath}{src.Id}?resize=true&watermark={src.WatermarkId != null}";
+                            return $"{ImagesPath}{src.Id}?resize=true";
                     }
                 }))
                 .ForMember(dest => dest.Cover, opt => opt.ResolveUsing((src, dest, value, context) =>
                 {
                     if (src.ContentType != PostContentTypes.Document || src.Cover == null)
                         return null;
-                    if (src.Cover_50 != null)
-                        return src.Cover_50;
-                    var fullImgPath = HostingEnvironment.MapPath(src.Cover);
-                    return ImagesHelper.Compressed.CompressedExists(fullImgPath)
-                        ? ImagesHelper.Compressed.CompressedVirtualPath(fullImgPath)
-                        : src.Content;
+                    return $"{ResizePath}?path={src.Cover}&size=400";
                 }));
 
             CreateMap<PostDTO, TopPostModel>()
@@ -114,38 +111,42 @@ namespace Mite.Infrastructure.Automapper
                                 return "Ошибка при чтении файла.";
                             }
                         default:
-                            return $"{ImagesPath}{src.Id}?resize=true&watermark={src.WatermarkId != null}";
+                            return $"{ImagesPath}{src.Id}?resize=true";
                     }
                 }))
                 .ForMember(dest => dest.IsGif, opt => opt.MapFrom(src => src.ContentType != PostContentTypes.Document
                         ? ImagesHelper.IsAnimatedImage(HostingEnvironment.MapPath(src.Content)) : false))
                 .ForMember(dest => dest.FullPath, opt => opt.MapFrom(src => src.ContentType != PostContentTypes.Document 
-                    ? $"{ImagesPath}{src.Id}?watermark={src.WatermarkId != null}" : null))
+                    ? $"{ImagesPath}{src.Id}" : null))
                 .ForMember(dest => dest.ShowAdultContent, opt => opt.ResolveUsing((src, dest, val, context) =>
                 {
                     var currentUser = (User)context.Items["currentUser"];
                     return (currentUser != null && currentUser.Age >= 18) || !src.Tags.Any(tag => tag.Name == "18+");
-                }));
+                }))
+                .AfterMap((src, dest) =>
+                {
+                    dest.User.AvatarSrc = $"/images/resize?path={src.User.AvatarSrc}&size=28";
+                });
 
             CreateMap<PostModel, ImagePostModel>();
             CreateMap<PostModel, WritingPostModel>();
 
             CreateMap<PostCollectionItem, PostCollectionItemModel>()
-                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => ImagesCollectionItemPath + src.Id + $"?watermark={src.Post.WatermarkId != null}"));
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.ContentSrc));
             CreateMap<PostCollectionItemModel, PostCollectionItem>()
                 .ForMember(dest => dest.ContentSrc_50, opt => opt.Ignore())
                 .ForMember(dest => dest.ContentSrc, opt => opt.MapFrom(src => src.Content));
             CreateMap<ComicsItem, PostComicsItemModel>()
-                .ForMember(dest => dest.CompressedContent, opt => opt.MapFrom(src => ImagesComicsItemPath + src.Id + $"?watermark={src.Post.WatermarkId != null}&resize=true"))
-                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => ImagesComicsItemPath + src.Id + $"?watermark={src.Post.WatermarkId != null}&resize=false"));
+                .ForMember(dest => dest.CompressedContent, opt => opt.MapFrom(src => $"{ResizePath}?path={src.ContentSrc}&size=200"))
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.ContentSrc));
             CreateMap<PostComicsItemModel, ComicsItem>()
                 .ForMember(dest => dest.ContentSrc_50, opt => opt.Ignore())
                 .ForMember(dest => dest.ContentSrc, opt => opt.MapFrom(src => src.Content));
 
             CreateMap<Post, GalleryItemModel>()
-                .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => ImagesPath + src.Id + $"?watermark={src.WatermarkId != null}"))
+                .ForMember(dest => dest.ImageSrc, opt => opt.MapFrom(src => ImagesPath + src.Id))
                 .ForMember(dest => dest.ImageCompressed, opt => opt.MapFrom(src => 
-                    $"{ImagesPath}{src.Id}?watermark={src.WatermarkId != null}&resize=true"));
+                    $"{ResizePath}?path={src.Content}&size=200ZZ"));
         }
     }
 }

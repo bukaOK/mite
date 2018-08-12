@@ -1,0 +1,26 @@
+﻿[data-tab=followers].grid.tab > .column, [followings].grid.tab > .column {
+    padding: 1rem 0.5rem 0rem 0.5rem;
+}
+
+.link {
+    color: rgba(0,0,0,0.8);
+    transition: color linear 0.3s;
+}
+
+.link:hover {
+    color: #b540c6;
+}
+
+.ui.dropdown#sortDropdown .item[data-value="3"] {
+    display: none;
+}
+
+#avatar-img {
+    width: 100px;
+    height: 100px;
+}
+
+.ui.statistic {
+    margin: 0 !important;
+    display: block;
+}

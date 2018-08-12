@@ -10,13 +10,17 @@ html, body{
 label input[type=file]{
     display: none;
 }
+.ui.circular.image > img{
+    border-radius: 100rem !important;
+}
 .ui.header>.sub.header {
     overflow: hidden;
 }
 .header.main.item{
     min-height: 42px;
 }
-.ui.margined.button{
+.ui.margined.button,
+.ui.margined.buttons {
     margin-bottom: 4px;
 }
 .ui.vertical.menu{
@@ -218,20 +222,6 @@ article.ui.container{
     .ui.profile.segment {
         margin-top: 130px;
     }
-}
-.ui.profile.segment #avatar-img{
-    background-color: white;
-    margin-top: -90px;
-    transform: rotate(45deg);
-    border: 1px solid rgba(34, 36, 38, 0.15);
-    border-bottom-color: #fff;
-    border-right-color: #fff;
-}
-#avatar-img img{
-    border: 5px solid #fff;
-}
-#avatar-img .dimmer, #avatar-img img{
-    transform: rotate(-45deg);
 }
 input[type="text"],input[type="email"],input[type="password"]{
     font-weight: bold;

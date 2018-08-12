@@ -39,5 +39,6 @@ namespace Mite.DAL.DTO
         /// Тип продолжительности(час, день и т.п.)
         /// </summary>
         public DurationTypes DeadlineType { get; set; }
+        public OrderStatuses Status { get; set; }
     }
 }

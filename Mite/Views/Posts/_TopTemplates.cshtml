@@ -1,6 +1,6 @@
 ﻿<script id="topPostTmpl" type="text/x-jsrender">
     <div class="column">
-        <div class="ui segment {{if !IsImage && Cover != null}}invert{{/if}}{{if !ShowAdultContent}} hide-adult-content{{/if}} post-item" id="post{{:Id}}"
+        <div class="ui segment {{if !IsImage && Cover != null}}invert{{/if}}{{if !ShowAdultContent || Blurred}} hide-content{{/if}} post-item" id="post{{:Id}}"
              {{if !IsImage && Cover != null}} style="background: linear-gradient(rgba(181, 64, 198, 0.6),rgba(181, 64, 198, 0.5)), url({{:Cover}})" {{/if}}>
             <div class="extra content">
                 <a href="/user/profile/{{:User.UserName}}" class="username" data-username="{{:User.UserName}}">
@@ -22,7 +22,7 @@
                 <a href="/posts/showpost/{{:Id}}">
                     <img src="{{:Content}}" class="ui image" />
                 </a>
-                {{if IsGif}}
+                {{if IsGif && !Blurred}}
                 <div class="active gif-wrapper">
                     <button class="ui large circular icon primary button" onclick="loadFullGif('{{:FullPath}}', '{{:Id}}', $(this))">
                         <i class="play icon" style="padding-left: 3px"></i>
@@ -66,7 +66,14 @@
                     <span title="Комментарии"><i class="green comments outline icon"></i>{{:CommentsCount}}</span>
                 }
             </div>
-            {{if !ShowAdultContent}}
+            {{if Blurred}}
+            <div class="ui center aligned dimmer">
+                <div class="content">
+                    <h2 class="ui inverted header">Платный контент</h2>
+                    <a class="ui primary button" href="/tariff/list/{{:User.UserName}}" target="_blank">Получить доступ</a>
+                </div>
+            </div>
+            {{else !ShowAdultContent}}
             <div class="ui center aligned dimmer">
                 <div class="content">
                     <h2 class="ui inverted header">Взрослый контент(18+)</h2>

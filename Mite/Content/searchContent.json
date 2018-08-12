@@ -26,6 +26,14 @@
       {
         "title": "внешние ссылки",
         "action": "externallinks"
+      },
+      {
+        "title": "мои тарифы",
+        "action": "clienttariffs"
+      },
+      {
+        "title": "внешние ссылки",
+        "action": "externallinks"
       }
     ]
   },

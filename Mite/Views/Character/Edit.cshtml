@@ -1,0 +1,181 @@
+﻿@using Mite.Extensions
+@model Mite.Models.CharacterModel
+
+@{
+    ViewBag.Title = "Редактор персонажа";
+    var saveUrl = Model.Id == null ? Url.Action("Add", "Character") : Url.Action("Update", "Character");
+}
+@section styles{
+    <style>
+        .feature-close.icon {
+            cursor: pointer;
+        }
+
+        #editor {
+            margin-top: 10px;
+        }
+
+        #externalImageSrc {
+            margin-bottom: 10px;
+        }
+    </style>
+}
+<div class="ui segment">
+    <h2 class="ui dividing header">@ViewBag.Title</h2>
+    <div class="ui grid">
+        <div class="two column row">
+            <div class="center aligned column">
+                <label class="ui dashed drop-zone segment" id="imgDropZone">
+                    <span class="ui small blue header"><i class="cloud download icon"></i>Перетащите или нажмите</span>
+                    <input type="file" id="imgFile" />
+                </label>
+                <div class="ui horizontal divider">Или</div>
+                <div class="ui input">
+                    <input type="text" id="externalImageSrc" placeholder="Ссылка на изображение" />
+                </div>
+                <button class="ui primary button" id="imageLinkPaste">Вставить</button>
+                <div class="img-wrapper" id="img-wrapper">
+                    @if (!string.IsNullOrEmpty(Model.ImageSrc))
+                    {
+                        <img src="@Model.ImageSrc" alt="@Model.Name" style="max-width: 100%" />
+                    }
+                </div>
+                <div class="ui teal indicating progress" id="imgProgress">
+                    <div class="bar">
+                        <div class="progress"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <form class="ui char-form form">
+                    @Html.HiddenFor(x => x.Id)
+                    @Html.HiddenFor(x => x.ImageSrc)
+                    @Html.EditorFor(x => x.Name, new { WithLabel = true })
+                    @if (User.IsInRole(RoleNames.Moderator))
+                    {
+                        @Html.EditorFor(x => x.Original)
+                    }
+                    <div class="ui green m-success message">Персонаж успешно добавлен</div>
+                    <div class="ui error message"></div>
+                </form>
+                @if (Model.Features != null && Model.Features.Count > 0)
+                {
+                    foreach (var feature in Model.Features)
+                    {
+                        Html.RenderPartial("_CharacterFeature", feature);
+                    }
+                }
+                else
+                {
+                    Html.RenderPartial("_CharacterFeature", new Mite.Models.CharacterFeatureModel());
+                }
+                <button class="ui margined fluid green button" type="button" onclick="$(this).before($('#featureTmpl').html())" id="addFeatureBtn">
+                    <i class="plus icon"></i>Добавить особенность
+                </button>
+                <button class="ui primary fluid button" type="button" id="saveBtn">Сохранить</button>
+                
+                <div class="ui blue icon message">
+                    <i class="info icon"></i>
+                    <div class="content">
+                        <div class="header">Внимание!</div>
+                        <p>Добавляйте персонажей, созданных Вами. Если необходим персонаж, созданный другим автором(из книги, кино и пр.), напишите об этом в один из чатов или в группу, и мы его добавим.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="column">
+            <div id="editor">
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    @Html.Raw(Model.Description);
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/html" id="featureTmpl">
+    @{Html.RenderPartial("_CharacterFeature", new Mite.Models.CharacterFeatureModel());}
+</script>
+@*<script src="~/ckeditor5-build-classic/build/ckeditor.js"></script>
+    <script src="~/ckeditor5-build-classic/build/translations/ru.js"></script>|*@
+@*<link href="~/Content/DataEditing.css" rel="stylesheet" />*@
+@Scripts.Render("~/bundles/editor", "~/bundles/api")
+@Styles.Render("~/Content/editor")
+<script>
+    $('#Original').parent().checkbox();
+    $('#imageLinkPaste').click(function () {
+        var srcVal = $('#externalImageSrc').val();
+        if (!/^https?:\/\//i.test(srcVal)) {
+            iziToast.error({
+                title: 'Упс!',
+                message: 'Кажется, вы ввели неверную ссылку'
+            });
+            return;
+        }
+        $('#img-wrapper').html('<img src="' + srcVal + '" alt="@Model.Name" style="max-width: 100%" />');
+        $('#ImageSrc').val(srcVal);
+    });
+
+    ClassicEditor.create($('#editor')[0], {
+        toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'imageUpload' , 'blockQuote', '|' ,'save'],
+        language: 'ru',
+
+        miteUpload: {
+            uploadUrl: '@Url.Action("UploadDocImg", "Files", new { maxWidth = 1200 })'
+        },
+        save: {
+            callback: function (data) {
+                return CharacterMvc.save('@saveUrl', data, $('#saveBtn')[0]);
+            }
+        }
+    }).then(function (editor) {
+        $('#saveBtn').click(function () {
+            CharacterMvc.save('@saveUrl', editor.getData(), this);
+        });
+    }).catch (function (error) {
+        console.error(error);
+    });
+    var readSettings = {
+        progress: $('#imgProgress'),
+        field: $('#ImageSrc'),
+        imgWrapper: $('#img-wrapper')
+    };
+    $('#imgFile').change(function (ev) {
+        FileReaderHelper.inputDownloadHandler(ev, readSettings);
+    });
+
+    $('#imgDropZone').on('dragover', function (ev) {
+        FileReaderHelper.dragOverHandler(ev);
+    }).on('drop', function (ev) {
+        FileReaderHelper.dropHandler(ev, readSettings);
+    });
+
+    @Html.Raw(Html.FormValidation(".char-form"))
+    $('.char-item-form').form({
+        fields: {
+            FeatureDescription: {
+                rules: [
+                    {
+                        type: 'empty',
+                        prompt: 'Заполните описание'
+                    },
+                    {
+                        type: 'maxLength[300]',
+                        prompt: 'Слишком длинное описание'
+                    }
+                ]
+            },
+            FeatureName: {
+                rules: [
+                    {
+                        type: 'empty',
+                        prompt: 'Заполните название'
+                    }
+                ]
+            }
+        }
+    });
+</script>
+

@@ -73,8 +73,21 @@ namespace Mite.DAL.Entities
         /// Страницы комикса(если работа - комикс/манга)
         /// </summary>
         public List<ComicsItem> ComicsItems { get; set; }
+        /// <summary>
+        /// Персонажи, которые есть в работе
+        /// </summary>
+        public List<Character> Characters { get; set; }
+        /// <summary>
+        /// Id автора
+        /// </summary>
         [ForeignKey("User")]
         public string UserId { get; set; }
         public User User { get; set; }
+        /// <summary>
+        /// Тариф
+        /// </summary>
+        [ForeignKey("Tariff")]
+        public Guid? TariffId { get; set; }
+        public AuthorTariff Tariff { get; set; }
     }
 }

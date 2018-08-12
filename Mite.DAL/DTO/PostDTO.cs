@@ -18,6 +18,8 @@ namespace Mite.DAL.DTO
         /// </summary>
         public string Content_50 { get; set; }
         public Guid? WatermarkId { get; set; }
+        public Guid? TariffId { get; set; }
+        public bool Blurred { get; set; }
         /// <summary>
         /// Время последнего редактирования
         /// </summary>

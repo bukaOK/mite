@@ -1,17 +1,16 @@
-﻿
-@{
+﻿@{
     Layout = null;
 }
-
 <!DOCTYPE html>
 <html>
 <head>
     <meta name="viewport" content="width=device-width" />
     <meta charset="utf-8" />
     <title>@ViewBag.Title</title>
+    @Styles.Render("~/Content/semantic", "~/Content/css")
     <style>
         body {
-            background: url("/Content/images/water-back.jpg"), round;
+            background: #b540c6;
         }
 
         html {
@@ -32,7 +31,7 @@
 </head>
 <body>
     <div class="error">
-        <a href="/"><img src="@ViewBag.ErrorImg" /></a>
+        <h1 class="ui icon inverted header"><i class="meh icon"></i>@ViewBag.ErrorText</h1>
     </div>
 </body>
 </html> 

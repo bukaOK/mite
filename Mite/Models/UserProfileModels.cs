@@ -1,8 +1,6 @@
 ﻿using Mite.CodeData.Enums;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace Mite.Models
 {
@@ -26,6 +24,7 @@ namespace Mite.Models
         public int FollowersCount { get; set; }
         public int FollowingsCount { get; set; }
         public int Reliability { get; set; }
+        public int SponsorsCount { get; set; }
         /// <summary>
         /// Блок "О себе"
         /// </summary>
@@ -50,6 +49,10 @@ namespace Mite.Models
         public bool IsAuthor { get; set; }
         public int PostsCount { get; set; }
         public string YandexWalId { get; set; }
+        /// <summary>
+        /// Id группы вконтакте
+        /// </summary>
+        public string VkGroupId { get; set; }
         public bool ShowAd { get; set; }
         public string PlaceName { get; set; }
         public IEnumerable<ExternalLinkModel> ExternalLinks { get; set; }
@@ -78,6 +81,10 @@ namespace Mite.Models
         public PostTypes Type { get; set; }
         public PostContentTypes ContentType { get; set; }
         public bool IsPublished { get; set; }
+        /// <summary>
+        /// Замазать ли изображение(если оно, например, имеет платный контент)
+        /// </summary>
+        public bool Blurred { get; set; }
 
         private string cover;
         public string Cover
@@ -106,6 +113,14 @@ namespace Mite.Models
     {
         public Guid PostId { get; set; }
         public int Price { get; set; }
+    }
+    public class ProfileCharacterModel
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string ImageSrc { get; set; }
+        public UserShortModel User { get; set; }
     }
     public class ExternalLinkModel
     {

@@ -173,7 +173,9 @@ namespace Mite.BLL.Services
             var chat = await repo.GetAsync(model.Id);
             if (model.ImageSrc != null && !string.Equals(model.ImageSrc, chat.ImageSrc) && !string.Equals(model.ImageSrc, chat.ImageSrcCompressed))
             {
-                chat.ImageSrc = ImagesHelper.UpdateImage(chat.ImageSrc, model.ImageSrc);
+                FilesHelper.DeleteFile(chat.ImageSrc);
+
+                chat.ImageSrc = FilesHelper.CreateImage("/Public/images", model.ImageSrc);
                 FilesHelper.DeleteFile(chat.ImageSrc);
                 chat.ImageSrcCompressed = FilesHelper.ToVirtualPath(ImagesHelper.Resize(HostingEnvironment.MapPath(chat.ImageSrc), 100));
             }

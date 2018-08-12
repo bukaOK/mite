@@ -11,6 +11,7 @@ var FileReaderHelper = {
     */
     readFile: function (file, evt, settings) {
         var self = FileReaderHelper;
+        var ext = file.name.split('.').slice(-1)[0];
         if (!settings) {
             var $form = $(evt.target).parents('form'),
                 $progress = $form.find('.ui.progress');
@@ -49,7 +50,29 @@ var FileReaderHelper = {
         if (file.size / 1024 / 1024 > 30) {
             isImageLarge = true;
         }
-        reader.readAsDataURL(file);
+        if (ext === 'psd') {
+            var formData = new FormData();
+            formData.append('psd', file);
+            $.ajax({
+                type: 'post',
+                url: '/files/psdtojpeg',
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: function (resp) {
+                    settings.imgWrapper.html('<img src="' + resp + '" style="max-width: 100%"/>');
+                    settings.field.val(resp);
+                },
+                error: function (jqXhr) {
+                    iziToast.error({
+                        title: 'Упс!',
+                        message: 'Ошибка при обработке Psd файла'
+                    });
+                }
+            });
+        } else {
+            reader.readAsDataURL(file);
+        }
     },
     /**
      * Когда перемещаем файл мышкой и курсор над областью

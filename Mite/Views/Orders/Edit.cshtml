@@ -84,12 +84,8 @@
             <div class="field">
                 <label>@Html.DisplayNameFor(x => x.Description)</label>
                 @Html.HiddenFor(x => x.Description)
-                <div data-editable data-name="@Html.NameFor(x => x.Description)">
-                    @if (string.IsNullOrEmpty(Model.Description))
-                    {
-                        <p data-ce-placeholder="Нажми на меня!" id="initialContent"></p>
-                    }
-                    else
+                <div id="editor">
+                    @if (!string.IsNullOrEmpty(Model.Description))
                     {
                         @Html.Raw(Model.Description)
                     }
@@ -102,19 +98,8 @@
 </div>
 @section scripts{
 @Scripts.Render("~/bundles/api", "~/bundles/editor")
+@Styles.Render("~/Content/editor")
 <script>
-    function initEditPopup(){
-        var $editBtn = $('.ct-ignition__button--edit').popup({
-            on: 'manual',
-            position: 'right center',
-            content: 'Написать требования'
-        });
-        $editBtn.popup('show');
-        $editBtn.click(function (ev) {
-            $editBtn.popup('hide');
-            localStorage.setItem('orderEditHelper', 'true');
-        });
-    }
     var deadlineItems = [
         {
             val: '@DurationTypes.Hour',
@@ -133,54 +118,44 @@
             words: ['Месяц', 'Месяца', 'Месяцев']
         }
     ];
-
-    ContentTools.DEFAULT_TOOLS = [
-        ['bold', 'italic', 'link'],
-        ['heading', 'subheading', 'paragraph', 'unordered-list', 'ordered-list', 'table'],
-        ['undo', 'redo', 'remove']
-    ];
-    ContentTools.Tools.Heading.tagName = "h2";
-    ContentTools.Tools.Subheading.tagName = "h3";
-    $.getJSON('/bower_components/ContentTools/translations/ru.json', function (data) {
-        ContentEdit.addTranslations('ru', data);
-        ContentEdit.LANGUAGE = 'ru';
+    ClassicEditor.create($('#editor')[0], {
+        language: 'ru',
+        toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'imageUpload', '|', 'save'],
+        miteUpload: {
+            uploadUrl: '@Url.Action("UploadDocImg", "Files")'
+        },
+        save: {
+            callback: function (content) {
+                var $form = $('#orderForm');
+                $('#Description').val(content);
+                if (!$form.form('validate form')) {
+                    return false;
+                }
+                var isNew = @newOrder.ToString().ToLower();
+                var imgStream = document.querySelector('[name=ImageStream]');
+                if (imgStream.files.length && imgStream.files[0].Size > 10) {
+                    $form.form('add errors', ['Размер изображения не может быть больше 10 мбайт.']);
+                    return false;
+                }
+                if (content === '' || (isNew && content === undefined)) {
+                    $form.form('add errors', ['Заполните контент.'])
+                    iziToast.error({
+                        title: 'Упс!',
+                        message: 'Заполните контент.'
+                    });
+                    return false;
+                }
+                if (isNew) {
+                    return OrdersMvc.add('#orderForm');
+                } else {
+                    return OrdersMvc.update('#orderForm');
+                }
+            }
+        }
+    }).catch(function (error) {
+        console.error(error)
     });
-
-    var editor = ContentTools.EditorApp.get();
-
-    editor.init('*[data-editable]', 'data-name');
-
-    editor.inspector().show = function () { return false; }
-    editor.addEventListener('saved',
-        function (ev) {
-            var $form = $('#orderForm'),
-                content = ev.detail().regions.Description;
-            $('#Description').val(content);
-            if (!$form.form('validate form')) {
-                return false;
-            }
-            var isNew = @newOrder.ToString().ToLower();
-            var imgStream = document.querySelector('[name=ImageStream]');
-            if (imgStream.files.length && imgStream.files[0].Size > 10) {
-                $form.form('add errors', ['Размер изображения не может быть больше 10 мбайт.']);
-                alert('Изображение не может иметь размер больше 10 мбайт.');
-                return false;
-            }
-            if (content === '' || (isNew && content === undefined)) {
-                $form.form('add errors', ['Заполните контент.'])
-                iziToast.error({
-                    title: 'Упс!',
-                    message: 'Заполните контент.'
-                });
-                return false;
-            }
-            if (isNew) {
-                OrdersMvc.add('#orderForm');
-            } else {
-                OrdersMvc.update('#orderForm');
-            }
-    });
-
+    
     function updateDeadline(input) {
         var inputVal = input.value,
             $dropdown = $(input).siblings('.dropdown');
@@ -200,9 +175,6 @@
         if (items) {
             $dropdown.children('.text').html(items[0].dataset.text);
         }
-    }
-    if (localStorage.getItem('orderEditHelper') !== 'true') {
-        initEditPopup();
     }
     ViewHelper.disableFormSubmitting('#orderForm');
     $('#orderTypes').dropdown({

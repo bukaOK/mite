@@ -28,6 +28,7 @@
             <div class="ui blue message">
                 <div class="ui order-info large list" role="list">
                     <div class="active item" role="listitem">Срок: @Model.Deadline</div>
+                    <div class="item" role="listitem">Цена: @Model.Price руб.</div>
                     <div class="item" role="listitem">Количество заявок: @Model.Executers.Count</div>
                     <div class="item" role="listitem">Тип заказа: @Html.ActionLink(Model.OrderType.Name, "Top", new { orderTypeId = Model.OrderType.Id })</div>
                     <div class="item" role="listitem">Заказчик: @Html.ActionLink(Model.User.UserName, "Index", "UserProfile", new { name = Model.User.UserName }, null)</div>
